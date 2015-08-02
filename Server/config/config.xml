@@ -21,7 +21,7 @@
 		-->
 		
 		<logger classname="org.openas2.logging.FileLogger"
-			filename="%home%/log-$date.MMddyyyy$.txt"/>			
+			filename="%home%/../logs/log-$date.MMddyyyy$.txt"/>			
                 <!-- Remove this comment to enable socket logging			
 		<logger classname="org.openas2.logging.SocketLogger"
 		    ipaddr="127.0.0.1"
@@ -41,8 +41,8 @@
 
 
 	<processor classname="org.openas2.processor.DefaultProcessor"
-	    pendingMDN="%home%/pendingMDN3"
-	    pendingMDNinfo="%home%/pendinginfoMDN3">
+	    pendingMDN="%home%/../data/pendingMDN3"
+	    pendingMDNinfo="%home%/../data/pendinginfoMDN3">
 
 	
 		<module classname="org.openas2.processor.sender.AS2SenderModule">
@@ -51,8 +51,8 @@
 		<!-- This will parse the filename to get a sender and receiver. For instance a file
 			named OpenAS2A-OpenAS2B.1234 would be sent from OpenAS2A to OpenAS2B. -->
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="%home%/toAny"
-			errordir="%home%/toAny/error"			
+			outboxdir="%home%/../data/toAny"
+			errordir="%home%/../data/toAny/error"			
 			interval="5"			
 			delimiters="-."
                         sendfilename="true"
@@ -60,36 +60,35 @@
 			mimetype="application/EDI-X12"/>
 
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="%home%/toOpenAS2A/"
-			errordir="%home%/toOpenAS2A/error"			
+			outboxdir="%home%/../data/toOpenAS2A/"
+			errordir="%home%/../data/toOpenAS2A/error"			
 			interval="5"			
-                        sendfilename="true"
 			defaults="sender.as2_id=OpenAS2B, receiver.as2_id=OpenAS2A"			
+            sendfilename="true"
 			mimetype="application/EDI-X12"/>					
 			
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="%home%/toOpenAS2B"
-			errordir="%home%/toOpenAS2B/error"			
+			outboxdir="%home%/../data/toOpenAS2B"
+			errordir="%home%/../data/toOpenAS2B/error"			
 			interval="5"			
-                        sendfilename="true"
-			defaults="sender.as2_id=OpenAS2A, receiver.as2_id=OpenAS2B"			
+            defaults="sender.as2_id=OpenAS2A, receiver.as2_id=OpenAS2B"			
 			sendFilename="true"
 			mimetype="application/EDI-X12"/>
 		
 		<module classname="org.openas2.processor.storage.MDNFileModule"
-			filename="%home%/mdn/$date.yyyy$/$date.MM$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$-$mdn.msg.headers.message-id$-$mdn.msg.content-disposition.filename$"			
+			filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-DD$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"			
 			protocol="as2"
-			tempdir="%home%/temp"/>
+			tempdir="%home%/../data/temp"/>
 			
 		<module classname="org.openas2.processor.storage.MessageFileModule"
-			filename="%home%/inbox/$msg.sender.as2_id$-$msg.receiver.as2_id$-$msg.content-disposition.filename$-$msg.headers.message-id$"
-			header="%home%/inbox/msgheaders/$date.yyyy$/$date.MM$/$msg.sender.as2_id$-$msg.receiver.as2_id$-$msg.content-disposition.filename$-$msg.headers.message-id$"		
+			filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
+			header="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/msgheaders/$date.yyyy-MM$-DD/$msg.content-disposition.filename$-$msg.headers.message-id$"		
 			protocol="as2"
-			tempdir="%home%/temp"/>		
+			tempdir="%home%/../data/temp"/>		
 			
 		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"			
 			port="10080"
-			errordir="%home%/inbox/error"
+			errordir="%home%/../data/inbox/error"
 			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>				
 		
 		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"			
@@ -97,7 +96,7 @@
 
 		
 		<module classname="org.openas2.processor.resender.DirectoryResenderModule"
-			resenddir="%home%/resend"
+			resenddir="%home%/../data/resend"
 			errordir="%home%/resend/error"
 			resenddelay="60"/>			
 	</processor>

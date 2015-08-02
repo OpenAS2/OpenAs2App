@@ -2,18 +2,17 @@
 	<partner name="OpenAS2A"
 		as2_id="OpenAS2A"
 		x509_alias="openas2a"
-                content_transfer_encoding="8bit"
 		email="OpenAS2 A email"/>
 	<partner name="OpenAS2B"
 		as2_id="OpenAS2B"
 		x509_alias="openas2b"
-                content_transfer_encoding="8bit"
 		email="OpenAS2 A email"/>	
 
 	<partnership name="OpenAS2A-OpenAS2B">
 		<sender name="OpenAS2A"/>
 		<receiver name="OpenAS2B"/>
 		<attribute name="protocol" value="as2"/>
+		<attribute name="content_transfer_encoding" value="binary"/>
 		<attribute name="subject" value="From OpenAS2A to OpenAS2B"/>
 		<attribute name="as2_url" value="http://localhost:10090"/>
 		<attribute name="as2_mdn_to" value="http://localhost:10080"/>
@@ -26,6 +25,7 @@
 		<sender name="OpenAS2B"/>
 		<receiver name="OpenAS2A"/>
 		<attribute name="protocol" value="as2"/>
+		<attribute name="content_transfer_encoding" value="binary"/>
 		<attribute name="subject" value="From OpenAS2B to OpenAS2A"/>
 		<attribute name="as2_url" value="http://localhost:10091"/>
 		<attribute name="as2_mdn_to" value="http://localhost:10081"/>
