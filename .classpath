@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="Remote/src"/>
+	<classpathentry kind="src" path="Server/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="Remote/lib/servlet.jar"/>
+	<classpathentry kind="lib" path="Server/lib/bcmail-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="Server/lib/bcpg-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="Server/lib/bcpkix-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="Server/lib/bcprov-jdk15on-152.jar"/>
+	<classpathentry kind="lib" path="Server/lib/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="Server/lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="Server/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="Server/lib/javax.mail.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
+    "http://java.sun.com/j2ee/dtds/web-app_2.2.dtd">
+
+<web-app>
+    <display-name>OpenAS2 Servlet</display-name>
+  
+     <description>
+      OpenAS2 Servlet
+    </description>
+    
+
+    <servlet>
+        <servlet-name>OpenAS2Servlet</servlet-name>
+        <servlet-class>org.openas2.remote.OpenAS2Servlet</servlet-class>
+            <init-param>
+	     <param-name>loggingPort</param-name>
+	     <param-value>999</param-value>
+	    </init-param>
+            <init-param>
+	     <param-name>commandHostID</param-name>
+	     <param-value>localhost</param-value>
+	    </init-param>
+            <init-param>
+	     <param-name>commandPort</param-name>
+	     <param-value>4321</param-value>
+	    </init-param>
+            <init-param>
+	     <param-name>commandUserID</param-name>
+	     <param-value></param-value>
+	    </init-param>
+            <init-param>
+	     <param-name>commandPWD</param-name>
+	     <param-value></param-value>
+	    </init-param>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>OpenAS2Servlet</servlet-name>
+        <url-pattern>/OpenAS2Servlet/*</url-pattern>
+    </servlet-mapping>
+    
+   
+</web-app>
