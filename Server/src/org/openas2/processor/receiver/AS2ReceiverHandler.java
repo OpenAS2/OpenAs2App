@@ -28,7 +28,7 @@ import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
-import org.openas2.util.AS2UtilOld;
+import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.DispositionType;
 import org.openas2.util.HTTPUtil;
@@ -171,7 +171,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         ICryptoHelper ch;
 
         try {
-            ch = AS2UtilOld.getCryptoHelper();
+            ch = AS2Util.getCryptoHelper();
         } catch (Exception e) {
             throw new WrappedException(e);
         }
@@ -183,7 +183,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
                 PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
-                msg.setData(AS2UtilOld.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
+                msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
                 new ContentType(msg.getData().getContentType());
             }
         } catch (Exception e) {
@@ -197,7 +197,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             	if (logger.isDebugEnabled()) logger.debug("verifying signature"+msg.getLoggingText());
 
                 X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
-                msg.setData(AS2UtilOld.getCryptoHelper().verify(msg.getData(), senderCert));
+                msg.setData(AS2Util.getCryptoHelper().verify(msg.getData(), senderCert));
             }
         } catch (Exception e) {
         	logger.debug("Error decrypting received message.");
@@ -215,7 +215,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         if (!mdnBlocked) {
             try {
             	
-            	MessageMDN mdn = AS2UtilOld.createMDN(getModule().getSession(), msg, disposition, text);
+            	MessageMDN mdn = AS2Util.createMDN(getModule().getSession(), msg, disposition, text);
 
                 BufferedOutputStream out;
               	out = new BufferedOutputStream(s.getOutputStream());

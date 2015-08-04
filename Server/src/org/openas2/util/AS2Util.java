@@ -26,7 +26,7 @@ import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
 
-public class AS2UtilOld {
+public class AS2Util {
     private static ICryptoHelper ch;
 
     public static ICryptoHelper getCryptoHelper() throws Exception {

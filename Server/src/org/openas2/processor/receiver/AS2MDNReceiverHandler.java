@@ -33,7 +33,7 @@ import org.openas2.message.MessageMDN;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.storage.StorageModule;
-import org.openas2.util.AS2UtilOld;
+import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.DispositionType;
 import org.openas2.util.HTTPUtil;
@@ -122,7 +122,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			CertificateFactory cFx = getModule().getSession().getCertificateFactory(); 
 			X509Certificate senderCert = cFx.getCertificate(mdn, Partnership.PTYPE_SENDER); 
 			 
-			AS2UtilOld.parseMDN(msg, senderCert); 
+			AS2Util.parseMDN(msg, senderCert); 
 			 
 //			 in order to name & save the mdn with the original AS2-From + AS2-To + Message id., 
 //			 the 3 msg attributes have to be reset before calling MDNFileModule 

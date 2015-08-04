@@ -27,7 +27,7 @@ import org.openas2.message.MessageMDN;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.SecurePartnership;
-import org.openas2.util.AS2UtilOld;
+import org.openas2.util.AS2Util;
 import org.openas2.util.FileMonitor;
 import org.openas2.util.FileMonitorListener;
 
@@ -262,7 +262,7 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements
         super.init(session, options);
 
         try {
-            this.keyStore = AS2UtilOld.getCryptoHelper().getKeyStore();
+            this.keyStore = AS2Util.getCryptoHelper().getKeyStore();
         } catch (Exception e) {
             throw new WrappedException(e);
         }

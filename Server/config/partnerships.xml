@@ -1,33 +1,33 @@
 <partnerships>
 	<partner name="OpenAS2A"
-		as2_id="OpenAS2A"
+		as2_id="OpenAS2A_OID"
 		x509_alias="openas2a"
-		email="OpenAS2 A email"/>
+		email="as2msgs@openas2a.com"/>	
 	<partner name="OpenAS2B"
-		as2_id="OpenAS2B"
+		as2_id="OpenAS2B_OID"
 		x509_alias="openas2b"
-		email="OpenAS2 A email"/>	
+		email="as2msgs@openas2b.com"/>	
 
-	<partnership name="OpenAS2A-OpenAS2B">
+	<partnership name="OpenAS2A-to-OpenAS2B">
 		<sender name="OpenAS2A"/>
 		<receiver name="OpenAS2B"/>
 		<attribute name="protocol" value="as2"/>
 		<attribute name="content_transfer_encoding" value="binary"/>
 		<attribute name="subject" value="From OpenAS2A to OpenAS2B"/>
-		<attribute name="as2_url" value="http://localhost:10090"/>
-		<attribute name="as2_mdn_to" value="http://localhost:10080"/>
+		<attribute name="as2_url" value="http://localhost:10080"/>
+		<attribute name="as2_mdn_to" value="http://localhost:10081"/>
 		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA1"/>
 		<attribute name="encrypt" value="3DES"/>
 		<attribute name="sign" value="MD5"/>
 	</partnership>
 	
-	<partnership name="OpenAS2B-OpenAS2A">
+	<partnership name="OpenAS2B-to-OpenAS2A">
 		<sender name="OpenAS2B"/>
 		<receiver name="OpenAS2A"/>
 		<attribute name="protocol" value="as2"/>
 		<attribute name="content_transfer_encoding" value="binary"/>
 		<attribute name="subject" value="From OpenAS2B to OpenAS2A"/>
-		<attribute name="as2_url" value="http://localhost:10091"/>
+		<attribute name="as2_url" value="http://localhost:10080"/>
 		<attribute name="as2_mdn_to" value="http://localhost:10081"/>
 		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA1"/>
 		<attribute name="encrypt" value="3DES"/>

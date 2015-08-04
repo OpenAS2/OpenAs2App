@@ -49,7 +49,7 @@
                 </module>
 		
 		<!-- This will parse the filename to get a sender and receiver. For instance a file
-			named OpenAS2A-OpenAS2B.1234 would be sent from OpenAS2A to OpenAS2B. -->
+			named OpenAS2A_OID-OpenAS2B_OID.1234 would be sent from OpenAS2A to OpenAS2B. -->
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
 			outboxdir="%home%/../data/toAny"
 			errordir="%home%/../data/toAny/error"			
@@ -63,15 +63,15 @@
 			outboxdir="%home%/../data/toOpenAS2A/"
 			errordir="%home%/../data/toOpenAS2A/error"			
 			interval="5"			
-			defaults="sender.as2_id=OpenAS2B, receiver.as2_id=OpenAS2A"			
-            sendfilename="true"
+			defaults="sender.as2_id=OpenAS2B_OID, receiver.as2_id=OpenAS2A_OID"
+			sendfilename="true"
 			mimetype="application/EDI-X12"/>					
 			
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
 			outboxdir="%home%/../data/toOpenAS2B"
 			errordir="%home%/../data/toOpenAS2B/error"			
 			interval="5"			
-            defaults="sender.as2_id=OpenAS2A, receiver.as2_id=OpenAS2B"			
+			defaults="sender.as2_id=OpenAS2A_OID, receiver.as2_id=OpenAS2B_OID"			
 			sendFilename="true"
 			mimetype="application/EDI-X12"/>
 		
@@ -81,8 +81,8 @@
 			tempdir="%home%/../data/temp"/>
 			
 		<module classname="org.openas2.processor.storage.MessageFileModule"
-			filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
-			header="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/msgheaders/$date.yyyy-MM$-DD/$msg.content-disposition.filename$-$msg.headers.message-id$"		
+			filename="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
+			header="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM$-DD/$msg.content-disposition.filename$-$msg.headers.message-id$"		
 			protocol="as2"
 			tempdir="%home%/../data/temp"/>		
 			

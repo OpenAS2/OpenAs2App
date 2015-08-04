@@ -5,10 +5,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openas2.processor.receiver.AS2MDNReceiverHandler;
+
 
 public class CompositeParameters extends ParameterParser {
     private Map<String, ParameterParser> parameterParsers;
     private boolean ignoreMissingParsers;
+	private Log logger = LogFactory.getLog(CompositeParameters.class.getSimpleName());
 
     public CompositeParameters(boolean ignoreMissingParsers) {
         super();
@@ -55,7 +60,9 @@ public class CompositeParameters extends ParameterParser {
 
             parser.setParameter(keyBuf.toString(), value);
         } else if (!getIgnoreMissingParsers()) {
-            throw new InvalidParameterException("Invalid area in key", this, key, value);
+        	if (logger.isDebugEnabled())
+        		logger.debug("Failed to find a parser for: " + key + "  ::: Parser list: " + getParameterParsers().keySet().toString());
+            throw new InvalidParameterException("Invalid parser identifier", this, key, value);
         }
     }
 
@@ -79,7 +86,9 @@ public class CompositeParameters extends ParameterParser {
 
             return parser.getParameter(keyBuf.toString());
         } else if (!getIgnoreMissingParsers()) {
-            throw new InvalidParameterException("Invalid area in key", this, key, null);
+        	if (logger.isDebugEnabled())
+        		logger.debug("Failed to find a parser for: " + key + "  ::: Parser list: " + getParameterParsers().keySet().toString());
+            throw new InvalidParameterException("Invalid parser identifier", this, key, null);
         } else {
             return "";
         }

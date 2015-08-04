@@ -14,7 +14,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
-import org.openas2.util.AS2UtilOld;
+import org.openas2.util.AS2Util;
 
 public class ImportCertCommand extends AliasedCertCommand {
 	public String getDefaultDescription() {
@@ -93,7 +93,7 @@ public class ImportCertCommand extends AliasedCertCommand {
 
 	protected CommandResult importPrivateKey(AliasedCertificateFactory certFx,
 			String alias, String filename, String password) throws Exception {
-		KeyStore ks = AS2UtilOld.getCryptoHelper().getKeyStore();
+		KeyStore ks = AS2Util.getCryptoHelper().getKeyStore();
 		ks.load(new FileInputStream(filename), password.toCharArray());
 
 		Enumeration<String> aliases = ks.aliases();

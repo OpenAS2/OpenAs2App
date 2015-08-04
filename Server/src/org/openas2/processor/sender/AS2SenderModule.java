@@ -30,7 +30,7 @@ import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.SecurePartnership;
 import org.openas2.processor.storage.StorageModule;
-import org.openas2.util.AS2UtilOld;
+import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
 import org.openas2.util.DispositionOptions;
 import org.openas2.util.DispositionType;
@@ -84,7 +84,7 @@ public class AS2SenderModule extends HttpSenderModule {
 				boolean includeHeaders = (msg.getHistory().getItems().size() > 1);
 				
 				
-				String mic = AS2UtilOld.getCryptoHelper().calculateMIC(
+				String mic = AS2Util.getCryptoHelper().calculateMIC(
 						msg.getData(), dispOptions.getMicalg(),
 						includeHeaders);
 
@@ -231,7 +231,7 @@ public class AS2SenderModule extends HttpSenderModule {
             CertificateFactory cFx = getSession().getCertificateFactory();
             X509Certificate senderCert = cFx.getCertificate(mdn, Partnership.PTYPE_SENDER);
 
-            AS2UtilOld.parseMDN(msg, senderCert);
+            AS2Util.parseMDN(msg, senderCert);
 
             getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
 
@@ -332,7 +332,7 @@ public class AS2SenderModule extends HttpSenderModule {
                 		  + "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName()
                 		  + "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm());
 
-                dataBP = AS2UtilOld.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest);
+                dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest);
                 
                 //Asynch MDN 2007-03-12
                 DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
@@ -347,7 +347,7 @@ public class AS2SenderModule extends HttpSenderModule {
                 String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
 
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-                dataBP = AS2UtilOld.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm);
+                dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm);
 
                 //Asynch MDN 2007-03-12
                 DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
