@@ -22,6 +22,9 @@ o Bouncy Castle Libraries:
 o Other libraries:
              upgrade to commons-logging version 1.2, dom4j version 1.6.1
              commons-lang3 version 3.4	javax.mail version 1.5.4 commons-logging version 1.2
+o Startup batch files:
+             fixed and enhanced batch files to automatically find JAVA for NIX based systems including OSX and Windows
+            
 
 Historical list of changes: see the changes.txt file in the release package
 

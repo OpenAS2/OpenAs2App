@@ -11,7 +11,7 @@
 	<property name="build.dir" location="${basedir}/build" />
 	<property name="lib.dir" location="${basedir}/lib" />
 	<property name="lib.jar" value="openas2-server.jar" />
-	<property name="help.filename" value="OpenAS2HowTo.html"/>
+	<property name="help.filename" value="OpenAS2HowTo.pdf"/>
 	<property name="help.file.src" location="../docs/${help.filename}"/>
 	<!-- Output, package -->
 	<property name="dist.dir" location="dist" />
@@ -65,7 +65,7 @@
 		<delete dir="${build.dir}" />
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist.dir}" />
-		<!--  Add the help HTML version to the distro -->
+		<!--  Add the help PDF version to the distro -->
         <copy file="${help.file.src}" todir="${basedir}"/>
 		<!-- Put everything in ${build} into the ${projectName}-${release.version}.zip file -->
 		<zip destfile="${dist.dir}/${projectName}-${release.version}.zip"
