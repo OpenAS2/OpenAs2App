@@ -20,4 +20,5 @@ public class ConsoleLogger extends BaseLogger {
             getFormatter().format(exception, terminated, System.err);
         }
     }
+
 }

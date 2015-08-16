@@ -30,13 +30,15 @@ public class AS2ReceiverModule extends NetModule {
         "but an error occured while parsing the MIME content.";
     public static final String DISP_DECRYPTION_ERROR = DP_HEADER +
         "but an error occured decrypting the content.";
-    public static final String DISP_VERIFY_SIGNATURE_FAILED = DP_DECRYPTED +
+    public static final String DISP_DECOMPRESSION_ERROR = DP_HEADER +
+        "but an error occured decompressing the content.";
+      public static final String DISP_VERIFY_SIGNATURE_FAILED = DP_DECRYPTED +
         "Authentication of the originator of the message failed.";
     public static final String DISP_STORAGE_FAILED = DP_VERIFIED +
         " An error occured while storing the data to the file system.";
     public static final String DISP_SUCCESS = DP_VERIFIED +
         "There is no guarantee however that the EDI Interchange was syntactically correct, or was received by the EDI application/translator.";
-
+    
     protected NetModuleHandler getHandler() {
         return new AS2ReceiverHandler(this);
     }

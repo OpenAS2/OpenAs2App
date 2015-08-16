@@ -11,6 +11,9 @@ import org.openas2.partner.Partnership;
 
 
 public interface Message extends Serializable {
+	
+    public static final String SMIME_TYPE_COMPRESSED_DATA = "smime-type=compressed-data";
+	
     public void setAttribute(String key, String value);
 
     public String getAttribute(String key);
@@ -23,6 +26,10 @@ public interface Message extends Serializable {
 
     public String getContentType();
 
+    public String getCompressionType();
+
+    public void setCompressionType(String compressionType);
+    
     public void setContentDisposition(String contentDisposition);
 
     public String getContentDisposition();

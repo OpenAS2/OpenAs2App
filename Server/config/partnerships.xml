@@ -13,6 +13,7 @@
 		<receiver name="OpenAS2B"/>
 		<attribute name="protocol" value="as2"/>
 		<attribute name="content_transfer_encoding" value="binary"/>
+		<attribute name="compression_type" value="ZLIB"/>
 		<attribute name="subject" value="From OpenAS2A to OpenAS2B"/>
 		<attribute name="as2_url" value="http://localhost:10080"/>
 		<attribute name="as2_mdn_to" value="http://localhost:10081"/>

@@ -19,10 +19,12 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
+import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
@@ -80,10 +82,12 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         if (baseType.equalsIgnoreCase("application/pkcs7-mime")) {
             String smimeType = contentType.getParameter("smime-type");
-
-            return ((smimeType != null) && smimeType.equalsIgnoreCase("enveloped-data"));
+            boolean checkResult = (smimeType != null) && smimeType.equalsIgnoreCase("enveloped-data");
+            if (!checkResult && logger.isDebugEnabled())
+            	logger.debug("Check for encrypted data failed on SMIME content type: " + smimeType);
+            return (checkResult);
         }
-
+        if (logger.isDebugEnabled()) logger.debug("Check for encrypted data failed on BASE content type: " + baseType);
         return false;
     }
 
@@ -102,6 +106,18 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         // convert the Mime data to a byte array, then to an InputStream
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        
+        if (logger.isTraceEnabled()) {
+        	String headers = "";
+        	Enumeration<Header> headersEnum = part.getAllHeaders();
+        	while (headersEnum.hasMoreElements())
+			{
+				Header hd = headersEnum.nextElement();
+				headers  = "\n     " + hd.getName() + "::" + hd.getValue();
+				
+			}
+        	logger.trace("Calculating MIC on MIMEPART Headers: " + headers);
+        }
 
         if (includeHeaders) {
             part.writeTo(bOut);
