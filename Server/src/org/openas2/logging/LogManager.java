@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.openas2.OpenAS2Exception;
-
-
 
 public class LogManager {
     private static LogManager defaultManager;
@@ -39,13 +36,13 @@ public class LogManager {
         loggers.add(logger);
     }
 
-    public void log(OpenAS2Exception e, boolean terminated) {
+    public void log(Throwable e, boolean terminated) {
         Iterator<?> loggerIt = getLoggers().iterator();
 
         if (loggerIt.hasNext()) {
             while (loggerIt.hasNext()) {
                 Logger logger = (Logger) loggerIt.next();
-                logger.log(e, terminated);
+                logger.log(e, Level.ERROR, terminated); // might want to pass LEVEL in from caller
             }
         } else {
             e.printStackTrace();

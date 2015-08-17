@@ -78,7 +78,7 @@ public class AS2Util {
 
         if (dispOptions.getMicalg() != null) {
             mic = getCryptoHelper().calculateMIC(msg.getData(), dispOptions.getMicalg(),
-                    msg.getHistory().getItems().size() > 1);
+                    !msg.isRxdMsgWasSigned());
         }
 
         mdn.setAttribute(AS2MessageMDN.MDNA_MIC, mic);
@@ -209,5 +209,5 @@ public class AS2Util {
                 }
             }
         }
-    }   
+    } 
 }

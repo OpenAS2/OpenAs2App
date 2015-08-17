@@ -1,12 +1,11 @@
 package org.openas2.logging;
 
 import org.openas2.Component;
-import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 
 
 public interface Logger extends Component {
-	public void log(OpenAS2Exception e, boolean terminated);
+	public void log(Throwable t, Level level, boolean terminated);
 
 	/**
 	 * 

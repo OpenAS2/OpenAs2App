@@ -9,6 +9,7 @@ public interface IPartnership {
     public static final String ATTRIBUTE_SOURCE = "source";
     public static final String ATTRIBUTE_DESTINATION = "destination";
     public static final String ATTRIBUTE_MDN_OPTIONS = "mdnoptions";
+    public static final String ATTRIBUTE_COMPRESSION_TYPE = "compression";
 
     Map<String, String> getAttributes();
 
@@ -27,6 +28,10 @@ public interface IPartnership {
     String getEncryptionAlgorithm();
 
     void setEncryptionAlgorithm(String algorithm);
+    
+    String getCompressionType();
+
+    void setCompressionType(String compressionType);
 
     String getSignatureAlgorithm();
 

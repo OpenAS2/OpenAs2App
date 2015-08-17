@@ -53,6 +53,14 @@ public class BasicPartnership implements IPartnership {
         setAttribute(IPartnership.ATTRIBUTE_ENCRYPTION_ALGORITHM, encryptionAlgorithm);
     }
 
+    public String getCompressionType() {
+        return getAttribute(IPartnership.ATTRIBUTE_COMPRESSION_TYPE);
+    }
+
+    public void setCompressionType(String compressionType) {
+        setAttribute(IPartnership.ATTRIBUTE_COMPRESSION_TYPE, compressionType);
+    }
+
     public String getSignatureAlgorithm() {
         return getAttribute(IPartnership.ATTRIBUTE_SIGNATURE_ALGORITHM);
     }

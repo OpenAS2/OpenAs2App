@@ -20,6 +20,11 @@ public interface ICryptoHelper {
     static final String CRYPT_IDEA = "idea";
     static final String CRYPT_RC2 = "rc2";
     static final String CRYPT_RC2_CBC = "rc2_cbc";
+    
+    static final String COMPRESSION_UNKNOWN = "compression-unknown";
+    static final String COMPRESSION_NONE = "none";
+    static final String COMPRESSION_ZLIB = "zlib";
+
 
     boolean isEncrypted(MimeBodyPart part) throws Exception;
 

@@ -13,6 +13,7 @@ import javax.mail.internet.MimeBodyPart;
 
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
+import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.partner.Partnership;
 
 
@@ -27,8 +28,10 @@ public abstract class BaseMessage implements Message {
     private MessageMDN MDN;
     private MimeBodyPart data;
     private Partnership partnership;
+	private String compressionType = ICryptoHelper.COMPRESSION_NONE;
+	private boolean rxdMsgWasSigned = false;
 
-    public BaseMessage() {
+	public BaseMessage() {
         super();
     }
 
@@ -58,6 +61,14 @@ public abstract class BaseMessage implements Message {
 
     public String getContentType() {
         return getHeader("Content-Type");
+    }
+
+    public String getCompressionType() {
+        return (compressionType);
+    }
+
+    public void setCompressionType(String myCompressionType) {
+        compressionType = myCompressionType;
     }
 
     /**
@@ -186,6 +197,16 @@ public abstract class BaseMessage implements Message {
     public String getSubject() {
         return getHeader("Subject");
     }
+
+    public boolean isRxdMsgWasSigned()
+	{
+		return rxdMsgWasSigned;
+	}
+
+	public void setRxdMsgWasSigned(boolean rxdMsgWasSigned)
+	{
+		this.rxdMsgWasSigned = rxdMsgWasSigned;
+	}
 
     public void addHeader(String key, String value) {
         getHeaders().addHeader(key, value);

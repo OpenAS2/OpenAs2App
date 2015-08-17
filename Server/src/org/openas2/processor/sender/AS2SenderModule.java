@@ -10,14 +10,20 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.cms.jcajce.ZlibCompressor;
+import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
+import org.bouncycastle.mail.smime.SMIMEException;
+import org.bouncycastle.operator.OutputCompressor;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
+import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.DataHistoryItem;
@@ -41,9 +47,9 @@ import org.openas2.util.ProfilerStub;
 public class AS2SenderModule extends HttpSenderModule {
 	
 	private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
-
+    private String calculatedMIC = null;
 	
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
+	public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
         if (!action.equals(SenderModule.DO_SEND)) {
             return false;
         }
@@ -66,7 +72,7 @@ public class AS2SenderModule extends HttpSenderModule {
         int retries = retries (options);
         
         try {
-            // encrypt and/or sign the message if needed
+            // encrypt and/or sign and/or compress the message if needed
             MimeBodyPart securedData = secure(msg);
             msg.setContentType(securedData.getContentType());
 
@@ -77,27 +83,8 @@ public class AS2SenderModule extends HttpSenderModule {
                 updateHttpHeaders(conn, msg);
                 msg.setAttribute(NetAttribute.MA_DESTINATION_IP, conn.getURL().getHost());
                 msg.setAttribute(NetAttribute.MA_DESTINATION_PORT, Integer.toString(conn.getURL().getPort()));
-				DispositionOptions dispOptions = new DispositionOptions(
-						conn.getRequestProperty("Disposition-Notification-Options"));
 
-				// Calculate and get the original mic
-				boolean includeHeaders = (msg.getHistory().getItems().size() > 1);
-				
-				
-				String mic = AS2Util.getCryptoHelper().calculateMIC(
-						msg.getData(), dispOptions.getMicalg(),
-						includeHeaders);
-
-                if (msg.getPartnership().getAttribute(
-						AS2Partnership.PA_AS2_RECEIPT_OPTION) != null) {
-                	// if yes : PA_AS2_RECEIPT_OPTION) != null
-					// then keep the original mic & message id.
-					// then wait for the another HTTP call by receivers
-
-					storePendingInfo((AS2Message) msg, mic);
-				}
-
-                logger.info("connecting to " + url+msg.getLoggingText());
+                logger.info("Connecting to: " + url+msg.getLoggingText());
 
                 // Note: closing this stream causes connection abort errors on some AS2 servers
                 OutputStream messageOut = conn.getOutputStream();
@@ -134,11 +121,10 @@ public class AS2SenderModule extends HttpSenderModule {
 				try {
 					// Receive an MDN
 					if (msg.isRequestingMDN()) {
-
-//						 Check if the AsyncMDN is required
+						// Check if the AsyncMDN is required
 						if (msg.getPartnership().getAttribute(
 								AS2Partnership.PA_AS2_RECEIPT_OPTION) == null) {
-							receiveMDN((AS2Message) msg, conn, mic); // go ahead  to receive  sync MDN
+							receiveMDN((AS2Message) msg, conn, getCalculatedMIC()); // go ahead  to receive  sync MDN
 				     		logger.info("message sent"+msg.getLoggingText());
 						}
 					}
@@ -183,6 +169,28 @@ public class AS2SenderModule extends HttpSenderModule {
         }
     }
 
+	private void compress(Message msg, OutputCompressor outputCompressor) throws SMIMEException, OpenAS2Exception
+	{
+		SMIMECompressedGenerator sCompGen = new SMIMECompressedGenerator();
+		String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+        if (encodeType == null) encodeType="8bit";
+        sCompGen.setContentTransferEncoding(encodeType);
+		MimeBodyPart smime = sCompGen.generate(msg.getData(), outputCompressor);
+		msg.addHeader("Content-Transfer-Encoding", encodeType);
+		msg.setData(smime);
+    	try
+		{
+			logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type:" + smime.getContentType());
+			logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type Header:" + smime.getHeader("Content-Type"));
+			logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + smime.getDisposition());
+		} catch (MessagingException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	logger.trace("Msg AFTER COMPRESSION Content-Type:" + msg.getContentType());
+
+	}
 
     //Asynch MDN 2007-03-12
     //added originalmic
@@ -246,11 +254,13 @@ public class AS2SenderModule extends HttpSenderModule {
             if ( ! returnmic.replaceAll(" ", "").equals(originalmic.replaceAll(" ", ""))) {
             	//file was sent completely but the returned mic was not matched,  
             	// don't know it needs or needs not to be resent ? it's depended on what ! 
-            	// anyway, just log the warning message here.  
-            logger.info("mic is not matched, original mic: " + originalmic + " return mic: "+ returnmic+msg.getLoggingText()); 
+            	// anyway, just log the warning message here.
+            	/* TODO: RFC 6362 specifies that the sent attachments should be considered invalid and retransmitted
+            	 */
+                logger.warn("MIC is not matched, original mic: " + originalmic + " return mic: "+ returnmic+msg.getLoggingText()); 
             } 
             else { 
-            logger.info("mic is matched, mic: " + returnmic+msg.getLoggingText()); 
+            logger.info("MIC is matched, mic: " + returnmic+msg.getLoggingText()); 
             } 
 
             try {
@@ -309,54 +319,101 @@ public class AS2SenderModule extends HttpSenderModule {
     protected MimeBodyPart secure(Message msg) throws Exception {
         // Set up encrypt/sign variables
         MimeBodyPart dataBP = msg.getData();
+        /* Based on RFC4130, RFC6362 and RFC5042, the MIC is calculated as follows:
+         *        Signed message - MIME header fields and content that is to be signed which may or
+         *                          may not be encrypted and/or compressed.
+         *        
+         *        Unsigned message - data content including all MIME header fields and any applied Content-Transfer-Encoding
+         *                           prior to encryption and/or compression
+         *  
+         *  So essentially, calculate the MIC prior to doing any compression, signing or encryption of the message
+         *   but include headers for unsigned messages
+         */
 
         Partnership partnership = msg.getPartnership();
+        
         boolean encrypt = partnership.getAttribute(SecurePartnership.PA_ENCRYPT) != null;
         boolean sign = partnership.getAttribute(SecurePartnership.PA_SIGN) != null;
 
+		setCalculatedMIC(calcAndStoreMic(msg, !sign));
+
+        // Check if compression is enabled
+    	String compressionType = msg.getPartnership().getAttribute("compression_type");
+		if (logger.isTraceEnabled()) logger.trace("Compression type from config: " + compressionType);
+    	boolean isCompress = false;
+    	OutputCompressor compressor = null;
+    	if (compressionType != null)
+    	{
+    		if (compressionType.equalsIgnoreCase(ICryptoHelper.COMPRESSION_ZLIB))
+    		{
+    			compressor = new ZlibCompressor();
+    			isCompress = true;
+    		}
+    		else
+    			throw new OpenAS2Exception("Unsupported compression type: " + compressionType);
+    	}
+    	String compressionMode = msg.getPartnership().getAttribute("compression_mode");
+    	boolean isCompressBeforeSign = true; // Defaults to compressing the entire message before signing and encryption
+    	if (compressionMode != null && compressionMode.equalsIgnoreCase("compress-after-signing"))
+    	    isCompressBeforeSign = false;
+    	if (isCompress && isCompressBeforeSign)
+    	{
+    		if (logger.isTraceEnabled()) logger.trace("Compressing outbound message before signing...");
+    		compress(msg, compressor);
+    	}
         // Encrypt and/or sign the data if requested
-        if (encrypt || sign) {
-            CertificateFactory certFx = getSession().getCertificateFactory();
+		CertificateFactory certFx = getSession().getCertificateFactory();
 
-            // Sign the data if requested
-            if (sign) {
-                X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
+		// Sign the data if requested
+		if (sign)
+		{
+			X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
 
-                PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
-                String digest = partnership.getAttribute(SecurePartnership.PA_SIGN);
-                
-                if (logger.isDebugEnabled()) logger.debug("Params for creting signed body part:: DATA: " + dataBP
-                		  + " SENDERCERT: " + senderCert
-                		  + " SENDER KEY: " + senderKey
-                		  + "\n SIGN DIGEST: " + digest
-                		  + "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName()
-                		  + "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm());
+			PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
+			String digest = partnership.getAttribute(SecurePartnership.PA_SIGN);
 
-                dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest);
-                
-                //Asynch MDN 2007-03-12
-                DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
-                // *** add one more item to msg history
-                msg.getHistory().getItems().add(historyItem);
+			if (logger.isDebugEnabled())
+				logger.debug("Params for creating signed body part:: DATA: " + dataBP + "\n SIGN DIGEST: " + digest
+						+ "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName()
+						+ "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm());
 
-                if (logger.isDebugEnabled()) logger.debug("signed data"+msg.getLoggingText());
-            }
+			dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest);
 
-            // Encrypt the data if requested
-            if (encrypt) {
-                String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
+			// Asynch MDN 2007-03-12
+			DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
+			// *** add one more item to msg history
+			msg.getHistory().getItems().add(historyItem);
 
-                X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-                dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm);
+			if (logger.isDebugEnabled())
+				logger.debug("signed data" + msg.getLoggingText());
+			if (isCompress && !isCompressBeforeSign)
+			{
+				if (logger.isDebugEnabled())
+					logger.debug("Compressing outbound message after signing...");
+				compress(msg, compressor);
+			}
+		}
 
-                //Asynch MDN 2007-03-12
-                DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
-                // *** add one more item to msg history
-                msg.getHistory().getItems().add(historyItem);
+    	if (isCompress && !isCompressBeforeSign)
+    	{
+    		if (logger.isTraceEnabled()) logger.trace("Compressing outbound message after signing...");
+    		compress(msg, compressor);
+    	}
+		// Encrypt the data if requested
+		if (encrypt)
+		{
+			String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
 
-                logger.debug("encrypted data"+msg.getLoggingText());
-            }
-        }
+			X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
+			dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm);
+
+			// Asynch MDN 2007-03-12
+			DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
+			// *** add one more item to msg history
+			msg.getHistory().getItems().add(historyItem);
+
+			logger.debug("encrypted data" + msg.getLoggingText());
+		}
 
         return dataBP;
     }
@@ -371,7 +428,9 @@ public class AS2SenderModule extends HttpSenderModule {
         conn.setRequestProperty("Message-ID", msg.getMessageID());
         conn.setRequestProperty("Mime-Version", "1.0"); // make sure this is the encoding used in the msg, run TBF1
         conn.setRequestProperty("Content-type", msg.getContentType());
-        conn.setRequestProperty("AS2-Version", "1.1");
+        conn.setRequestProperty("AS2-Version", "1.1"); // RFC6017 - 1.1 supports compression, 1.2 additionally supports EDIINT-Features
+        //conn.setRequestProperty("EDIINT-Features", "CEM,multiple-attachments"); // TODO (possibly???)
+        conn.setRequestProperty("Content-Transfer-Encoding", msg.getHeader("Content-Transfer-Encoding"));
         conn.setRequestProperty("Recipient-Address", partnership.getAttribute(AS2Partnership.PA_AS2_URL));
         conn.setRequestProperty("AS2-To", partnership.getReceiverID(AS2Partnership.PID_AS2));
         conn.setRequestProperty("AS2-From", partnership.getSenderID(AS2Partnership.PID_AS2));
@@ -452,5 +511,38 @@ public class AS2SenderModule extends HttpSenderModule {
 		}
 	} 
     
+    protected String calcAndStoreMic(Message msg, boolean includeHeaders) throws Exception
+    {
+		// Calculate and get the original mic
+		// includeHeaders = (msg.getHistory().getItems().size() > 1);
+		
+		
+		DispositionOptions dispOptions = new DispositionOptions(
+				msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_MDN_OPTIONS));
+		String mic = AS2Util.getCryptoHelper().calculateMIC(
+				msg.getData(), dispOptions.getMicalg(),
+				includeHeaders);
+
+        if (msg.getPartnership().getAttribute(
+				AS2Partnership.PA_AS2_RECEIPT_OPTION) != null) {
+        	// if yes : PA_AS2_RECEIPT_OPTION) != null
+			// then keep the original mic & message id.
+			// then wait for the another HTTP call by receivers
+
+			storePendingInfo((AS2Message) msg, mic);
+		}
+        return mic;
+
+    }
+
+    private String getCalculatedMIC()
+	{
+		return calculatedMIC;
+	}
+
+	private void setCalculatedMIC(String calculatedMIC)
+	{
+		this.calculatedMIC = calculatedMIC;
+	}
 
 }

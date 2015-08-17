@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.apache.commons.logging.LogFactory;
-import org.openas2.OpenAS2Exception;
 
 
 /**
@@ -159,7 +158,7 @@ public class Log implements org.apache.commons.logging.Log {
 		if (isLevelEnabled(LOG_LEVEL_TRACE))
 		{
 			lm.log(Level.FINEST, clazzname+": "+message.toString());
-			lm.log((OpenAS2Exception) t, false);
+			lm.log(t, false);
 		}
 	}
 
@@ -179,7 +178,7 @@ public class Log implements org.apache.commons.logging.Log {
 		if (isLevelEnabled(LOG_LEVEL_DEBUG))
 		{
 			lm.log(Level.FINER, clazzname+": "+message.toString());
-			lm.log((OpenAS2Exception) t, false);
+			lm.log(t, false);
 		}
 
 	}
@@ -200,7 +199,7 @@ public class Log implements org.apache.commons.logging.Log {
 		if (isLevelEnabled(LOG_LEVEL_INFO))
 		{
 		  lm.log(Level.FINE, clazzname+": "+message.toString());
-		  lm.log((OpenAS2Exception) t, false);
+		  lm.log(t, false);
 		}
 	}
 
@@ -220,7 +219,7 @@ public class Log implements org.apache.commons.logging.Log {
 		if (isLevelEnabled(LOG_LEVEL_WARN))
 		{
 		  lm.log(Level.WARNING, clazzname+": "+message.toString());
-		  lm.log((OpenAS2Exception) t, false);
+		  lm.log(t, false);
 		}
 	}
 
@@ -241,7 +240,7 @@ public class Log implements org.apache.commons.logging.Log {
 		if (isLevelEnabled(LOG_LEVEL_ERROR))
 		{
 			lm.log(Level.ERROR, clazzname+": "+message.toString());
-			lm.log((OpenAS2Exception) t, false);			
+			lm.log(t, false);			
 		}
 
 	}
@@ -262,7 +261,7 @@ public class Log implements org.apache.commons.logging.Log {
 		if (isLevelEnabled(LOG_LEVEL_FATAL))
 		{
 		  lm.log(Level.ERROR, clazzname+": "+message.toString());
-		  lm.log((OpenAS2Exception) t, true);
+		  lm.log(t, true);
 		}
 	}
 

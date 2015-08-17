@@ -9,11 +9,15 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import javax.activation.DataHandler;
+import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
+import org.bouncycastle.mail.smime.SMIMECompressed;
+import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -93,12 +97,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     receivedContentType = new ContentType(msg.getHeader("Content-Type"));
 
                     MimeBodyPart receivedPart = new MimeBodyPart();
-                    receivedPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, receivedContentType
-                            .toString(), null)));
+                    receivedPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
                     receivedPart.setHeader("Content-Type", receivedContentType.toString());
                     msg.setData(receivedPart);
                 } catch (Exception e) {
-                	e.printStackTrace();
+                	logger.error("Error extracting received message." , e);
                     throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                             "processed", "Error", "unexpected-processing-error"),
                             AS2ReceiverModule.DISP_PARSING_MIME_FAILED, e);
@@ -115,7 +118,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                             "processed", "Error", "authentication-failed"),
                             AS2ReceiverModule.DISP_PARTNERSHIP_NOT_FOUND, oae);
                 }
-
                 // Decrypt and verify signature of the data, and attach data to the message
                 decryptAndVerify(msg);
 
@@ -123,7 +125,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 try {
                     getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, null);
                 } catch (OpenAS2Exception oae) {
-                	oae.printStackTrace();
+                	logger.error("Error handling received message: " + oae.getCause(), oae);;
                     throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                             "processed", "Error", "unexpected-processing-error"),
                             AS2ReceiverModule.DISP_STORAGE_FAILED, oae);
@@ -132,7 +134,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 // Transmit a success MDN if requested
                 try {
                     if (msg.isRequestingMDN()) {
-                            sendMDN(s, msg, new DispositionType("automatic-action", "MDN-sent-automatically", "processed"),
+                        sendMDN(s, msg, new DispositionType("automatic-action", "MDN-sent-automatically", "processed"),
                                     AS2ReceiverModule.DISP_SUCCESS);
                      } else {
                         BufferedOutputStream out = new BufferedOutputStream(s.getOutputStream());
@@ -142,9 +144,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                         logger.info("sent HTTP OK"+getClientInfo(s)+msg.getLoggingText());
                     }
                 } catch (Exception e) {
-                	e.printStackTrace();
+                	logger.error("Unexpected error processing received message: " + e.getCause(), e);;
                     throw new WrappedException("Error creating and returning MDN, message was stilled processed", e);
                 }
+
             } catch (DispositionException de) {
                 sendMDN(s, msg, de.getDisposition(), de.getText());
                 getModule().handleError(msg, de);
@@ -166,7 +169,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         return msg;
     }
 
-    protected void decryptAndVerify(Message msg) throws OpenAS2Exception {
+    protected void decryptAndVerify(AS2Message msg) throws OpenAS2Exception {
         CertificateFactory certFx = getModule().getSession().getCertificateFactory();
         ICryptoHelper ch;
 
@@ -175,8 +178,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         } catch (Exception e) {
             throw new WrappedException(e);
         }
-
-        try {
+		// Per RFC5402 compression is always before encryption but can be before or after signing of message but only in one place
+        boolean isDecompressed = false;
+        
+        try
+        {
             if (ch.isEncrypted(msg.getData())) {
                 // Decrypt
             	if (logger.isDebugEnabled()) logger.debug("decrypting :::"+msg.getLoggingText());
@@ -184,28 +190,90 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
                 PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
-                new ContentType(msg.getData().getContentType());
             }
         } catch (Exception e) {
-        	e.printStackTrace();
+        	logger.error("Error extracting received message: " + e.getCause(), e);;
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                     "processed", "Error", "decryption-failed"), AS2ReceiverModule.DISP_DECRYPTION_ERROR, e);
         }
 
+		if (msg.getContentType().contains(Message.SMIME_TYPE_COMPRESSED_DATA))
+		{
+    		if (logger.isTraceEnabled()) logger.trace("Decompressing received message before checking signature...");
+			decompress(msg);
+			isDecompressed = true;
+		}
+
         try {
             if (ch.isSigned(msg.getData())) {
+            	msg.setRxdMsgWasSigned(true);
             	if (logger.isDebugEnabled()) logger.debug("verifying signature"+msg.getLoggingText());
 
                 X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
                 msg.setData(AS2Util.getCryptoHelper().verify(msg.getData(), senderCert));
+        		if (msg.getContentType().contains(Message.SMIME_TYPE_COMPRESSED_DATA))
+        		{
+            		if (logger.isTraceEnabled()) logger.trace("Decompressing received message after verifying signature...");
+        			decompress(msg);
+        			isDecompressed = true;
+        		}
+
             }
         } catch (Exception e) {
-        	logger.debug("Error decrypting received message.");
-        	e.printStackTrace();
+        	logger.error("Error decrypting received message.", e);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                     "processed", "Error", "integrity-check-failed"), AS2ReceiverModule.DISP_VERIFY_SIGNATURE_FAILED, e);
         }
+
+		if (logger.isTraceEnabled())
+			try
+			{
+				logger.trace("SMIME Decrypted Content-Disposition: " + msg.getContentDisposition() + "\n      Content-Type received: " + msg.getContentType()
+						+ "\n      HEADERS after decryption: " + msg.getData().getAllHeaders()
+				+ "\n      Content-Disposition in MSG detData() MIMEPART after decryption: " + msg.getData().getContentType());
+			} catch (MessagingException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		// Per RFC5402 compression is always before encryption but can be before or after signing of message but only in one place
+		if (msg.getContentType().contains(Message.SMIME_TYPE_COMPRESSED_DATA))
+		{
+			if (isDecompressed)
+			{
+	            throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
+	                    "processed", "Error", "decompression-failed"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR
+	                    , new Exception("Message has already been decompressed. Per RFC5402 it cannot occur twice."));
+			}
+    		if (logger.isTraceEnabled()) logger.trace("Decompressing received message after decryption...");
+			decompress(msg);
+		}
+
+
     }
+
+	private void decompress(AS2Message msg) throws DispositionException
+	{
+		try
+		{
+				if (logger.isDebugEnabled()) logger.debug("Decompressing a compressed message");
+				SMIMECompressed compressed = new SMIMECompressed(msg.getData());
+				// decompression step MimeBodyPart
+				MimeBodyPart recoveredPart = SMIMEUtil.toMimeBodyPart(compressed.getContent(new ZlibExpanderProvider()));
+				// Update the message object
+				msg.setData(recoveredPart);
+		}
+
+		catch (Exception ex)
+		{
+
+			logger.error("Error decompressing received message: " + ex.getCause(), ex);
+			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
+					"processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR,
+					ex);
+		}
+	}
 
     protected void sendMDN(Socket s, AS2Message msg, DispositionType disposition, String text) {
         boolean mdnBlocked = false;

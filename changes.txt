@@ -1,3 +1,5 @@
+Versio 1.2.0  — 2015-08-17
+    Add support for compression and decompression per RFC5402
 Versio 1.1.0  — 2015-08-03
     1. Enhanced logging to support configurable levels of output. Default level is INFO
        Added additional logging information to make it clearer what the real problem is  when errors occur

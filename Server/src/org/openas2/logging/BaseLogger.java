@@ -1,5 +1,8 @@
 package org.openas2.logging;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.StringTokenizer;
 
 import org.openas2.BaseComponent;
@@ -28,13 +31,35 @@ public abstract class BaseLogger extends BaseComponent implements Logger {
 		return formatter;
 	}
 
-	public void log(OpenAS2Exception e, boolean terminated) {
-		if (isLogging(e)) {
-			if (terminated && isShowing(VALUE_SHOW_TERMINATED)) {
-				doLog(e, terminated);
-			} else if (!terminated && isShowing(VALUE_SHOW_EXCEPTIONS)) {
-				doLog(e, terminated);
+	public void log(Throwable t, Level level, boolean terminated) {
+		
+		if (t instanceof OpenAS2Exception)
+		{
+			OpenAS2Exception e = (OpenAS2Exception) t;
+			if (isLogging(e)) {
+				if (terminated && isShowing(VALUE_SHOW_TERMINATED)) {
+					doLog(e, terminated);
+				} else if (!terminated && isShowing(VALUE_SHOW_EXCEPTIONS)) {
+					doLog(e, terminated);
+				}
 			}
+		}
+		else
+		{
+			// Print the exception to a stacktrace as it is probably something unknown and needs decent logging
+	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	        PrintStream ps = new PrintStream(baos);
+	        t.printStackTrace(ps);
+
+	        doLog(level, new String(baos.toByteArray()), null);
+
+	        try {
+	            ps.close();
+	            baos.close();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
 		}
 	}
 
