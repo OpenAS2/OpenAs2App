@@ -333,7 +333,7 @@ public class HTTPUtil {
             requestParts[2] = tokens.nextToken();
             return requestParts;
         } else {
-            throw new IOException("Invalid HTTP Request");
+            throw new IOException("Invalid HTTP Request: " + strBuf.toString());
         }
     }
 
