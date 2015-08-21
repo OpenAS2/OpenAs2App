@@ -260,7 +260,13 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
-
+        
+        // Override the password if it was passed as a system property
+        String pwd = System.getProperty("org.openas2.cert.Password");
+        if (pwd != null)
+        {
+        	setPassword(pwd.toCharArray());
+        }
         try {
             this.keyStore = AS2Util.getCryptoHelper().getKeyStore();
         } catch (Exception e) {
