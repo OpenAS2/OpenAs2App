@@ -79,6 +79,7 @@ public class AS2SenderModule extends HttpSenderModule {
             // Create the HTTP connection and set up headers
             String url = msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_URL);
             HttpURLConnection conn = getConnection(url, true, true, false, "POST");
+            
             try {
                 updateHttpHeaders(conn, msg);
                 msg.setAttribute(NetAttribute.MA_DESTINATION_IP, conn.getURL().getHost());
@@ -157,14 +158,14 @@ public class AS2SenderModule extends HttpSenderModule {
             resend(msg, hre, retries);
         } catch (IOException ioe) { // Resend if a network error occurs during
 									// transmission
-
+            logger.warn("Error making network connection: " , ioe);
             WrappedException wioe = new WrappedException(ioe);
             wioe.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             wioe.terminate();
 
             resend(msg, wioe, retries);
-        } catch (Exception e) { // Propagate error if it can't be handled by a
-								// resend
+        } catch (Exception e) { // Propagate error if it can't be handled by a resend
+            logger.warn("Unkonwn Error making network connection: " , e);
             throw new WrappedException(e);
         }
     }
