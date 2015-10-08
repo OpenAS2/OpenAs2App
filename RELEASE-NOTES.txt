@@ -1,15 +1,14 @@
               OpenAS2 Server
-              Version 1.3.0
+              Version 1.3.1
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.1
 
-The release download file is: OpenAS2Server-1.3.0.zip
+The release download file is: OpenAS2Server-1.3.1.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-This release adds support for:
- - using HTTPS as the transport protocol.
- - overriding the the password for the certificate store with a system parameter passed into the app at startup
+This release is a bugfix release:
+ - fix calculation of MIC to use headers when encrypted or signed
 
 Java 1.5 or later is required.
 

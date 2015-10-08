@@ -102,12 +102,13 @@ public class BCCryptoHelper implements ICryptoHelper {
             throws GeneralSecurityException, MessagingException, IOException {
         String micAlg = convertAlgorithm(digest, true);
 
+        if (logger.isDebugEnabled()) logger.debug("Calc MIC called with digest: " + digest + " ::: Incl headers? " + includeHeaders);
         MessageDigest md = MessageDigest.getInstance(micAlg, "BC");
 
         // convert the Mime data to a byte array, then to an InputStream
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         
-        if (logger.isTraceEnabled()) {
+        if (includeHeaders && logger.isTraceEnabled()) {
         	String headers = "";
         	Enumeration<Header> headersEnum = part.getAllHeaders();
         	while (headersEnum.hasMoreElements())
