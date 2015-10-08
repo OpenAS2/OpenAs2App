@@ -185,7 +185,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         try
         {
             if (ch.isEncrypted(msg.getData())) {
-                // Decrypt
+            	msg.setRxdMsgWasEncrypted(true);
+              // Decrypt
             	if (logger.isDebugEnabled()) logger.debug("decrypting :::"+msg.getLoggingText());
 
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);

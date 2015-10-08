@@ -30,6 +30,7 @@ public abstract class BaseMessage implements Message {
     private Partnership partnership;
 	private String compressionType = ICryptoHelper.COMPRESSION_NONE;
 	private boolean rxdMsgWasSigned = false;
+	private boolean rxdMsgWasEncrypted = false;
 
 	public BaseMessage() {
         super();
@@ -206,6 +207,16 @@ public abstract class BaseMessage implements Message {
 	public void setRxdMsgWasSigned(boolean rxdMsgWasSigned)
 	{
 		this.rxdMsgWasSigned = rxdMsgWasSigned;
+	}
+
+	public boolean isRxdMsgWasEncrypted()
+	{
+		return rxdMsgWasEncrypted;
+	}
+
+	public void setRxdMsgWasEncrypted(boolean rxdMsgWasEncrypted)
+	{
+		this.rxdMsgWasEncrypted = rxdMsgWasEncrypted;
 	}
 
     public void addHeader(String key, String value) {
