@@ -78,7 +78,7 @@ public class AS2Util {
 
         if (dispOptions.getMicalg() != null) {
             mic = getCryptoHelper().calculateMIC(msg.getData(), dispOptions.getMicalg(),
-                    !msg.isRxdMsgWasSigned());
+                    (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()));
         }
 
         mdn.setAttribute(AS2MessageMDN.MDNA_MIC, mic);
