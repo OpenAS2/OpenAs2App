@@ -179,17 +179,20 @@ public class AS2SenderModule extends HttpSenderModule {
 		MimeBodyPart smime = sCompGen.generate(msg.getData(), outputCompressor);
 		msg.addHeader("Content-Transfer-Encoding", encodeType);
 		msg.setData(smime);
-    	try
+		if (logger.isTraceEnabled())
 		{
-			logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type:" + smime.getContentType());
-			logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type Header:" + smime.getHeader("Content-Type"));
-			logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + smime.getDisposition());
-		} catch (MessagingException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	    	try
+			{
+				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type:" + smime.getContentType());
+				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type Header:" + smime.getHeader("Content-Type"));
+				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + smime.getDisposition());
+			} catch (MessagingException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	logger.trace("Msg AFTER COMPRESSION Content-Type:" + msg.getContentType());			
 		}
-    	logger.trace("Msg AFTER COMPRESSION Content-Type:" + msg.getContentType());
 
 	}
 
@@ -324,19 +327,19 @@ public class AS2SenderModule extends HttpSenderModule {
          *        Signed message - MIME header fields and content that is to be signed which may or
          *                          may not be encrypted and/or compressed.
          *        
-         *        Unsigned message - data content including all MIME header fields and any applied Content-Transfer-Encoding
+         *        Unsigned encrypted message - data content including all MIME header fields and any applied Content-Transfer-Encoding
          *                           prior to encryption and/or compression
          *  
          *  So essentially, calculate the MIC prior to doing any compression, signing or encryption of the message
-         *   but include headers for unsigned messages
+         *   but include headers for unsigned messages (see RFC4130 section 7.3.1 for details)
          */
 
         Partnership partnership = msg.getPartnership();
         
         boolean encrypt = partnership.getAttribute(SecurePartnership.PA_ENCRYPT) != null;
         boolean sign = partnership.getAttribute(SecurePartnership.PA_SIGN) != null;
-
-		setCalculatedMIC(calcAndStoreMic(msg, !sign));
+        
+        setCalculatedMIC(calcAndStoreMic(msg, (sign || encrypt)));
 
         // Check if compression is enabled
     	String compressionType = msg.getPartnership().getAttribute("compression_type");
