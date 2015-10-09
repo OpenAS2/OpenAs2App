@@ -1,3 +1,6 @@
+Version 1.3.2  — 2015-09-09
+  1. Add support for file name filtering by file extension in directory polling module
+  2. Change the file writing mechanism in the file module to support NFS shares
 Version 1.3.1  — 2015-09-08
   1. Bugfix for calculating MIC to include headers unless no encryption and no signing.
 Version 1.3.0  — 2015-08-22
