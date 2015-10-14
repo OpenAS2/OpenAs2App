@@ -1,15 +1,14 @@
               OpenAS2 Server
-              Version 1.3.2
+              Version 1.3.3
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.3
 
-The release download file is: OpenAS2Server-1.3.2.zip
+The release download file is: OpenAS2Server-1.3.3.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-This release is a feature enhancement release:
- - Add support for file name filtering by file extension in directory polling module
- - Change the file writing mechanism in the file module to support NFS shares
+This release is a bugfix release:
+ - Fix comparing sent MIC with returned value since the partner could return the algorithm identifier in different case to what was sent
 
 Java 1.5 or later is required.
 
