@@ -29,6 +29,7 @@ import org.openas2.util.IOUtilOld;
 
 public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_OUTBOX_DIRECTORY = "outboxdir";
+    public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
     public static final String PARAM_ERROR_DIRECTORY = "errordir";
     public static final String PARAM_SENT_DIRECTORY = "sentdir";
     public static final String PARAM_FORMAT = "format";
@@ -64,9 +65,10 @@ public abstract class DirectoryPollingModule extends PollingModule {
 
     protected void scanDirectory(String directory) throws IOException, InvalidParameterException {
         File dir = IOUtilOld.getDirectoryFile(directory);
+        String extensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
 
         // get a list of entries in the directory
-        File[] files = dir.listFiles();
+        File[] files = extensionFilter.length()>0?IOUtilOld.getFiles(dir, extensionFilter):dir.listFiles();
         if (files == null) {
             throw new InvalidParameterException("Error getting list of files in directory", this,
                     PARAM_OUTBOX_DIRECTORY, dir.getAbsolutePath());

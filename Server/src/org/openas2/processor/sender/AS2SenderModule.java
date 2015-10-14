@@ -202,9 +202,9 @@ public class AS2SenderModule extends HttpSenderModule {
     /**
      * @param msg AS2Message
      * @param conn URLConnection
-     * @param originalmic mic value from original msg
+     * @param originalMIC mic value from original msg
      */
-    protected void receiveMDN(AS2Message msg, HttpURLConnection conn, String originalmic) throws OpenAS2Exception, IOException {
+    protected void receiveMDN(AS2Message msg, HttpURLConnection conn, String originalMIC) throws OpenAS2Exception, IOException {
         try {
             // Create a MessageMDN and copy HTTP headers
             MessageMDN mdn = new AS2MessageMDN(msg);
@@ -253,18 +253,23 @@ public class AS2SenderModule extends HttpSenderModule {
             
             //Asynch MDN  2007-03-12
             // Verify if the original mic is equal to the mic in returned MDN 
-            String returnmic = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC); 
+            String returnMIC = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
+            // Since the partner could return the algorithm in different case to what was sent, remove the algorithm before compare
+            // The Algorithm is appended as aprt of the MIC by adding a comma then optionally a space followed by the algorithm
+            String retMicMinusAlg = returnMIC.substring(0, returnMIC.lastIndexOf(","));
+            String origMicMinusAlg = originalMIC.substring(0, originalMIC.lastIndexOf(","));
              
-            if ( ! returnmic.replaceAll(" ", "").equals(originalmic.replaceAll(" ", ""))) {
+            if ( ! retMicMinusAlg.equals(origMicMinusAlg)) {
             	//file was sent completely but the returned mic was not matched,  
             	// don't know it needs or needs not to be resent ? it's depended on what ! 
             	// anyway, just log the warning message here.
             	/* TODO: RFC 6362 specifies that the sent attachments should be considered invalid and retransmitted
             	 */
-                logger.warn("MIC is not matched, original mic: " + originalmic + " return mic: "+ returnmic+msg.getLoggingText()); 
+                logger.warn("MIC is not matched. Original MIC=\"" + originalMIC + "\" (len=" + originalMIC.length()
+                		+ ") :::: Returned MIC=\""+ returnMIC+ "\" (len=" + returnMIC.length() + ") :::: "  + msg.getLoggingText()); 
             } 
             else { 
-            logger.info("MIC is matched, mic: " + returnmic+msg.getLoggingText()); 
+              logger.info("MIC is matched. MIC= \"" + returnMIC  + "\" :::: " +  msg.getLoggingText()); 
             } 
 
             try {

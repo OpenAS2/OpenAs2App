@@ -72,11 +72,11 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
     protected File getFile(Message msg, String fileParam, String action) throws IOException, OpenAS2Exception {
     	String filename = getFilename(msg, fileParam, action); 
     	 
-// make sure the parent directories exist
+       // make sure the parent directories exist
     	File file = new File(filename); 
     	File parentDir = file.getParentFile(); 
     	parentDir.mkdirs(); 
-// don't overwrite existing files
+        // don't overwrite existing files
     	return IOUtilOld.getUnique(parentDir, IOUtilOld.cleanFilename(file.getName())); 
     
     }
@@ -94,7 +94,7 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
             writeStream(in, tempFile);
             
             // copy the temp file over to the destination
-            tempFile.renameTo(msgFile);            
+            IOUtilOld.moveFile(tempFile, msgFile, true, false);
         } else {
             writeStream(in, msgFile);            
         }

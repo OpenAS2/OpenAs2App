@@ -58,14 +58,6 @@ public class MessageFileModule extends BaseStorageModule {
         return DO_STORE;
     }
 
-/**
- * @deprecated 2007-06-01
- */ 
-    
-    protected String getFilename(Message msg, String fileParam) throws InvalidParameterException {
-
-        return getFilename(msg, fileParam, "");
-    }
 
     /**
      * @since 2007-06-01
