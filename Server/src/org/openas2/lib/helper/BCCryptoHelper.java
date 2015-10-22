@@ -38,6 +38,7 @@ import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSException;
@@ -327,13 +328,19 @@ public class BCCryptoHelper implements ICryptoHelper {
         if (algorithm == null) {
             throw new NoSuchAlgorithmException("Algorithm is null");
         }
-        DefaultSignatureAlgorithmIdentifierFinder n = new DefaultSignatureAlgorithmIdentifierFinder();
-
         if (toBC) {
             if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
                 return SMIMESignedGenerator.DIGEST_MD5;
             } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
                 return SMIMESignedGenerator.DIGEST_SHA1;
+            } else if (algorithm.equalsIgnoreCase(DIGEST_SHA224)) {
+                return SMIMESignedGenerator.DIGEST_SHA224;
+            } else if (algorithm.equalsIgnoreCase(DIGEST_SHA256)) {
+                return SMIMESignedGenerator.DIGEST_SHA256;
+            } else if (algorithm.equalsIgnoreCase(DIGEST_SHA384)) {
+                return SMIMESignedGenerator.DIGEST_SHA384;
+            } else if (algorithm.equalsIgnoreCase(DIGEST_SHA512)) {
+                return SMIMESignedGenerator.DIGEST_SHA512;
             } else if (algorithm.equalsIgnoreCase(CRYPT_3DES)) {
                 return SMIMEEnvelopedGenerator.DES_EDE3_CBC;
             } else if (algorithm.equalsIgnoreCase(CRYPT_CAST5)) {
@@ -341,6 +348,8 @@ public class BCCryptoHelper implements ICryptoHelper {
             } else if (algorithm.equalsIgnoreCase(CRYPT_IDEA)) {
                 return SMIMEEnvelopedGenerator.IDEA_CBC;
             } else if (algorithm.equalsIgnoreCase(CRYPT_RC2)) {
+                return SMIMEEnvelopedGenerator.RC2_CBC;
+            } else if (algorithm.equalsIgnoreCase(CRYPT_RC2_CBC)) {
                 return SMIMEEnvelopedGenerator.RC2_CBC;
             } else {
                 throw new NoSuchAlgorithmException("Unsupported or invalid algorithm: " + algorithm);
@@ -350,6 +359,14 @@ public class BCCryptoHelper implements ICryptoHelper {
             return DIGEST_MD5;
         } else if (algorithm.equalsIgnoreCase(SMIMESignedGenerator.DIGEST_SHA1)) {
             return DIGEST_SHA1;
+        } else if (algorithm.equalsIgnoreCase(SMIMESignedGenerator.DIGEST_SHA224)) {
+            return DIGEST_SHA224;
+        } else if (algorithm.equalsIgnoreCase(SMIMESignedGenerator.DIGEST_SHA256)) {
+            return DIGEST_SHA256;
+        } else if (algorithm.equalsIgnoreCase(SMIMESignedGenerator.DIGEST_SHA384)) {
+            return DIGEST_SHA384;
+        } else if (algorithm.equalsIgnoreCase(SMIMESignedGenerator.DIGEST_SHA512)) {
+            return DIGEST_SHA512;
         } else if (algorithm.equalsIgnoreCase(SMIMEEnvelopedGenerator.CAST5_CBC)) {
             return CRYPT_CAST5;
         } else if (algorithm.equalsIgnoreCase(SMIMEEnvelopedGenerator.DES_EDE3_CBC)) {
