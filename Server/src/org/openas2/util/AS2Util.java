@@ -38,7 +38,7 @@ public class AS2Util {
         return ch;
     }
 
-    public static MessageMDN createMDN(Session session, AS2Message msg,
+    public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
             DispositionType disposition, String text) throws Exception {
         AS2MessageMDN mdn = new AS2MessageMDN(msg);
         mdn.setHeader("AS2-Version", "1.1");
@@ -74,12 +74,6 @@ public class AS2Util {
 
         DispositionOptions dispOptions = new DispositionOptions(msg
                 .getHeader("Disposition-Notification-Options"));
-        String mic = null;
-
-        if (dispOptions.getMicalg() != null) {
-            mic = getCryptoHelper().calculateMIC(msg.getData(), dispOptions.getMicalg(),
-                    (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()));
-        }
 
         mdn.setAttribute(AS2MessageMDN.MDNA_MIC, mic);
         createMDNData(session, mdn, dispOptions.getMicalg(), dispOptions.getProtocol());
