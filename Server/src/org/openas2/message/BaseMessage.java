@@ -31,9 +31,26 @@ public abstract class BaseMessage implements Message {
 	private String compressionType = ICryptoHelper.COMPRESSION_NONE;
 	private boolean rxdMsgWasSigned = false;
 	private boolean rxdMsgWasEncrypted = false;
+	private Map<Object, Object> options = new HashMap<Object, Object>();
 
 	public BaseMessage() {
         super();
+    }
+
+
+	public Map<Object, Object> getOptions() {
+        if (options == null) {
+            options = new HashMap<Object, Object>();
+        }
+		return options;
+	}
+
+	public void setOption(Object key, Object value) {
+		getOptions().put(key, value);
+	}
+
+    public Object getOption(Object key) {
+        return getOptions().get(key);
     }
 
     public void setAttribute(String key, String value) {
