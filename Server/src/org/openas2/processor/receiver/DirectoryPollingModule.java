@@ -3,10 +3,11 @@ package org.openas2.processor.receiver;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -22,7 +23,9 @@ import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
+import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.IOUtilOld;
@@ -36,6 +39,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_DELIMITERS = "delimiters";
     public static final String PARAM_DEFAULTS = "defaults";
     public static final String PARAM_MIMETYPE = "mimetype";   
+    public static final String PARAM_RESEND_MAX_RETRIES = "resend_max_retries";   
     private Map<String, Long> trackedFiles;
 
 	private Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
@@ -143,49 +147,62 @@ public abstract class DirectoryPollingModule extends PollingModule {
 
     protected void processFile(File file) throws OpenAS2Exception {
     	
-        logger.info("processing " + file.getAbsolutePath());
+    	if (logger.isInfoEnabled()) logger.info("processing " + file.getAbsolutePath());
 
         Message msg = createMessage();
         msg.setAttribute(FileAttribute.MA_FILEPATH, file.getAbsolutePath());
         msg.setAttribute(FileAttribute.MA_FILENAME, file.getName());
         
         
-        /*asynch mdn logic 2007-03-12
-          save the file name into message object, 
-          it will be stored into pending information file
+        /* save the file name into message object, it will be stored into pending information file
         */ 
         msg.setAttribute(FileAttribute.MA_PENDINGFILE, file.getName());
         
         try {
             updateMessage(msg, file);
-            logger.info("file assigned to message " + file.getAbsolutePath() + msg.getLoggingText());
+            if (logger.isInfoEnabled())
+            	logger.info("file assigned to message " + file.getAbsolutePath() + msg.getLoggingText());
 
             if (msg.getData() == null) {
                 throw new InvalidMessageException("No Data");
             }
+            if (logger.isTraceEnabled()) logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes());
+            // Retry count - first try on partnership then directory polling module
+            String maxRetryCnt = msg.getPartnership().getAttribute(AS2Partnership.PA_RESEND_MAX_RETRIES);
+            if (maxRetryCnt == null || maxRetryCnt.length() < 1)
+            {
+            	maxRetryCnt = getSession().getProcessor().getParameters().get(PARAM_RESEND_MAX_RETRIES);
+            }
+            if (logger.isTraceEnabled()) logger.trace("RESEND COUNT EXTRACTED from config: " + maxRetryCnt);
+            Map<Object, Object> options = msg.getOptions();
+            options.put(ResenderModule.OPTION_RETRIES, maxRetryCnt);
 
             // Transmit the message
-            getSession().getProcessor().handle(SenderModule.DO_SEND, msg, null);
+            getSession().getProcessor().handle(SenderModule.DO_SEND, msg, options);
 
                /*asynch mdn logic 2007-03-12
             	If the return status is pending in msg's attribute "status" then copy 
             	the transmitted file to pending folder and wait for the receiver to 
             	make another HTTP call to post AsyncMDN
             	*/ 
-            if (msg.getAttribute(FileAttribute.MA_STATUS) != null
-					&& msg.getAttribute(FileAttribute.MA_STATUS).equals(FileAttribute.MA_PENDING)) {
+            String msgStatus = msg.getAttribute(FileAttribute.MA_STATUS);
+            if (msgStatus != null && msgStatus.equals(FileAttribute.MA_PENDING)) {
 				File pendingFile = null;
 				try {
-					pendingFile = new File(msg.getPartnership().getAttribute(
-							FileAttribute.MA_PENDING), msg
-							.getAttribute(FileAttribute.MA_PENDINGFILE));
+					pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
+					// Make sure the folder exists
+					File parentFolder = pendingFile.getParentFile();
+					if (parentFolder != null && !parentFolder.exists()) parentFolder.mkdirs();
+					// Now copy the file over for MDN handler to manage
 					IOUtilOld.copyFile(file, pendingFile);
 
-					logger.info("copied " + file.getAbsolutePath()
+					if (logger.isInfoEnabled())
+						logger.info("copied " + file.getAbsolutePath()
 							+ " to pending folder : "
 							+ pendingFile.getAbsolutePath()+ msg.getLoggingText());
 
 				} catch (IOException iose) {
+					logger.error("Failed to copy file to pending folder: ", iose);
 					OpenAS2Exception se = new OpenAS2Exception(
 							"File was successfully sent but not copied to pending folder: "
 									+ pendingFile);
@@ -195,7 +212,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
             
             // If the Sent Directory option is set, move the transmitted file to
 			// the sent directory
-            
+            String filePath = file.getAbsolutePath();
             if (getParameter(PARAM_SENT_DIRECTORY, false) != null) {
                 File sentFile = null;
 
@@ -204,25 +221,37 @@ public abstract class DirectoryPollingModule extends PollingModule {
                             .getName());
                     sentFile = IOUtilOld.moveFile(file, sentFile, false, true);
 
-                    logger.info("moved " + file.getAbsolutePath() + " to " + sentFile.getAbsolutePath()+ msg.getLoggingText());
+                    if (logger.isInfoEnabled())
+                    	logger.info("moved " + file.getAbsolutePath() + " to " + sentFile.getAbsolutePath()+ msg.getLoggingText());
 
                 } catch (IOException iose) {
+                	logger.error("Error moving file to sent folder: " + iose.getMessage(), iose);
                     OpenAS2Exception se = new OpenAS2Exception(
                             "File was successfully sent but not moved to sent folder: " + sentFile);
                     se.initCause(iose);
                 }
-            } else if (!file.delete()) { // Delete the file if a sent directory isn't set
-                throw new OpenAS2Exception("File was successfully sent but not deleted: " + file);
+            } else
+            {
+            	// Delete the file if a sent directory isn't set
+            	// Try to get a reason to make debugging easier by using java.nio.file.Files.delete() instead of java.io.File.delete()
+            	if (logger.isDebugEnabled()) logger.debug("Trying to delete file: " + file.getAbsolutePath());
+            	Path path = file.toPath();
+            	file = null;
+            	try {
+					Files.delete(path);
+				} catch (IOException e) {
+	                throw new OpenAS2Exception("File was successfully sent but not deleted: " + path.toAbsolutePath(), e);
+				}
             }
 
-            logger.info("deleted " + file.getAbsolutePath()+ msg.getLoggingText());
+            if (logger.isInfoEnabled()) logger.info("deleted " + filePath + msg.getLoggingText());
 
         } catch (OpenAS2Exception oae) {
-        	logger.info(oae.getLocalizedMessage()+ msg.getLoggingText());
+        	if (logger.isInfoEnabled()) logger.info(oae.getLocalizedMessage()+ msg.getLoggingText());
             oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-            oae.addSource(OpenAS2Exception.SOURCE_FILE, file);
+            oae.addSource(OpenAS2Exception.SOURCE_FILE, msg.getAttribute(FileAttribute.MA_FILEPATH));
             oae.terminate();
-            IOUtilOld.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
+            if (file != null) IOUtilOld.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
         }
         
 
@@ -258,7 +287,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
             	contentType = ParameterParser.parse (contentType, params);
             	}
             	catch (InvalidParameterException e) {
-            		logger.error("Bad content-type" + contentType+ msg.getLoggingText());
+            		if (logger.isInfoEnabled()) logger.error("Bad content-type" + contentType+ msg.getLoggingText());
             		contentType = "application/octet-stream";
             	}
             	}
