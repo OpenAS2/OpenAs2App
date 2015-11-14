@@ -36,6 +36,8 @@ public interface ICryptoHelper {
 
     boolean isSigned(MimeBodyPart part) throws Exception;
 
+    boolean isCompressed(MimeBodyPart part) throws Exception;
+
     String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders) throws Exception;
 
     MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) throws Exception;
