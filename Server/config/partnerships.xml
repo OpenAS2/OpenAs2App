@@ -20,6 +20,7 @@
 		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA1"/>
 		<attribute name="encrypt" value="3DES"/>
 		<attribute name="sign" value="MD5"/>
+		<attribute name="resend_max_retries" value="3"/>
 	</partnership>
 	
 	<partnership name="OpenAS2B-to-OpenAS2A">
