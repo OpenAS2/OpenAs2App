@@ -7,6 +7,9 @@
 	<!-- Java sources -->
 	<property name="src.dir" location="${basedir}/src" />
 
+	<property name="ant.build.javac.source" value="1.5" />
+	<property name="ant.build.javac.target" value="1.5" />
+	
 	<!-- Java classes -->
 	<property name="build.dir" location="${basedir}/build" />
 	<property name="lib.dir" location="${basedir}/lib" />

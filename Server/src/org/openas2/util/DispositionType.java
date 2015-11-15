@@ -95,16 +95,16 @@ public class DispositionType {
         String status = getStatus();
 
         if (status == null) {
-            throw new DispositionException(this, null);
+            throw new DispositionException(this, "Disposition status is NULL. Cannot continue.");
         } else if (!status.equalsIgnoreCase("processed")) {
-            throw new DispositionException(this, null);
+            throw new DispositionException(this, "Disposition status indicates a problem. Returned status is: " + status);
         }
 
         String statusMod = getStatusModifier();
 
         if (statusMod != null) {
             if (statusMod.equalsIgnoreCase("error") || statusMod.equalsIgnoreCase("warning")) {
-                throw new DispositionException(this, null);
+                throw new DispositionException(this, "The recipient is indicating an issue with the received message. Returned status is: " + status);
             }
         }
     }

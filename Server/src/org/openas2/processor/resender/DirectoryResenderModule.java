@@ -116,7 +116,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
 	}
 
 	protected void processFile(File file) throws OpenAS2Exception {
-		logger.debug("processing " + file.getAbsolutePath());
+		if (logger.isDebugEnabled()) logger.debug("processing " + file.getAbsolutePath());
 
 		Message msg = null;
 
@@ -131,16 +131,15 @@ public class DirectoryResenderModule extends BaseResenderModule {
 				// Transmit the message
                 logger.info("loaded message for resend."+msg.getLoggingText());
                 
-                Map<Object, Object> options = new HashMap<Object, Object>();
-                options.put(SenderModule.SOPT_RETRIES, retries);
-				getSession().getProcessor().handle(method, msg, options);
+                msg.setOption(SenderModule.SOPT_RETRIES, retries);
+				getSession().getProcessor().handle(method, msg, msg.getOptions());
                 
 				if (!file.delete()) { // Delete the file, sender will re-queue if the transmission fails again
 					throw new OpenAS2Exception("File was successfully sent but not deleted: " +
 						file.getAbsolutePath());
 				}
 
-				logger.info("deleted " + file.getAbsolutePath()+msg.getLoggingText());
+				if (logger.isDebugEnabled()) logger.debug("deleted " + file.getAbsolutePath()+msg.getLoggingText());
 			} catch (IOException ioe) {
 				throw new WrappedException(ioe);
 			} catch (ClassNotFoundException cnfe) {

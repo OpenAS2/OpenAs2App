@@ -62,5 +62,6 @@ public class OpenAS2Exception extends Exception {
     }
 
     protected void log(boolean terminated) {
+    	logger.error("Error occurred:: " + this.getMessage() + "\n    Sources: "+ this.getSources(), this);
     }
 }

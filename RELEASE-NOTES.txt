@@ -1,14 +1,19 @@
               OpenAS2 Server
-              Version 1.3.4
+              Version 1.3.5
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.4
+The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.5
 
-The release download file is: OpenAS2Server-1.3.4.zip
+The release download file is: OpenAS2Server-1.3.5.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-This release is an enhancement release:
- - add SHA224, SHA256, SHA384 and SHA512 encryption algorithms
+This release is an enahncement and bugfix release:
+ - fix handling of file streams to ensure file handle is always closed
+ - fix async MDN functionality
+ - fix calculation of MIC when content is signed and  compressed
+ - improved logic handling sending of MDN errors and HTTP responses
+ - add compiler option to build file to ensure java 1.5 compatibility
+ - add ability to control number of resend attempts
 
 Java 1.5 or later is required.
 

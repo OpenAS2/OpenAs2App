@@ -44,7 +44,11 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class OpenAS2Servlet extends HttpServlet {
 
-    SocketLogging sl = null;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -625641001873163537L;
+	SocketLogging sl = null;
 	LogGetter lg = null;
 	ByteArrayOutputStream baos = null;
 	int logPort;

@@ -34,7 +34,10 @@ public class IOUtilOld {
     }
 
   public static byte[] getFileBytes(File file) throws IOException {
-        FileInputStream fis = new FileInputStream(file);
+	  FileInputStream fis = null;
+	  try
+	  {
+        fis = new FileInputStream(file);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[4096];
         int byteCount;
@@ -42,10 +45,12 @@ public class IOUtilOld {
         while ((byteCount = fis.read(buf)) >= 0) {
             baos.write(buf, 0, byteCount);
         }
-
-        fis.close();
-
         return baos.toByteArray();
+	  }
+	  finally
+	  {
+		  if (fis != null) fis.close();
+	  }
     }
 
     public static String getTransferRate(int bytes, ProfilerStub stub) {
@@ -169,14 +174,16 @@ public class IOUtilOld {
     }
 
     public static void copyFile(File src, File dest) throws IOException {
-        FileInputStream fIn = new FileInputStream(src);
-        FileOutputStream fOut = new FileOutputStream(dest);
+        FileInputStream fIn = null;
+        FileOutputStream fOut = null;
 
         try {
+            fIn = new FileInputStream(src);
+            fOut = new FileOutputStream(dest);
             copy(fIn, fOut);
         } finally {
-            fIn.close();
-            fOut.close();
+            if (fIn != null) fIn.close();
+            if (fOut != null) fOut.close();
         }
     }
 

@@ -38,14 +38,10 @@ import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.KeyTransRecipientInformation;
-import org.bouncycastle.cms.Recipient;
-import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInfoGenerator;
@@ -54,7 +50,6 @@ import org.bouncycastle.cms.bc.BcRSAKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
-import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -64,7 +59,6 @@ import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.bouncycastle.mail.smime.SMIMEUtil;
-import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.util.encoders.Base64;
@@ -97,6 +91,34 @@ public class BCCryptoHelper implements ICryptoHelper {
         String baseType = contentType.getBaseType().toLowerCase();
 
         return baseType.equalsIgnoreCase("multipart/signed");
+    }
+
+    public boolean isCompressed(MimeBodyPart part) throws MessagingException {
+        ContentType contentType = new ContentType(part.getContentType());
+        String baseType = contentType.getBaseType().toLowerCase();
+
+		if (logger.isTraceEnabled())
+		{
+	    	try
+			{
+				logger.trace("Compression check.  MIME Base Content-Type:" + contentType.getBaseType());
+				logger.trace("Compression check.  SMIME-TYPE:" + contentType.getParameter("smime-type"));
+				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + part.getDisposition());
+			} catch (MessagingException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+        if (baseType.equalsIgnoreCase("application/pkcs7-mime")) {
+            String smimeType = contentType.getParameter("smime-type");
+            boolean checkResult = (smimeType != null) && smimeType.equalsIgnoreCase("compressed-data");
+            if (!checkResult && logger.isDebugEnabled())
+            	logger.debug("Check for compressed data failed on SMIME content type: " + smimeType);
+            return (checkResult);
+        }
+        if (logger.isDebugEnabled()) logger.debug("Check for compressed data failed on BASE content type: " + baseType);
+        return false;
     }
 
     public String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders)
@@ -165,7 +187,8 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         // Get the recipient object for decryption
         if (logger.isDebugEnabled())
-        	logger.debug("Extracted X500 info::  PRINCIPAL : " + x509Cert.getIssuerX500Principal() + " ::  NAME : " + x509Cert.getIssuerX500Principal().getName());
+        	logger.debug("Extracted X500 info::  PRINCIPAL : " + x509Cert.getIssuerX500Principal()
+        	+ " ::  NAME : " + x509Cert.getIssuerX500Principal().getName());
 
         X500Name x500Name = new X500Name(x509Cert.getIssuerX500Principal().getName());
         KeyTransRecipientId certRecId = new KeyTransRecipientId(x500Name,x509Cert.getSerialNumber());
@@ -191,7 +214,8 @@ public class BCCryptoHelper implements ICryptoHelper {
 				if (certRecId.match(recipientInfo) && !foundRecipient) {
 					foundRecipient = true;
 					// byte[] decryptedData = recipientInfo.getContent(new JceKeyTransEnvelopedRecipient((PrivateKey)key).setProvider("BC"));
-					byte[] decryptedData = recipientInfo.getContent(new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(PrivateKeyInfo.getInstance(key.getEncoded()))));
+					byte[] decryptedData = recipientInfo.getContent(
+							new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(PrivateKeyInfo.getInstance(key.getEncoded()))));
 
 					return SMIMEUtil.toMimeBodyPart(decryptedData);
 				}

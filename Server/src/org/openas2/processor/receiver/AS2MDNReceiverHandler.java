@@ -11,10 +11,10 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
@@ -32,17 +32,18 @@ import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.MessageMDN;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.resender.ResenderModule;
+import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
-import org.openas2.util.DispositionType;
 import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtilOld;
 
 public class AS2MDNReceiverHandler implements NetModuleHandler {
     private AS2MDNReceiverModule module;
 
-	private Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
+    private Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
 
     
     public AS2MDNReceiverHandler(AS2MDNReceiverModule module) {
@@ -60,7 +61,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 
     public void handle(NetModule owner, Socket s) {
     	
-    	logger.info("incoming connection"+ " [" + getClientInfo(s) + "]");
+    	if (logger.isInfoEnabled()) logger.info("incoming connection"+ " [" + getClientInfo(s) + "]");
 
         AS2Message msg = new AS2Message();
         
@@ -73,7 +74,8 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
             //Asynch MDN 2007-03-12
             //check if the requested URL is defined in attribute "as2_receipt_option"  
             //in one of partnerships, if yes, then process incoming AsyncMDN 
-            logger.info("incoming connection for receiving AsyncMDN"+ " [" + getClientInfo(s) + "]" + msg.getLoggingText());
+            if (logger.isInfoEnabled())
+            	logger.info("incoming connection for receiving AsyncMDN"+ " [" + getClientInfo(s) + "]" + msg.getLoggingText());
 			ContentType receivedContentType;
                 
             MimeBodyPart receivedPart = new MimeBodyPart(msg.getHeaders(), data); 
@@ -88,8 +90,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
             receivedPart.setHeader("Content-Type", receivedContentType.toString());
                 
             msg.setData(receivedPart);
-                
-   			receiveMDN(msg, data, s.getOutputStream(), s);
+   			receiveMDN(msg, data, s.getOutputStream());
 
             
         } catch (Exception e) {
@@ -100,21 +101,20 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
     }
 
  
- //Asynch MDN 2007-03-12
 /**
  * method for receiving & processing Async MDN sent from receiver.
  */ 
- protected void receiveMDN(AS2Message msg, byte[] data, OutputStream out, Socket s)
+ protected void receiveMDN(AS2Message msg, byte[] data, OutputStream out)
 			throws OpenAS2Exception, IOException {
 		try {
-//			 Create a MessageMDN and copy HTTP headers 
+			// Create a MessageMDN and copy HTTP headers
 			MessageMDN mdn = new AS2MessageMDN(msg); 
-//			 copy headers from msg to MDN from msg 
+			// copy headers from msg to MDN from msg 
 			mdn.setHeaders(msg.getHeaders()); 
 			MimeBodyPart part = new MimeBodyPart(mdn.getHeaders(), data); 
 			msg.getMDN().setData(part); 
 			 
-//			 get the MDN partnership info 
+			// get the MDN partnership info 
 			mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From")); 
 			mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To")); 
 			getModule().getSession().getPartnershipFactory().updatePartnership(mdn, false); 
@@ -124,38 +124,85 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			 
 			AS2Util.parseMDN(msg, senderCert); 
 			 
-//			 in order to name & save the mdn with the original AS2-From + AS2-To + Message id., 
-//			 the 3 msg attributes have to be reset before calling MDNFileModule 
+			// in order to name & save the mdn with the original AS2-From + AS2-To + Message id., 
+			// the 3 msg attributes have to be reset before calling MDNFileModule 
 			msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From")); 
 			msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To")); 
 			getModule().getSession().getPartnershipFactory().updatePartnership(msg, false); 
 			msg.setMessageID(msg.getMDN().getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID)); 
 			getModule().getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null); 
-			 
-//			 check if the mic (message integrity check) is correct 
 
+			// use original message ID to open the pending information file from pendinginfo folder.
+			String ORIG_MESSAGEID = msg.getMDN().getAttribute(
+					AS2MessageMDN.MDNA_ORIG_MESSAGEID);
+			String pendinginfofile = (String) this.getModule().getSession().getComponent("processor").getParameters().get("pendingmdninfo")
+					+ "/"
+					+ ORIG_MESSAGEID.substring(1, ORIG_MESSAGEID.length() - 1);
+			if (logger.isDebugEnabled()) logger.debug("Pending info file to retrieve data from in Async MDN receiver: " + pendinginfofile);
+			BufferedReader pendinginfo = new BufferedReader(new FileReader(pendinginfofile));
+
+			// Get the original MIC from the first line of pending information file
+			String originalMIC = pendinginfo.readLine();
+			// Get the retry count for number of resends to go from the second line of pending information file
+			String retries = pendinginfo.readLine();
+			if (logger.isDebugEnabled()) logger.debug("RETRY COUNT from pending info file: " + retries);
+			msg.setOption(ResenderModule.OPTION_RETRIES, retries);
+			// Get the original pending file from the third line of pending information file
+			File fpendingfile = new File(pendinginfo.readLine());
+			pendinginfo.close();
 			
-			if (checkAsyncMDN(msg) == true)
-				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
-			else
-				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_NOT_FOUND, false);
+			if (logger.isTraceEnabled())
+			{
+				logger.trace("Pending MDN Info file to process: " + fpendingfile.getAbsolutePath());
+			}
 
-			String disposition = msg.getMDN().getAttribute(
-					AS2MessageMDN.MDNA_DISPOSITION);
 			try {
-				new DispositionType(disposition).validate();
-			} catch (DispositionException de) {
-				de.setText(msg.getMDN().getText());
+				boolean responseVerifiedOK = AS2Util.checkMDN(msg, originalMIC);
+				/* If the MDN was successfully received send correct HTTP response irrespective of possible error
+				 * conditions due to disposition errors or MIC mismatch
+				 */
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
+				if (responseVerifiedOK) {
+					HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
+					// delete the pendinginfo & pending file if mic is matched
+					File fpendinginfofile = new File(pendinginfofile);
+					if (logger.isDebugEnabled())
+						logger.debug("delete pendinginfo file : " + fpendinginfofile.getAbsolutePath()
+								+ msg.getLoggingText());
 
-				if ((de.getDisposition() != null)
-						&& de.getDisposition().isWarning()) {
-					de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-					de.terminate();
-				} else {
-					throw de;
+					fpendinginfofile.delete();
+
+					if (logger.isDebugEnabled())
+						logger.debug("delete pending file : " + fpendingfile.getName() + " from pending folder : "
+								+ fpendingfile.getParent() + msg.getLoggingText());
+					fpendingfile.delete();
+				} else
+				{
+					if (logger.isTraceEnabled()) logger.trace("Sending HTTP_OK response....");
 				}
+			} catch (DispositionException de) {
+				/* Issue with disposition but still send OK at HTTP level to indicate message received */
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
+				// If a disposition exception occurs then there must have been an error response in the disposition
+				// Error may require manual intervention but keep trying....
+				if (!AS2Util.resend(module.getSession().getProcessor(), this, SenderModule.DO_SEND, msg, de
+						                      , retries))
+		        {
+		            // we've run out of retries, do something interesting.
+		        	logger.warn("Message abandoned after retry limit reached." + msg.getLoggingText());
+		    		return;
+		        }
+			} catch (OpenAS2Exception oae) {
+				// Don't resend or fail, just log an error if one occurs while receiving the MDN
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, false);
+				OpenAS2Exception oae2 = new OpenAS2Exception(
+						"Message was sent but an error occured while receiving the MDN");
+				oae2.initCause(oae);
+				oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
+				oae2.terminate();
 			}
 		} catch (Exception e) {
+			logger.error("Unexpected error in Async MDN receiver.", e);
 			HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, false);
 			if (e instanceof IOException) {
 				throw (IOException) e;
@@ -167,75 +214,6 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 	} 
  
  
- //Asynch MDN 2007-03-12
-/**
- *  verify if the mic is matched.
- *  @param msg
- *  @return true if mdn processed  
- */
-	public boolean checkAsyncMDN(AS2Message msg) {
-		try {
-
-			// get the returned mic from mdn object
-			
-			String returnmic = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
-
-			// use original message id. to open the pending information file
-			// from pendinginfo
-			// folder.
-			String ORIG_MESSAGEID = msg.getMDN().getAttribute(
-					AS2MessageMDN.MDNA_ORIG_MESSAGEID);
-			String pendinginfofile = (String) this.getModule().getSession().getComponent("processor").getParameters().get("pendingmdninfo")
-					+ "/"
-					+ ORIG_MESSAGEID.substring(1, ORIG_MESSAGEID.length() - 1);
-			BufferedReader pendinginfo = new BufferedReader(new FileReader(
-					pendinginfofile));
-
-			// Get the original mic from the first line of pending information
-			// file
-			String originalmic = pendinginfo.readLine();
-
-			// Get the original pending file from the second line of pending
-			// information file
-			File fpendingfile = new File(pendinginfo.readLine());
-			pendinginfo.close();
-
-			String disposition = msg.getMDN().getAttribute(
-					AS2MessageMDN.MDNA_DISPOSITION);
-			
-			logger.info("received MDN [" + disposition + "]" + msg.getLoggingText());
-			// original code just did string compare - returnmic.equals(originalmic).  Sadly this is
-			// not good enough as the mic fields are "base64string, algorith" taken from a rfc822 style
-			// Returned-Content-MIC header and rfc822 headers can contain spaces all over the place.
-			// (not to mention comments!).  Simple fix - delete all spaces.
-			if (!returnmic.replaceAll("\\s+", "").equals(originalmic.replaceAll("\\s+", ""))) {
-			 	logger.info("mic not matched, original mic: " + originalmic
-			 								+ " return mic: " + returnmic + msg.getLoggingText());
-				return false;
-			}
-
-			// delete the pendinginfo & pending file if mic is matched
-			logger.info("mic is matched, mic: " + returnmic + msg.getLoggingText());
-			File fpendinginfofile = new File(pendinginfofile);
-			logger.info("delete pendinginfo file : " + fpendinginfofile.getName()
-							+ " from pending folder : "
-							+ (String) this.getModule().getSession().getComponent("processor").getParameters().get("pendingmdn")+msg.getLoggingText());
-
-			fpendinginfofile.delete();
-
-			logger.info("delete pending file : " + fpendingfile.getName()
-							+ " from pending folder : "
-							+ fpendingfile.getParent()+msg.getLoggingText());
-			fpendingfile.delete();
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return false;
-		}
-		
-		return true;
-	} 
-	
-	
 	   // Copy headers from an Http connection to an InternetHeaders object
     protected void copyHttpHeaders(HttpURLConnection conn, InternetHeaders headers) {
         Iterator<Map.Entry<String,List<String>>> connHeadersIt = conn.getHeaderFields().entrySet().iterator();
@@ -300,8 +278,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 	try {
 		part = new MimeBodyPart(mdn.getHeaders(), mdnStream.toByteArray());
 	} catch (MessagingException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		logger.error("Error creating MIME body part.", e);
 	}
 
     msg.getMDN().setData(part);

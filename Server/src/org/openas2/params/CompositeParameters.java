@@ -7,7 +7,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openas2.processor.receiver.AS2MDNReceiverHandler;
 
 
 public class CompositeParameters extends ParameterParser {

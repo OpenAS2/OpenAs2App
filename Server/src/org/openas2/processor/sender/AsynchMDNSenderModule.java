@@ -41,11 +41,12 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 	public void handle(String action, Message msg, Map<Object, Object> options)
 			throws OpenAS2Exception {
 
+		if (logger.isDebugEnabled()) logger.debug("ASYNC MDN send started...");
 		try {
 			sendAsyncMDN((AS2Message) msg, options);
 
 		} finally {
-			logger.debug("asynch mdn message sent");
+			if (logger.isInfoEnabled()) logger.info("asynch mdn message sent");
 		}
 
 	}
@@ -75,7 +76,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 	private void sendAsyncMDN(AS2Message msg, Map<Object, Object> options)
 			throws OpenAS2Exception {
 
-		logger.info("Async MDN submitted" + msg.getLoggingText());
+		if (logger.isInfoEnabled()) logger.info("Async MDN submitted" + msg.getLoggingText());
 		DispositionType disposition = new DispositionType("automatic-action",
 				"MDN-sent-automatically", "processed");
 
@@ -90,7 +91,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
 			try {
 
-				logger.info("connected to " + url + msg.getLoggingText());
+				if (logger.isInfoEnabled()) logger.info("connected to " + url + msg.getLoggingText());
 
 				conn.setRequestProperty("Connection", "close, TE");
 				conn.setRequestProperty("User-Agent", "OpenAS2 AS2Sender");
@@ -117,26 +118,28 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
 					int bytes = IOUtilOld.copy(messageIn, messageOut);
 					Profiler.endProfile(transferStub);
-					logger.info("transferred "
+					if (logger.isInfoEnabled()) logger.info("transferred "
 							+ IOUtilOld.getTransferRate(bytes, transferStub)
 							+ msg.getLoggingText());
 				} finally {
 					messageIn.close();
 				}
 
+				int respCode = conn.getResponseCode();
 				// Check the HTTP Response code
-				if ((conn.getResponseCode() != HttpURLConnection.HTTP_OK)
-						&& (conn.getResponseCode() != HttpURLConnection.HTTP_CREATED)
-						&& (conn.getResponseCode() != HttpURLConnection.HTTP_ACCEPTED)
-						&& (conn.getResponseCode() != HttpURLConnection.HTTP_PARTIAL)
-						&& (conn.getResponseCode() != HttpURLConnection.HTTP_NO_CONTENT)) {
-					logger.error("sent AsyncMDN [" + disposition.toString()
-							+ "] Fail " + msg.getLoggingText());
+				if ((respCode != HttpURLConnection.HTTP_OK)
+						&& (respCode != HttpURLConnection.HTTP_CREATED)
+						&& (respCode != HttpURLConnection.HTTP_ACCEPTED)
+						&& (respCode != HttpURLConnection.HTTP_PARTIAL)
+						&& (respCode != HttpURLConnection.HTTP_NO_CONTENT)) {
+					if (logger.isErrorEnabled()) logger.error("Error sending AsyncMDN [" + disposition.toString()
+							+ "] Fail " + msg.getLoggingText()
+							+ "\n       HTTP response code rxd: " + respCode);
 					throw new HttpResponseException(url.toString(),
-							conn.getResponseCode(), conn.getResponseMessage());
+							respCode, conn.getResponseMessage());
 				}
 
-				logger.info("sent AsyncMDN [" + disposition.toString()
+				if (logger.isInfoEnabled()) logger.info("sent AsyncMDN [" + disposition.toString()
 						+ "] OK " + msg.getLoggingText());
 
 				// log & store mdn into backup folder.

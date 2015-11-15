@@ -14,6 +14,12 @@ public interface Message extends Serializable {
 	
     public static final String SMIME_TYPE_COMPRESSED_DATA = "smime-type=compressed-data";
 	
+	public Map<Object, Object> getOptions();
+
+	public void setOption(Object key, Object value);
+
+    public Object getOption(Object key);
+    
     public void setAttribute(String key, String value);
 
     public String getAttribute(String key);

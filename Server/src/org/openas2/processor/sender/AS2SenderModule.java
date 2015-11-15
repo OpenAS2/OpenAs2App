@@ -35,6 +35,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.SecurePartnership;
+import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
@@ -60,7 +61,7 @@ public class AS2SenderModule extends HttpSenderModule {
     public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
     	
  
-        logger.info("message submitted"+msg.getLoggingText());
+        if (logger.isInfoEnabled()) logger.info("message sender invoked" + msg.getLoggingText());
 
         if (!(msg instanceof AS2Message)) {
             throw new OpenAS2Exception("Can't send non-AS2 message");
@@ -68,8 +69,14 @@ public class AS2SenderModule extends HttpSenderModule {
 
         // verify all required information is present for sending
         checkRequired(msg);
+        // Store options on the message object
+        if (options != null) msg.getOptions().putAll(options);
+        if (logger.isTraceEnabled()) logger.trace("REtry count from options: " + options
+        		    + "\n      Re-accessed in msg.getOptions(): " + msg.getOption(SenderModule.SOPT_RETRIES)
+        		    + "\n      Option array in message: " + msg.getOptions());
+        // Get the resend retry count 
+        String retries = AS2Util.retries (options, getParameter(SenderModule.SOPT_RETRIES, false));
         
-        int retries = retries (options);
         
         try {
             // encrypt and/or sign and/or compress the message if needed
@@ -85,7 +92,7 @@ public class AS2SenderModule extends HttpSenderModule {
                 msg.setAttribute(NetAttribute.MA_DESTINATION_IP, conn.getURL().getHost());
                 msg.setAttribute(NetAttribute.MA_DESTINATION_PORT, Integer.toString(conn.getURL().getPort()));
 
-                logger.info("Connecting to: " + url+msg.getLoggingText());
+                if (logger.isInfoEnabled()) logger.info("Connecting to: " + url+msg.getLoggingText());
 
                 // Note: closing this stream causes connection abort errors on some AS2 servers
                 OutputStream messageOut = conn.getOutputStream();
@@ -99,7 +106,7 @@ public class AS2SenderModule extends HttpSenderModule {
                     int bytes = IOUtilOld.copy(messageIn, messageOut);
 
                     Profiler.endProfile(transferStub);
-                    logger.info("transferred " + IOUtilOld.getTransferRate(bytes, transferStub)+msg.getLoggingText());
+                    if (logger.isInfoEnabled()) logger.info("transferred " + IOUtilOld.getTransferRate(bytes, transferStub)+msg.getLoggingText());
                 } finally {
                     messageIn.close();
                 }
@@ -116,9 +123,6 @@ public class AS2SenderModule extends HttpSenderModule {
                 			+ " rm " +conn.getResponseMessage());
                     throw new HttpResponseException(url.toString(), conn.getResponseCode(), conn.getResponseMessage());
                 }
-
-                // Asynch MDN 2007-03-12
-                // Receive an MDN
 				try {
 					// Receive an MDN
 					if (msg.isRequestingMDN()) {
@@ -130,16 +134,11 @@ public class AS2SenderModule extends HttpSenderModule {
 						}
 					}
 
-				} catch (DispositionException de) { // If a disposition error
-					// hasn't been handled, the
-					// message transfer
-					// was not successful
-					throw de;
-				} catch (OpenAS2Exception oae) { // Don't resend or fail,
-					// just log an error if one
-					// occurs while
-					// receiving the MDN
-
+				} catch (DispositionException de) {
+					// If a disposition error hasn't been handled, the message transfer was not successful
+		            resend(msg, de, retries);
+				} catch (OpenAS2Exception oae) {
+					// Don't resend or fail, just log an error if one occurs while receiving the MDN
 					OpenAS2Exception oae2 = new OpenAS2Exception(
 							"Message was sent but an error occured while receiving the MDN");
 					oae2.initCause(oae);
@@ -151,13 +150,13 @@ public class AS2SenderModule extends HttpSenderModule {
 				conn.disconnect();
 			}
             
-        } catch (HttpResponseException hre) { // Resend if the HTTP Response
-												// has an error code
+        } catch (HttpResponseException hre) {
+        	// Resend if the HTTP Response has an error code
             logger.error("error hre " +hre.getMessage());
             hre.terminate();
             resend(msg, hre, retries);
-        } catch (IOException ioe) { // Resend if a network error occurs during
-									// transmission
+        } catch (IOException ioe) {
+        	// Resend if a network error occurs during transmission
             logger.warn("Error making network connection: " , ioe);
             WrappedException wioe = new WrappedException(ioe);
             wioe.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
@@ -170,30 +169,32 @@ public class AS2SenderModule extends HttpSenderModule {
         }
     }
 
-	private void compress(Message msg, OutputCompressor outputCompressor) throws SMIMEException, OpenAS2Exception
+	private MimeBodyPart compress(Message msg, MimeBodyPart mbp, OutputCompressor outputCompressor) throws SMIMEException, OpenAS2Exception
 	{
 		SMIMECompressedGenerator sCompGen = new SMIMECompressedGenerator();
 		String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
         if (encodeType == null) encodeType="8bit";
         sCompGen.setContentTransferEncoding(encodeType);
-		MimeBodyPart smime = sCompGen.generate(msg.getData(), outputCompressor);
-		msg.addHeader("Content-Transfer-Encoding", encodeType);
-		msg.setData(smime);
+		MimeBodyPart smime = sCompGen.generate(mbp, outputCompressor);
+		try {
+			mbp.addHeader("Content-Transfer-Encoding", encodeType);
+		} catch (MessagingException e1) {
+			logger.error("Error adding transfer encoding header in compression: " + e1.getMessage(), e1);
+			throw new OpenAS2Exception("Failed to add header to mimebodypart when compressing");
+		}
 		if (logger.isTraceEnabled())
 		{
 	    	try
 			{
 				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type:" + smime.getContentType());
-				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type Header:" + smime.getHeader("Content-Type"));
 				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + smime.getDisposition());
 			} catch (MessagingException e)
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	    	logger.trace("Msg AFTER COMPRESSION Content-Type:" + msg.getContentType());			
 		}
-
+        return smime;
 	}
 
     //Asynch MDN 2007-03-12
@@ -256,8 +257,8 @@ public class AS2SenderModule extends HttpSenderModule {
             String returnMIC = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
             // Since the partner could return the algorithm in different case to what was sent, remove the algorithm before compare
             // The Algorithm is appended as aprt of the MIC by adding a comma then optionally a space followed by the algorithm
-            String retMicMinusAlg = returnMIC.substring(0, returnMIC.lastIndexOf(","));
-            String origMicMinusAlg = originalMIC.substring(0, originalMIC.lastIndexOf(","));
+            String retMicMinusAlg = returnMIC.substring(0, returnMIC.lastIndexOf(",")).replaceAll("\\s+", "");
+            String origMicMinusAlg = originalMIC.substring(0, originalMIC.lastIndexOf(",")).replaceAll("\\s+", "");
              
             if ( ! retMicMinusAlg.equals(origMicMinusAlg)) {
             	//file was sent completely but the returned mic was not matched,  
@@ -317,11 +318,14 @@ public class AS2SenderModule extends HttpSenderModule {
 
  
 
-    private void resend(Message msg, OpenAS2Exception cause, int tries) throws OpenAS2Exception {
-    	if (resend (SenderModule.DO_SEND, msg, cause, tries)) return;
-        // Oh dear, we've run out of reetries, do something interesting.
-    	// TODO create a fake failure MDN
-    	logger.info("Message abandoned"+msg.getLoggingText());
+    private void resend(Message msg, OpenAS2Exception cause, String tries) throws OpenAS2Exception {
+    	if (!AS2Util.resend(getSession().getProcessor(), this, SenderModule.DO_SEND, msg, cause, tries))
+        {
+            // we've run out of retries, do something interesting.
+        	// TODO create a fake failure MDN???
+        	logger.warn("Message abandoned after retry limit reached." + msg.getLoggingText());
+    		return;
+        }
     }
 
     // Returns a MimeBodyPart or MimeMultipart object
@@ -335,7 +339,8 @@ public class AS2SenderModule extends HttpSenderModule {
          *        Unsigned encrypted message - data content including all MIME header fields and any applied Content-Transfer-Encoding
          *                           prior to encryption and/or compression
          *  
-         *  So essentially, calculate the MIC prior to doing any compression, signing or encryption of the message
+         *  So essentially, calculate the MIC before doing any compression or encryption if message not being signed
+         *  otherwise calculate right before signing of the message
          *   but include headers for unsigned messages (see RFC4130 section 7.3.1 for details)
          */
 
@@ -344,7 +349,7 @@ public class AS2SenderModule extends HttpSenderModule {
         boolean encrypt = partnership.getAttribute(SecurePartnership.PA_ENCRYPT) != null;
         boolean sign = partnership.getAttribute(SecurePartnership.PA_SIGN) != null;
         
-        setCalculatedMIC(calcAndStoreMic(msg, (sign || encrypt)));
+        if (!sign) setCalculatedMIC(calcAndStoreMic(msg, dataBP, (sign || encrypt)));
 
         // Check if compression is enabled
     	String compressionType = msg.getPartnership().getAttribute("compression_type");
@@ -368,7 +373,7 @@ public class AS2SenderModule extends HttpSenderModule {
     	if (isCompress && isCompressBeforeSign)
     	{
     		if (logger.isTraceEnabled()) logger.trace("Compressing outbound message before signing...");
-    		compress(msg, compressor);
+    		dataBP = compress(msg, dataBP, compressor);
     	}
         // Encrypt and/or sign the data if requested
 		CertificateFactory certFx = getSession().getCertificateFactory();
@@ -376,6 +381,7 @@ public class AS2SenderModule extends HttpSenderModule {
 		// Sign the data if requested
 		if (sign)
 		{
+	        setCalculatedMIC(calcAndStoreMic(msg, dataBP,  (sign || encrypt)));
 			X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
 
 			PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
@@ -395,18 +401,12 @@ public class AS2SenderModule extends HttpSenderModule {
 
 			if (logger.isDebugEnabled())
 				logger.debug("signed data" + msg.getLoggingText());
-			if (isCompress && !isCompressBeforeSign)
-			{
-				if (logger.isDebugEnabled())
-					logger.debug("Compressing outbound message after signing...");
-				compress(msg, compressor);
-			}
 		}
 
     	if (isCompress && !isCompressBeforeSign)
     	{
     		if (logger.isTraceEnabled()) logger.trace("Compressing outbound message after signing...");
-    		compress(msg, compressor);
+    		dataBP = compress(msg, dataBP, compressor);
     	}
 		// Encrypt the data if requested
 		if (encrypt)
@@ -482,31 +482,33 @@ public class AS2SenderModule extends HttpSenderModule {
      * @throws WrappedException 
      */
     protected void storePendingInfo(AS2Message msg, String mic) throws WrappedException {
-		try {
-			
-			
-			
+		try {			
 			String pendingFolder = (String) getSession().getComponent("processor").getParameters().get("pendingmdninfo");
-			
-
+            IOUtilOld.getDirectoryFile(pendingFolder); /* make sure the folder is created */
 			FileOutputStream fos = new FileOutputStream(
 					pendingFolder + "/"
-               			+ msg.getMessageID().substring(1,
-							msg.getMessageID().length() - 1));
+               			+ msg.getMessageID().substring(1, msg.getMessageID().length() - 1));
 			fos.write((mic + "\n").getBytes());
-			logger.debug("Original MIC is : " + mic+msg.getLoggingText());
+			String retries = (String)msg.getOption(ResenderModule.OPTION_RETRIES);
+			if (logger.isDebugEnabled()) logger.debug("RETRY COUNT from msg.getOption(): " + retries);
+			fos.write(((retries==null?"":retries) + "\n").getBytes());
+			if (logger.isDebugEnabled()) logger.debug("Original MIC is : " + mic + msg.getLoggingText());
+			if (logger.isTraceEnabled()) logger.trace("Output file is : "
+					+ pendingFolder + "/"
+           			+ msg.getMessageID().substring(1, msg.getMessageID().length() - 1));
 
-			// input pending folder & original outgoing file name to get and
-			// unique file name
-			// in order to avoid file overwritting.
+			// input pending folder & original outgoing file name to get and unique file name
+			// in order to avoid file overwriting.
 			String pendingFile = (String) getSession().getComponent("processor").getParameters().get("pendingmdn")
 					+ "/" + msg.getMessageID().substring(1,
 							msg.getMessageID().length() - 1);
 
-		    logger.info("Save Original mic & message id. information into folder : "
+			if (logger.isInfoEnabled())
+				logger.info("Save Original mic & message id. information into folder : "
 							+ pendingFile+msg.getLoggingText());
 			fos.write(pendingFile.getBytes());
 			fos.close();
+			if (logger.isTraceEnabled()) logger.trace("storePendingInfo() File closed...............");
 			msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
 			msg.setAttribute(FileAttribute.MA_STATUS, FileAttribute.MA_PENDING);
 
@@ -515,12 +517,10 @@ public class AS2SenderModule extends HttpSenderModule {
 			WrappedException we = new WrappedException(e);
             we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             throw we;
-  
-			
 		}
 	} 
     
-    protected String calcAndStoreMic(Message msg, boolean includeHeaders) throws Exception
+    protected String calcAndStoreMic(Message msg, MimeBodyPart mbp, boolean includeHeaders) throws Exception
     {
 		// Calculate and get the original mic
 		// includeHeaders = (msg.getHistory().getItems().size() > 1);
@@ -529,7 +529,7 @@ public class AS2SenderModule extends HttpSenderModule {
 		DispositionOptions dispOptions = new DispositionOptions(
 				msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_MDN_OPTIONS));
 		String mic = AS2Util.getCryptoHelper().calculateMIC(
-				msg.getData(), dispOptions.getMicalg(),
+				mbp, dispOptions.getMicalg(),
 				includeHeaders);
 
         if (msg.getPartnership().getAttribute(

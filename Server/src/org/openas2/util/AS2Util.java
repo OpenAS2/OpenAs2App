@@ -3,12 +3,18 @@ package org.openas2.util;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openas2.DispositionException;
+import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cert.CertificateNotFoundException;
@@ -25,6 +31,9 @@ import org.openas2.params.ParameterParser;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.Processor;
+import org.openas2.processor.resender.ResenderModule;
+import org.openas2.processor.sender.SenderModule;
 
 public class AS2Util {
     private static ICryptoHelper ch;
@@ -38,7 +47,7 @@ public class AS2Util {
         return ch;
     }
 
-    public static MessageMDN createMDN(Session session, AS2Message msg,
+    public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
             DispositionType disposition, String text) throws Exception {
         AS2MessageMDN mdn = new AS2MessageMDN(msg);
         mdn.setHeader("AS2-Version", "1.1");
@@ -74,12 +83,6 @@ public class AS2Util {
 
         DispositionOptions dispOptions = new DispositionOptions(msg
                 .getHeader("Disposition-Notification-Options"));
-        String mic = null;
-
-        if (dispOptions.getMicalg() != null) {
-            mic = getCryptoHelper().calculateMIC(msg.getData(), dispOptions.getMicalg(),
-                    (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()));
-        }
 
         mdn.setAttribute(AS2MessageMDN.MDNA_MIC, mic);
         createMDNData(session, mdn, dispOptions.getMicalg(), dispOptions.getProtocol());
@@ -210,4 +213,110 @@ public class AS2Util {
             }
         }
     } 
+    /**
+     *  @description Verify disposition sytus is "processed" then check MIC is matched
+     *  @param msg - the original message sent to the partner that the MDN relates to
+     *  @return true if mdn processed  
+     */
+	public static boolean checkMDN(AS2Message msg, String originalMIC) throws DispositionException {
+		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+		/*
+		 * The sender may return an error in the disposition and not set the MIC
+		 * so check disposition first
+		 */
+		String disposition = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_DISPOSITION);
+		if (disposition != null && logger.isInfoEnabled())
+			logger.info("received MDN [" + disposition + "]" + msg.getLoggingText());
+		boolean dispositionHasWarning = false;
+		try {
+			new DispositionType(disposition).validate();
+		} catch (DispositionException de) {
+			// Something wrong detected so flag it for later use
+			dispositionHasWarning = true;
+			de.setText(msg.getMDN().getText());
+
+			if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
+				// Do not throw error in this case ... just log it
+				de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
+				de.terminate();
+			} else {
+				throw de;
+			}
+		} catch (OpenAS2Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// get the returned mic from mdn object
+
+		String returnMIC = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
+		if (returnMIC == null || returnMIC.length() < 1) {
+			if (dispositionHasWarning)
+				logger.warn("Returned MIC not found but disposition has warning so might be normal.");
+			else
+				logger.error("Returned MIC not found so cannot validate returned message.");
+			return false;
+		}
+
+		/* Returned-Content-MIC header and rfc822 headers can contain spaces all over the place.
+		 * (not to mention comments!). Simple fix - delete all spaces.
+		 * Since the partner could return the algorithm in different case to
+		 * what was sent, remove the algorithm before compare
+		 * The Algorithm is appended as a part of the MIC by adding a comma then
+		 * optionally a space followed by the algorithm
+		 */
+		String retMicMinusAlg = returnMIC.substring(0, returnMIC.lastIndexOf(",")).replaceAll("\\s+", "");
+		String origMicMinusAlg = originalMIC.substring(0, originalMIC.lastIndexOf(",")).replaceAll("\\s+", "");
+
+		if (!retMicMinusAlg.equals(origMicMinusAlg)) {
+			logger.error("MIC not matched, original MIC: " + originalMIC + " return MIC: " + returnMIC
+					+ msg.getLoggingText());
+			return false;
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("mic is matched, mic: " + returnMIC + msg.getLoggingText());
+
+		return true;
+	}
+	// How many times should this message be sent?
+	public static String retries(Map<Object,Object> options, String fallbackRetries) {
+		String left;
+		if (options == null || (left = (String) options.get(SenderModule.SOPT_RETRIES)) == null) {
+				left = fallbackRetries;
+		}
+			
+		if (left == null) left = SenderModule.DEFAULT_RETRIES;
+		// Verify it is a valid integer
+		try {
+			Integer.parseInt(left);
+		} catch (Exception e) {
+			return SenderModule.DEFAULT_RETRIES;
+		}
+		return left;
+	}
+
+	/* @description Attempts to check if a resend should go ahead and if o decrements the resend count
+	 *  and stores the decremented retry count in the options map. If the passed in retry count is null or invalid
+	 *  it will fall back to a system default
+	 */
+    public static boolean resend(Processor processor, Object sourceClass, String how, Message msg, OpenAS2Exception cause, String tries) throws OpenAS2Exception {
+		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+		logger.debug("RESEND requested.... retries to go: " + tries);
+		int retries = -1;
+		if (tries == null) tries = SenderModule.DEFAULT_RETRIES;
+		try {
+			retries = Integer.parseInt(tries);
+		} catch (Exception e) {
+			logger.error("The retry count is not a valid integer value: " + tries);
+		}
+    	if (retries >= 0 && retries -- <= 0) return false;
+        Map<Object,Object> options = new HashMap<Object,Object>();
+        options.put(ResenderModule.OPTION_CAUSE, cause);
+        options.put(ResenderModule.OPTION_INITIAL_SENDER, sourceClass);
+        options.put(ResenderModule.OPTION_RESEND_METHOD, how);
+        options.put(ResenderModule.OPTION_RETRIES, "" + retries);
+        processor.handle(ResenderModule.DO_RESEND, msg, options);
+        return true;
+    }
+
 }
