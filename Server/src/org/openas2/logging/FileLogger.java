@@ -21,8 +21,8 @@ public class FileLogger extends BaseLogger {
         getLogFile();
     }
 
-    public void doLog(Level level, String msgText, Message message) {
-        appendToFile(getFormatter().format(level, msgText));
+    public void doLog(Level level, String msgText, Message as2Msg) {
+        appendToFile(getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
     }
 
     protected String getShowDefaults() {

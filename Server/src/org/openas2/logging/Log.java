@@ -147,18 +147,14 @@ public class Log implements org.apache.commons.logging.Log {
 	 * @see org.apache.commons.logging.Log#trace(java.lang.Object)
 	 */
 	public void trace(Object message) {
-		if (isLevelEnabled(LOG_LEVEL_TRACE))
-			  lm.log(Level.FINEST, clazzname+": "+message.toString());
+		trace(message, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.logging.Log#trace(java.lang.Object, java.lang.Throwable)
-	 */
 	public void trace(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_TRACE))
 		{
-			lm.log(Level.FINEST, clazzname+": "+message.toString());
-			lm.log(t, false);
+			lm.log(Level.FINEST, clazzname, message);
+			if (t != null) lm.log(t, false);
 		}
 	}
 
@@ -166,40 +162,30 @@ public class Log implements org.apache.commons.logging.Log {
 	 * @see org.apache.commons.logging.Log#debug(java.lang.Object)
 	 */
 	public void debug(Object message) {
-		if (isLevelEnabled(LOG_LEVEL_DEBUG))
-		  lm.log(Level.FINER, clazzname+": "+message.toString());
-
+		debug(message, null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.logging.Log#debug(java.lang.Object, java.lang.Throwable)
-	 */
 	public void debug(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_DEBUG))
 		{
-			lm.log(Level.FINER, clazzname+": "+message.toString());
-			lm.log(t, false);
+			lm.log(Level.FINER, clazzname, message);
+			if (t != null) lm.log(t, false);
 		}
-
 	}
 
 	/* (non-Javadoc)
 	 * @see org.apache.commons.logging.Log#info(java.lang.Object)
 	 */
 	public void info(Object message) {
-		if (isLevelEnabled(LOG_LEVEL_INFO))
-    		lm.log(Level.FINE, clazzname+": "+message.toString());
+		info(message, null);
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.logging.Log#info(java.lang.Object, java.lang.Throwable)
-	 */
 	public void info(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_INFO))
 		{
-		  lm.log(Level.FINE, clazzname+": "+message.toString());
-		  lm.log(t, false);
+		  lm.log(Level.FINE, clazzname, message);
+		  if (t != null) lm.log(t, false);
 		}
 	}
 
@@ -207,19 +193,15 @@ public class Log implements org.apache.commons.logging.Log {
 	 * @see org.apache.commons.logging.Log#warn(java.lang.Object)
 	 */
 	public void warn(Object message) {
-		if (isLevelEnabled(LOG_LEVEL_WARN))
-		  lm.log(Level.WARNING, clazzname+": "+message.toString());
+		warn(message, null);
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.logging.Log#warn(java.lang.Object, java.lang.Throwable)
-	 */
 	public void warn(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_WARN))
 		{
-		  lm.log(Level.WARNING, clazzname+": "+message.toString());
-		  lm.log(t, false);
+		  lm.log(Level.WARNING, clazzname, message);
+		  if (t != null) lm.log(t, false);
 		}
 	}
 
@@ -228,8 +210,7 @@ public class Log implements org.apache.commons.logging.Log {
 	 * @see org.apache.commons.logging.Log#error(java.lang.Object)
 	 */
 	public void error(Object message) {
-		if (isLevelEnabled(LOG_LEVEL_ERROR))
- 		  lm.log(Level.ERROR, clazzname+": "+message.toString());
+		error(message, null);
 
 	}
 
@@ -239,8 +220,8 @@ public class Log implements org.apache.commons.logging.Log {
 	public void error(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_ERROR))
 		{
-			lm.log(Level.ERROR, clazzname+": "+message.toString());
-			lm.log(t, false);			
+			lm.log(Level.ERROR, clazzname, message);
+			if (t != null) lm.log(t, false);			
 		}
 
 	}
@@ -249,19 +230,15 @@ public class Log implements org.apache.commons.logging.Log {
 	 * @see org.apache.commons.logging.Log#fatal(java.lang.Object)
 	 */
 	public void fatal(Object message) {
-		if (isLevelEnabled(LOG_LEVEL_FATAL))
-		  lm.log(Level.ERROR, clazzname+": "+message.toString());
+		fatal(message, null);
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.logging.Log#fatal(java.lang.Object, java.lang.Throwable)
-	 */
 	public void fatal(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_FATAL))
 		{
-		  lm.log(Level.ERROR, clazzname+": "+message.toString());
-		  lm.log(t, true);
+		  lm.log(Level.ERROR, clazzname, message);
+		  if (t != null) lm.log(t, true);
 		}
 	}
 
@@ -309,5 +286,19 @@ public class Log implements org.apache.commons.logging.Log {
 
     private static InputStream getResourceAsStream(final String name) {
         return ClassLoader.getSystemResourceAsStream(name);
+    }
+    
+    public static String getExceptionMsg(Throwable e)
+    {
+      String msg = null;
+      if (e.getCause() != null)
+          msg = e.getCause().getMessage();
+      if (msg == null || msg.length() == 0)
+      {
+        msg = e.getMessage();
+        if (msg == null || msg.length() == 0)
+          msg = e.toString();
+      }
+      return msg;
     }
 }
