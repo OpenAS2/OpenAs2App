@@ -1,3 +1,9 @@
+Version 1.3.6 - 2015-11-23
+  1. Fix handling creating a unique fle name for storing message info for ASYNC MDN
+  2. Rationalise the handling of received MDN so that there is a common handler for Async and Sync MDN
+  3. Fix moving pending messages that fail after retries to the error folder.
+  4. Enhance logging to pass MEssage object to log manager to facilitate finer grained and more targeted logging
+  
 Version 1.3.5 - 2015-11-13
   1. Fix handling of file streams to ensure file handle is always closed
   2. Fix async MDN functionality

@@ -1,19 +1,17 @@
               OpenAS2 Server
-              Version 1.3.5
+              Version 1.3.6
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.5
+The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.6
 
-The release download file is: OpenAS2Server-1.3.5.zip
+The release download file is: OpenAS2Server-1.3.6.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-This release is an enahncement and bugfix release:
- - fix handling of file streams to ensure file handle is always closed
- - fix async MDN functionality
- - fix calculation of MIC when content is signed and  compressed
- - improved logic handling sending of MDN errors and HTTP responses
- - add compiler option to build file to ensure java 1.5 compatibility
- - add ability to control number of resend attempts
+This release is an enhancement and bugfix release:
+  1. Fix handling creating a unique fle name for storing message info for ASYNC MDN
+  2. Rationalise the handling of received MDN so that there is a common handler for Async and Sync MDN
+  3. Fix moving pending messages that fail after retries to the error folder.
+  4. Enhance logging to pass MEssage object to log manager to facilitate finer grained and more targeted logging
 
 Java 1.5 or later is required.
 
