@@ -42,10 +42,8 @@
 
 	<processor classname="org.openas2.processor.DefaultProcessor"
 	    pendingMDN="%home%/../data/pendingMDN3"
-	    pendingMDNinfo="%home%/../data/pendinginfoMDN3"
-	    resend_max_retries="10">
-
-	
+	    pendingMDNinfo="%home%/../data/pendinginfoMDN3"    
+	>	
 		<module classname="org.openas2.processor.sender.AS2SenderModule">
                 </module>
 		
@@ -117,7 +115,7 @@
 		
 		<module classname="org.openas2.processor.resender.DirectoryResenderModule"
 			resenddir="%home%/../data/resend"
-			errordir="%home%/resend/error"
+			errordir="%home%/../data/resend/error"
 			resenddelay="60"/>			
 	</processor>
 </openas2>
