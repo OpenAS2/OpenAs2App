@@ -14,6 +14,7 @@ import javax.mail.internet.MimeBodyPart;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
 
@@ -32,6 +33,10 @@ public abstract class BaseMessage implements Message {
 	private boolean rxdMsgWasSigned = false;
 	private boolean rxdMsgWasEncrypted = false;
 	private Map<Object, Object> options = new HashMap<Object, Object>();
+	private String calculatedMIC = null;
+	private String logMsg = null;
+    private String status = MSG_STATUS_MSG_INIT;
+    
 
 	public BaseMessage() {
         super();
@@ -43,6 +48,16 @@ public abstract class BaseMessage implements Message {
             options = new HashMap<Object, Object>();
         }
 		return options;
+	}
+	
+    public String getStatus()
+	{
+		return status;
+	}
+
+	public void setStatus(String status)
+	{
+		this.status = status;
 	}
 
 	public void setOption(Object key, Object value) {
@@ -118,7 +133,7 @@ public abstract class BaseMessage implements Message {
             	setContentDisposition(data.getHeader("Content-Disposition", null)); 
             }
             catch (MessagingException e) { 
-            	setContentDisposition(null); 
+            	setContentDisposition(null); // TODO: why ignore?????
             } 
         }
 
@@ -206,7 +221,7 @@ public abstract class BaseMessage implements Message {
         return partnership;
     }
 
-    public abstract String generateMessageID();
+    public abstract String generateMessageID() throws InvalidParameterException;
 
     public void setSubject(String subject) {
         setHeader("Subject", subject);
@@ -270,7 +285,7 @@ public abstract class BaseMessage implements Message {
         return buf.toString();
     }
 
-    public void updateMessageID() {
+    public void updateMessageID() throws InvalidParameterException {
         setMessageID(generateMessageID());
     }
 
@@ -346,7 +361,26 @@ public abstract class BaseMessage implements Message {
         out.writeObject(MDN);
     }
     
-    public String getLoggingText() {
+    public String getLogMsgID() {
     	return " [" + getMessageID() + "]";
     }
+    
+	public void setLogMsg(String msg) {
+		logMsg = msg;
+	}
+
+    public String getLogMsg() {
+        return logMsg;
+    }
+
+    public String getCalculatedMIC()
+	{
+		return calculatedMIC;
+	}
+
+	public void setCalculatedMIC(String calculatedMIC)
+	{
+		this.calculatedMIC = calculatedMIC;
+	}
+
 }

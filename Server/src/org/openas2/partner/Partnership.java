@@ -154,4 +154,10 @@ public class Partnership implements Serializable {
         getReceiverIDs().putAll(partnership.getReceiverIDs());
         getAttributes().putAll(partnership.getAttributes());
     }
+    
+    public boolean isAsyncMDN()
+    {
+    	String receiptOptions = getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION);
+    	return (receiptOptions != null && receiptOptions.length() > 0);
+    }
 }

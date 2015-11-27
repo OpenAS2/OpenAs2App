@@ -76,7 +76,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 	private void sendAsyncMDN(AS2Message msg, Map<Object, Object> options)
 			throws OpenAS2Exception {
 
-		if (logger.isInfoEnabled()) logger.info("Async MDN submitted" + msg.getLoggingText());
+		if (logger.isInfoEnabled()) logger.info("Async MDN submitted" + msg.getLogMsgID());
 		DispositionType disposition = new DispositionType("automatic-action",
 				"MDN-sent-automatically", "processed");
 
@@ -91,7 +91,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
 			try {
 
-				if (logger.isInfoEnabled()) logger.info("connected to " + url + msg.getLoggingText());
+				if (logger.isInfoEnabled()) logger.info("connected to " + url + msg.getLogMsgID());
 
 				conn.setRequestProperty("Connection", "close, TE");
 				conn.setRequestProperty("User-Agent", "OpenAS2 AS2Sender");
@@ -120,7 +120,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 					Profiler.endProfile(transferStub);
 					if (logger.isInfoEnabled()) logger.info("transferred "
 							+ IOUtilOld.getTransferRate(bytes, transferStub)
-							+ msg.getLoggingText());
+							+ msg.getLogMsgID());
 				} finally {
 					messageIn.close();
 				}
@@ -132,15 +132,18 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 						&& (respCode != HttpURLConnection.HTTP_ACCEPTED)
 						&& (respCode != HttpURLConnection.HTTP_PARTIAL)
 						&& (respCode != HttpURLConnection.HTTP_NO_CONTENT)) {
-					if (logger.isErrorEnabled()) logger.error("Error sending AsyncMDN [" + disposition.toString()
-							+ "] Fail " + msg.getLoggingText()
-							+ "\n       HTTP response code rxd: " + respCode);
+					if (logger.isErrorEnabled())
+					{
+						msg.setLogMsg("Error sending AsyncMDN [" + disposition.toString()
+							+ "] HTTP response code: " + respCode);
+						logger.error(msg);
+					}
 					throw new HttpResponseException(url.toString(),
 							respCode, conn.getResponseMessage());
 				}
 
 				if (logger.isInfoEnabled()) logger.info("sent AsyncMDN [" + disposition.toString()
-						+ "] OK " + msg.getLoggingText());
+						+ "] OK " + msg.getLogMsgID());
 
 				// log & store mdn into backup folder.
 				getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);

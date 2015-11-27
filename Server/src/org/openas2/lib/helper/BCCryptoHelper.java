@@ -320,7 +320,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 				    throw new SignatureException("Verification failed");
 				}
 			} catch (Exception e) {
-				if (logger.isWarnEnabled()) logger.warn("Signer verification failed:: " + e.getMessage());
+				if (logger.isWarnEnabled()) logger.warn("Signer verification failed: " + org.openas2.logging.Log.getExceptionMsg(e), e);
 			    throw new SignatureException("Verification failed");
 			}
         }

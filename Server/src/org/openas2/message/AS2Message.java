@@ -21,7 +21,7 @@ public class AS2Message extends BaseMessage implements Message {
         return PROTOCOL_AS2;
     }
 
-    public String generateMessageID() {
+    public String generateMessageID() throws InvalidParameterException {
     	CompositeParameters params = 
     		new CompositeParameters(false).
     			add("date", new DateParameters()).
@@ -34,12 +34,7 @@ public class AS2Message extends BaseMessage implements Message {
     	}
     	StringBuffer messageId = new StringBuffer();
     	messageId.append("<");
-    	try {
-    		messageId.append(ParameterParser.parse(idFormat, params));
-    	}
-    	catch (InvalidParameterException e) {
-    		messageId.append(idFormat); 	// useless, but what to do?
-    	}
+  		messageId.append(ParameterParser.parse(idFormat, params));
     	messageId.append(">");
         return messageId.toString();
     }

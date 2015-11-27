@@ -3,7 +3,6 @@ package org.openas2.processor.receiver;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.security.PrivateKey;
@@ -20,7 +19,6 @@ import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
 import org.bouncycastle.mail.smime.SMIMECompressed;
 import org.bouncycastle.mail.smime.SMIMEUtil;
-import org.openas2.ComponentNotFoundException;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -72,7 +70,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		try {
 			out = new BufferedOutputStream(s.getOutputStream());
 		} catch (IOException e1) {
-			logger.error("Failed to get outputstream on received socket. Response cannot be sent.", e1);
+			msg.setLogMsg("Failed to get outputstream on received socket. Response cannot be sent.");
+			logger.error(msg, e1);
 			return;
 		}
 
@@ -81,10 +80,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			ProfilerStub transferStub = Profiler.startProfile();
 			// Read in the message request, headers, and data
 			try {
-				data = HTTPUtil.readData(s, msg);
+				data = HTTPUtil.readData(s.getInputStream(), s.getOutputStream(), msg);
 
 			} catch (Exception e) {
-				logger.error("HTTP connection error on inbound message.", e);
+				msg.setLogMsg("HTTP connection error on inbound message.");
+				logger.error(msg, e);
 				NetException ne = new NetException(s.getInetAddress(), s.getPort(), e);
 				ne.terminate();
 			}
@@ -92,7 +92,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			String mic = null;
 			if (data != null) {
 				logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
-						+ msg.getLoggingText());
+						+ msg.getLogMsgID());
 
 				// TODO store HTTP request, headers, and data to file in Received folder -> use message-id for filename?
 				try {
@@ -112,7 +112,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						receivedPart.setHeader("Content-Type", receivedContentType.toString());
 						msg.setData(receivedPart);
 					} catch (Exception e) {
-						logger.error("Error extracting received message.", e);
+						msg.setLogMsg("Error extracting received message.");
+						logger.error(msg, e);
 						throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
 								"processed", "Error", "unexpected-processing-error"),
 								AS2ReceiverModule.DISP_PARSING_MIME_FAILED, e);
@@ -136,7 +137,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					try {
 						getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, null);
 					} catch (OpenAS2Exception oae) {
-						logger.error("Error handling received message: " + oae.getCause(), oae);
+						msg.setLogMsg("Error handling received message: " + oae.getCause());
+						logger.error(msg, oae);
 						;
 						throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
 								"processed", "Error", "unexpected-processing-error"),
@@ -161,10 +163,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						} else {
 							HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
 							out.flush();
-							logger.info("sent HTTP OK" + getClientInfo(s) + msg.getLoggingText());
+							logger.info("sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
 						}
 					} catch (Exception e) {
-						logger.error("Error processing MDN for received message: " + e.getCause(), e);
+						msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
+						logger.error(msg, e);
 						throw new WrappedException("Error creating and returning MDN, message was still processed",
 								e);
 					}
@@ -177,14 +180,16 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 							out.close();
 							out = null; // Prevent yet another error in finally block
 						} catch (IOException e) {
-							logger.error("Failed to close connection on DispositionException handling to send async MDN.", e);
+							msg.setLogMsg("Failed to close connection on DispositionException handling to send async MDN.");
+							logger.error(msg, e);
 						}
 	                    try {
 							getModule().getSession().getProcessor().handle(SenderModule.DO_SENDMDN, msg, null);
 		                	if (logger.isDebugEnabled())
 			                	  logger.debug("Call to asynch MDN sender initiated");
 						} catch (Exception e) {
-							logger.error("Failed to initiate async MDN send on DispositionException handling.", e);
+							msg.setLogMsg("Failed to initiate async MDN send on DispositionException handling.");
+							logger.error(msg, e);
 						}
 	                    return;
 	                }
@@ -200,7 +205,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				try {
 					out.close();
 				} catch (IOException e) {
-					logger.error("Failed to close output connection.", e);;
+					msg.setLogMsg("Failed to close output connection.");
+					logger.error(msg, e);;
 				}
 			}
 		}
@@ -236,14 +242,15 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             if (ch.isEncrypted(msg.getData())) {
             	msg.setRxdMsgWasEncrypted(true);
               // Decrypt
-            	if (logger.isDebugEnabled()) logger.debug("decrypting :::"+msg.getLoggingText());
+            	if (logger.isDebugEnabled()) logger.debug("decrypting :::"+msg.getLogMsgID());
 
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
                 PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
             }
         } catch (Exception e) {
-        	logger.error("Error extracting received message: " + e.getCause(), e);;
+        	msg.setLogMsg("Error extracting received message: " + e.getCause());
+        	logger.error(msg, e);;
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                     "processed", "Error", "decryption-failed"), AS2ReceiverModule.DISP_DECRYPTION_ERROR, e);
         }
@@ -256,7 +263,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				isDecompressed = true;
 			}
 		} catch (Exception e1) {
-        	logger.error("Error decompressing received message: " + e1.getCause(), e1);;
+        	msg.setLogMsg("Error decompressing received message: " + e1.getCause());
+        	logger.error(msg, e1);;
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                     "processed", "Error", "decompresion-failed"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR, e1);
 		}
@@ -264,13 +272,14 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         try {
             if (ch.isSigned(msg.getData())) {
             	msg.setRxdMsgWasSigned(true);
-            	if (logger.isDebugEnabled()) logger.debug("verifying signature"+msg.getLoggingText());
+            	if (logger.isDebugEnabled()) logger.debug("verifying signature"+msg.getLogMsgID());
 
                 X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
                 msg.setData(AS2Util.getCryptoHelper().verify(msg.getData(), senderCert));
             }
         } catch (Exception e) {
-        	logger.error("Error decrypting received message.", e);
+        	msg.setLogMsg("Error decrypting received message: " + org.openas2.logging.Log.getExceptionMsg(e));
+        	logger.error(msg, e);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                     "processed", "Error", "integrity-check-failed"), AS2ReceiverModule.DISP_VERIFY_SIGNATURE_FAILED, e);
         }
@@ -299,7 +308,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				mic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
 				        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()));
 			} catch (Exception e) {
-				logger.error("Error calculating MIC on received message: " + e.getCause(), e);
+				msg.setLogMsg("Error calculating MIC on received message: " + e.getCause());
+				logger.error(msg, e);
 				throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
 						"processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_CALC_MIC_FAILED,
 						e);
@@ -321,7 +331,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				decompress(msg);
 			}
 		} catch (Exception e) {
-			logger.error("Unexepcted error checking for compressed message after signing", e);
+			msg.setLogMsg("Unexepcted error checking for compressed message after signing");
+			logger.error(msg, e);
 	        throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
 	                "processed", "Error", "decompression-failed"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR
 	                , new Exception("Unexpected error occurred checking for compressed message: " + e.getMessage()));
@@ -344,7 +355,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		catch (Exception ex)
 		{
 
-			logger.error("Error decompressing received message: " + ex.getCause(), ex);
+			msg.setLogMsg("Error decompressing received message: " + ex.getCause());
+			logger.error(msg, ex);
 			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
 					"processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR,
 					ex);
@@ -367,7 +379,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 	out.write("Content-Length: 0\r\n\r\n".getBytes()); 
                 	out.flush();
                 	if (logger.isInfoEnabled())
-	                	  logger.info("setup to send asynch MDN [" + disposition.toString() + "]" + msg.getLoggingText());
+	                	  logger.info("setup to send asynch MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
                     return;
                 }
                 
@@ -396,12 +408,13 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 // Save sent MDN  for later examination
 				getModule().getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
 				if (logger.isInfoEnabled()) 
-					logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLoggingText());
+					logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
                 we.terminate();
-                logger.error("Unexpected error occurred sending MDN" , e);
+                msg.setLogMsg("Unexpected error occurred sending MDN: " + org.openas2.logging.Log.getExceptionMsg(e));
+                logger.error(msg, e);
             }
         }
     }

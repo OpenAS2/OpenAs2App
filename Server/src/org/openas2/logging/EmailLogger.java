@@ -34,7 +34,7 @@ public class EmailLogger extends BaseLogger {
     public static final String PARAM_BODY = "body";
     public static final String PARAM_BODYTEMPLATE = "bodytemplate";
 
-    public void doLog(Level level, String msgText, Message message) {
+    public void doLog(Level level, String msgText, Message as2Msg) {
     	
     	if (level != Level.ERROR)
     	{
@@ -47,7 +47,7 @@ public class EmailLogger extends BaseLogger {
                 subject = getSubject(level, msgText);
             }
 
-            sendMessage(subject, getFormatter().format(level, msgText));
+            sendMessage(subject, getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
         } catch (InvalidParameterException ipe) {
             ipe.printStackTrace();
         }

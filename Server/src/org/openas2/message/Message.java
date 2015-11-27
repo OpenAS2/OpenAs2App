@@ -7,13 +7,28 @@ import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 
 import org.openas2.OpenAS2Exception;
+import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
 
 public interface Message extends Serializable {
 	
+    public static final String MSG_STATUS_MSG_INIT = "initializing_msg";
+    public static final String MSG_STATUS_MSG_SEND = "sending_msg";
+    public static final String MSG_STATUS_MSG_RESEND = "resending_msg";
+    public static final String MSG_STATUS_MDN_SEND = "sending_mdn";
+    public static final String MSG_STATUS_MDN_WAIT = "awaiting_mdn";
+    public static final String MSG_STATUS_MDN_PARSE = "parsing_mdn";
+    public static final String MSG_STATUS_MDN_VERIFY = "verifying_mdn";
+    public static final String MSG_STATUS_MDN_PROCESS_INIT = "init_processing_mdn";
+    public static final String MSG_STATUS_MSG_CLEANUP = "cleanup";
+
     public static final String SMIME_TYPE_COMPRESSED_DATA = "smime-type=compressed-data";
 	
+	public void setStatus(String status);
+
+    public String getStatus();
+    
 	public Map<Object, Object> getOptions();
 
 	public void setOption(Object key, Object value);
@@ -84,9 +99,18 @@ public interface Message extends Serializable {
 
     public void addHeader(String key, String value);
 
-    public String generateMessageID();
+    public String generateMessageID() throws InvalidParameterException;
 
-    public void updateMessageID();
+    public void updateMessageID() throws InvalidParameterException;
     
-    public String getLoggingText();
+    public String getLogMsgID();
+
+    public String getLogMsg();
+
+    public void setLogMsg(String msg);
+
+    public String getCalculatedMIC();
+
+	public void setCalculatedMIC(String calculatedMIC);
+
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.openas2.message.Message;
+
 
 public class LogManager {
     private static LogManager defaultManager;
@@ -49,20 +51,23 @@ public class LogManager {
         }
     }
 
+
     /**
      * @param level
-     * @param msg
+     * @param clazzName - the name of the class that the log was generated in
+     * @param message - the logging object to create the message from
      */
-    public void log(Level level, String msg) {
+    public void log(Level level, String clazzName, Object msg) {
         Iterator<?> loggerIt = getLoggers().iterator();
 
         if (loggerIt.hasNext()) {
             while (loggerIt.hasNext()) {
                 Logger logger = (Logger) loggerIt.next();
-                logger.log(level, msg, null);
+                if (msg instanceof Message) logger.log(level, clazzName + ": " + ((Message)msg).getLogMsg(), (Message) msg);
+                else logger.log(level, clazzName + ": " + msg.toString(), null);
             }
         } else {
-            System.out.println(level.getName() + " " + msg);
+            System.out.println(level.getName() + " " + msg.toString());
         }
     }
 

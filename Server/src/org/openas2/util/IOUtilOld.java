@@ -8,6 +8,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.UUID;
 
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.InvalidMessageException;
@@ -87,23 +88,8 @@ public class IOUtilOld {
     }
 
     public static File getUnique(File dir, String filename) {
-        File test;
-        int counter = -1;
         filename = cleanFilename(filename);
-
-        while (true) {
-            if (counter == -1) {
-                test = new File(dir, filename);
-            } else {
-                test = new File(dir, filename + "." + Integer.toString(counter));
-            }
-
-            if (!test.exists()) {
-                return test;
-            }
-
-            counter++;
-        }
+        return new File(dir, filename + "." + UUID.randomUUID());
     }
 
     public static String cleanFilename(String filename) {
