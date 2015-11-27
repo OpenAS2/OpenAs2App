@@ -34,7 +34,7 @@ public class MessageFileModule extends BaseStorageModule {
             File msgFile = getFile(msg, getParameter(PARAM_FILENAME, true), action);
             InputStream in = msg.getData().getInputStream();
             store(msgFile, in);
-            logger.info("stored message to " + msgFile.getAbsolutePath()+msg.getLoggingText());
+            logger.info("stored message to " + msgFile.getAbsolutePath()+msg.getLogMsgID());
         } catch (Exception e) {
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
                     "processed", "Error", "Error storing transaction"), AS2ReceiverModule.DISP_STORAGE_FAILED, e);
@@ -47,7 +47,7 @@ public class MessageFileModule extends BaseStorageModule {
                 File headerFile = getFile(msg, headerFilename, action);
                 InputStream in = getHeaderStream(msg);
                 store(headerFile, in);
-                logger.info("stored headers to " + headerFile.getAbsolutePath()+msg.getLoggingText());
+                logger.info("stored headers to " + headerFile.getAbsolutePath()+msg.getLogMsgID());
             } catch (IOException ioe) {
                 throw new WrappedException(ioe);
             }
