@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.Socket;
 import java.util.StringTokenizer;
 
 import javax.mail.MessagingException;
@@ -226,11 +225,11 @@ public class HTTPUtil {
         return msg;
     }
 
-    public static byte[] readData(Socket s, Message msg) throws IOException, MessagingException {
+    public static byte[] readData(InputStream inStream, OutputStream outStream, Message msg) throws IOException, MessagingException {
         byte[] data = null;
 
         // Get the stream and read in the HTTP request and headers
-        BufferedInputStream in = new BufferedInputStream(s.getInputStream());
+        BufferedInputStream in = new BufferedInputStream(inStream);
         String[] request = HTTPUtil.readRequest(in);
         msg.setAttribute(MA_HTTP_REQ_TYPE, request[0]);
         msg.setAttribute(MA_HTTP_REQ_URL, request[1]);
@@ -277,20 +276,20 @@ public class HTTPUtil {
         				data = newdata;
         				length = newlen;
         				// And now the CRLF after the chunk;
-        				while (dataIn.readByte () != '\n');
+        				while (dataIn.readByte() != '\n');
         			}
         			msg.setHeader("Content-Length", new Integer(length).toString());
         		}
         		else {
-        			HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_LENGTH_REQUIRED,
-        					false);
+        			if (outStream != null) 
+        				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
         			throw new IOException("Transfer-Encoding unimplemented: " + transfer_encoding);
         		}
         	}
         	else if (msg.getHeader("Content-Length") == null) { 
-        		HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_LENGTH_REQUIRED,
-                         false);
-            throw new IOException("Content-Length missing");
+        		if (outStream != null) 
+    				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
+                throw new IOException("Content-Length missing");
         	}
         }
         else {
