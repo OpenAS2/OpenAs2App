@@ -73,7 +73,8 @@ public class DefaultProcessor extends BaseProcessor {
         if (pex != null) {
             throw pex;
         } else if (!moduleFound) {
-            logger.error("No handler found for action: " + action);
+            msg.setLogMsg("No handler found for action: " + action);
+            logger.error(msg);
             throw new NoModuleException(action, msg, options);
         }
     }
