@@ -275,7 +275,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             	if (logger.isDebugEnabled()) logger.debug("verifying signature"+msg.getLogMsgID());
 
                 X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
-                msg.setData(AS2Util.getCryptoHelper().verify(msg.getData(), senderCert));
+                msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
             }
         } catch (Exception e) {
         	msg.setLogMsg("Error decrypting received message: " + org.openas2.logging.Log.getExceptionMsg(e));

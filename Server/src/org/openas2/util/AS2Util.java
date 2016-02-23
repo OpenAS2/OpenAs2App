@@ -193,7 +193,7 @@ public class AS2Util {
 			ICryptoHelper ch = getCryptoHelper();
 
 			if (ch.isSigned(mainPart)) {
-			    mainPart = getCryptoHelper().verify(mainPart, receiver);
+			    mainPart = getCryptoHelper().verifySignature(mainPart, receiver);
 			}
 		} catch (Exception e1)
 		{
@@ -510,12 +510,7 @@ public class AS2Util {
 
 		msg.setStatus(Message.MSG_STATUS_MDN_PARSE);
 		AS2Util.parseMDN(msg, senderCert);
-		
-		/* For Async MDN we will need to get the original Message object from the pending file in case of a resend
-		 * Can only be retrieved after parsing because prsing gets the original message Id needed to retrieve the file
-		 */
-		Message originalMsg = null;
-		
+				
 		if (isAsyncMDN)
 		{
 			getMetaData(msg, session);

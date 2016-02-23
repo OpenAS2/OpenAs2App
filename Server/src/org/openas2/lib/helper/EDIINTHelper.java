@@ -91,7 +91,7 @@ public class EDIINTHelper {
             }
 
             // verify the data
-            MimeBodyPart verifiedData = crypto.verify(data, cert);
+            MimeBodyPart verifiedData = crypto.verifySignature(data, cert);
 
             // update the message's data and content type
             msg.setData(verifiedData);

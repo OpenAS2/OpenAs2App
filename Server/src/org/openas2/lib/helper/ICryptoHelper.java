@@ -50,5 +50,5 @@ public interface ICryptoHelper {
 
     MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest) throws Exception;
 
-    MimeBodyPart verify(MimeBodyPart part, Certificate cert) throws Exception;
+    MimeBodyPart verifySignature(MimeBodyPart part, Certificate cert) throws Exception;
 }

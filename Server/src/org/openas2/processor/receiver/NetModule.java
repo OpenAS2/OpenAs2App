@@ -32,7 +32,6 @@ import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
-import org.openas2.processor.sender.AS2SenderModule;
 import org.openas2.util.IOUtilOld;
 
 
@@ -48,7 +47,7 @@ public abstract class NetModule extends BaseReceiverModule {
     public static final String DEFAULT_ERRORS = "$date.yyyyMMddhhmmss$"; 
     
     private HTTPServerThread mainThread;
-	private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
+	private Log logger = LogFactory.getLog(NetModule.class.getSimpleName());
 
     public void doStart() throws OpenAS2Exception {
         try {
@@ -56,7 +55,11 @@ public abstract class NetModule extends BaseReceiverModule {
                     getParameterInt(PARAM_PORT, true));
             mainThread.start();
         } catch (IOException ioe) {
-        	logger.error("Error in HTTP connection.", ioe);
+        	String host = getParameter(PARAM_ADDRESS, false);
+        	if (host == null || host.length() < 1) host = "localhost";
+        	logger.error("Error in HTTP connection starting server thread on host::port: "
+        			+ host + "::"		
+        			+ getParameterInt(PARAM_PORT, true), ioe);
             throw new WrappedException(ioe);
         }
     }

@@ -18,6 +18,7 @@ import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -46,6 +47,8 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInfoGenerator;
 import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.SignerInformationVerifier;
 import org.bouncycastle.cms.bc.BcRSAKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
@@ -58,9 +61,12 @@ import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
 import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
+import org.bouncycastle.mail.smime.SMIMESignedParser;
 import org.bouncycastle.mail.smime.SMIMEUtil;
+import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.encoders.Base64;
 import org.openas2.lib.util.IOUtil;
 
@@ -234,11 +240,25 @@ public class BCCryptoHelper implements ICryptoHelper {
     }
 
     public MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm)
-            throws GeneralSecurityException, SMIMEException {
+            throws GeneralSecurityException, SMIMEException, MessagingException {
         X509Certificate x509Cert = castCertificate(cert);
         
         
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
+        // Check if content transfer encoding is set and set to binary if not
+        String contentTxfrEncoding = null;
+		try
+		{
+			contentTxfrEncoding = part.getHeader("Content-Transfer-Encoding")[0];
+		} catch (Exception e1)
+		{}
+        if (logger.isTraceEnabled()) logger.trace("Content transfer encoding on MimeBodyPart passed in for encryption: " + contentTxfrEncoding);
+        if (contentTxfrEncoding == null)
+        {
+        	contentTxfrEncoding = "binary";
+            part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+        }
+        gen.setContentTransferEncoding(contentTxfrEncoding);
 
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
 
@@ -274,11 +294,38 @@ public class BCCryptoHelper implements ICryptoHelper {
         PrivateKey privKey = castKey(key);
         String encryptAlg = cert.getPublicKey().getAlgorithm();
         SMIMESignedGenerator sGen = new SMIMESignedGenerator();
+        // Check if content transfer encoding is set and set to binary if not
+        String contentTxfrEncoding = null;
+		try
+		{
+			contentTxfrEncoding = part.getHeader("Content-Transfer-Encoding")[0];
+		} catch (Exception e1)
+		{}
+        if (logger.isTraceEnabled()) logger.trace("Content transfer encoding on MimeBodyPart passed in for signing: " + contentTxfrEncoding);
+        if (contentTxfrEncoding == null)
+        {
+        	contentTxfrEncoding = "binary";
+            part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+        }
+        sGen.setContentTransferEncoding(contentTxfrEncoding);
         SignerInfoGenerator sig;
 		try {
-            if (logger.isDebugEnabled()) logger.debug("Params for creating SMIME signed generator:: SIGN DIGEST: " + digest
+            if (logger.isDebugEnabled())
+            {
+            	logger.debug("Params for creating SMIME signed generator:: SIGN DIGEST: " + digest
           		  + " PUB ENCRYPT ALG: " + encryptAlg
           		  + " X509 CERT: " + x509Cert);
+            	String headers = null;
+                try
+    			{
+    				headers = printHeaders(part.getAllHeaders());
+    			} catch (Throwable e)
+    			{
+    				logger.debug("Error logging mime part for signing: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+    			}
+
+            	logger.debug("Signing on MIME part containing the following headers: " + headers);
+            }
 			sig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").build(digest+"with"+encryptAlg, privKey, x509Cert);
 		} catch (OperatorCreationException e) {
 			throw new GeneralSecurityException(e);
@@ -292,11 +339,12 @@ public class BCCryptoHelper implements ICryptoHelper {
         MimeBodyPart tmpBody = new MimeBodyPart();
         tmpBody.setContent(signedData);
         tmpBody.setHeader("Content-Type", signedData.getContentType());
+        tmpBody.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
 
         return tmpBody;
     }
 
-    public MimeBodyPart verify(MimeBodyPart part, Certificate cert)
+    public MimeBodyPart verifySignature(MimeBodyPart part, Certificate cert)
             throws GeneralSecurityException, IOException, MessagingException, CMSException, OperatorCreationException {
         // Make sure the data is signed
         if (!isSigned(part)) {
@@ -308,24 +356,46 @@ public class BCCryptoHelper implements ICryptoHelper {
         MimeMultipart mainParts = (MimeMultipart) part.getContent();
 
         SMIMESigned signedPart = new SMIMESigned(mainParts);
+      	//SignerInformationStore  signers = signedPart.getSignerInfos();
+        
+        DigestCalculatorProvider dcp = new JcaDigestCalculatorProviderBuilder().setProvider("BC").build();
+        String contentTxfrEnc = getHeaderValue(signedPart.getContent(), "Content-Transfer-Encoding");
+        if (contentTxfrEnc == null || contentTxfrEnc.length() < 1)
+        {
+        	contentTxfrEnc = "binary";
+        }
+        SMIMESignedParser ssp = new SMIMESignedParser(dcp, mainParts, contentTxfrEnc);
+        SignerInformationStore  sis = ssp.getSignerInfos();
 
-        Iterator<SignerInformation> signerIt = signedPart.getSignerInfos().getSigners().iterator();
-        SignerInformation signer;
-
-        while (signerIt.hasNext()) {
-            signer = signerIt.next();
-
-            try {
-				if (!signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(x509Cert))) {
-				    throw new SignatureException("Verification failed");
-				}
-			} catch (Exception e) {
-				if (logger.isWarnEnabled()) logger.warn("Signer verification failed: " + org.openas2.logging.Log.getExceptionMsg(e), e);
-			    throw new SignatureException("Verification failed");
+        if (logger.isTraceEnabled())
+        {
+        	String headers = null;
+            try
+			{
+				headers = printHeaders(part.getAllHeaders());
+	        	logger.trace("Headers on MimeBodyPart passed in to signature verifier: " + headers);
+				headers = printHeaders(ssp.getContent().getAllHeaders());
+	        	logger.trace("Checking signature on SIGNED MIME part extracted from multipart contains headers: " + headers);
+			} catch (Throwable e)
+			{
+				logger.trace("Error logging mime part for signer: " + org.openas2.logging.Log.getExceptionMsg(e), e);
 			}
+
         }
 
-        return signedPart.getContent();
+   	 Iterator<SignerInformation> it = sis.getSigners().iterator();
+   	 SignerInformationVerifier signerInfoVerifier = new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(x509Cert);
+   	 while (it.hasNext())
+   	 {
+   	     SignerInformation   signer = it.next();
+   	     if (signer.verify(signerInfoVerifier))
+		 {
+				logSignerInfo("Verified signature for signer info", signer, part);
+				return signedPart.getContent();
+		 }
+		 logSignerInfo("Failed to verify signature for signer info", signer, part);
+   	 }
+     throw new SignatureException("Signature Verification failed");        
     }
 
     protected X509Certificate castCertificate(Certificate cert) throws GeneralSecurityException {
@@ -522,6 +592,52 @@ public class BCCryptoHelper implements ICryptoHelper {
             return loadKeyStore(fIn, password);
         } finally {
             fIn.close();
+        }
+    }
+    
+    public String getHeaderValue(MimeBodyPart part, String headerName)
+    {
+    	try
+		{
+			String[] values = part.getHeader(headerName);
+			return values[0];
+		} catch (MessagingException e)
+		{
+			return null;
+		}
+    }
+    
+    public String printHeaders(Enumeration<Header> hdrs)
+    {
+        String headers = "";
+			while (hdrs.hasMoreElements()) {
+				Header h = hdrs.nextElement();
+				headers = headers + "\n    " + h.getName() + " == " + h.getValue();
+			}
+
+    	return(headers);
+
+    }
+    public void logSignerInfo(String msgPrefix, SignerInformation signer, MimeBodyPart part)
+    {
+        if (logger.isDebugEnabled())
+        {
+        	try
+			{
+				logger.debug(msgPrefix + ": \n    Digest Alg OID: " + signer.getDigestAlgOID()
+					+ "\n    Encrypt Alg OID: " + signer.getEncryptionAlgOID()
+					+ "\n    Signer Version: " + signer.getVersion()
+					+ "\n    Content Digest: " + Arrays.toString(signer.getContentDigest())
+					+ "\n    Content Type: " + signer.getContentType()
+					+ "\n    SID: " + signer.getSID().getIssuer()
+					+ "\n    Signature: " + signer.getSignature()
+					+ "\n    Unsigned attribs: " + signer.getUnsignedAttributes()
+					+ "\n    Content-transfer-encoding: " + part.getHeader("Content-Transfer-Encoding")
+					);
+			} catch (Throwable e)
+			{
+				logger.debug("Error logging signer info: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+			}
         }
     }
 }

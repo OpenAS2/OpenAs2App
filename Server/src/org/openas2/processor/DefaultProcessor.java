@@ -79,7 +79,7 @@ public class DefaultProcessor extends BaseProcessor {
         }
     }
 
-    public void startActiveModules() {
+    public void startActiveModules() throws OpenAS2Exception {
         Iterator<ProcessorModule> activeIt = getActiveModules().iterator();
 
         while (activeIt.hasNext()) {
@@ -87,6 +87,7 @@ public class DefaultProcessor extends BaseProcessor {
                 ((ActiveModule) activeIt.next()).start();
             } catch (OpenAS2Exception e) {
                 e.terminate();
+                throw e;
             }
         }
     }
