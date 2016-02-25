@@ -11,10 +11,10 @@ public interface ICryptoHelper {
     static final String DIGEST_MD2 = "md2";
     static final String DIGEST_MD5 = "md5";
     static final String DIGEST_SHA1 = "sha1";
-    static final String DIGEST_SHA224 = "sha224";
-    static final String DIGEST_SHA256 = "sha256";
-    static final String DIGEST_SHA384 = "sha384";
-    static final String DIGEST_SHA512 = "sha512";
+    static final String DIGEST_SHA224 = "sha-224";
+    static final String DIGEST_SHA256 = "sha-256";
+    static final String DIGEST_SHA384 = "sha-384";
+    static final String DIGEST_SHA512 = "sha-512";
     static final String CRYPT_CAST5 = "cast5";
     static final String CRYPT_3DES = "3des";
     static final String CRYPT_IDEA = "idea";
