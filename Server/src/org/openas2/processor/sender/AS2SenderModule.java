@@ -135,7 +135,7 @@ public class AS2SenderModule extends HttpSenderModule
 				return;
 			}
 			// Receive an MDN
-			if (msg.isRequestingMDN())
+			if (msg.isConfiguredForMDN())
 			{
 				msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
 				// Check if the AsyncMDN is required
@@ -497,7 +497,7 @@ public class AS2SenderModule extends HttpSenderModule
 		String receiptOption = partnership.getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION);
 		if (receiptOption != null)
 		{
-			conn.setRequestProperty("Receipt-delivery-option", receiptOption);
+			conn.setRequestProperty("Receipt-Delivery-Option", receiptOption);
 		}
 
 		String contentDisp;
