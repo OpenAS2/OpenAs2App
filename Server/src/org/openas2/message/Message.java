@@ -91,7 +91,11 @@ public interface Message extends Serializable {
 
     public boolean isRequestingMDN();
 
+    public boolean isConfiguredForMDN();
+
     public boolean isRequestingAsynchMDN();
+
+    public boolean isConfiguredForAsynchMDN();
 
     public void setSubject(String subject);
 
