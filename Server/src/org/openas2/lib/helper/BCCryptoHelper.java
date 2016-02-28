@@ -425,6 +425,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             throw new NoSuchAlgorithmException("Algorithm is null");
         }
         if (toBC) {
+            if (algorithm.toUpperCase().startsWith("SHA-")) algorithm = algorithm.replaceAll("-", "");
             if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
                 return SMIMESignedGenerator.DIGEST_MD5;
             } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
