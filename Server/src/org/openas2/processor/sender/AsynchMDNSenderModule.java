@@ -42,13 +42,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			throws OpenAS2Exception {
 
 		if (logger.isDebugEnabled()) logger.debug("ASYNC MDN send started...");
-		try {
-			sendAsyncMDN((AS2Message) msg, options);
-
-		} finally {
-			if (logger.isInfoEnabled()) logger.info("asynch mdn message sent");
-		}
-
+		sendAsyncMDN((AS2Message) msg, options);
 	}
 
 	protected void updateHttpHeaders(HttpURLConnection conn, Message msg) {
@@ -76,16 +70,16 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 	private void sendAsyncMDN(AS2Message msg, Map<Object, Object> options)
 			throws OpenAS2Exception {
 
-		if (logger.isInfoEnabled()) logger.info("Async MDN submitted" + msg.getLogMsgID());
 		DispositionType disposition = new DispositionType("automatic-action",
 				"MDN-sent-automatically", "processed");
+		String url = msg.getAsyncMDNurl();
 
 		try {
 
 			MessageMDN mdn = msg.getMDN();
 
 			// Create a HTTP connection
-			String url = msg.getAsyncMDNurl();
+			if (logger.isDebugEnabled()) logger.debug("ASYNC MDN attempting connection to: " + url + msg.getLogMsgID());
 			HttpURLConnection conn = getConnection(url, true, true, false,
 					"POST");
 
@@ -151,20 +145,24 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			} finally {
 				conn.disconnect();
 			}
-		} catch (HttpResponseException hre) { // Resend if the HTTP Response has
-												// an error code
+		} catch (HttpResponseException hre)
+		{
+			// Resend if the HTTP Response has an error code
+			logger.warn("HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre) + msg.getLogMsgID(), hre);
 			hre.terminate();
 			resend(msg, hre);
-		} catch (IOException ioe) { // Resend if a network error occurs during
-									// transmission
-
+		} catch (IOException ioe)
+		{
+			logger.warn("IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe) + msg.getLogMsgID(), ioe);
+			// Resend if a network error occurs during transmission
 			WrappedException wioe = new WrappedException(ioe);
 			wioe.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			wioe.terminate();
 
 			resend(msg, wioe);
-		} catch (Exception e) { // Propagate error if it can't be handled by a
-								// resend
+		} catch (Exception e) {
+			logger.warn("Unexpected exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(e) + msg.getLogMsgID(), e);
+			// Propagate error if it can't be handled by a resend
 			throw new WrappedException(e);
 		}
 	}
