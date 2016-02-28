@@ -21,6 +21,8 @@ import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 
@@ -32,7 +34,10 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
 	  
 	
     public HttpURLConnection getConnection(String url, boolean output, boolean input,
-        boolean useCaches, String requestMethod) throws OpenAS2Exception {
+        boolean useCaches, String requestMethod) throws OpenAS2Exception
+    {
+    	if (url == null) throw new OpenAS2Exception("HTTP sender module received empty URL string.");
+    	Log logger = LogFactory.getLog(HttpSenderModule.class.getSimpleName());
         try {
         	System.setProperty("sun.net.client.defaultReadTimeout", getParameter(PARAM_READ_TIMEOUT, "60000"));
             System.setProperty("sun.net.client.defaultConnectTimeout", getParameter(PARAM_CONNECT_TIMEOUT, "60000"));
@@ -72,6 +77,7 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
 						connS.setSSLSocketFactory(context.getSocketFactory());
 					} catch (Exception e)
 					{
+			        	logger.error("URL connection failed connecting to to : " + url, e);
 						throw new OpenAS2Exception("Error self signed certificate management", e);
 					}
 				}
@@ -87,6 +93,7 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
 
             return conn;
         } catch (IOException ioe) {
+        	logger.error("URL connection failed connecting to: " + url, ioe);
             throw new WrappedException(ioe);
         }
     }
