@@ -326,6 +326,8 @@ public class BCCryptoHelper implements ICryptoHelper {
 
             	logger.debug("Signing on MIME part containing the following headers: " + headers);
             }
+            // Remove the dash for SHA based digest for signing call
+            if (digest.toUpperCase().startsWith("SHA-")) digest = digest.replaceAll("-", "");
 			sig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").build(digest+"with"+encryptAlg, privKey, x509Cert);
 		} catch (OperatorCreationException e) {
 			throw new GeneralSecurityException(e);
@@ -600,6 +602,7 @@ public class BCCryptoHelper implements ICryptoHelper {
     	try
 		{
 			String[] values = part.getHeader(headerName);
+			if (values == null) return null;
 			return values[0];
 		} catch (MessagingException e)
 		{
