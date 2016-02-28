@@ -197,6 +197,8 @@ public class AS2Util {
 			}
 		} catch (Exception e1)
 		{
+			Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+			logger.error("Error parsing MDN: " + org.openas2.logging.Log.getExceptionMsg(e1), e1);
 			throw new OpenAS2Exception("Failed to verify signature of received MDN.");
 			
 		}
