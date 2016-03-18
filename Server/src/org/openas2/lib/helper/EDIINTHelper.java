@@ -5,6 +5,7 @@ import java.security.cert.Certificate;
 
 import javax.mail.internet.MimeBodyPart;
 
+import org.openas2.Session;
 import org.openas2.lib.CryptoException;
 import org.openas2.lib.message.EDIINTMessage;
 
@@ -30,6 +31,7 @@ public class EDIINTHelper {
             // update the message's data and content type
             msg.setData(encryptedData);
             msg.setContentType(encryptedData.getContentType());
+            msg.setHeader("Content-Transfer-Encoding", encryptedData.getEncoding());
         } catch (Exception e) {
             throw new CryptoException("Encryption failed", e);
         }
@@ -54,6 +56,7 @@ public class EDIINTHelper {
             // update the message's data and content type
             msg.setData(decryptedData);
             msg.setContentType(decryptedData.getContentType());
+            msg.setHeader("Content-Transfer-Encoding", decryptedData.getEncoding());
         } catch (Exception e) {
             throw new CryptoException("Decryption failed", e);
         }
@@ -72,6 +75,9 @@ public class EDIINTHelper {
             // update the message's data and content type
             msg.setData(signedData);
             msg.setContentType(signedData.getContentType());
+            String contentTxfrEnc = signedData.getEncoding();
+            if (contentTxfrEnc == null) contentTxfrEnc = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+            msg.setHeader("Content-Transfer-Encoding", contentTxfrEnc);
         } catch (Exception e) {
             throw new CryptoException("Sign failed", e);
         }
