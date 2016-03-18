@@ -13,6 +13,7 @@ import javax.mail.Header;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
@@ -48,7 +49,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 	protected void updateHttpHeaders(HttpURLConnection conn, Message msg) {
 
 		conn.setRequestProperty("Connection", "close, TE");
-		conn.setRequestProperty("User-Agent", "OpenAS2 AsynchMDNSender");
+		conn.setRequestProperty("User-Agent", Session.TITLE + " (AsynchMDNSender)");
 
 		conn.setRequestProperty("Date",
 				DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
@@ -88,7 +89,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 				if (logger.isInfoEnabled()) logger.info("connected to " + url + msg.getLogMsgID());
 
 				conn.setRequestProperty("Connection", "close, TE");
-				conn.setRequestProperty("User-Agent", "OpenAS2 AS2Sender");
+				conn.setRequestProperty("User-Agent", Session.TITLE + " (AsyncMDNSenderModule)");
 				// Copy all the header from mdn to the RequestProperties of conn
 				Enumeration<Header> headers = mdn.getHeaders().getAllHeaders();
 				Header header = null;
@@ -99,6 +100,8 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 					headerValue.replace('\n', ' ');
 					headerValue.replace('\r', ' ');
 					conn.setRequestProperty(header.getName(), headerValue);
+					if (logger.isTraceEnabled())
+						logger.trace("Set HTTP response request property: " + header.getName() + " -> " + headerValue + msg.getLogMsgID());
 				}
 
 				// Note: closing this stream causes connection abort errors on
