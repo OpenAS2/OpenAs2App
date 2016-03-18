@@ -312,7 +312,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 			MimeBodyPart body = new MimeBodyPart();
 			body.setDataHandler(new DataHandler(byteSource));
 			String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-			if (encodeType == null) encodeType = "8bit";
+			if (encodeType == null) encodeType = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 			body.setHeader("Content-Transfer-Encoding", encodeType);
 
 
