@@ -12,6 +12,7 @@ import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 
 import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.params.InvalidParameterException;
@@ -129,6 +130,15 @@ public abstract class BaseMessage implements Message {
             } catch (MessagingException e) {
                 setContentType(null);
             }
+			String encodingType;
+			try
+			{
+				encodingType = data.getEncoding();
+			} catch (MessagingException e1)
+			{
+				encodingType = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+			}
+			setHeader("Content-Transfer-Encoding", encodingType);
             try { 
             	setContentDisposition(data.getHeader("Content-Disposition", null)); 
             }
