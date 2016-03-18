@@ -25,6 +25,8 @@ public interface Session {
     /** Official OpenAS2 title */
     public static final String TITLE = "OpenAS2 v" + VERSION;
 
+    public static final String DEFAULT_CONTENT_TRANSFER_ENCODING = "binary";
+
     /**
      * Short-cut method to retrieve a certificate factory.
      *
