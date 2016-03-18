@@ -24,6 +24,7 @@ import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.bouncycastle.mail.smime.SMIMEException;
 import org.bouncycastle.operator.OutputCompressor;
 import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
@@ -240,7 +241,7 @@ public class AS2SenderModule extends HttpSenderModule
 		SMIMECompressedGenerator sCompGen = new SMIMECompressedGenerator();
 		String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
 		if (encodeType == null)
-			encodeType = "8bit";
+			encodeType = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 		sCompGen.setContentTransferEncoding(encodeType);
 		MimeBodyPart smime = sCompGen.generate(mbp, outputCompressor);
 		try
@@ -453,7 +454,7 @@ public class AS2SenderModule extends HttpSenderModule
 		Partnership partnership = msg.getPartnership();
 
 		conn.setRequestProperty("Connection", "close, TE");
-		conn.setRequestProperty("User-Agent", "OpenAS2 AS2Sender");
+		conn.setRequestProperty("User-Agent", Session.TITLE + " (AS2Sender)");
 
 		conn.setRequestProperty("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
 		conn.setRequestProperty("Message-ID", msg.getMessageID());
