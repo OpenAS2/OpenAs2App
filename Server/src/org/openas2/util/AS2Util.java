@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -674,30 +672,27 @@ public class AS2Util {
     public static void cleanupFiles(Message msg, boolean isError)
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
-		// Delete the pending info files. Use java.nio.file.Files.delete() instead of java.io.File.delete()
-		// so exception can be used for debugging cause of fail
 		String pendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
 		File fPendingInfoFile = new File(pendingInfoFileName);
-		Path pendInfoFilePath = fPendingInfoFile.toPath();
 		if (logger.isTraceEnabled())
-			logger.trace("delete pendinginfo file : " + fPendingInfoFile.getAbsolutePath()
-					+ msg.getLogMsgID());
+				logger.trace("Deleting pendinginfo file : " + fPendingInfoFile.getAbsolutePath()
+						+ msg.getLogMsgID());
 
 		try
 		{
-			Files.delete(pendInfoFilePath);
+			IOUtilOld.deleteFile(fPendingInfoFile);
             if (logger.isTraceEnabled()) logger.trace("deleted " + pendingInfoFileName + msg.getLogMsgID());
 		} catch (Exception e)
 		{
 			msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingInfoFileName);
 			logger.warn(msg, e);
-		}
+		}			
 
 		String pendingFileName = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
 		File fPendingFile = new File(pendingFileName);
 		try
 		{
-			Files.delete(new File(pendingFileName + ".object").toPath());
+			IOUtilOld.deleteFile(new File(pendingFileName + ".object"));
             if (logger.isTraceEnabled()) logger.trace("deleted " + pendingFileName + ".object" + msg.getLogMsgID());
 		} catch (Exception e)
 		{
@@ -708,7 +703,6 @@ public class AS2Util {
 		if (logger.isTraceEnabled())
 			logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " from pending folder : "
 					+ fPendingFile.getParent() + msg.getLogMsgID());
-		Path pendFilePath = fPendingFile.toPath();
 		try
 		{
 			boolean isMoved = false;
@@ -744,12 +738,12 @@ public class AS2Util {
 
 			if (!isMoved)
 			{
-				Files.delete(pendFilePath);
-	            if (logger.isInfoEnabled()) logger.info("deleted " + pendFilePath.toAbsolutePath() + msg.getLogMsgID());
+				IOUtilOld.deleteFile(fPendingFile);
+	            if (logger.isInfoEnabled()) logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
 			}
 		} catch (Exception e)
 		{
-			msg.setLogMsg("File was successfully sent but not deleted: " + pendFilePath.toAbsolutePath());
+			msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
 			logger.error(msg, e);
 		}
     }
