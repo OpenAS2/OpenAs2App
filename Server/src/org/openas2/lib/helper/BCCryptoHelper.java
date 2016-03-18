@@ -68,6 +68,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.encoders.Base64;
+import org.openas2.Session;
 import org.openas2.lib.util.IOUtil;
 
 /**
@@ -249,13 +250,13 @@ public class BCCryptoHelper implements ICryptoHelper {
         String contentTxfrEncoding = null;
 		try
 		{
-			contentTxfrEncoding = part.getHeader("Content-Transfer-Encoding")[0];
+			contentTxfrEncoding = part.getEncoding();
 		} catch (Exception e1)
 		{}
         if (logger.isTraceEnabled()) logger.trace("Content transfer encoding on MimeBodyPart passed in for encryption: " + contentTxfrEncoding);
         if (contentTxfrEncoding == null)
         {
-        	contentTxfrEncoding = "binary";
+        	contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
             part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
         }
         gen.setContentTransferEncoding(contentTxfrEncoding);
@@ -263,6 +264,8 @@ public class BCCryptoHelper implements ICryptoHelper {
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
 
         MimeBodyPart encData = gen.generate(part, getOutputEncryptor(algorithm));
+        if (encData.getEncoding() == null)
+        	encData.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
         
         //TODO: Check if this gc call makes sense
         System.gc();
@@ -293,20 +296,20 @@ public class BCCryptoHelper implements ICryptoHelper {
         X509Certificate x509Cert = castCertificate(cert);
         PrivateKey privKey = castKey(key);
         String encryptAlg = cert.getPublicKey().getAlgorithm();
-        SMIMESignedGenerator sGen = new SMIMESignedGenerator();
-        // Check if content transfer encoding is set and set to binary if not
+        // Check if content transfer encoding is set and set to system default if not
         String contentTxfrEncoding = null;
 		try
 		{
-			contentTxfrEncoding = part.getHeader("Content-Transfer-Encoding")[0];
+			contentTxfrEncoding = part.getEncoding();
 		} catch (Exception e1)
 		{}
         if (logger.isTraceEnabled()) logger.trace("Content transfer encoding on MimeBodyPart passed in for signing: " + contentTxfrEncoding);
         if (contentTxfrEncoding == null)
         {
-        	contentTxfrEncoding = "binary";
+        	contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
             part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
         }
+        SMIMESignedGenerator sGen = new SMIMESignedGenerator(contentTxfrEncoding);
         sGen.setContentTransferEncoding(contentTxfrEncoding);
         SignerInfoGenerator sig;
 		try {
@@ -361,10 +364,10 @@ public class BCCryptoHelper implements ICryptoHelper {
       	//SignerInformationStore  signers = signedPart.getSignerInfos();
         
         DigestCalculatorProvider dcp = new JcaDigestCalculatorProviderBuilder().setProvider("BC").build();
-        String contentTxfrEnc = getHeaderValue(signedPart.getContent(), "Content-Transfer-Encoding");
+        String contentTxfrEnc = signedPart.getContent().getEncoding();
         if (contentTxfrEnc == null || contentTxfrEnc.length() < 1)
         {
-        	contentTxfrEnc = "binary";
+        	contentTxfrEnc = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
         }
         SMIMESignedParser ssp = new SMIMESignedParser(dcp, mainParts, contentTxfrEnc);
         SignerInformationStore  sis = ssp.getSignerInfos();
@@ -636,7 +639,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 					+ "\n    SID: " + signer.getSID().getIssuer()
 					+ "\n    Signature: " + signer.getSignature()
 					+ "\n    Unsigned attribs: " + signer.getUnsignedAttributes()
-					+ "\n    Content-transfer-encoding: " + part.getHeader("Content-Transfer-Encoding")
+					+ "\n    Content-transfer-encoding: " + part.getEncoding()
 					);
 			} catch (Throwable e)
 			{
