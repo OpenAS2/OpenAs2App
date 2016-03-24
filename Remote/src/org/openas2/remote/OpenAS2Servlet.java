@@ -408,7 +408,7 @@ public class OpenAS2Servlet extends HttpServlet {
 	public String remoteCommandCall(String command) throws UnknownHostException, IOException
 	{
 	SSLSocket s = (SSLSocket) SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(commandHostID), commandPort);
-	final String[] enabledCipherSuites = { "SSL_DH_anon_WITH_RC4_128_MD5" };
+	final String[] enabledCipherSuites = { "TLS_DH_anon_WITH_AES_256_CBC_SHA" };
 	s.setEnabledCipherSuites(enabledCipherSuites);
 	String cmd = "<command id=\"" + commandUserID + 	"\" password=\"" + commandPWD + "\">" + 		command + "</command>\n";
 	s.getOutputStream().write(cmd.getBytes());

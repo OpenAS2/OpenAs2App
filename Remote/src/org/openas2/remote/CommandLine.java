@@ -16,7 +16,7 @@ import javax.net.ssl.SSLSocketFactory;
  * a test program but usable with the SocketCommandProcessor which in turns passes to 
  * command off to the OpenAS2Server.
  * 
- * uses SSL_DH_anon_WITH_RC4_128_MD5 cipher for the secure socket layer; 
+ * uses TLS_DH_anon_WITH_AES_256_CBC_SHA cipher for the secure socket layer; 
  * 
  */
 public class CommandLine {
@@ -27,13 +27,13 @@ public class CommandLine {
 			String host, port, name, pwd;
 			if (args.length == 0) {
 				host = "localhost";
-				port = "4321";
+				port = "14322";
 				name = "userID";
 				pwd = "pWd"; 
 				
 			} else 
 			if (args.length != 4) {
-				System.out.println("format: java org.openas2.remote.CommandLine ipaddresss portnumber userid password command");
+				System.out.println("format: java org.openas2.remote.CommandLine ipaddresss portnumber userid password");
 				return;
 			} else {
 				host = args[0];
@@ -43,13 +43,15 @@ public class CommandLine {
 			}
 			int iport = Integer.parseInt(port);
 			while (true) {
+				System.out.print("Enter command: ");
 				String icmd = br.readLine().trim();
+				System.out.print("");
 				if (icmd.length() < 1) {
 					System.out.println("adios");
 					return;
 				}
 				s = (SSLSocket) SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(host), iport);
-				final String[] enabledCipherSuites = { "SSL_DH_anon_WITH_RC4_128_MD5" };
+				final String[] enabledCipherSuites = { "TLS_DH_anon_WITH_AES_256_CBC_SHA" };
 				s.setEnabledCipherSuites(enabledCipherSuites);
 				String cmd = "<command id=\"" + name + 
 					"\" password=\"" + pwd + "\">" + 
