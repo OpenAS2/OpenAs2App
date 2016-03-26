@@ -7,6 +7,13 @@ import java.security.cert.Certificate;
 
 import javax.mail.internet.MimeBodyPart;
 
+import org.bouncycastle.mail.smime.SMIMEException;
+import org.bouncycastle.operator.OutputCompressor;
+import org.openas2.DispositionException;
+import org.openas2.OpenAS2Exception;
+import org.openas2.message.AS2Message;
+import org.openas2.message.Message;
+
 public interface ICryptoHelper {
     static final String DIGEST_MD2 = "md2";
     static final String DIGEST_MD5 = "md5";
@@ -51,4 +58,9 @@ public interface ICryptoHelper {
     MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest) throws Exception;
 
     MimeBodyPart verifySignature(MimeBodyPart part, Certificate cert) throws Exception;
+    
+    MimeBodyPart compress(Message msg, MimeBodyPart mbp, String compressionType)
+			throws SMIMEException, OpenAS2Exception;
+    
+    void decompress(AS2Message msg) throws DispositionException;
 }
