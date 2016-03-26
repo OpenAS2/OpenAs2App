@@ -19,10 +19,6 @@ import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.cms.jcajce.ZlibCompressor;
-import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
-import org.bouncycastle.mail.smime.SMIMEException;
-import org.bouncycastle.operator.OutputCompressor;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -235,38 +231,6 @@ public class AS2SenderModule extends HttpSenderModule
 		}
 	}
 
-	private MimeBodyPart compress(Message msg, MimeBodyPart mbp, OutputCompressor outputCompressor)
-			throws SMIMEException, OpenAS2Exception
-	{
-		SMIMECompressedGenerator sCompGen = new SMIMECompressedGenerator();
-		String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-		if (encodeType == null)
-			encodeType = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-		sCompGen.setContentTransferEncoding(encodeType);
-		MimeBodyPart smime = sCompGen.generate(mbp, outputCompressor);
-		try
-		{
-			mbp.addHeader("Content-Transfer-Encoding", encodeType);
-		} catch (MessagingException e1)
-		{
-			msg.setLogMsg("Error adding transfer encoding header in compression: "
-					+ org.openas2.logging.Log.getExceptionMsg(e1));
-			logger.error(msg, e1);
-			throw new OpenAS2Exception("Failed to add header to mimebodypart when compressing");
-		}
-		if (logger.isTraceEnabled())
-		{
-			try
-			{
-				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type:" + smime.getContentType());
-				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + smime.getDisposition());
-			} catch (MessagingException e)
-			{
-			}
-		}
-		return smime;
-	}
-
 	protected void checkRequired(Message msg) throws InvalidParameterException
 	{
 		Partnership partnership = msg.getPartnership();
@@ -373,12 +337,10 @@ public class AS2SenderModule extends HttpSenderModule
 		if (logger.isTraceEnabled())
 			logger.trace("Compression type from config: " + compressionType);
 		boolean isCompress = false;
-		OutputCompressor compressor = null;
 		if (compressionType != null)
 		{
 			if (compressionType.equalsIgnoreCase(ICryptoHelper.COMPRESSION_ZLIB))
 			{
-				compressor = new ZlibCompressor();
 				isCompress = true;
 			} else
 				throw new OpenAS2Exception("Unsupported compression type: " + compressionType);
@@ -393,7 +355,7 @@ public class AS2SenderModule extends HttpSenderModule
 		{
 			if (logger.isTraceEnabled())
 				logger.trace("Compressing outbound message before signing...");
-			dataBP = compress(msg, dataBP, compressor);
+			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType);
 		}
 		// Encrypt and/or sign the data if requested
 		CertificateFactory certFx = getSession().getCertificateFactory();
@@ -427,7 +389,7 @@ public class AS2SenderModule extends HttpSenderModule
 		{
 			if (logger.isTraceEnabled())
 				logger.trace("Compressing outbound message after signing...");
-			dataBP = compress(msg, dataBP, compressor);
+			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType);
 		}
 		// Encrypt the data if requested
 		if (encrypt)

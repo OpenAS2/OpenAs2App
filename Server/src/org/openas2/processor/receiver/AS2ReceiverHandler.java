@@ -16,9 +16,6 @@ import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
-import org.bouncycastle.mail.smime.SMIMECompressed;
-import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -111,6 +108,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 								new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
 						receivedPart.setHeader("Content-Type", receivedContentType.toString());
 						msg.setData(receivedPart);
+						receivedPart.saveFile("mimedata" + System.currentTimeMillis() + ".txt");
 					} catch (Exception e) {
 						msg.setLogMsg("Error extracting received message.");
 						logger.error(msg, e);
@@ -259,7 +257,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			if (ch.isCompressed(msg.getData()))
 			{
 				if (logger.isTraceEnabled()) logger.trace("Decompressing received message before checking signature...");
-				decompress(msg);
+				AS2Util.getCryptoHelper().decompress(msg);
 				isDecompressed = true;
 			}
 		} catch (Exception e1) {
@@ -328,7 +326,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			                , new Exception("Message has already been decompressed. Per RFC5402 it cannot occur twice."));
 				}
 				if (logger.isTraceEnabled()) logger.trace("Decompressing received message after decryption...");
-				decompress(msg);
+				AS2Util.getCryptoHelper().decompress(msg);
 			}
 		} catch (Exception e) {
 			msg.setLogMsg("Unexepcted error checking for compressed message after signing");
@@ -339,29 +337,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		}
 		return mic;
     }
-
-	private void decompress(AS2Message msg) throws DispositionException
-	{
-		try
-		{
-				if (logger.isDebugEnabled()) logger.debug("Decompressing a compressed message");
-				SMIMECompressed compressed = new SMIMECompressed(msg.getData());
-				// decompression step MimeBodyPart
-				MimeBodyPart recoveredPart = SMIMEUtil.toMimeBodyPart(compressed.getContent(new ZlibExpanderProvider()));
-				// Update the message object
-				msg.setData(recoveredPart);
-		}
-
-		catch (Exception ex)
-		{
-
-			msg.setLogMsg("Error decompressing received message: " + ex.getCause());
-			logger.error(msg, ex);
-			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
-					"processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR,
-					ex);
-		}
-	}
 
     protected void processMDN(AS2Message msg, BufferedOutputStream out, DispositionType disposition, String mic, String text) {
         boolean mdnBlocked = false;
