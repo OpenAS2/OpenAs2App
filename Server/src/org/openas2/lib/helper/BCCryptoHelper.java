@@ -54,8 +54,12 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.cms.jcajce.ZlibCompressor;
+import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.mail.smime.SMIMECompressed;
+import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
 import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
 import org.bouncycastle.mail.smime.SMIMEException;
@@ -65,11 +69,19 @@ import org.bouncycastle.mail.smime.SMIMESignedParser;
 import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.OutputCompressor;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.encoders.Base64;
+import org.openas2.DispositionException;
+import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.lib.util.IOUtil;
+import org.openas2.message.AS2Message;
+import org.openas2.message.Message;
+import org.openas2.partner.Partnership;
+import org.openas2.processor.receiver.AS2ReceiverModule;
+import org.openas2.util.DispositionType;
 
 /**
  * @author chris
@@ -402,6 +414,70 @@ public class BCCryptoHelper implements ICryptoHelper {
    	 }
      throw new SignatureException("Signature Verification failed");        
     }
+
+	public MimeBodyPart compress(Message msg, MimeBodyPart mbp, String compressionType)
+			throws SMIMEException, OpenAS2Exception
+	{
+		OutputCompressor compressor = null;
+		if (compressionType != null)
+		{
+			if (compressionType.equalsIgnoreCase(ICryptoHelper.COMPRESSION_ZLIB))
+			{
+				compressor = new ZlibCompressor();
+			} else
+				throw new OpenAS2Exception("Unsupported compression type: " + compressionType);
+		}
+		SMIMECompressedGenerator sCompGen = new SMIMECompressedGenerator();
+		String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+		if (encodeType == null)
+			encodeType = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+		sCompGen.setContentTransferEncoding(encodeType);
+		MimeBodyPart smime = sCompGen.generate(mbp, compressor);
+		try
+		{
+			mbp.addHeader("Content-Transfer-Encoding", encodeType);
+		} catch (MessagingException e1)
+		{
+			msg.setLogMsg("Error adding transfer encoding header in compression: "
+					+ org.openas2.logging.Log.getExceptionMsg(e1));
+			logger.error(msg, e1);
+			throw new OpenAS2Exception("Failed to add header to mimebodypart when compressing");
+		}
+		if (logger.isTraceEnabled())
+		{
+			try
+			{
+				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Type:" + smime.getContentType());
+				logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + smime.getDisposition());
+			} catch (MessagingException e)
+			{
+			}
+		}
+		return smime;
+	}
+
+	public void decompress(AS2Message msg) throws DispositionException
+	{
+		try
+		{
+				if (logger.isDebugEnabled()) logger.debug("Decompressing a compressed message");
+				SMIMECompressed compressed = new SMIMECompressed(msg.getData());
+				// decompression step MimeBodyPart
+				MimeBodyPart recoveredPart = SMIMEUtil.toMimeBodyPart(compressed.getContent(new ZlibExpanderProvider()));
+				// Update the message object
+				msg.setData(recoveredPart);
+		}
+
+		catch (Exception ex)
+		{
+
+			msg.setLogMsg("Error decompressing received message: " + ex.getCause());
+			logger.error(msg, ex);
+			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
+					"processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR,
+					ex);
+		}
+	}
 
     protected X509Certificate castCertificate(Certificate cert) throws GeneralSecurityException {
         if (cert == null) {
