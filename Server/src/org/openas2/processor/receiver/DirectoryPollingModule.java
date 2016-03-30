@@ -273,8 +273,9 @@ public abstract class DirectoryPollingModule extends PollingModule
 	{
 		MessageParameters params = new MessageParameters(msg);
 
+		// Get the parameter that should provide the link between the polled directory and an AS2 sender and recipient
 		String defaults = getParameter(PARAM_DEFAULTS, false);
-
+		// Link the file to an AS2 sender and recipient via the Message object associated with the file
 		if (defaults != null)
 		{
 			params.setParameters(defaults);
