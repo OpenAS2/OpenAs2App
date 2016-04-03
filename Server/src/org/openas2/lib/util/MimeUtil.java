@@ -1,9 +1,9 @@
 package org.openas2.lib.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
@@ -99,4 +99,14 @@ public class MimeUtil {
         if (contentTransferEncoding == null) contentTransferEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
         return createMimeBodyPart(data, getHeader(headers, "Content-Type"), contentTransferEncoding);
     }
+    
+	public static String toString(MimeBodyPart mbp, boolean addDelimiterText) throws IOException, MessagingException
+	{
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		if (addDelimiterText) os.write("========BEGIN MIMEBODYPART=========\n".getBytes());
+		mbp.writeTo(os);
+		if (addDelimiterText) os.write("\n========END MIMEBODYPART=========".getBytes());
+		return os.toString();
+	}
+
 }
