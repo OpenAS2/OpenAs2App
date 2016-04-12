@@ -51,8 +51,16 @@ public class CommandLine {
 					return;
 				}
 				s = (SSLSocket) SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(host), iport);
-				final String[] enabledCipherSuites = { "TLS_DH_anon_WITH_AES_256_CBC_SHA" };
-				s.setEnabledCipherSuites(enabledCipherSuites);
+				String cipherSuites = System.getProperty("CmdProcessorSocketCipher", "TLS_DH_anon_WITH_AES_256_CBC_SHA");
+				final String[] enabledCipherSuites = { cipherSuites };
+				try
+				{
+					s.setEnabledCipherSuites(enabledCipherSuites);
+				} catch (IllegalArgumentException e)
+				{
+					e.printStackTrace();
+					System.out.println("Cipher is not supported. Try using the command line switch -DCmdProcessorSocketCipher=<some cipher suite> to use one supported by your version of java security.");
+				}
 				String cmd = "<command id=\"" + name + 
 					"\" password=\"" + pwd + "\">" + 
 					icmd + "</command>";

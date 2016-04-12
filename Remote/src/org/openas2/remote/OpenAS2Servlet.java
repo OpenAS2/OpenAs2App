@@ -408,8 +408,16 @@ public class OpenAS2Servlet extends HttpServlet {
 	public String remoteCommandCall(String command) throws UnknownHostException, IOException
 	{
 	SSLSocket s = (SSLSocket) SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(commandHostID), commandPort);
-	final String[] enabledCipherSuites = { "TLS_DH_anon_WITH_AES_256_CBC_SHA" };
-	s.setEnabledCipherSuites(enabledCipherSuites);
+	String cipherSuites = System.getProperty("CmdProcessorSocketCipher", "TLS_DH_anon_WITH_AES_256_CBC_SHA");
+	final String[] enabledCipherSuites = { cipherSuites };
+	try
+	{
+		s.setEnabledCipherSuites(enabledCipherSuites);
+	} catch (IllegalArgumentException e)
+	{
+		e.printStackTrace();
+		System.out.println("Cipher is not supported. Try using the command line switch -DCmdProcessorSocketCipher=<some cipher suite> to use one supported by your version of java security.");
+	}
 	String cmd = "<command id=\"" + commandUserID + 	"\" password=\"" + commandPWD + "\">" + 		command + "</command>\n";
 	s.getOutputStream().write(cmd.getBytes());
 	s.getOutputStream().flush();

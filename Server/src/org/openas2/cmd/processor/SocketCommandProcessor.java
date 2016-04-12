@@ -61,8 +61,17 @@ public class SocketCommandProcessor extends BaseCommandProcessor
                 (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 			 sslserversocket =
                 (SSLServerSocket) sslserversocketfactory.createServerSocket(port);
-			final String[] enabledCipherSuites = { "TLS_DH_anon_WITH_AES_256_CBC_SHA" };
-			sslserversocket.setEnabledCipherSuites(enabledCipherSuites);
+			String cipherSuites = System.getProperty("CmdProcessorSocketCipher", "TLS_DH_anon_WITH_AES_256_CBC_SHA");
+			final String[] enabledCipherSuites = { cipherSuites };
+			try
+			{
+				sslserversocket.setEnabledCipherSuites(enabledCipherSuites);
+			} catch (IllegalArgumentException e)
+			{
+				throw new OpenAS2Exception(
+						"Cipher is not supported. Use command line switch -DCmdProcessorSocketCipher=<some cipher suite> to use one supported by your version of java security."
+						, e);
+			}
 
 			
 		} catch (IOException e) {
