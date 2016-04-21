@@ -161,7 +161,7 @@ public class AS2Util {
                         Partnership.PTYPE_SENDER);                
                 PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
                 MimeBodyPart signedReport = getCryptoHelper().sign(report, senderCert,
-                        senderKey, micAlg);
+                        senderKey, micAlg, mdn.getMessage().getPartnership().isNoSetTransferEncodingForSigning(), false);
                 mdn.setData(signedReport);
             } catch (CertificateNotFoundException cnfe) {
                 cnfe.terminate();
