@@ -8,7 +8,6 @@ import java.security.cert.Certificate;
 import javax.mail.internet.MimeBodyPart;
 
 import org.bouncycastle.mail.smime.SMIMEException;
-import org.bouncycastle.operator.OutputCompressor;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.AS2Message;
@@ -46,16 +45,17 @@ public interface ICryptoHelper {
     boolean isCompressed(MimeBodyPart part) throws Exception;
 
     String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders) throws Exception;
+    String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders, boolean noCanonicalize) throws Exception;
 
     MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) throws Exception;
 
     void deinitialize() throws Exception;
 
-    MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm) throws Exception;
+    MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm, boolean noSetTxfrEncoding) throws Exception;
 
     void initialize() throws Exception;
 
-    MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest) throws Exception;
+    MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, boolean noSetTxfrEncoding, boolean adjustDigestToOldName) throws Exception;
 
     MimeBodyPart verifySignature(MimeBodyPart part, Certificate cert) throws Exception;
     

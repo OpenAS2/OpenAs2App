@@ -8,6 +8,7 @@ import javax.mail.internet.MimeBodyPart;
 import org.openas2.Session;
 import org.openas2.lib.CryptoException;
 import org.openas2.lib.message.EDIINTMessage;
+import org.openas2.message.Message;
 
 
 public class EDIINTHelper {
@@ -26,7 +27,7 @@ public class EDIINTHelper {
 
             // encrypt the data using CryptoHelper 
             MimeBodyPart encryptedData = getCryptoHelper().encrypt(data, cert,
-                    algorithm);
+                    algorithm, ((Message)msg).getPartnership().isNoSetTransferEncodingForEncryption());
 
             // update the message's data and content type
             msg.setData(encryptedData);
@@ -70,7 +71,7 @@ public class EDIINTHelper {
 
             // sign the data using CryptoHelper
             MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key,
-                    digest);
+                    digest, ((Message)msg).getPartnership().isNoSetTransferEncodingForSigning(), false);
 
             // update the message's data and content type
             msg.setData(signedData);

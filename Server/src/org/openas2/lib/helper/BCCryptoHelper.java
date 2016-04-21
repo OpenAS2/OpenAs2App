@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.GeneralSecurityException;
 import java.security.Key;
@@ -67,6 +68,7 @@ import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMESignedGenerator;
 import org.bouncycastle.mail.smime.SMIMESignedParser;
 import org.bouncycastle.mail.smime.SMIMEUtil;
+import org.bouncycastle.mail.smime.util.CRLFOutputStream;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputCompressor;
@@ -141,15 +143,20 @@ public class BCCryptoHelper implements ICryptoHelper {
     }
 
     public String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders)
+    		 throws GeneralSecurityException, MessagingException, IOException
+    {
+    	return calculateMIC(part, digest, includeHeaders, false);
+    }
+
+    public String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders, boolean noCanonicalize)
             throws GeneralSecurityException, MessagingException, IOException {
         String micAlg = convertAlgorithm(digest, true);
 
-        if (logger.isDebugEnabled()) logger.debug("Calc MIC called with digest: " + digest + " ::: Incl headers? " + includeHeaders);
+        if (logger.isDebugEnabled())
+        	logger.debug("Calc MIC called with digest: " + digest + " ::: Incl headers? " + includeHeaders
+        			 + " ::: Prevent canonicalization: " + noCanonicalize + " ::: Encoding: " + part.getEncoding());
         MessageDigest md = MessageDigest.getInstance(micAlg, "BC");
 
-        // convert the Mime data to a byte array, then to an InputStream
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        
         if (includeHeaders && logger.isTraceEnabled()) {
         	String headers = "";
         	Enumeration<Header> headersEnum = part.getAllHeaders();
@@ -161,11 +168,18 @@ public class BCCryptoHelper implements ICryptoHelper {
 			}
         	logger.trace("Calculating MIC on MIMEPART Headers: " + headers);
         }
-
+        // convert the Mime data to a byte array, then to an InputStream
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        
+        // Canonicalize the data if not binary content transfer encoding
+        OutputStream os =  null;
+        if ("binary".equals(part.getEncoding()) || noCanonicalize) os = bOut;
+        else os = new CRLFOutputStream(bOut);
+        
         if (includeHeaders) {
-            part.writeTo(bOut);
+            part.writeTo(os);
         } else {
-            IOUtil.copy(part.getInputStream(), bOut);
+            IOUtil.copy(part.getInputStream(), os);
         }
 
         byte[] data = bOut.toByteArray();
@@ -252,32 +266,34 @@ public class BCCryptoHelper implements ICryptoHelper {
     public void deinitialize() {
     }
 
-    public MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm)
+    public MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm, boolean noSetTxfrEncoding)
             throws GeneralSecurityException, SMIMEException, MessagingException {
         X509Certificate x509Cert = castCertificate(cert);
         
         
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
-        // Check if content transfer encoding is set and set to binary if not
-        String contentTxfrEncoding = null;
-		try
-		{
-			contentTxfrEncoding = part.getEncoding();
-		} catch (Exception e1)
-		{}
-        if (logger.isTraceEnabled()) logger.trace("Content transfer encoding on MimeBodyPart passed in for encryption: " + contentTxfrEncoding);
-        if (contentTxfrEncoding == null)
+
+        if (!noSetTxfrEncoding)
         {
-        	contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-            part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+            // Check if content transfer encoding is set and set to binary if not
+            String contentTxfrEncoding = null;
+    		try
+    		{
+    			contentTxfrEncoding = part.getEncoding();
+    		} catch (Exception e1)
+    		{}
+            if (contentTxfrEncoding == null)
+            {
+            	contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+            }
+            if (logger.isTraceEnabled()) logger.trace("Setting Content-Transfer-Encoding on encryption generator to: " + contentTxfrEncoding);
+            gen.setContentTransferEncoding(contentTxfrEncoding);        	
         }
-        gen.setContentTransferEncoding(contentTxfrEncoding);
 
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
 
         MimeBodyPart encData = gen.generate(part, getOutputEncryptor(algorithm));
-        if (encData.getEncoding() == null)
-        	encData.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
         
         //TODO: Check if this gc call makes sense
         System.gc();
@@ -302,27 +318,31 @@ public class BCCryptoHelper implements ICryptoHelper {
         CommandMap.setDefaultCommandMap(mc);
     }
 
-    public MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest)
+    public MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, boolean noSetTxfrEncoding, boolean adjustDigestToOldName)
             throws GeneralSecurityException, SMIMEException, MessagingException {
         //String signDigest = convertAlgorithm(digest, true);
         X509Certificate x509Cert = castCertificate(cert);
         PrivateKey privKey = castKey(key);
         String encryptAlg = cert.getPublicKey().getAlgorithm();
-        // Check if content transfer encoding is set and set to system default if not
-        String contentTxfrEncoding = null;
-		try
-		{
-			contentTxfrEncoding = part.getEncoding();
-		} catch (Exception e1)
-		{}
-        if (logger.isTraceEnabled()) logger.trace("Content transfer encoding on MimeBodyPart passed in for signing: " + contentTxfrEncoding);
-        if (contentTxfrEncoding == null)
+
+        SMIMESignedGenerator sGen = new SMIMESignedGenerator();
+        if (!noSetTxfrEncoding)
         {
-        	contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-            part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+            // Check if content transfer encoding is set and set to binary if not
+            String contentTxfrEncoding = null;
+    		try
+    		{
+    			contentTxfrEncoding = part.getEncoding();
+    		} catch (Exception e1)
+    		{}
+            if (contentTxfrEncoding == null)
+            {
+            	contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                part.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+            }
+            if (logger.isTraceEnabled()) logger.trace("Setting Content-Transfer-Encoding on signing generator to: " + contentTxfrEncoding);
+           sGen.setContentTransferEncoding(contentTxfrEncoding);        	
         }
-        SMIMESignedGenerator sGen = new SMIMESignedGenerator(contentTxfrEncoding);
-        sGen.setContentTransferEncoding(contentTxfrEncoding);
         SignerInfoGenerator sig;
 		try {
             if (logger.isDebugEnabled())
@@ -355,8 +375,11 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         MimeBodyPart tmpBody = new MimeBodyPart();
         tmpBody.setContent(signedData);
-        tmpBody.setHeader("Content-Type", signedData.getContentType());
-        tmpBody.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+        String ct = signedData.getContentType();
+        // FIX for latest BC version setting the micalg value to sha-1 when passed sha1 as digest
+        if (adjustDigestToOldName && digest.equalsIgnoreCase("SHA1")) ct = ct.replaceAll("-1", "1");
+        tmpBody.setHeader("Content-Type", ct);
+        //tmpBody.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
 
         return tmpBody;
     }
