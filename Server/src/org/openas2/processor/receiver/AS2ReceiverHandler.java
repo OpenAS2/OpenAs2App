@@ -18,6 +18,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
@@ -86,11 +87,16 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				ne.terminate();
 			}
 			Profiler.endProfile(transferStub);
+			
 			String mic = null;
 			if (data != null) {
 				logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
 						+ msg.getLogMsgID());
 
+				if (logger.isTraceEnabled())
+				{
+					logger.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
+				}
 				// TODO store HTTP request, headers, and data to file in Received folder -> use message-id for filename?
 				try {
 					// Put received data in a MIME body part
@@ -106,9 +112,32 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						MimeBodyPart receivedPart = new MimeBodyPart();
 						receivedPart.setDataHandler(
 								new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
+						// Hmmmm ... Why set this to the HTTP header?? The MimeBodyPart contains a "content-Type" already
+						// It seems to have worked all this time but may not be the right thing here
 						receivedPart.setHeader("Content-Type", receivedContentType.toString());
+						
+						// Set the transfer encoding if necessary
+						String cte =  receivedPart.getEncoding();
+						if (cte == null)
+					    {
+							cte = msg.getHeader("Content-Transfer-Encoding");
+							if (cte == null) cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+							receivedPart.setHeader("Content-Transfer-Encoding", cte);
+					    }
+						else if (logger.isTraceEnabled())
+						{
+							logger.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
+						}
 						msg.setData(receivedPart);
-						receivedPart.saveFile("mimedata" + System.currentTimeMillis() + ".txt");
+						if (logger.isTraceEnabled())
+						{
+							logger.trace("Received msg with transfer encoding: " + receivedPart.getEncoding() + msg.getLogMsgID());
+							java.io.File f = new java.io.File(org.openas2.test.TestConfig.TEST_OUTPUT_FOLDER + "/" + msg.getLogMsgID());
+							f.getParentFile().mkdirs(); // Make sure the test folders are created
+							java.io.FileOutputStream fos = new java.io.FileOutputStream(f);
+							logger.trace("Writing received MimePart to file: " + f.getCanonicalPath());
+							receivedPart.writeTo(fos);
+						}
 					} catch (Exception e) {
 						msg.setLogMsg("Error extracting received message.");
 						logger.error(msg, e);
@@ -304,7 +333,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         if (dispOptions.getMicalg() != null) {
             try {
 				mic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
-				        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()));
+				        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), msg.getPartnership().isPreventCanonicalization());
+		        if (logger.isDebugEnabled()) logger.debug("Prevent Canonicalization: " + msg.getPartnership().isPreventCanonicalization() + " ::: MIC calc on rxd msg: " + mic);
 			} catch (Exception e) {
 				msg.setLogMsg("Error calculating MIC on received message: " + e.getCause());
 				logger.error(msg, e);
@@ -313,7 +343,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						e);
 			}
         }
-        if (logger.isDebugEnabled()) logger.debug("MIC calc on rxd msg: " + mic);
 
 		// Per RFC5402 compression is always before encryption but can be before or after signing of message but only in one place
 		try {
