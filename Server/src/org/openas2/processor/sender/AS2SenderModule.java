@@ -375,7 +375,8 @@ public class AS2SenderModule extends HttpSenderModule
 						+ "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm()
 						+ msg.getLogMsgID());
 
-			dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest);
+			dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest
+					, msg.getPartnership().isNoSetTransferEncodingForSigning(), msg.getPartnership().isRenameDigestToOldName());
 
 			DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
 			// *** add one more item to msg history
@@ -397,7 +398,7 @@ public class AS2SenderModule extends HttpSenderModule
 			String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
 
 			X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-			dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm);
+			dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm, msg.getPartnership().isNoSetTransferEncodingForEncryption());
 
 			// Asynch MDN 2007-03-12
 			DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
@@ -571,7 +572,8 @@ public class AS2SenderModule extends HttpSenderModule
 
 		DispositionOptions dispOptions = new DispositionOptions(msg.getPartnership().getAttribute(
 				AS2Partnership.PA_AS2_MDN_OPTIONS));
-		msg.setCalculatedMIC(AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg(), includeHeaders));
+		msg.setCalculatedMIC(AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg()
+				, includeHeaders, msg.getPartnership().isPreventCanonicalization()));
 	}
 
 }
