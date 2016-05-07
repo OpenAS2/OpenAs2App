@@ -1,6 +1,11 @@
 @echo off
 rem Purpose:  runs the OpenAS2 application
 
+rem Uncomment any of the following for enhanced debug
+rem set EXTRA_PARMS=%EXTRA_PARMS% -Dmaillogger.debug.enabled=true
+rem set EXTRA_PARMS=%EXTRA_PARMS% -DlogRxdMsgMimeBodyParts=true
+rem set EXTRA_PARMS=%EXTRA_PARMS% -DlogRxdMdnMimeBodyParts=true
+
 rem Setup the Java Virtual Machine
 if not "%JAVA%" == "" goto :Check_JAVA_END
     if not "%JAVA_HOME%" == "" goto :TryJDKEnd

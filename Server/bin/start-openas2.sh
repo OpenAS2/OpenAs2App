@@ -4,6 +4,11 @@ x=`basename $0`
 
 keyStorePwd=$1
 PWD_OVERRIDE=""
+# Uncomment any of the following for enhanced debug
+#EXTRA_PARMS="$EXTRA_PARMS -Dmaillogger.debug.enabled=true"
+#EXTRA_PARMS="$EXTRA_PARMS -DlogRxdMsgMimeBodyParts=true"
+#EXTRA_PARMS="$EXTRA_PARMS -DlogRxdMdnMimeBodyParts=true"
+
 if [  ! -z $keyStorePwd ]; then
   PWD_OVERRIDE="-Dorg.openas2.cert.Password=$keyStorePwd"
 fi
