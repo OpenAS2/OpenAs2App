@@ -58,7 +58,7 @@ if not "%JAVA%" == "" goto :Check_JAVA_END
 rem    
 rem remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package
 rem
-"%JAVA%" -Xms32m -Xmx384m  -Dorg.apache.commons.logging.Log=org.openas2.logging.Log  -cp .;../lib/javax.mail.jar;../lib/bcpkix-jdk15on-154.jar;../lib/bcprov-jdk15on-154.jar;../lib/bcmail-jdk15on-154.jar;../lib/commons-logging-1.2.jar;../lib/openas2-server.jar org.openas2.app.OpenAS2Server ../config/config.xml
+"%JAVA%" "%EXTRA_PARMS% -Xms32m -Xmx384m  -Dorg.apache.commons.logging.Log=org.openas2.logging.Log  -cp .;../lib/javax.mail.jar;../lib/bcpkix-jdk15on-154.jar;../lib/bcprov-jdk15on-154.jar;../lib/bcmail-jdk15on-154.jar;../lib/commons-logging-1.2.jar;../lib/openas2-server.jar org.openas2.app.OpenAS2Server ../config/config.xml
 
 :warn
 :END
