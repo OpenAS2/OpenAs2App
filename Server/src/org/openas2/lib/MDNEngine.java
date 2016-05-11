@@ -6,6 +6,7 @@ import java.security.cert.Certificate;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.openas2.Session;
 import org.openas2.lib.cert.ICertificateChooser;
 import org.openas2.lib.helper.EDIINTHelper;
 import org.openas2.lib.helper.ICryptoHelper;
@@ -21,6 +22,7 @@ import org.openas2.lib.message.EDIINTMessageMDN;
 import org.openas2.lib.message.MDNData;
 import org.openas2.lib.partner.IPartnershipChooser;
 import org.openas2.message.Message;
+import org.openas2.partner.Partnership;
 
 public class MDNEngine {
     private EDIINTHelper ediintHelper;
@@ -138,8 +140,12 @@ public class MDNEngine {
                 ICertificateChooser certChooser = getCertificateChooser();
                 Certificate senderCert = certChooser.getSenderCertificate(mdn);
                 Key senderKey = certChooser.getSenderKey(mdn);
+        		String contentTxfrEncoding =  ((Message)msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+        		if (contentTxfrEncoding == null)
+        			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                // sign the data using CryptoHelper
                 MimeBodyPart signedData = getCryptoHelper().sign(mdn.getData(), senderCert,
-                        senderKey, dispOptions.getMicAlgorithm(), ((Message)msg).getPartnership().isNoSetTransferEncodingForSigning(), false);
+                        senderKey, dispOptions.getMicAlgorithm(),contentTxfrEncoding, false);
                 mdn.setData(signedData);
                 mdn.setContentType(signedData.getContentType());
             }
