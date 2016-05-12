@@ -26,6 +26,10 @@ public interface ICryptoHelper {
     static final String CRYPT_IDEA = "idea";
     static final String CRYPT_RC2 = "rc2";
     static final String CRYPT_RC2_CBC = "rc2_cbc";
+    static final String AES128_CBC = "aes128";
+    static final String AES192_CBC = "aes192";
+    static final String AES256_CBC = "aes256";
+    static final String AES256_WRAP = "aes256_wrap";
     
     static final String COMPRESSION_UNKNOWN = "compression-unknown";
     static final String COMPRESSION_NONE = "none";
@@ -51,15 +55,15 @@ public interface ICryptoHelper {
 
     void deinitialize() throws Exception;
 
-    MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm, boolean noSetTxfrEncoding) throws Exception;
+    MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm, String contentTxfrEncoding) throws Exception;
 
     void initialize() throws Exception;
 
-    MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, boolean noSetTxfrEncoding, boolean adjustDigestToOldName) throws Exception;
+    MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, String contentTxfrEncoding, boolean adjustDigestToOldName) throws Exception;
 
     MimeBodyPart verifySignature(MimeBodyPart part, Certificate cert) throws Exception;
     
-    MimeBodyPart compress(Message msg, MimeBodyPart mbp, String compressionType)
+    MimeBodyPart compress(Message msg, MimeBodyPart mbp, String compressionType, String contentTxfrEncoding)
 			throws SMIMEException, OpenAS2Exception;
     
     void decompress(AS2Message msg) throws DispositionException;
