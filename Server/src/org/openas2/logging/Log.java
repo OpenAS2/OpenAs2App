@@ -47,18 +47,22 @@ public class Log implements org.apache.commons.logging.Log {
     protected volatile int currentLogLevel;
 
     static {
-        // Load properties file, if found.
-        // Override with system properties.
-            // Add props from the resource simplelog.properties
-            InputStream in = getResourceAsStream("openas2log.properties");
-            if(null != in) {
-                try {
-                    openas2LogProps.load(in);
-                    in.close();
-                } catch(java.io.IOException e) {
-                    // ignored
-                }
-            }
+		// Load properties file, if found.
+		// Override with system properties.
+		// Add props from the resource simplelog.properties
+		String logPropsFiile = System.getProperty("openas2log.properties", "openas2log.properties");
+		InputStream in = getResourceAsStream(logPropsFiile);
+		if (null != in)
+		{
+			try
+			{
+				openas2LogProps.load(in);
+				in.close();
+			} catch (java.io.IOException e)
+			{
+				// ignored
+			}
+		}
     }
 	
 	public Log(String inName) {
