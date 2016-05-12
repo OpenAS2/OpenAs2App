@@ -9,6 +9,7 @@ import org.openas2.Session;
 import org.openas2.lib.CryptoException;
 import org.openas2.lib.message.EDIINTMessage;
 import org.openas2.message.Message;
+import org.openas2.partner.Partnership;
 
 
 public class EDIINTHelper {
@@ -25,9 +26,11 @@ public class EDIINTHelper {
             // get the data that should be encrypted    	
             MimeBodyPart data = msg.getData();
 
+    		String contentTxfrEncoding = ((Message)msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+    		if (contentTxfrEncoding == null)
+    			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
             // encrypt the data using CryptoHelper 
-            MimeBodyPart encryptedData = getCryptoHelper().encrypt(data, cert,
-                    algorithm, ((Message)msg).getPartnership().isNoSetTransferEncodingForEncryption());
+            MimeBodyPart encryptedData = getCryptoHelper().encrypt(data, cert, algorithm, contentTxfrEncoding);
 
             // update the message's data and content type
             msg.setData(encryptedData);
@@ -69,9 +72,11 @@ public class EDIINTHelper {
             // get the data to sign
             MimeBodyPart data = msg.getData();
 
+    		String contentTxfrEncoding =  ((Message)msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+    		if (contentTxfrEncoding == null)
+    			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
             // sign the data using CryptoHelper
-            MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key,
-                    digest, ((Message)msg).getPartnership().isNoSetTransferEncodingForSigning(), false);
+            MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key, digest, contentTxfrEncoding, false);
 
             // update the message's data and content type
             msg.setData(signedData);
