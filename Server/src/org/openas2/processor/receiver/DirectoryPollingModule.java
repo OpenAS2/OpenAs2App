@@ -343,14 +343,20 @@ public abstract class DirectoryPollingModule extends PollingModule
 		// update the message's partnership with any stored information
 		getSession().getPartnershipFactory().updatePartnership(msg, true);
 		msg.updateMessageID();
-		String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-		if (encodeType == null) encodeType = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-		try
+		/* Not sure it should be set at this level as there is no encoding of the content at this point so make it configurable */
+		if (msg.getPartnership().isSetTransferEncodingOnInitialBodyPart())
 		{
-			msg.getData().setHeader("Content-Transfer-Encoding", encodeType);
-		} catch (MessagingException e)
-		{
-			logger.error("Failed to set content transfer encoding in created MimeBodyPart: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+			String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+			if (contentTxfrEncoding == null)
+				contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+			try
+			{
+				msg.getData().setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+			} catch (MessagingException e)
+			{
+				logger.error("Failed to set content transfer encoding in created MimeBodyPart: "
+						+ org.openas2.logging.Log.getExceptionMsg(e), e);
+			}
 		}
 		if (logger.isTraceEnabled())
 			try
