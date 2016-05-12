@@ -161,16 +161,11 @@ public class Partnership implements Serializable {
     	return (receiptOptions != null && receiptOptions.length() > 0);
     }
 
-    public boolean isNoSetTransferEncodingForEncryption()
+    public boolean isSetTransferEncodingOnInitialBodyPart()
     {
-		String noSetTxfrEncoding = getAttribute("no_set_transfer_encoding_for_encryption");
-        return (noSetTxfrEncoding != null && "true".equals(noSetTxfrEncoding));
-    }
-
-    public boolean isNoSetTransferEncodingForSigning()
-    {
-		String noSetTxfrEncoding = getAttribute("no_set_transfer_encoding_for_signing");
-        return (noSetTxfrEncoding != null && "true".equals(noSetTxfrEncoding));
+    	// The default must be true and allow it to be disabled by explicit config
+		String setTxfrEncoding = getAttribute("set_transfer_encoding_on_inital_body_part");
+        return (setTxfrEncoding == null || "true".equals(setTxfrEncoding));
     }
 
     public boolean isPreventCanonicalization()
