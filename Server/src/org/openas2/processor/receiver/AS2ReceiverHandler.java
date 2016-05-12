@@ -22,6 +22,7 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
@@ -90,8 +91,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			
 			String mic = null;
 			if (data != null) {
-				logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
-						+ msg.getLogMsgID());
+				if (logger.isInfoEnabled())
+						logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
+								+ msg.getLogMsgID());
 
 				if (logger.isTraceEnabled())
 				{
@@ -112,15 +114,22 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						MimeBodyPart receivedPart = new MimeBodyPart();
 						receivedPart.setDataHandler(
 								new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
-						// Hmmmm ... Why set this to the HTTP header?? The MimeBodyPart contains a "content-Type" already
-						// It seems to have worked all this time but may not be the right thing here
+						if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+						{
+							logger.trace("Received MimeBodyPart for inbound message: " + msg.getLogMsgID()
+									+ "\n" + MimeUtil.toString(receivedPart, true));
+						}
+						// Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the HTTP header
+						// since it may not be set in the received mime body part
 						receivedPart.setHeader("Content-Type", receivedContentType.toString());
 						
 						// Set the transfer encoding if necessary
 						String cte =  receivedPart.getEncoding();
 						if (cte == null)
 					    {
+							// Not in the MimeBodyPart so try the HTTP headers...
 							cte = msg.getHeader("Content-Transfer-Encoding");
+							// Nada ... set to system default
 							if (cte == null) cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 							receivedPart.setHeader("Content-Transfer-Encoding", cte);
 					    }
@@ -129,15 +138,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 							logger.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
 						}
 						msg.setData(receivedPart);
-						if (logger.isTraceEnabled())
-						{
-							logger.trace("Received msg with transfer encoding: " + receivedPart.getEncoding() + msg.getLogMsgID());
-							java.io.File f = new java.io.File(org.openas2.test.TestConfig.TEST_OUTPUT_FOLDER + "/" + msg.getLogMsgID());
-							f.getParentFile().mkdirs(); // Make sure the test folders are created
-							java.io.FileOutputStream fos = new java.io.FileOutputStream(f);
-							logger.trace("Writing received MimePart to file: " + f.getCanonicalPath());
-							receivedPart.writeTo(fos);
-						}
 					} catch (Exception e) {
 						msg.setLogMsg("Error extracting received message.");
 						logger.error(msg, e);
@@ -274,6 +274,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
                 PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
+				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+				{
+					logger.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID()
+							+ "\n" + MimeUtil.toString(msg.getData(), true));
+				}
             }
         } catch (Exception e) {
         	msg.setLogMsg("Error extracting received message: " + e.getCause());
@@ -288,6 +293,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				if (logger.isTraceEnabled()) logger.trace("Decompressing received message before checking signature...");
 				AS2Util.getCryptoHelper().decompress(msg);
 				isDecompressed = true;
+				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+				{
+					logger.trace("Received MimeBodyPart for inbound message after decompression: " + msg.getLogMsgID()
+							+ "\n" + MimeUtil.toString(msg.getData(), true));
+				}
 			}
 		} catch (Exception e1) {
         	msg.setLogMsg("Error decompressing received message: " + e1.getCause());
@@ -303,6 +313,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
                 X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
                 msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
+				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+				{
+					logger.trace("Received MimeBodyPart for inbound message after signature verification: " + msg.getLogMsgID()
+							+ "\n" + MimeUtil.toString(msg.getData(), true));
+				}
             }
         } catch (Exception e) {
         	msg.setLogMsg("Error decrypting received message: " + org.openas2.logging.Log.getExceptionMsg(e));
