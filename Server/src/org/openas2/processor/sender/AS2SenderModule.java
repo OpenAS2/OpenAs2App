@@ -325,6 +325,9 @@ public class AS2SenderModule extends HttpSenderModule
 		 */
 
 		Partnership partnership = msg.getPartnership();
+		String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+		if (contentTxfrEncoding == null)
+			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 
 		boolean encrypt = partnership.getAttribute(SecurePartnership.PA_ENCRYPT) != null;
 		boolean sign = partnership.getAttribute(SecurePartnership.PA_SIGN) != null;
@@ -355,7 +358,7 @@ public class AS2SenderModule extends HttpSenderModule
 		{
 			if (logger.isTraceEnabled())
 				logger.trace("Compressing outbound message before signing...");
-			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType);
+			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType, contentTxfrEncoding);
 		}
 		// Encrypt and/or sign the data if requested
 		CertificateFactory certFx = getSession().getCertificateFactory();
@@ -376,7 +379,7 @@ public class AS2SenderModule extends HttpSenderModule
 						+ msg.getLogMsgID());
 
 			dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest
-					, msg.getPartnership().isNoSetTransferEncodingForSigning(), msg.getPartnership().isRenameDigestToOldName());
+					, contentTxfrEncoding, msg.getPartnership().isRenameDigestToOldName());
 
 			DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
 			// *** add one more item to msg history
@@ -390,7 +393,7 @@ public class AS2SenderModule extends HttpSenderModule
 		{
 			if (logger.isTraceEnabled())
 				logger.trace("Compressing outbound message after signing...");
-			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType);
+			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType, contentTxfrEncoding);
 		}
 		// Encrypt the data if requested
 		if (encrypt)
@@ -398,7 +401,7 @@ public class AS2SenderModule extends HttpSenderModule
 			String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
 
 			X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-			dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm, msg.getPartnership().isNoSetTransferEncodingForEncryption());
+			dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm, contentTxfrEncoding);
 
 			// Asynch MDN 2007-03-12
 			DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
