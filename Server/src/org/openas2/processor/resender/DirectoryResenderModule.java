@@ -33,20 +33,20 @@ public class DirectoryResenderModule extends BaseResenderModule {
 	public static final String PARAM_ERROR_DIRECTORY = "errordir";
     public static final String PARAM_RESEND_DELAY = "resenddelay"; // in seconds
 
-	// TODO Resend set to 15 minutes. Implement a scaling resend time with eventual permanent failure of transmission    
+	// TODO Resend set to 15 minutes. Implement a scaling resend time with eventual permanent failure of transmission
 	public static final long DEFAULT_RESEND_DELAY = 15 * 60 * 1000; // 15 minutes
 
 	private Log logger = LogFactory.getLog(DirectoryResenderModule.class.getSimpleName());
 
-	
+
 	public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
 		return action.equals(ResenderModule.DO_RESEND);
 	}
-        
+
 	public void handle(String action, Message msg, Map<Object, Object> options)
 		throws OpenAS2Exception {
 		ObjectOutputStream oos = null;
-		try {                        
+		try {
 			File resendDir = IOUtilOld.getDirectoryFile(getParameter(PARAM_RESEND_DIRECTORY, true));
 			File resendFile = IOUtilOld.getUnique(resendDir, getFilename());
 			oos = new ObjectOutputStream(new FileOutputStream(resendFile));
@@ -57,7 +57,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
 			oos.writeObject(method);
 			oos.writeObject(retries);
 			oos.writeObject(msg);
-            
+
             logger.info("message put in resend queue"+msg.getLogMsgID());
             if (logger.isTraceEnabled())
     			try
@@ -68,7 +68,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     				{
     					Header hd = headersEnum.nextElement();
     					headers  = ";;" + hd.getName() + "::" + hd.getValue();
-    					
+
     				}
 
     				logger.trace("Message object in resender module for storage. Content-Disposition: " + msg.getContentDisposition()
@@ -91,11 +91,11 @@ public class DirectoryResenderModule extends BaseResenderModule {
 				{}
 		}
 	}
-    
+
 	public void init(Session session, Map<String,String> options) throws OpenAS2Exception {
 		super.init(session, options);
 		getParameter(PARAM_RESEND_DIRECTORY, true);
-		getParameter(PARAM_ERROR_DIRECTORY, true);        
+		getParameter(PARAM_ERROR_DIRECTORY, true);
 	}
 
 	public void resend() {
@@ -117,11 +117,10 @@ public class DirectoryResenderModule extends BaseResenderModule {
 			}
 		} catch (OpenAS2Exception oae) {
 			oae.terminate();
-			forceStop(oae);
 		}
 	}
 
-	protected String getFilename() throws InvalidParameterException {		
+	protected String getFilename() throws InvalidParameterException {
         long resendDelay;
         if (getParameter(PARAM_RESEND_DELAY, false) == null) {
             resendDelay = DEFAULT_RESEND_DELAY;
@@ -134,10 +133,10 @@ public class DirectoryResenderModule extends BaseResenderModule {
 	}
 
 	protected boolean isTimeToSend(File currentFile) {
-		try {			
+		try {
 			StringTokenizer fileTokens = new StringTokenizer(currentFile.getName(), ".", false);
 
-			Date timestamp = DateUtil.parseDate("MM-dd-yy-HH-mm-ss", fileTokens.nextToken());			
+			Date timestamp = DateUtil.parseDate("MM-dd-yy-HH-mm-ss", fileTokens.nextToken());
 
 			return timestamp.before(new Date());
 		} catch (Exception e) {
@@ -169,7 +168,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
 						{
 							Header hd = headersEnum.nextElement();
 							headers  = ";;" + hd.getName() + "::" + hd.getValue();
-							
+
 						}
 
 						logger.trace("Reconstituted Message object in resender. Content-Disposition: " + msg.getContentDisposition()
@@ -182,7 +181,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 msg.setOption(SenderModule.SOPT_RETRIES, retries);
                 msg.setStatus(Message.MSG_STATUS_MSG_RESEND);
 				getSession().getProcessor().handle(method, msg, msg.getOptions());
-                
+
 				if (!file.delete()) { // Delete the file, sender will re-queue if the transmission fails again
 					throw new OpenAS2Exception("File was successfully sent but not deleted: " +
 						file.getAbsolutePath());
