@@ -25,4 +25,16 @@ public class AS1Message extends BaseMessage {
         // TODO Auto-generated method stub
         return null;
     }
+
+	public boolean isConfiguredForMDN()
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public boolean isConfiguredForAsynchMDN()
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

@@ -13,6 +13,7 @@ import javax.mail.Header;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
@@ -42,19 +43,13 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			throws OpenAS2Exception {
 
 		if (logger.isDebugEnabled()) logger.debug("ASYNC MDN send started...");
-		try {
-			sendAsyncMDN((AS2Message) msg, options);
-
-		} finally {
-			if (logger.isInfoEnabled()) logger.info("asynch mdn message sent");
-		}
-
+		sendAsyncMDN((AS2Message) msg, options);
 	}
 
 	protected void updateHttpHeaders(HttpURLConnection conn, Message msg) {
 
 		conn.setRequestProperty("Connection", "close, TE");
-		conn.setRequestProperty("User-Agent", "OpenAS2 AsynchMDNSender");
+		conn.setRequestProperty("User-Agent", Session.TITLE + " (AsynchMDNSender)");
 
 		conn.setRequestProperty("Date",
 				DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
@@ -76,16 +71,16 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 	private void sendAsyncMDN(AS2Message msg, Map<Object, Object> options)
 			throws OpenAS2Exception {
 
-		if (logger.isInfoEnabled()) logger.info("Async MDN submitted" + msg.getLogMsgID());
 		DispositionType disposition = new DispositionType("automatic-action",
 				"MDN-sent-automatically", "processed");
+		String url = msg.getAsyncMDNurl();
 
 		try {
 
 			MessageMDN mdn = msg.getMDN();
 
 			// Create a HTTP connection
-			String url = msg.getAsyncMDNurl();
+			if (logger.isDebugEnabled()) logger.debug("ASYNC MDN attempting connection to: " + url + msg.getLogMsgID());
 			HttpURLConnection conn = getConnection(url, true, true, false,
 					"POST");
 
@@ -94,7 +89,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 				if (logger.isInfoEnabled()) logger.info("connected to " + url + msg.getLogMsgID());
 
 				conn.setRequestProperty("Connection", "close, TE");
-				conn.setRequestProperty("User-Agent", "OpenAS2 AS2Sender");
+				conn.setRequestProperty("User-Agent", Session.TITLE + " (AsyncMDNSenderModule)");
 				// Copy all the header from mdn to the RequestProperties of conn
 				Enumeration<Header> headers = mdn.getHeaders().getAllHeaders();
 				Header header = null;
@@ -105,6 +100,8 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 					headerValue.replace('\n', ' ');
 					headerValue.replace('\r', ' ');
 					conn.setRequestProperty(header.getName(), headerValue);
+					if (logger.isTraceEnabled())
+						logger.trace("Set HTTP response request property: " + header.getName() + " -> " + headerValue + msg.getLogMsgID());
 				}
 
 				// Note: closing this stream causes connection abort errors on
@@ -151,20 +148,24 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			} finally {
 				conn.disconnect();
 			}
-		} catch (HttpResponseException hre) { // Resend if the HTTP Response has
-												// an error code
+		} catch (HttpResponseException hre)
+		{
+			// Resend if the HTTP Response has an error code
+			logger.warn("HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre) + msg.getLogMsgID(), hre);
 			hre.terminate();
 			resend(msg, hre);
-		} catch (IOException ioe) { // Resend if a network error occurs during
-									// transmission
-
+		} catch (IOException ioe)
+		{
+			logger.warn("IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe) + msg.getLogMsgID(), ioe);
+			// Resend if a network error occurs during transmission
 			WrappedException wioe = new WrappedException(ioe);
 			wioe.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			wioe.terminate();
 
 			resend(msg, wioe);
-		} catch (Exception e) { // Propagate error if it can't be handled by a
-								// resend
+		} catch (Exception e) {
+			logger.warn("Unexpected exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(e) + msg.getLogMsgID(), e);
+			// Propagate error if it can't be handled by a resend
 			throw new WrappedException(e);
 		}
 	}

@@ -14,7 +14,7 @@ public interface Processor extends Component {
 	public List<ProcessorModule> getModules();
 	public void setModules(List<ProcessorModule> modules);
 	
-	public void startActiveModules();
+	public void startActiveModules() throws OpenAS2Exception;
 	public void stopActiveModules();
 	public List<ProcessorModule> getActiveModules();
 }

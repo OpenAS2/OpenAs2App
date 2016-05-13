@@ -13,9 +13,13 @@
 		<!-- Remove this comment to enable emailing of exceptions
 		<logger classname="org.openas2.logging.EmailLogger"
 			show="terminated"
+			javax.mail.properties.file="%home%/java.mail.properties"
 			from="openas2"
 			to="your email address"
 			smtpserver="your smtp server"
+			smtpauth="true"
+			smtpuser="mySmtpUserId"
+			smtppwd="mySmtpPwd"
 			subject="$exception.name$: $exception.message$"
 			bodytemplate="%home%/emailtemplate.txt"/>
 		-->

@@ -229,6 +229,28 @@ public class IOUtilOld {
         return dest;
     }
 
+    public static void deleteFile(File f) throws IOException 
+    {
+    	if (!f.exists()) return;
+		// Delete the file using java.nio.file.Files.delete() instead of java.io.File.delete()
+		// if possible (requires Java 7 or better) so exception can be used for debugging cause of fail
+		boolean canUseNio = true;
+		try
+		{
+		      Class.forName("java.nio.file.Path");
+		      // it exists on the classpath
+		} catch(ClassNotFoundException e) {
+		      // it does not exist on the classpath
+			   canUseNio = false;
+		}
+		if (canUseNio)
+		{
+	    	java.nio.file.Path fp = f.toPath();
+	    	java.nio.file.Files.delete(fp);
+		}
+		else if (!f.delete()) throw new IOException("Failed to delete file: " + f.getName());
+    }
+
     public static byte[] toArray(InputStream in) throws IOException {
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         byte[] buf = new byte[4096];

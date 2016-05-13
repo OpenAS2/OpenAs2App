@@ -40,23 +40,26 @@ public class AS2Message extends BaseMessage implements Message {
     }
 
     public boolean isRequestingMDN() {
-        Partnership p = getPartnership();
-        boolean requesting = ((p.getAttribute(AS2Partnership.PA_AS2_MDN_TO) != null) || (p
-                .getAttribute(AS2Partnership.PA_AS2_MDN_OPTIONS) != null));
-        boolean requested = ((getHeader("Disposition-Notification-To") != null) || (getHeader("Disposition-Notification-Options") != null));
-
-        return requesting || requested;
+    	// Per the AS2 protocol sending an MDN response should be determined by the header in the received message not by config
+    	// TODO: Protocol specifies only the "Disposition-Notification-To" indicates MDN request so why is it checking the other one?!?!
+        return ((getHeader("Disposition-Notification-To") != null) || (getHeader("Disposition-Notification-Options") != null));
     }
-    public boolean isRequestingAsynchMDN() {
-        Partnership p = getPartnership();
-        boolean requesting = ((p.getAttribute(AS2Partnership.PA_AS2_MDN_TO) != null || 
-        		p.getAttribute(AS2Partnership.PA_AS2_MDN_OPTIONS) != null)
-        		&& p.getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) != null);
-        boolean requested = ((getHeader("Disposition-Notification-To") != null || 
-        		              (getHeader("Disposition-Notification-Options") != null))
-        		    && (getHeader("Receipt-Delivery-Option") != null));
 
-        return requesting || requested;
+    public boolean isConfiguredForMDN() {
+    	Partnership p = getPartnership();
+        return ((p.getAttribute(AS2Partnership.PA_AS2_MDN_TO) != null) 
+        		&& (p.getAttribute(AS2Partnership.PA_AS2_MDN_OPTIONS) != null));
+
+    }
+
+    public boolean isRequestingAsynchMDN() {
+    	// Per the AS2 protocol, sending an ASYNC MDN response should be determined by the header in the received message not by config
+        return (getHeader("Receipt-Delivery-Option") != null);
+    }
+    
+    public boolean isConfiguredForAsynchMDN() {
+    	Partnership p = getPartnership();
+        return (p.getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) != null);
     }
     
     public String getAsyncMDNurl() {

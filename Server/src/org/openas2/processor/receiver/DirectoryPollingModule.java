@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
@@ -273,8 +274,9 @@ public abstract class DirectoryPollingModule extends PollingModule
 	{
 		MessageParameters params = new MessageParameters(msg);
 
+		// Get the parameter that should provide the link between the polled directory and an AS2 sender and recipient
 		String defaults = getParameter(PARAM_DEFAULTS, false);
-
+		// Link the file to an AS2 sender and recipient via the Message object associated with the file
 		if (defaults != null)
 		{
 			params.setParameters(defaults);
@@ -311,9 +313,6 @@ public abstract class DirectoryPollingModule extends PollingModule
 			ByteArrayDataSource byteSource = new ByteArrayDataSource(data, contentType, null);
 			MimeBodyPart body = new MimeBodyPart();
 			body.setDataHandler(new DataHandler(byteSource));
-			String encodeType = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-			if (encodeType == null) encodeType = "8bit";
-			body.setHeader("Content-Transfer-Encoding", encodeType);
 
 
 			// below statement is not filename related, just want to make it
@@ -344,6 +343,29 @@ public abstract class DirectoryPollingModule extends PollingModule
 		// update the message's partnership with any stored information
 		getSession().getPartnershipFactory().updatePartnership(msg, true);
 		msg.updateMessageID();
+		/* Not sure it should be set at this level as there is no encoding of the content at this point so make it configurable */
+		if (msg.getPartnership().isSetTransferEncodingOnInitialBodyPart())
+		{
+			String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+			if (contentTxfrEncoding == null)
+				contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+			try
+			{
+				msg.getData().setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+			} catch (MessagingException e)
+			{
+				logger.error("Failed to set content transfer encoding in created MimeBodyPart: "
+						+ org.openas2.logging.Log.getExceptionMsg(e), e);
+			}
+		}
+		if (logger.isTraceEnabled())
+			try
+			{
+				logger.trace("MimeBodyPart built in polling module:::: " + MimeUtil.toString(msg.getData(), true) + msg.getLogMsgID());
+			} catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 	}
 
 	public Map<String, Long> getTrackedFiles()

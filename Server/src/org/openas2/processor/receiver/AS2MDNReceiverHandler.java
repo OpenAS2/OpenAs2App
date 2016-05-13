@@ -1,6 +1,5 @@
 package org.openas2.processor.receiver;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
@@ -14,13 +13,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
-import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtilOld;
 
 public class AS2MDNReceiverHandler implements NetModuleHandler {
     private AS2MDNReceiverModule module;

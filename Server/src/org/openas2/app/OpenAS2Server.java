@@ -33,6 +33,7 @@ public class OpenAS2Server {
 	public void start(String[] args) {
 		BaseCommandProcessor cmd = null;
 		XMLSession session = null;
+		int exitStatus = 0;
 
 		try {
 			Log logger = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
@@ -86,8 +87,10 @@ public class OpenAS2Server {
 			}
 			logger.info("- OpenAS2 Stopped -");
 		} catch (Exception e) {
+			exitStatus = -1;
 			e.printStackTrace();
 		} catch (Error err) {
+			exitStatus = -1;
 			err.printStackTrace();
 		} finally {
 
@@ -109,7 +112,7 @@ public class OpenAS2Server {
 
 			write("OpenAS2 has shut down\r\n");
 
-			System.exit(0);
+			System.exit(exitStatus);
 		}
 	}
 

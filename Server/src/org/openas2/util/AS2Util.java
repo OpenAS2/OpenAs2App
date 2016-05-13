@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -33,6 +31,7 @@ import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.FileAttribute;
@@ -162,8 +161,12 @@ public class AS2Util {
                 X509Certificate senderCert = certFx.getCertificate(mdn,
                         Partnership.PTYPE_SENDER);                
                 PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
+        		String contentTxfrEncoding =  mdn.getMessage().getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+        		if (contentTxfrEncoding == null)
+        			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                // sign the data using CryptoHelper
                 MimeBodyPart signedReport = getCryptoHelper().sign(report, senderCert,
-                        senderKey, micAlg);
+                        senderKey, micAlg, contentTxfrEncoding, false);
                 mdn.setData(signedReport);
             } catch (CertificateNotFoundException cnfe) {
                 cnfe.terminate();
@@ -186,6 +189,7 @@ public class AS2Util {
 
     public static void parseMDN(Message msg, X509Certificate receiver) throws OpenAS2Exception
     {
+		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
         MessageMDN mdn = msg.getMDN();
         MimeBodyPart mainPart = mdn.getData();
         try
@@ -193,10 +197,11 @@ public class AS2Util {
 			ICryptoHelper ch = getCryptoHelper();
 
 			if (ch.isSigned(mainPart)) {
-			    mainPart = getCryptoHelper().verify(mainPart, receiver);
+			    mainPart = getCryptoHelper().verifySignature(mainPart, receiver);
 			}
 		} catch (Exception e1)
 		{
+			logger.error("Error parsing MDN: " + org.openas2.logging.Log.getExceptionMsg(e1), e1);
 			throw new OpenAS2Exception("Failed to verify signature of received MDN.");
 			
 		}
@@ -204,6 +209,12 @@ public class AS2Util {
         try
 		{
 			MimeMultipart reportParts = new MimeMultipart(mainPart.getDataHandler().getDataSource());
+
+			if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMdnMimeBodyParts", "false")))
+			{
+				logger.trace("Received MimeBodyPart for inbound MDN: " + msg.getLogMsgID()
+						+ "\n" + MimeUtil.toString(mainPart, true));
+			}
 
 			if (reportParts != null) {
 			    ContentType reportType = new ContentType(reportParts.getContentType());
@@ -214,6 +225,11 @@ public class AS2Util {
 
 			        for (int j = 0; j < reportCount; j++) {
 			            reportPart = (MimeBodyPart) reportParts.getBodyPart(j);
+						if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMdnMimeBodyParts", "false")))
+						{
+							logger.trace("Report MimeBodyPart from Multipart for inbound MDN: " + msg.getLogMsgID()
+									+ "\n" + MimeUtil.toString(reportPart, true));
+						}
 
 			            if (reportPart.isMimeType("text/plain")) {
 			                mdn.setText(reportPart.getContent().toString());
@@ -510,12 +526,7 @@ public class AS2Util {
 
 		msg.setStatus(Message.MSG_STATUS_MDN_PARSE);
 		AS2Util.parseMDN(msg, senderCert);
-		
-		/* For Async MDN we will need to get the original Message object from the pending file in case of a resend
-		 * Can only be retrieved after parsing because prsing gets the original message Id needed to retrieve the file
-		 */
-		Message originalMsg = null;
-		
+				
 		if (isAsyncMDN)
 		{
 			getMetaData(msg, session);
@@ -677,30 +688,27 @@ public class AS2Util {
     public static void cleanupFiles(Message msg, boolean isError)
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
-		// Delete the pending info files. Use java.nio.file.Files.delete() instead of java.io.File.delete()
-		// so exception can be used for debugging cause of fail
 		String pendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
 		File fPendingInfoFile = new File(pendingInfoFileName);
-		Path pendInfoFilePath = fPendingInfoFile.toPath();
 		if (logger.isTraceEnabled())
-			logger.trace("delete pendinginfo file : " + fPendingInfoFile.getAbsolutePath()
-					+ msg.getLogMsgID());
+				logger.trace("Deleting pendinginfo file : " + fPendingInfoFile.getAbsolutePath()
+						+ msg.getLogMsgID());
 
 		try
 		{
-			Files.delete(pendInfoFilePath);
+			IOUtilOld.deleteFile(fPendingInfoFile);
             if (logger.isTraceEnabled()) logger.trace("deleted " + pendingInfoFileName + msg.getLogMsgID());
 		} catch (Exception e)
 		{
 			msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingInfoFileName);
 			logger.warn(msg, e);
-		}
+		}			
 
 		String pendingFileName = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
 		File fPendingFile = new File(pendingFileName);
 		try
 		{
-			Files.delete(new File(pendingFileName + ".object").toPath());
+			IOUtilOld.deleteFile(new File(pendingFileName + ".object"));
             if (logger.isTraceEnabled()) logger.trace("deleted " + pendingFileName + ".object" + msg.getLogMsgID());
 		} catch (Exception e)
 		{
@@ -711,7 +719,6 @@ public class AS2Util {
 		if (logger.isTraceEnabled())
 			logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " from pending folder : "
 					+ fPendingFile.getParent() + msg.getLogMsgID());
-		Path pendFilePath = fPendingFile.toPath();
 		try
 		{
 			boolean isMoved = false;
@@ -747,12 +754,12 @@ public class AS2Util {
 
 			if (!isMoved)
 			{
-				Files.delete(pendFilePath);
-	            if (logger.isInfoEnabled()) logger.info("deleted " + pendFilePath.toAbsolutePath() + msg.getLogMsgID());
+				IOUtilOld.deleteFile(fPendingFile);
+	            if (logger.isInfoEnabled()) logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
 			}
 		} catch (Exception e)
 		{
-			msg.setLogMsg("File was successfully sent but not deleted: " + pendFilePath.toAbsolutePath());
+			msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
 			logger.error(msg, e);
 		}
     }

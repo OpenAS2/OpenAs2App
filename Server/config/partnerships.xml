@@ -18,7 +18,7 @@
 		<attribute name="as2_url" value="http://localhost:10080"/>
 		<attribute name="as2_mdn_to" value="edi@openas2b.org"/>
 		<!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
-		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA1"/>
+		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256"/>
 		<attribute name="encrypt" value="3DES"/>
 		<attribute name="sign" value="MD5"/>
 		<attribute name="resend_max_retries" value="3"/>
@@ -33,9 +33,9 @@
 		<attribute name="as2_url" value="http://localhost:10080"/>
 		<attribute name="as2_mdn_to" value="edi@openas2a.org"/>
 		<!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
-		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA1"/>
+		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256"/>
 		<attribute name="encrypt" value="3DES"/>
-		<attribute name="sign" value="SHA1"/>
+		<attribute name="sign" value="SHA256"/>
 	</partnership>
 </partnerships>
 

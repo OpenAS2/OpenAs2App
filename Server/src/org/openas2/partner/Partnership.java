@@ -160,4 +160,23 @@ public class Partnership implements Serializable {
     	String receiptOptions = getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION);
     	return (receiptOptions != null && receiptOptions.length() > 0);
     }
+
+    public boolean isSetTransferEncodingOnInitialBodyPart()
+    {
+    	// The default must be true and allow it to be disabled by explicit config
+		String setTxfrEncoding = getAttribute("set_transfer_encoding_on_inital_body_part");
+        return (setTxfrEncoding == null || "true".equals(setTxfrEncoding));
+    }
+
+    public boolean isPreventCanonicalization()
+    {
+		String preventCanonicalization = getAttribute("prevent_canonicalization_for_mic");
+        return (preventCanonicalization != null && "true".equals(preventCanonicalization));
+    }
+
+    public boolean isRenameDigestToOldName()
+    {
+		String removeDash = getAttribute("rename_digest_to_old_name");
+        return (removeDash != null && "true".equals(removeDash));
+    }
 }
