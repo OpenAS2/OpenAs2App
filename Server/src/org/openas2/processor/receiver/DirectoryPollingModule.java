@@ -86,9 +86,11 @@ public abstract class DirectoryPollingModule extends PollingModule
 		} catch (OpenAS2Exception oae)
 		{
 			oae.terminate();
+			forceStop(oae);
 		} catch (Exception e)
 		{
 			new WrappedException(e).terminate();
+			forceStop(e);
 		}
 	}
 
@@ -184,11 +186,6 @@ public abstract class DirectoryPollingModule extends PollingModule
 					try
 					{
 						processFile(file);
-					} catch (Exception e)
-					{
-						IOUtilOld.handleError(file, errorDir);
-						trackedFiles.remove(fileEntry.getKey());
-						throw new WrappedException(e);
 					} finally
 					{
 						trackedFiles.remove(fileEntry.getKey());
@@ -247,7 +244,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 				{
 					Header hd = headersEnum.nextElement();
 					headers  = ";;" + hd.getName() + "::" + hd.getValue();
-
+					
 				}
 
 				logger.trace("Message object in directory polling module. Content-Disposition: " + msg.getContentDisposition()
