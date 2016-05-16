@@ -63,10 +63,11 @@ public class OpenAS2Server {
 			session.getProcessor().startActiveModules();
 
 			// enter the command processing loop
-			write("OpenAS2 Started\r\n");
+			write("OpenAS2 V" + Session.VERSION + " Started\r\n");
 
 			
-			logger.info("- OpenAS2 Started -");
+			logger.info("- OpenAS2 Started - V" + Session.VERSION);
+			
 			CommandManager cmdMgr = session.getCommandManager();
 			List<BaseCommandProcessor> processors = cmdMgr.getProcessors();
 			for (int i = 0; i < processors.size(); i++) {
