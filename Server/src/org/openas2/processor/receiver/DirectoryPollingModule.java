@@ -87,11 +87,9 @@ public abstract class DirectoryPollingModule extends PollingModule
 		} catch (OpenAS2Exception oae)
 		{
 			oae.terminate();
-			forceStop(oae);
 		} catch (Exception e)
 		{
-			new WrappedException(e).terminate();
-			forceStop(e);
+			logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
 		}
 	}
 
@@ -154,7 +152,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 		}
 	}
 
-	protected void updateTracking() throws OpenAS2Exception
+	protected void updateTracking()
 	{
 		// clone the trackedFiles map, iterator through the clone and modify the
 		// original to avoid iterator exceptions
@@ -187,6 +185,18 @@ public abstract class DirectoryPollingModule extends PollingModule
 					try
 					{
 						processFile(file);
+					} catch (OpenAS2Exception e)
+					{
+						e.terminate();
+						try
+						{
+							IOUtilOld.handleError(file, errorDir);
+						} catch (OpenAS2Exception e1)
+						{
+							logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
+							forceStop(e1);
+							return;
+						}
 					} finally
 					{
 						trackedFiles.remove(fileEntry.getKey());
@@ -221,7 +231,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 
 		if (msg.getData() == null)
 		{
-			throw new InvalidMessageException("No Data");
+			throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + file.getAbsolutePath());
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());
@@ -287,8 +297,8 @@ public abstract class DirectoryPollingModule extends PollingModule
 
 		if (format != null)
 		{
-			String delimiters = getParameter(PARAM_DELIMITERS, ".-");
-			params.setParameters(format, delimiters, filename);
+				String delimiters = getParameter(PARAM_DELIMITERS, ".-");
+				params.setParameters(format, delimiters, filename);
 		}
 
 		try
