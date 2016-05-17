@@ -37,7 +37,7 @@ public class BaseComponent implements Component {
         String parameter = (String) getParameters().get(key);
 
         if (required && (parameter == null)) {
-            throw new InvalidParameterException(this, key, null);
+            throw new InvalidParameterException("Missing required parameter.", this, key, null);
         }
 
         return parameter;
