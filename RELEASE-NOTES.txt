@@ -1,17 +1,18 @@
               OpenAS2 Server
-              Version 1.3.7
+              Version 2.0.0
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 1.3.7
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.0.0
 
-The release download file is: OpenAS2Server-1.3.6.zip
+The release download file is: OpenAS2Server-2.0.0.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-This release is an enhancement and bugfix release:
+This release is an enhancement and bugfix release tht includes compatibility testing with other AS2 systems:
   1. Fix generator encoding for compression, encryption and signing
   2. Support configurable control of canonicalization when signing
   3. Support overriding digest "sha-1" algorithm name in signing to use "old" name without dash ("sha1")
   4. Support AES128, AES192, AES256 ciphers
+  5. Support disabling the CMS algorithm protection OID for older AS2 systems
   
 Java 1.5 or later is required.
 NOTE FOR JAVA 1.5: Prior to java 1.6, the Javabeans Activation Framework is NOT included in the standard Java install. Download the 1.1.1 version and extract from the zip file from this web page: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-plat-419418.html#jaf-1.1.1-fcs-oth-JPR

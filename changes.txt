@@ -1,8 +1,9 @@
-Version 1.3.7 - 2016-04-08
+Version 2.0.0 - 2016-05-31
   1. Fix generator encoding for compression, encryption and signing
   2. Support configurable control of canonicalization when signing
   3. Support overriding digest "sha-1" algorithm name in signing to use "old" name without dash ("sha1")
   4. Support AES128, AES192, AES256 ciphers
+  5. Support disabling the CMS algorithm protection OID for older AS2 systems
   
 Version 1.3.6 - 2015-11-23
   1. Fix handling creating a unique file name for storing message info for ASYNC MDN
