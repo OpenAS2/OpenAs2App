@@ -377,9 +377,9 @@ public class AS2SenderModule extends HttpSenderModule
 						+ "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName()
 						+ "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm()
 						+ msg.getLogMsgID());
-
+            boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(partnership.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
 			dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest
-					, contentTxfrEncoding, msg.getPartnership().isRenameDigestToOldName());
+					, contentTxfrEncoding, msg.getPartnership().isRenameDigestToOldName(), isRemoveCmsAlgorithmProtectionAttr);
 
 			DataHistoryItem historyItem = new DataHistoryItem(dataBP.getContentType());
 			// *** add one more item to msg history

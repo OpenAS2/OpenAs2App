@@ -161,12 +161,14 @@ public class AS2Util {
                 X509Certificate senderCert = certFx.getCertificate(mdn,
                         Partnership.PTYPE_SENDER);                
                 PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
-        		String contentTxfrEncoding =  mdn.getMessage().getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+        		Partnership p = mdn.getMessage().getPartnership();
+                String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+                boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
         		if (contentTxfrEncoding == null)
         			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
                 // sign the data using CryptoHelper
                 MimeBodyPart signedReport = getCryptoHelper().sign(report, senderCert,
-                        senderKey, micAlg, contentTxfrEncoding, false);
+                        senderKey, micAlg, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
                 mdn.setData(signedReport);
             } catch (CertificateNotFoundException cnfe) {
                 cnfe.terminate();

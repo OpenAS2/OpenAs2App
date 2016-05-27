@@ -72,11 +72,13 @@ public class EDIINTHelper {
             // get the data to sign
             MimeBodyPart data = msg.getData();
 
-    		String contentTxfrEncoding =  ((Message)msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+    		Partnership p = ((Message)msg).getPartnership();
+            String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+            boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
     		if (contentTxfrEncoding == null)
     			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
             // sign the data using CryptoHelper
-            MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key, digest, contentTxfrEncoding, false);
+            MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key, digest, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
 
             // update the message's data and content type
             msg.setData(signedData);

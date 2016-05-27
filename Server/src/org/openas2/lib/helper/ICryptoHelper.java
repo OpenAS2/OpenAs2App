@@ -59,7 +59,8 @@ public interface ICryptoHelper {
 
     void initialize() throws Exception;
 
-    MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, String contentTxfrEncoding, boolean adjustDigestToOldName) throws Exception;
+    MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, String contentTxfrEncoding
+    		, boolean adjustDigestToOldName, boolean isRemoveCmsAgorithmProtectionAttr) throws Exception;
 
     MimeBodyPart verifySignature(MimeBodyPart part, Certificate cert) throws Exception;
     

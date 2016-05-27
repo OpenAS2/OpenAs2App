@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
@@ -35,13 +36,17 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.cms.CMSAttributes;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSAlgorithm;
+import org.bouncycastle.cms.CMSAttributeTableGenerator;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.DefaultSignedAttributeTableGenerator;
 import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.KeyTransRecipientInformation;
 import org.bouncycastle.cms.RecipientInformation;
@@ -169,6 +174,8 @@ public class BCCryptoHelper implements ICryptoHelper {
         // Canonicalize the data if not binary content transfer encoding
         OutputStream os =  null;
         String encoding = part.getEncoding();
+        // Default encoding in case the bodypart does not have a transfer encoding set
+        if (encoding == null) encoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
         if ("binary".equals(encoding) || noCanonicalize) os = bOut;
         else os = new CRLFOutputStream(bOut);
         
@@ -306,7 +313,8 @@ public class BCCryptoHelper implements ICryptoHelper {
         CommandMap.setDefaultCommandMap(mc);
     }
 
-    public MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, String contentTxfrEncoding, boolean adjustDigestToOldName)
+    public MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, String contentTxfrEncoding
+    				, boolean adjustDigestToOldName, boolean isRemoveCmsAgorithmProtectionAttr)
             throws GeneralSecurityException, SMIMEException, MessagingException {
         //String signDigest = convertAlgorithm(digest, true);
         X509Certificate x509Cert = castCertificate(cert);
@@ -335,7 +343,20 @@ public class BCCryptoHelper implements ICryptoHelper {
             }
             // Remove the dash for SHA based digest for signing call
             if (digest.toUpperCase().startsWith("SHA-")) digest = digest.replaceAll("-", "");
-			sig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC").build(digest+"with"+encryptAlg, privKey, x509Cert);
+            JcaSimpleSignerInfoGeneratorBuilder jSig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC");
+			sig = jSig.build(digest+"with"+encryptAlg, privKey, x509Cert);
+            // Some AS2 systems cannot handle certain OID's ...
+			if (isRemoveCmsAgorithmProtectionAttr)
+			{
+			  final CMSAttributeTableGenerator sAttrGen = sig.getSignedAttributeTableGenerator();
+			  sig = new SignerInfoGenerator(sig, new DefaultSignedAttributeTableGenerator(){
+			    @Override
+			    public AttributeTable getAttributes(@SuppressWarnings("rawtypes") Map parameters) {
+			       AttributeTable ret = sAttrGen.getAttributes(parameters);
+			       return ret.remove(CMSAttributes.cmsAlgorithmProtect);
+			    }
+			  }, sig.getUnsignedAttributeTableGenerator());
+			}
 		} catch (OperatorCreationException e) {
 			throw new GeneralSecurityException(e);
 		}
@@ -400,6 +421,10 @@ public class BCCryptoHelper implements ICryptoHelper {
    	 while (it.hasNext())
    	 {
    	     SignerInformation   signer = it.next();
+   	     if (logger.isTraceEnabled())
+   	     {
+   	    	 logger.trace("Signer Attributes: " + signer.getSignedAttributes().toHashtable());
+   	     }
    	     if (signer.verify(signerInfoVerifier))
 		 {
 				logSignerInfo("Verified signature for signer info", signer, part);

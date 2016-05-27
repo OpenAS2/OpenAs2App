@@ -133,7 +133,9 @@ public class MimeBodyPartEncodingTest
 		    write(fos, body);
 		    fos.close();
 			System.out.println("MimeBodyPart written to: " + testFile);
-			MimeBodyPart signedMbp = AS2Util.getCryptoHelper().sign(body, senderCert, senderKey, digest, contentTxfrEncoding, msg.getPartnership().isRenameDigestToOldName());
+            boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(msg.getPartnership().getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
+			MimeBodyPart signedMbp = AS2Util.getCryptoHelper().sign(body, senderCert, senderKey, digest, contentTxfrEncoding
+					, msg.getPartnership().isRenameDigestToOldName(), isRemoveCmsAlgorithmProtectionAttr);
 			testFile = TestConfig.TEST_OUTPUT_FOLDER + "/" + TestConfig.TEST_DEFAULT_TGT_FILE_NAME + ".signed";
 			fos = new FileOutputStream(testFile);
 			write(fos, signedMbp);

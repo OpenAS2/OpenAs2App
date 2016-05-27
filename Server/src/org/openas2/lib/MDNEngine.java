@@ -140,12 +140,14 @@ public class MDNEngine {
                 ICertificateChooser certChooser = getCertificateChooser();
                 Certificate senderCert = certChooser.getSenderCertificate(mdn);
                 Key senderKey = certChooser.getSenderKey(mdn);
-        		String contentTxfrEncoding =  ((Message)msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+        		Partnership p = ((Message)msg).getPartnership();
+                String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+                boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
         		if (contentTxfrEncoding == null)
         			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
                 // sign the data using CryptoHelper
                 MimeBodyPart signedData = getCryptoHelper().sign(mdn.getData(), senderCert,
-                        senderKey, dispOptions.getMicAlgorithm(),contentTxfrEncoding, false);
+                        senderKey, dispOptions.getMicAlgorithm(),contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
                 mdn.setData(signedData);
                 mdn.setContentType(signedData.getContentType());
             }
