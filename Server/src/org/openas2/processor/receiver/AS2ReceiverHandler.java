@@ -350,6 +350,18 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				mic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
 				        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), msg.getPartnership().isPreventCanonicalization());
 		        if (logger.isDebugEnabled()) logger.debug("Prevent Canonicalization: " + msg.getPartnership().isPreventCanonicalization() + " ::: MIC calc on rxd msg: " + mic);
+		        if (logger.isTraceEnabled())
+		        {
+		        	// Generate some alternative MIC's to see if the partner is somehow using a different default
+		        	MimeBodyPart mdt = msg.getData();
+		        	String tmic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
+						        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), !msg.getPartnership().isPreventCanonicalization());
+		        		logger.trace("MIC with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());
+	        		tmic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
+						        false, msg.getPartnership().isPreventCanonicalization());
+		        		logger.trace("MIC with forced exclude headers flag: " + tmic + msg.getLogMsgID());
+		        	
+		        }
 			} catch (Exception e) {
 				msg.setLogMsg("Error calculating MIC on received message: " + e.getCause());
 				logger.error(msg, e);
