@@ -13,6 +13,7 @@ This release is an enhancement and bugfix release tht includes compatibility tes
   3. Support overriding digest "sha-1" algorithm name in signing to use "old" name without dash ("sha1")
   4. Support AES128, AES192, AES256 ciphers
   5. Support disabling the CMS algorithm protection OID for older AS2 systems
+  6. Added "Troubleshooting.." section to documentation
   
 Java 1.5 or later is required.
 NOTE FOR JAVA 1.5: Prior to java 1.6, the Javabeans Activation Framework is NOT included in the standard Java install. Download the 1.1.1 version and extract from the zip file from this web page: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-plat-419418.html#jaf-1.1.1-fcs-oth-JPR

@@ -4,6 +4,7 @@ Version 2.0.0 - 2016-05-31
   3. Support overriding digest "sha-1" algorithm name in signing to use "old" name without dash ("sha1")
   4. Support AES128, AES192, AES256 ciphers
   5. Support disabling the CMS algorithm protection OID for older AS2 systems
+  6. Added "Troubleshooting.." section to documentation
   
 Version 1.3.6 - 2015-11-23
   1. Fix handling creating a unique file name for storing message info for ASYNC MDN
