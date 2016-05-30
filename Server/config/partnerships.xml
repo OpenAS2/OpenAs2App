@@ -43,6 +43,10 @@
 		<attribute name="sign" value="SHA256"/>
 		<attribute name="prevent_canonicalization_for_mic" value="false"/>
 		<attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+		<!--
+		<attribute name="custom_mime_headers" value="X-CustomHeader: shift-shape ; X-CustomShape: oblong"/>
+		<attribute name="add_custom_mime_headers_to_http" value="true"/>
+		-->	
 	</partnership>
 </partnerships>
 
