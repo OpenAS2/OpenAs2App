@@ -180,4 +180,9 @@ public class Partnership implements Serializable {
 		String removeDash = getAttribute("rename_digest_to_old_name");
         return (removeDash != null && "true".equals(removeDash));
     }
+    
+    public boolean isRemoveCmsAlgorithmProtectionAttr()
+    {
+    	return "true".equalsIgnoreCase(getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
+    }
 }
