@@ -80,11 +80,29 @@ public class AS2SenderModule extends HttpSenderModule
 		// Get the resend retry count
 		String retries = AS2Util.retries(options, getParameter(SenderModule.SOPT_RETRIES, false));
 
+		// Get any static custom headers
+		String customHeaders = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADERS);
+		if (customHeaders != null && customHeaders.length() > 0)
+		{
+			if (logger.isTraceEnabled()) logger.trace("Adding custom header attribute to custom headers map..." + msg.getLogMsgID());
+			String[] headers = customHeaders.split("\\s*;\\s*");
+			for (int i = 0; i < headers.length; i++)
+			{
+				String[] header = headers[i].split("\\s*:\\s*");
+				if (logger.isTraceEnabled()) logger.trace("Adding custom header: " + headers[i] 
+						+ " :::Split count:" + header.length + msg.getLogMsgID());
+				if (header.length != 2) throw new OpenAS2Exception("Invalid custom header: " + headers[i]);
+				msg.addCustomOuterMimeHeader(header[0].replaceAll(" ", ""), header[1]);
+			}
+		}
 		// encrypt and/or sign and/or compress the message if needed
 		MimeBodyPart securedData;
 		try
 		{
 			securedData = secure(msg);
+			//Add any additional headers since this will be the outermost Mime body part if configured
+			addCustomOuterMimeHeaders(msg, securedData);
+
 			storePendingInfo((AS2Message) msg, isResend);
 		} catch (Exception e)
 		{
@@ -358,6 +376,11 @@ public class AS2SenderModule extends HttpSenderModule
 		{
 			if (logger.isTraceEnabled())
 				logger.trace("Compressing outbound message before signing...");
+			if (!sign && !encrypt)
+			{
+				//Add any additional headers since this will be the outermost Mime body part if configured
+				addCustomOuterMimeHeaders(msg, dataBP);
+			}
 			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType, contentTxfrEncoding);
 		}
 		// Encrypt and/or sign the data if requested
@@ -366,6 +389,11 @@ public class AS2SenderModule extends HttpSenderModule
 		// Sign the data if requested
 		if (sign)
 		{
+			if (!encrypt && !(isCompress && !isCompressBeforeSign))
+			{
+				//Add any additional headers since this will be the outermost Mime body part if configured
+				addCustomOuterMimeHeaders(msg, dataBP);
+			}
 			calcAndStoreMic(msg, dataBP, (sign || encrypt));
 			X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
 
@@ -391,6 +419,11 @@ public class AS2SenderModule extends HttpSenderModule
 
 		if (isCompress && !isCompressBeforeSign)
 		{
+			if (!encrypt)
+			{
+				//Add any additional headers since this will be the outermost Mime body part if configured
+				addCustomOuterMimeHeaders(msg, dataBP);
+			}
 			if (logger.isTraceEnabled())
 				logger.trace("Compressing outbound message after signing...");
 			dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType, contentTxfrEncoding);
@@ -398,6 +431,8 @@ public class AS2SenderModule extends HttpSenderModule
 		// Encrypt the data if requested
 		if (encrypt)
 		{
+			//Add any additional headers since this will be the outermost Mime body part if configured
+			addCustomOuterMimeHeaders(msg, dataBP);
 			String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
 
 			X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
@@ -415,6 +450,17 @@ public class AS2SenderModule extends HttpSenderModule
 		return dataBP;
 	}
 
+	protected void addCustomOuterMimeHeaders(Message msg, MimeBodyPart dataBP) throws MessagingException
+	{
+		if (logger.isTraceEnabled()) logger.trace("Adding custom headers to outer MBP...." + msg.getLogMsgID());
+		for (Map.Entry<String, String> entry : msg.getCustomOuterMimeHeaders().entrySet())
+		{
+			dataBP.addHeader(entry.getKey(), entry.getValue());
+			if (logger.isTraceEnabled())
+				logger.trace("Added custom headers to outer MBP: " + entry.getKey() + "--->" + entry.getValue() + msg.getLogMsgID());
+		}
+	}
+	
 	protected void updateHttpHeaders(HttpURLConnection conn, Message msg, MimeBodyPart securedData)
 	{
 		Partnership partnership = msg.getPartnership();
@@ -434,10 +480,8 @@ public class AS2SenderModule extends HttpSenderModule
 		{
 			conn.setRequestProperty("Content-type", msg.getContentType());
 		}
-		conn.setRequestProperty("AS2-Version", "1.1"); // RFC6017 - 1.1 supports
-														// compression, 1.2
-														// additionally supports
-														// EDIINT-Features
+		conn.setRequestProperty("AS2-Version", "1.1"); // RFC6017 - AS2 V1.1 supports compression
+														// AS2 V1.2 additionally supports EDIINT-Features
 		// conn.setRequestProperty("EDIINT-Features",
 		// "CEM,multiple-attachments"); // TODO (possibly implement???)
 		conn.setRequestProperty("Content-Transfer-Encoding", msg.getHeader("Content-Transfer-Encoding"));
@@ -478,6 +522,15 @@ public class AS2SenderModule extends HttpSenderModule
 		if (contentDisp != null)
 		{
 			conn.setRequestProperty("Content-Disposition", contentDisp);
+		}
+		if ("true".equalsIgnoreCase((partnership.getAttribute(AS2Partnership.PA_ADD_CUSTOM_MIME_HEADERS_TO_HTTP))))
+		{
+			if (logger.isTraceEnabled()) logger.trace("Adding custom headers to HTTP..." + msg.getLogMsgID());
+			for (Map.Entry<String, String> entry : msg.getCustomOuterMimeHeaders().entrySet())
+			{
+				conn.setRequestProperty(entry.getKey(), entry.getValue());
+			}
+
 		}
 
 	}
