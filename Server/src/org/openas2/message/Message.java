@@ -29,6 +29,12 @@ public interface Message extends Serializable {
 
     public String getStatus();
     
+	public Map<String, String> getCustomOuterMimeHeaders();
+
+	public void setCustomOuterMimeHeaders(Map<String, String> customOuterMimeHeaders);
+
+	public void addCustomOuterMimeHeader(String key, String value);
+
 	public Map<Object, Object> getOptions();
 
 	public void setOption(Object key, Object value);
