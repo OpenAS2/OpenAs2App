@@ -314,7 +314,7 @@ public class BCCryptoHelper implements ICryptoHelper {
     }
 
     public MimeBodyPart sign(MimeBodyPart part, Certificate cert, Key key, String digest, String contentTxfrEncoding
-    				, boolean adjustDigestToOldName, boolean isRemoveCmsAgorithmProtectionAttr)
+    				, boolean adjustDigestToOldName, boolean isRemoveCmsAlgorithmProtectionAttr)
             throws GeneralSecurityException, SMIMEException, MessagingException {
         //String signDigest = convertAlgorithm(digest, true);
         X509Certificate x509Cert = castCertificate(cert);
@@ -346,7 +346,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             JcaSimpleSignerInfoGeneratorBuilder jSig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC");
 			sig = jSig.build(digest+"with"+encryptAlg, privKey, x509Cert);
             // Some AS2 systems cannot handle certain OID's ...
-			if (isRemoveCmsAgorithmProtectionAttr)
+			if (isRemoveCmsAlgorithmProtectionAttr)
 			{
 			  final CMSAttributeTableGenerator sAttrGen = sig.getSignedAttributeTableGenerator();
 			  sig = new SignerInfoGenerator(sig, new DefaultSignedAttributeTableGenerator(){
@@ -423,7 +423,8 @@ public class BCCryptoHelper implements ICryptoHelper {
    	     SignerInformation   signer = it.next();
    	     if (logger.isTraceEnabled())
    	     {
-   	    	 logger.trace("Signer Attributes: " + signer.getSignedAttributes().toHashtable());
+   	    	 AttributeTable attrTbl = signer.getSignedAttributes();
+   	    	 logger.trace("Signer Attributes: " + (attrTbl==null?"NULL":attrTbl.toHashtable()));
    	     }
    	     if (signer.verify(signerInfoVerifier))
 		 {
