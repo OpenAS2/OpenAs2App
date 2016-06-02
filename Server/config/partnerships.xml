@@ -44,9 +44,20 @@
 		<attribute name="prevent_canonicalization_for_mic" value="false"/>
 		<attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
 		<!--
+		Example for adding static custom headers to Mime body part and additionally add to HTTP
 		<attribute name="custom_mime_headers" value="X-CustomHeader: shift-shape ; X-CustomShape: oblong"/>
 		<attribute name="add_custom_mime_headers_to_http" value="true"/>
 		-->	
+		<!--
+		Example for adding dynamic custom headers to Mime body part using delimiters where filename is of form XXX-YYY-ZZZ or XXX_YYY-ZZZ etc
+        <attribute name="custom_mime_header_names_from_filename" value="header.X-CustomRouteId,header.X-CustomCenter, junk.extraStuff"/>
+        <attribute name="custom_mime_header_name_delimters_in_filename" value="-_"/>
+
+		Example for adding dynamic custom headers to Mime body part where filename is of form XXX-YYY.msg 
+        <attribute name="custom_mime_header_names_from_filename" value="X-CustomRouteId,X-CustomCenter"/>
+        <attribute name="custom_mime_header_names_regex_on_filename" value="([^-]*)-([^.]*).msg"/>
+		-->
 	</partnership>
+
 </partnerships>
 
