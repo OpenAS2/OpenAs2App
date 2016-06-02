@@ -12,6 +12,8 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
@@ -337,10 +339,44 @@ public class AS2Util {
 		 * The Algorithm is appended as a part of the MIC by adding a comma then
 		 * optionally a space followed by the algorithm
 		 */
-		String retMicMinusAlg = returnMIC.substring(0, returnMIC.lastIndexOf(",")).replaceAll("\\s+", "");
-		String origMicMinusAlg = calcMIC.substring(0, calcMIC.lastIndexOf(",")).replaceAll("\\s+", "");
+	    String regex = "^\\s*(\\S+)\\s*,\\s*(\\S+)\\s*$";
+	    Pattern p = Pattern.compile(regex);
+	    Matcher m = p.matcher(returnMIC);
+	    if (!m.find())
+	    {
+	    	msg.setLogMsg("Invalid MIC format in returned MIC: " + returnMIC);
+			logger.error(msg);
+			throw new OpenAS2Exception("Invalid MIC string received. Forcing Resend");
+	    }
+	    String rMic = m.group(1);
+	    String rMicAlg = m.group(2);
+	    m = p.matcher(calcMIC);
+	    if (!m.find())
+	    {
+	    	msg.setLogMsg("Invalid MIC format in calculated MIC: " + calcMIC);
+			logger.error(msg);
+			throw new OpenAS2Exception("Invalid MIC string retrieved from calculated MIC. Forcing Resend");
+	    }
+	    String cMic = m.group(1);
+	    String cMicAlg = m.group(2);
 
-		if (!retMicMinusAlg.equals(origMicMinusAlg)) {
+	    if (!cMicAlg.equalsIgnoreCase(rMicAlg)) {
+	    	// Appears not to match.... make sure dash is not the issue as in SHA-1 compared to SHA1
+			if (!cMicAlg.replaceAll("-", "").equalsIgnoreCase(rMicAlg.replaceAll("-", "")))
+			{
+				/*
+				 * RFC 6362 specifies that the sent attachments should be
+				 * considered invalid and retransmitted
+				 */
+				String errmsg = "MIC algorithm returned by partner is not the same as the algorithm requested, original MIC alg: "
+						+ cMicAlg
+						+ " ::: returned MIC alg: "
+						+ rMicAlg
+						+ "\n\t\tPartner probably not implemented AS2 spec correctly or does not support the requested algorithm. Check that the \"as2_mdn_options\" attribute for the partner uses the same algorithm as the \"sign\" attribute.";
+				throw new OpenAS2Exception(errmsg + " Forcing Resend");
+			}
+		}
+	    if (!cMic.equals(rMic)) {
         	/* RFC 6362 specifies that the sent attachments should be considered invalid and retransmitted
         	 */
 			msg.setLogMsg("MIC not matched, original MIC: " + calcMIC + " return MIC: " + returnMIC);
@@ -348,7 +384,7 @@ public class AS2Util {
 			throw new OpenAS2Exception("MIC not matched. Forcing Resend");
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("mic is matched, mic: " + returnMIC + msg.getLogMsgID());
+			logger.trace("MIC is matched, received MIC: " + returnMIC + msg.getLogMsgID());
 		return true;
 	}
 	
