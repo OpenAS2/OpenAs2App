@@ -7,6 +7,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.activation.DataHandler;
 import javax.mail.Header;
@@ -87,11 +90,9 @@ public abstract class DirectoryPollingModule extends PollingModule
 		} catch (OpenAS2Exception oae)
 		{
 			oae.terminate();
-			forceStop(oae);
 		} catch (Exception e)
 		{
-			new WrappedException(e).terminate();
-			forceStop(e);
+			logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
 		}
 	}
 
@@ -154,7 +155,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 		}
 	}
 
-	protected void updateTracking() throws OpenAS2Exception
+	protected void updateTracking()
 	{
 		// clone the trackedFiles map, iterator through the clone and modify the
 		// original to avoid iterator exceptions
@@ -187,6 +188,18 @@ public abstract class DirectoryPollingModule extends PollingModule
 					try
 					{
 						processFile(file);
+					} catch (OpenAS2Exception e)
+					{
+						e.terminate();
+						try
+						{
+							IOUtilOld.handleError(file, errorDir);
+						} catch (OpenAS2Exception e1)
+						{
+							logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
+							forceStop(e1);
+							return;
+						}
 					} finally
 					{
 						trackedFiles.remove(fileEntry.getKey());
@@ -216,12 +229,60 @@ public abstract class DirectoryPollingModule extends PollingModule
 		msg.setAttribute(FileAttribute.MA_PENDINGFILE, file.getName());
 
 		updateMessage(msg, file);
+		String customHeaderList = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
+		if (customHeaderList != null && customHeaderList.length() > 0)
+		{
+			String[] headerNames = customHeaderList.split("\\s*,\\s*");
+			String delimiters = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAME_DELIMITERS_IN_FILENAME);
+			if (logger.isTraceEnabled()) logger.trace("Adding custom headers based on message file name to custom headers map. Delimeters: " + delimiters + msg.getLogMsgID());
+			if (delimiters != null)
+			{
+				// Extract the values based on delimiters which means the mime header names are prefixed with a target
+		        StringTokenizer valueTokens = new StringTokenizer(file.getName(), delimiters, false);
+		        if (valueTokens != null && valueTokens.countTokens()!= headerNames.length)
+			    {
+			    	msg.setLogMsg("Filename does not match headers list: Headers=" + customHeaderList + " ::: Filename=" + file.getName() + " ::: String delimiters=" + delimiters);
+					logger.error(msg);
+					throw new OpenAS2Exception("Invalid filename for extracting custom headers: " + file.getName());
+			    }
+				for (int i = 0; i < headerNames.length; i++)
+				{
+					String[] header = headerNames[i].split("\\.");
+					if (logger.isTraceEnabled()) logger.trace("Adding custom header: " + headerNames[i] 
+							+ " :::Split count:" + header.length + msg.getLogMsgID());
+					if (header.length != 2) throw new OpenAS2Exception("Invalid custom header: " + headerNames[i] + "  :: The header name must be prefixed by \"header.\" or \"junk.\" etc");
+			    	if (!"header".equalsIgnoreCase(header[0])) continue; // Ignore anything not prefixed by "header"
+					msg.addCustomOuterMimeHeader(header[1], valueTokens.nextToken());
+				}
+			}
+			else
+			{
+				String regex = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAMES_REGEX_ON_FILENAME);
+				if (regex != null)
+				{
+				    Pattern p = Pattern.compile(regex);
+				    Matcher m = p.matcher(file.getName());
+				    if (!m.find() || m.groupCount() != headerNames.length)
+				    {
+				    	msg.setLogMsg("Could not match filename to headers required using the regex provided: "
+				    			+ (m.find()?("Mismatch in header count to extracted group count: "
+				    					+ headerNames.length + "::" + m.groupCount()):"No match found in filename"));
+						logger.error(msg);
+						throw new OpenAS2Exception("Invalid filename for extracting custom headers: " + file.getName());
+				    }
+				    for (int i = 0; i < headerNames.length; i++)
+					{
+						msg.addCustomOuterMimeHeader(headerNames[i], m.group(i+1));
+					}
+				}
+			}
+		}
 		if (logger.isInfoEnabled())
 			logger.info("file assigned to message " + file.getAbsolutePath() + msg.getLogMsgID());
 
 		if (msg.getData() == null)
 		{
-			throw new InvalidMessageException("No Data");
+			throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + file.getAbsolutePath());
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());
@@ -287,8 +348,8 @@ public abstract class DirectoryPollingModule extends PollingModule
 
 		if (format != null)
 		{
-			String delimiters = getParameter(PARAM_DELIMITERS, ".-");
-			params.setParameters(format, delimiters, filename);
+				String delimiters = getParameter(PARAM_DELIMITERS, ".-");
+				params.setParameters(format, delimiters, filename);
 		}
 
 		try

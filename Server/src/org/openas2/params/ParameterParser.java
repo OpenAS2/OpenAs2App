@@ -28,7 +28,7 @@ public abstract class ParameterParser {
             key = params.nextToken().trim();
 
             if (!params.hasMoreTokens()) {
-                throw new InvalidParameterException("Invalid value", this, key, null);
+                throw new InvalidParameterException("Invalid value for encoded param \"" + encodedParams + "\"", this, key, null);
             }
 
             value = params.nextToken();
@@ -54,7 +54,7 @@ public abstract class ParameterParser {
 
         while (keyIt.hasNext()) {
             if (!valueTokens.hasMoreTokens()) {
-                throw new OpenAS2Exception("Invalid value: Format=" + format + ", value=" + value);
+                throw new OpenAS2Exception("String value does not match format: Format=" + format + " ::: Value=" + value + " ::: String delimiters=" + delimiters);
             }
 
             key = ((String) keyIt.next()).trim();
