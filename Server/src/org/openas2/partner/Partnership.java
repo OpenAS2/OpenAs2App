@@ -19,6 +19,7 @@ public class Partnership implements Serializable {
     public static final String PA_PROTOCOL = "protocol"; // AS1 or AS2
     public static final String PA_SUBJECT = "subject"; // Subject sent in messages    
     public static final String PA_CONTENT_TRANSFER_ENCODING = "content_transfer_encoding"; // optional content transer enc value
+    public static final String PA_REMOVE_PROTECTION_ATTRIB = "remove_cms_algorithm_protection_attrib"; // Some AS2 systems do not support the attribute
    
  
     private Map<String,String> attributes;
@@ -159,5 +160,29 @@ public class Partnership implements Serializable {
     {
     	String receiptOptions = getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION);
     	return (receiptOptions != null && receiptOptions.length() > 0);
+    }
+
+    public boolean isSetTransferEncodingOnInitialBodyPart()
+    {
+    	// The default must be true and allow it to be disabled by explicit config
+		String setTxfrEncoding = getAttribute("set_transfer_encoding_on_inital_body_part");
+        return (setTxfrEncoding == null || "true".equals(setTxfrEncoding));
+    }
+
+    public boolean isPreventCanonicalization()
+    {
+		String preventCanonicalization = getAttribute("prevent_canonicalization_for_mic");
+        return (preventCanonicalization != null && "true".equals(preventCanonicalization));
+    }
+
+    public boolean isRenameDigestToOldName()
+    {
+		String removeDash = getAttribute("rename_digest_to_old_name");
+        return (removeDash != null && "true".equals(removeDash));
+    }
+    
+    public boolean isRemoveCmsAlgorithmProtectionAttr()
+    {
+    	return "true".equalsIgnoreCase(getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
     }
 }

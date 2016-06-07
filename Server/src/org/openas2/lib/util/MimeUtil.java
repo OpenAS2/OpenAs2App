@@ -1,15 +1,16 @@
 package org.openas2.lib.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
+import org.openas2.Session;
 import org.openas2.lib.util.javamail.ByteArrayDataSource;
 
 
@@ -52,13 +53,13 @@ public class MimeUtil {
         }
     }
 
-    public static MimeBodyPart createMimeBodyPart(byte[] data, String contentType)
+    public static MimeBodyPart createMimeBodyPart(byte[] data, String contentType, String contentTransferEncoding)
         throws MessagingException {
         // create a MimeBodyPart and set up it's content and content headers
         MimeBodyPart part = new MimeBodyPart();
         part.setDataHandler(new DataHandler(new ByteArrayDataSource(data, contentType, null)));
         part.setHeader("Content-Type", contentType);
-        part.setHeader("Content-Transfer-Encoding", "8bit");
+        part.setHeader("Content-Transfer-Encoding", contentTransferEncoding);
 
         return part;
     }
@@ -94,6 +95,18 @@ public class MimeUtil {
         dataIn.readFully(data);
 
         // convert the byte array to a MimeBodyPart
-        return createMimeBodyPart(data, getHeader(headers, "Content-Type"));
+        String contentTransferEncoding = getHeader(headers, "Content-Transfer-Encoding");
+        if (contentTransferEncoding == null) contentTransferEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+        return createMimeBodyPart(data, getHeader(headers, "Content-Type"), contentTransferEncoding);
     }
+    
+	public static String toString(MimeBodyPart mbp, boolean addDelimiterText) throws IOException, MessagingException
+	{
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		if (addDelimiterText) os.write("========BEGIN MIMEBODYPART=========\n".getBytes());
+		mbp.writeTo(os);
+		if (addDelimiterText) os.write("\n========END MIMEBODYPART=========".getBytes());
+		return os.toString();
+	}
+
 }

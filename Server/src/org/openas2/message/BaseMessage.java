@@ -36,6 +36,7 @@ public abstract class BaseMessage implements Message {
 	private String calculatedMIC = null;
 	private String logMsg = null;
     private String status = MSG_STATUS_MSG_INIT;
+	private Map<String, String> customOuterMimeHeaders = new HashMap<String, String>();
     
 
 	public BaseMessage() {
@@ -58,6 +59,22 @@ public abstract class BaseMessage implements Message {
 	public void setStatus(String status)
 	{
 		this.status = status;
+	}
+
+	public Map<String, String> getCustomOuterMimeHeaders()
+	{
+		return customOuterMimeHeaders;
+	}
+
+
+	public void setCustomOuterMimeHeaders(Map<String, String> customOuterMimeHeaders)
+	{
+		this.customOuterMimeHeaders = customOuterMimeHeaders;
+	}
+
+	public void addCustomOuterMimeHeader(String key, String value)
+	{
+		this.customOuterMimeHeaders.put(key, value);
 	}
 
 	public void setOption(Object key, Object value) {

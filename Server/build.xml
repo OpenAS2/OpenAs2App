@@ -35,6 +35,7 @@
 				<tokenfilter>
 					<replaceregex replace="\1"
 						pattern="^.*String VERSION\s*=\s* &quot;(.*)&quot;;.*$" />
+			        <deletecharacters chars=" " />
 				</tokenfilter>
 				<striplinebreaks />
 			</filterchain>

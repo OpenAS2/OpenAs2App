@@ -16,14 +16,13 @@ import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
-import org.bouncycastle.mail.smime.SMIMECompressed;
-import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
@@ -89,11 +88,17 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				ne.terminate();
 			}
 			Profiler.endProfile(transferStub);
+			
 			String mic = null;
 			if (data != null) {
-				logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
-						+ msg.getLogMsgID());
+				if (logger.isInfoEnabled())
+						logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
+								+ msg.getLogMsgID());
 
+				if (logger.isTraceEnabled())
+				{
+					logger.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
+				}
 				// TODO store HTTP request, headers, and data to file in Received folder -> use message-id for filename?
 				try {
 					// Put received data in a MIME body part
@@ -109,7 +114,29 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						MimeBodyPart receivedPart = new MimeBodyPart();
 						receivedPart.setDataHandler(
 								new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
+						if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+						{
+							logger.trace("Received MimeBodyPart for inbound message: " + msg.getLogMsgID()
+									+ "\n" + MimeUtil.toString(receivedPart, true));
+						}
+						// Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the HTTP header
+						// since it may not be set in the received mime body part
 						receivedPart.setHeader("Content-Type", receivedContentType.toString());
+						
+						// Set the transfer encoding if necessary
+						String cte =  receivedPart.getEncoding();
+						if (cte == null)
+					    {
+							// Not in the MimeBodyPart so try the HTTP headers...
+							cte = msg.getHeader("Content-Transfer-Encoding");
+							// Nada ... set to system default
+							if (cte == null) cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+							receivedPart.setHeader("Content-Transfer-Encoding", cte);
+					    }
+						else if (logger.isTraceEnabled())
+						{
+							logger.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
+						}
 						msg.setData(receivedPart);
 					} catch (Exception e) {
 						msg.setLogMsg("Error extracting received message.");
@@ -247,6 +274,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
                 PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
+				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+				{
+					logger.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID()
+							+ "\n" + MimeUtil.toString(msg.getData(), true));
+				}
             }
         } catch (Exception e) {
         	msg.setLogMsg("Error extracting received message: " + e.getCause());
@@ -259,8 +291,13 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			if (ch.isCompressed(msg.getData()))
 			{
 				if (logger.isTraceEnabled()) logger.trace("Decompressing received message before checking signature...");
-				decompress(msg);
+				AS2Util.getCryptoHelper().decompress(msg);
 				isDecompressed = true;
+				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+				{
+					logger.trace("Received MimeBodyPart for inbound message after decompression: " + msg.getLogMsgID()
+							+ "\n" + MimeUtil.toString(msg.getData(), true));
+				}
 			}
 		} catch (Exception e1) {
         	msg.setLogMsg("Error decompressing received message: " + e1.getCause());
@@ -275,7 +312,12 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             	if (logger.isDebugEnabled()) logger.debug("verifying signature"+msg.getLogMsgID());
 
                 X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
-                msg.setData(AS2Util.getCryptoHelper().verify(msg.getData(), senderCert));
+                msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
+				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
+				{
+					logger.trace("Received MimeBodyPart for inbound message after signature verification: " + msg.getLogMsgID()
+							+ "\n" + MimeUtil.toString(msg.getData(), true));
+				}
             }
         } catch (Exception e) {
         	msg.setLogMsg("Error decrypting received message: " + org.openas2.logging.Log.getExceptionMsg(e));
@@ -306,7 +348,20 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         if (dispOptions.getMicalg() != null) {
             try {
 				mic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
-				        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()));
+				        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), msg.getPartnership().isPreventCanonicalization());
+		        if (logger.isDebugEnabled()) logger.debug("Prevent Canonicalization: " + msg.getPartnership().isPreventCanonicalization() + " ::: MIC calc on rxd msg: " + mic);
+		        if (logger.isTraceEnabled())
+		        {
+		        	// Generate some alternative MIC's to see if the partner is somehow using a different default
+		        	MimeBodyPart mdt = msg.getData();
+		        	String tmic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
+						        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), !msg.getPartnership().isPreventCanonicalization());
+		        		logger.trace("MIC with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());
+	        		tmic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
+						        false, msg.getPartnership().isPreventCanonicalization());
+		        		logger.trace("MIC with forced exclude headers flag: " + tmic + msg.getLogMsgID());
+		        	
+		        }
 			} catch (Exception e) {
 				msg.setLogMsg("Error calculating MIC on received message: " + e.getCause());
 				logger.error(msg, e);
@@ -315,7 +370,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						e);
 			}
         }
-        if (logger.isDebugEnabled()) logger.debug("MIC calc on rxd msg: " + mic);
 
 		// Per RFC5402 compression is always before encryption but can be before or after signing of message but only in one place
 		try {
@@ -328,7 +382,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			                , new Exception("Message has already been decompressed. Per RFC5402 it cannot occur twice."));
 				}
 				if (logger.isTraceEnabled()) logger.trace("Decompressing received message after decryption...");
-				decompress(msg);
+				AS2Util.getCryptoHelper().decompress(msg);
 			}
 		} catch (Exception e) {
 			msg.setLogMsg("Unexepcted error checking for compressed message after signing");
@@ -339,29 +393,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		}
 		return mic;
     }
-
-	private void decompress(AS2Message msg) throws DispositionException
-	{
-		try
-		{
-				if (logger.isDebugEnabled()) logger.debug("Decompressing a compressed message");
-				SMIMECompressed compressed = new SMIMECompressed(msg.getData());
-				// decompression step MimeBodyPart
-				MimeBodyPart recoveredPart = SMIMEUtil.toMimeBodyPart(compressed.getContent(new ZlibExpanderProvider()));
-				// Update the message object
-				msg.setData(recoveredPart);
-		}
-
-		catch (Exception ex)
-		{
-
-			msg.setLogMsg("Error decompressing received message: " + ex.getCause());
-			logger.error(msg, ex);
-			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
-					"processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR,
-					ex);
-		}
-	}
 
     protected void processMDN(AS2Message msg, BufferedOutputStream out, DispositionType disposition, String mic, String text) {
         boolean mdnBlocked = false;

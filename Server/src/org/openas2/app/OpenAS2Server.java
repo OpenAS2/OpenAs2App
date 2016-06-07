@@ -33,6 +33,7 @@ public class OpenAS2Server {
 	public void start(String[] args) {
 		BaseCommandProcessor cmd = null;
 		XMLSession session = null;
+		int exitStatus = 0;
 
 		try {
 			Log logger = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
@@ -62,10 +63,11 @@ public class OpenAS2Server {
 			session.getProcessor().startActiveModules();
 
 			// enter the command processing loop
-			write("OpenAS2 Started\r\n");
+			write("OpenAS2 V" + Session.VERSION + " Started\r\n");
 
 			
-			logger.info("- OpenAS2 Started -");
+			logger.info("- OpenAS2 Started - V" + Session.VERSION);
+			
 			CommandManager cmdMgr = session.getCommandManager();
 			List<BaseCommandProcessor> processors = cmdMgr.getProcessors();
 			for (int i = 0; i < processors.size(); i++) {
@@ -86,8 +88,10 @@ public class OpenAS2Server {
 			}
 			logger.info("- OpenAS2 Stopped -");
 		} catch (Exception e) {
+			exitStatus = -1;
 			e.printStackTrace();
 		} catch (Error err) {
+			exitStatus = -1;
 			err.printStackTrace();
 		} finally {
 
@@ -109,7 +113,7 @@ public class OpenAS2Server {
 
 			write("OpenAS2 has shut down\r\n");
 
-			System.exit(0);
+			System.exit(exitStatus);
 		}
 	}
 

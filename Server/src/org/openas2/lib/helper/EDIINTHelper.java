@@ -5,8 +5,11 @@ import java.security.cert.Certificate;
 
 import javax.mail.internet.MimeBodyPart;
 
+import org.openas2.Session;
 import org.openas2.lib.CryptoException;
 import org.openas2.lib.message.EDIINTMessage;
+import org.openas2.message.Message;
+import org.openas2.partner.Partnership;
 
 
 public class EDIINTHelper {
@@ -23,13 +26,16 @@ public class EDIINTHelper {
             // get the data that should be encrypted    	
             MimeBodyPart data = msg.getData();
 
+    		String contentTxfrEncoding = ((Message)msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+    		if (contentTxfrEncoding == null)
+    			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
             // encrypt the data using CryptoHelper 
-            MimeBodyPart encryptedData = getCryptoHelper().encrypt(data, cert,
-                    algorithm);
+            MimeBodyPart encryptedData = getCryptoHelper().encrypt(data, cert, algorithm, contentTxfrEncoding);
 
             // update the message's data and content type
             msg.setData(encryptedData);
             msg.setContentType(encryptedData.getContentType());
+            msg.setHeader("Content-Transfer-Encoding", encryptedData.getEncoding());
         } catch (Exception e) {
             throw new CryptoException("Encryption failed", e);
         }
@@ -54,6 +60,7 @@ public class EDIINTHelper {
             // update the message's data and content type
             msg.setData(decryptedData);
             msg.setContentType(decryptedData.getContentType());
+            msg.setHeader("Content-Transfer-Encoding", decryptedData.getEncoding());
         } catch (Exception e) {
             throw new CryptoException("Decryption failed", e);
         }
@@ -65,13 +72,20 @@ public class EDIINTHelper {
             // get the data to sign
             MimeBodyPart data = msg.getData();
 
+    		Partnership p = ((Message)msg).getPartnership();
+            String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+            boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
+    		if (contentTxfrEncoding == null)
+    			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
             // sign the data using CryptoHelper
-            MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key,
-                    digest);
+            MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key, digest, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
 
             // update the message's data and content type
             msg.setData(signedData);
             msg.setContentType(signedData.getContentType());
+            String contentTxfrEnc = signedData.getEncoding();
+            if (contentTxfrEnc == null) contentTxfrEnc = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+            msg.setHeader("Content-Transfer-Encoding", contentTxfrEnc);
         } catch (Exception e) {
             throw new CryptoException("Sign failed", e);
         }
@@ -91,7 +105,7 @@ public class EDIINTHelper {
             }
 
             // verify the data
-            MimeBodyPart verifiedData = crypto.verify(data, cert);
+            MimeBodyPart verifiedData = crypto.verifySignature(data, cert);
 
             // update the message's data and content type
             msg.setData(verifiedData);

@@ -41,13 +41,13 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
 	}
 
 	public void start() throws OpenAS2Exception {
-		setRunning(true);
 		doStart();
+		setRunning(true);
 	}
 
 	public void stop() throws OpenAS2Exception {
-		setRunning(false);
 		doStop();
+		setRunning(false);
 	}
 
 	public String toString() {

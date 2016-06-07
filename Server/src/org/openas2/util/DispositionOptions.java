@@ -72,6 +72,9 @@ public class DispositionOptions {
         setMicalg(null);
 		if (options != null) {
 		
+		// TODO: This parsing is far too rigid and will likely fail. The RFC specifies that each parameter can have multiple values
+		// See section 7.3 of https://www.ietf.org/rfc/rfc4130.txt
+		
         try {
             StringTokenizer optionTokens = new StringTokenizer(options, "=,;", false);
             if (optionTokens.countTokens() > 5) {
