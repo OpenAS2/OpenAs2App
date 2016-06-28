@@ -219,6 +219,16 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements
             }
 
             Certificate[] certChain = ks.getCertificateChain(alias);
+            if (certChain == null)
+            {
+            	X509Certificate x509cert = (X509Certificate)ks.getCertificate(alias);
+            	if (x509cert.getSubjectDN().equals(x509cert.getIssuerDN()))
+                {
+                     // Trust chain is to itself
+                    certChain = new X509Certificate[] { x509cert, x509cert };
+                    if (logger.isInfoEnabled()) logger.info("Detected self-signed certificate and allowed import. Alias: " + alias);
+                }
+            }
             ks.setKeyEntry(alias, key, password.toCharArray(), certChain);
 
             save(getFilename(), getPassword());
