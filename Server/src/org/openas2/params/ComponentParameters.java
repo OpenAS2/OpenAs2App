@@ -1,7 +1,5 @@
 package org.openas2.params;
 
-import java.util.StringTokenizer;
-
 import org.openas2.Component;
 
 public class ComponentParameters extends ParameterParser
