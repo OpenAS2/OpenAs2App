@@ -1,9 +1,8 @@
 package org.openas2.params;
 
-import java.io.File;
 import java.util.StringTokenizer;
 
-import javax.mail.internet.ContentDisposition;
+import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,53 +68,17 @@ public class MessageParameters extends ParameterParser {
 			return getTarget().getHeader(areaID);
 		} else if (area.equals(KEY_CONTENT_FILENAME) && areaID.equals("filename")) {
 			String filename = "noContentDispositionFilename";
-			String s = target.getContentDisposition();
-			if (s == null || s.length() < 1)
-				return filename;
-			try {
-				if (logger.isDebugEnabled())
-					logger.debug("Attempting filename extraction from Content-disposition: " + s);
-				// TODO: This should be a case insensitive lookup per RFC6266
-                String tmpFilename = null;
-
-				ContentDisposition cd = new ContentDisposition(s);
-				tmpFilename = cd.getParameter("filename");
-				
-				if (tmpFilename == null || tmpFilename.length() < 1)
-				{
-					/* Try to extract manually */
-					int n = s.indexOf("filename=");
-					if (n > -1)
-					{
-						tmpFilename = s.substring(n);
-						tmpFilename = tmpFilename.replaceFirst("filename=", "");
-
-						int n1 = tmpFilename.indexOf(",");
-						if (n1 > -1)
-							s = s.substring(0, n1 - 1);
-						tmpFilename = tmpFilename.replaceAll("\"", "");
-						s = s.trim();
-					}
-					else
-					{
-						/* Try just using file separator */
-						int pos = s.lastIndexOf(File.separator);
-						if (pos >= 0)
-							tmpFilename = s.substring(pos + 1);
-					}
-                }
-
-                if (tmpFilename != null && tmpFilename.length() > 0)
-                {
-    				if (logger.isDebugEnabled())
-    					logger.debug("Filename extracted from Content-disposition: " + tmpFilename);
-                	return tmpFilename;
-                }
-
-			} catch (Exception e) {
-				e.printStackTrace();
+			String s = null;
+			try
+			{
+				s = getTarget().extractPayloadFilename();
+			} catch (ParseException e)
+			{
+				logger.warn("Failed to extract filename from content-disposition: " + org.openas2.logging.Log.getExceptionMsg(e), e);
 			}
-	        return filename;
+			if (s != null && s.length() > 0)
+				return s;
+		    return filename;
 		} else {
 			throw new InvalidParameterException("Invalid area in key", this, key, null);
 		}
