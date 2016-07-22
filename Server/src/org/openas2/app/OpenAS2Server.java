@@ -23,6 +23,8 @@ import org.openas2.cmd.processor.BaseCommandProcessor;
  */
 public class OpenAS2Server {
 	protected BufferedWriter sysOut;
+	BaseCommandProcessor cmd = null;
+	XMLSession session = null;
 
 	
 	public static void main(String[] args) {
@@ -31,10 +33,17 @@ public class OpenAS2Server {
 	}
 
 	public void start(String[] args) {
-		BaseCommandProcessor cmd = null;
-		XMLSession session = null;
 		int exitStatus = 0;
 
+		Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+            	shutdown();
+                System.out.println("Shutdown hook ran!");
+            }
+        });
 		try {
 			Log logger = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
 			
@@ -94,29 +103,34 @@ public class OpenAS2Server {
 			exitStatus = -1;
 			err.printStackTrace();
 		} finally {
-
-			if (session != null) {
-				try {
-					session.getProcessor().stopActiveModules();
-				} catch (OpenAS2Exception same) {
-					same.terminate();
-				}
-			}
-
-			if (cmd != null) {
-				try {
-					cmd.deInit();
-				} catch (OpenAS2Exception cdie) {
-					cdie.terminate();
-				}
-			}
-
-			write("OpenAS2 has shut down\r\n");
-
+			shutdown();
 			System.exit(exitStatus);
 		}
 	}
 
+	public void shutdown()
+	{
+		if (session != null) {
+			try {
+				session.getProcessor().stopActiveModules();
+			} catch (OpenAS2Exception same) {
+				same.terminate();
+			}
+		}
+
+		if (cmd != null) {
+			try {
+				cmd.deInit();
+			} catch (OpenAS2Exception cdie) {
+				cdie.terminate();
+			}
+		}
+
+		write("OpenAS2 has shut down\r\n");
+		
+
+	}
+	
 	public void write(String msg) {
 		if (sysOut == null) {
 			sysOut = new BufferedWriter(new OutputStreamWriter(System.out));
