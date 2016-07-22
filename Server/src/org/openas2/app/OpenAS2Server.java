@@ -41,7 +41,7 @@ public class OpenAS2Server {
             public void run()
             {
             	shutdown();
-                System.out.println("Shutdown hook ran!");
+                System.out.println("Shutdown due to process interruption!");
             }
         });
 		try {
