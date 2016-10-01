@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,6 +20,7 @@ import org.openas2.logging.Logger;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
+import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -34,6 +36,7 @@ import org.xml.sax.SAXException;
  *
  */
 public class XMLSession extends BaseSession implements CommandRegistryFactory {
+	public static final String EL_PROPERTIES = "properties";
 	public static final String EL_CERTIFICATES = "certificates";
 	public static final String EL_CMDPROCESSOR = "commandProcessors";
 	public static final String EL_PROCESSOR = "processor";
@@ -42,7 +45,6 @@ public class XMLSession extends BaseSession implements CommandRegistryFactory {
 	public static final String EL_LOGGERS = "loggers";
 	public static final String PARAM_BASE_DIRECTORY = "basedir";
 	private CommandRegistry commandRegistry;
-	private String baseDirectory;
 	private CommandManager cmdManager;
 
 
@@ -90,7 +92,9 @@ public class XMLSession extends BaseSession implements CommandRegistryFactory {
 
 			nodeName = rootNode.getNodeName();
 
-			if (nodeName.equals(EL_CERTIFICATES)) {
+			if (nodeName.equals(EL_PROPERTIES)) {
+				loadProperties(rootNode);
+			} else if (nodeName.equals(EL_CERTIFICATES)) {
 				loadCertificates(rootNode);
 			} else if (nodeName.equals(EL_PROCESSOR)) {
 				loadProcessor(rootNode);
@@ -111,6 +115,12 @@ public class XMLSession extends BaseSession implements CommandRegistryFactory {
 			}
 		}
 	}
+	
+    protected void loadProperties(Node propNode)
+    {
+    	Map<String, String> properties = XMLUtil.mapAttributes(propNode);
+    	Properties.setProperties(properties);
+    }
 
 	protected void loadCertificates(Node rootNode) throws OpenAS2Exception {
 		CertificateFactory certFx = (CertificateFactory) XMLUtil.getComponent(
@@ -204,14 +214,6 @@ public class XMLSession extends BaseSession implements CommandRegistryFactory {
 		ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(
 				moduleNode, this);
 		proc.getModules().add(procmod);
-	}
-
-	public String getBaseDirectory() {
-		return baseDirectory;
-	}
-
-	public void setBaseDirectory(String dir) {
-		baseDirectory = dir;
 	}
 
 }
