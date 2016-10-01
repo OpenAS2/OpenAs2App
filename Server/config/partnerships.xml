@@ -56,6 +56,10 @@
 		Example for adding dynamic custom headers to Mime body part where filename is of form XXX-YYY.msg 
         <attribute name="custom_mime_header_names_from_filename" value="X-CustomRouteId,X-CustomCenter"/>
         <attribute name="custom_mime_header_names_regex_on_filename" value="([^-]*)-([^.]*).msg"/>
+
+		Example for parsing filename into parameters that can be referenced this is a file name of the form XXXNNNN.edi where X is alphabetic and N are numerics 
+        <attribute name="attribute_names_from_filename" value="P-DynamicParm1,P-DynamicParm2"/>
+        <attribute name="attribute_values_regex_on_filename" value="([A-Za-z]*)([^.]*).edi"/>
 		-->
 	</partnership>
 
