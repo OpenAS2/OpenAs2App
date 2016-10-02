@@ -8,11 +8,14 @@ import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +27,7 @@ import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
+import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
 import org.openas2.partner.AS2Partnership;
@@ -66,6 +70,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
         byte[] data = null;
         BufferedOutputStream out;
+        Map<Object, Object> options = new HashMap<Object, Object>();
+		options.put("DIRECTION", "RECEIVE");
 		try {
 			out = new BufferedOutputStream(s.getOutputStream());
 		} catch (IOException e1) {
@@ -157,8 +163,19 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 								"processed", "Error", "authentication-failed"),
 								AS2ReceiverModule.DISP_PARTNERSHIP_NOT_FOUND, oae);
 					}
+					// Log significant msg state
+					msg.setOption("STATE", Message.MSG_STATE_RECEIVE_START);
+					msg.trackMsgState(getModule().getSession());
 					// Decrypt and verify signature of the data, and attach data to the message
 					mic = decryptAndVerify(msg);
+					try
+					{
+						// Extract and Store the received filename of the payload
+						msg.setPayloadFilename(msg.extractPayloadFilename());
+					} catch (ParseException e1)
+					{
+						logger.error("Failed to extract the file name from received content-disposition", e1);
+					}
 
 					// Process the received message
 					try {
@@ -166,7 +183,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					} catch (OpenAS2Exception oae) {
 						msg.setLogMsg("Error handling received message: " + oae.getCause());
 						logger.error(msg, oae);
-						;
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_RECEIVE_EXCEPTION);
+						msg.trackMsgState(getModule().getSession());
+
 						throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
 								"processed", "Error", "unexpected-processing-error"),
 								AS2ReceiverModule.DISP_STORAGE_FAILED, oae);
@@ -175,7 +195,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					// Transmit a success MDN if requested
 					try {
 						if (msg.isRequestingMDN()) {
-							processMDN(msg, out,
+							// Log significant msg state
+							msg.setOption("STATE", Message.MSG_STATE_MDN_SEND_START);
+							msg.trackMsgState(getModule().getSession());
+							sendMDNResponse(msg, out,
 									new DispositionType("automatic-action", "MDN-sent-automatically", "processed"), mic,
 									AS2ReceiverModule.DISP_SUCCESS);
 			                //if asyncMDN requested, close connection and initiate separate MDN send 
@@ -187,6 +210,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				                	  logger.debug("Call to asynch MDN initiated");
 			                    return;
 			                }
+							// Log significant msg state
+							msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
+							msg.trackMsgState(getModule().getSession());
+
 						} else {
 							HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
 							out.flush();
@@ -195,12 +222,18 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					} catch (Exception e) {
 						msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
 						logger.error(msg, e);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
+						msg.trackMsgState(getModule().getSession());
 						throw new WrappedException("Error creating and returning MDN, message was still processed",
 								e);
 					}
 
 				} catch (DispositionException de) {
-					processMDN(msg, out, de.getDisposition(), mic, de.getText());
+					// Log significant msg state
+					msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
+					msg.trackMsgState(getModule().getSession());
+					sendMDNResponse(msg, out, de.getDisposition(), mic, de.getText());
 	                //if asyncMDN requested, close connection and initiate separate MDN send 
 	                if (msg.isRequestingAsynchMDN() ) {
 	                	try {
@@ -217,12 +250,18 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						} catch (Exception e) {
 							msg.setLogMsg("Failed to initiate async MDN send on DispositionException handling.");
 							logger.error(msg, e);
+							// Log significant msg state
+							msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
+							msg.trackMsgState(getModule().getSession());
 						}
 	                    return;
 	                }
 
 					getModule().handleError(msg, de);
 				} catch (OpenAS2Exception oae) {
+					// Log significant msg state
+					msg.setOption("STATE", Message.MSG_STATE_RECEIVE_FAIL);
+					msg.trackMsgState(getModule().getSession());
 					getModule().handleError(msg, oae);
 				}
 			} 
@@ -394,7 +433,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		return mic;
     }
 
-    protected void processMDN(AS2Message msg, BufferedOutputStream out, DispositionType disposition, String mic, String text) {
+    protected void sendMDNResponse(AS2Message msg, BufferedOutputStream out, DispositionType disposition, String mic, String text) {
         boolean mdnBlocked = false;
 
         mdnBlocked = (msg.getPartnership().getAttribute(ASXPartnership.PA_BLOCK_ERROR_MDN) != null);
