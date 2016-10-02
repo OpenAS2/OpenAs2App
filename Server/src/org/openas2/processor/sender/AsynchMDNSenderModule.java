@@ -43,6 +43,8 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			throws OpenAS2Exception {
 
 		if (logger.isDebugEnabled()) logger.debug("ASYNC MDN send started...");
+		if (options == null) options = new HashMap<Object, Object>();
+		options.put("DIRECTION", "RECEIVE");
 		sendAsyncMDN((AS2Message) msg, options);
 	}
 
@@ -144,6 +146,9 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
 				// log & store mdn into backup folder.
 				getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
+				// Log significant msg state
+				msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
+				msg.trackMsgState(getSession());
 
 			} finally {
 				conn.disconnect();
@@ -154,6 +159,9 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			logger.warn("HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre) + msg.getLogMsgID(), hre);
 			hre.terminate();
 			resend(msg, hre);
+			// Log significant msg state
+			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
+			msg.trackMsgState(getSession());
 		} catch (IOException ioe)
 		{
 			logger.warn("IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe) + msg.getLogMsgID(), ioe);
@@ -163,9 +171,17 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			wioe.terminate();
 
 			resend(msg, wioe);
+			// Log significant msg state
+			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
+			msg.trackMsgState(getSession());
 		} catch (Exception e) {
 			logger.warn("Unexpected exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(e) + msg.getLogMsgID(), e);
 			// Propagate error if it can't be handled by a resend
+			// log & store mdn into backup folder.
+			getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
+			// Log significant msg state
+			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
+			msg.trackMsgState(getSession());
 			throw new WrappedException(e);
 		}
 	}

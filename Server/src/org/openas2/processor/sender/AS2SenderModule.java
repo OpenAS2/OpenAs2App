@@ -64,7 +64,8 @@ public class AS2SenderModule extends HttpSenderModule
 		if (logger.isInfoEnabled())
 			logger.info("message sender invoked" + msg.getLogMsgID());
 		boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
-
+		options.put("DIRECTION", "SEND");
+		options.put("IS_RESEND", isResend?"Y":"N");
 		if (!(msg instanceof AS2Message))
 		{
 			throw new OpenAS2Exception("Can't send non-AS2 message");
@@ -106,6 +107,9 @@ public class AS2SenderModule extends HttpSenderModule
 			storePendingInfo((AS2Message) msg, isResend);
 		} catch (Exception e)
 		{
+			// Log significant msg state
+			msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
+			msg.trackMsgState(getSession());
 			throw new OpenAS2Exception("Error setting up message for sending.", e);
 		}
 		if (logger.isTraceEnabled())
@@ -135,18 +139,27 @@ public class AS2SenderModule extends HttpSenderModule
 				// Create the HTTP connection and set up headers
 				String url = msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_URL);
 				conn = getConnection(url, true, true, false, "POST");
+				// Log significant msg state
+				msg.setOption("STATE", Message.MSG_STATE_SEND_START);
+				msg.trackMsgState(getSession());
 
 				sendMessage(conn, msg, securedData, retries);
 			} catch (HttpResponseException hre)
 			{
 				// Will have been logged so just resend
 				resend(msg, hre, retries);
+				// Log significant msg state
+				msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
+				msg.trackMsgState(getSession());
 				return;
 			} catch (Exception e)
 			{
 				msg.setLogMsg("Unexpected error sending file: " + org.openas2.logging.Log.getExceptionMsg(e));
 				logger.error(msg, e);
 				resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), retries);
+				// Log significant msg state
+				msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
+				msg.trackMsgState(getSession());
 				return;
 			}
 			// Receive an MDN
@@ -171,6 +184,9 @@ public class AS2SenderModule extends HttpSenderModule
 								+ org.openas2.logging.Log.getExceptionMsg(e1));
 						logger.error(msg, e1);
 						resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e1)), retries);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MDN_RECEIVING_EXCEPTION);
+						msg.trackMsgState(getSession());
 					}
 					ByteArrayOutputStream mdnStream = new ByteArrayOutputStream();
 
@@ -196,6 +212,9 @@ public class AS2SenderModule extends HttpSenderModule
 					{
 						// What to do???
 						resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(ioe)), retries);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MDN_RECEIVING_EXCEPTION);
+						msg.trackMsgState(getSession());
 					} finally
 					{
 						try
@@ -211,6 +230,9 @@ public class AS2SenderModule extends HttpSenderModule
 					try
 					{
 						AS2Util.processMDN((AS2Message) msg, mdnStream.toByteArray(), null, false, getSession(), this);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
+						msg.trackMsgState(getSession());
 					} catch (Exception e)
 					{
 						if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus())
@@ -222,7 +244,7 @@ public class AS2SenderModule extends HttpSenderModule
 							 * state so not sure what the best course of action
 							 * is apart from do nothing
 							 */
-							msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
+							msg.setLogMsg("Unhandled error condition receiving synchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
 							logger.error(msg, e);
 						}
 						/*
@@ -233,10 +255,13 @@ public class AS2SenderModule extends HttpSenderModule
 						else
 						{
 							// Must have received MDN successfully
-							msg.setLogMsg("Exception receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
+							msg.setLogMsg("Exception receiving synchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
 							logger.error(msg, e);
 
 						}
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+						msg.trackMsgState(getSession());
 						AS2Util.cleanupFiles(msg, true);
 					}
 				}
@@ -549,14 +574,11 @@ public class AS2SenderModule extends HttpSenderModule
 	protected void storePendingInfo(AS2Message msg, boolean isResend) throws Exception
 	{
 		ObjectOutputStream oos = null;
-		File pfo = null;
-		File pfi = null;
 
 		try
 		{
 			String pendingInfoFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdninfo");
-			String pendingFile = isResend ? msg.getAttribute(FileAttribute.MA_PENDINGFILE) : AS2Util
-					.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
+			String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
 			msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
 			if (!isResend)
 			{
@@ -590,14 +612,6 @@ public class AS2SenderModule extends HttpSenderModule
 						+ msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n        Sent directory: "
 						+ msg.getAttribute(FileAttribute.MA_SENT_DIR) + msg.getLogMsgID());
 
-			if (Message.MSG_STATUS_MSG_SEND.equals(msg.getStatus()))
-			{
-				// this is first attempt to send so move from polling directory
-				// to pending directory
-				pfi = new File(msg.getAttribute(FileAttribute.MA_FILEPATH));
-				pfo = new File(pendingFile);
-				IOUtilOld.moveFile(pfi, pfo, true, false);
-			}
 			msg.setAttribute(FileAttribute.MA_STATUS, FileAttribute.MA_PENDING);
 
 		} catch (Exception e)
@@ -614,10 +628,6 @@ public class AS2SenderModule extends HttpSenderModule
 				} catch (IOException e)
 				{
 				}
-			if (pfi != null)
-				pfi = null;
-			if (pfo != null)
-				pfo = null;
 		}
 	}
 
