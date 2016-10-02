@@ -1,4 +1,8 @@
 <openas2>
+    <properties
+        sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
+            
+    />
 	<certificates classname="org.openas2.cert.PKCS12CertificateFactory"
 		filename="%home%/as2_certs.p12"
 		password="testas2"
@@ -51,7 +55,10 @@
 		<module classname="org.openas2.processor.sender.AS2SenderModule">
                 </module>
 		
-		<!-- This will parse the filename to get a sender and receiver. For instance a file
+		<module classname="org.openas2.processor.sender.AsynchMDNSenderModule">
+                </module>
+		
+				<!-- This will parse the filename to get a sender and receiver. For instance a file
 			named OpenAS2A_OID-OpenAS2B_OID.1234 would be sent from OpenAS2A to OpenAS2B. -->
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
 			outboxdir="%home%/../data/toAny"
@@ -78,6 +85,19 @@
 			sendFilename="true"
 			mimetype="application/EDI-X12"/>
 		
+		<module classname="org.openas2.processor.msgtracking.DbTrackingModule"
+		    db_user="sa"
+		    db_pwd="OpenAS2"
+		    db_name="openas2"
+		    db_directory="%home%/DB"
+			jdbc_driver="org.h2.Driver"			
+			jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
+			sql_escape_character="'"
+			tcp_server_start="true"
+			tcp_server_port="9092"
+			tcp_server_password="openas2"
+		/>
+			
 		<module classname="org.openas2.processor.storage.MDNFileModule"
 			filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"			
 			protocol="as2"
