@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
+import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.params.MessageParameters;
@@ -15,11 +18,15 @@ import org.openas2.params.ParameterParser;
 public abstract class BasePartnershipFactory extends BaseComponent implements PartnershipFactory {
     private List<Partnership> partnerships;
 
-    public Partnership getPartnership(Partnership p) throws OpenAS2Exception {
+    public Partnership getPartnership(Partnership p, boolean reverseLookup) throws OpenAS2Exception {
         Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());
 
         if (ps == null) {
-            ps = getPartnership(p.getSenderIDs(), p.getReceiverIDs());
+        	// Reverse lookup means it is based on an MDN so the receiver was the sender of the original message...
+            if (reverseLookup)
+            	ps = getPartnership(p.getReceiverIDs(), p.getSenderIDs());
+            else
+            	ps = getPartnership(p.getSenderIDs(), p.getReceiverIDs());
         }
 
         if (ps == null) {
@@ -41,10 +48,36 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         return partnerships;
     }
 
-    public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception {
+    public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception
+    {
         // Fill in any available partnership information
-        Partnership partnership = getPartnership(msg.getPartnership());
+        Partnership partnership = getPartnership(msg.getPartnership(), false);
         msg.getPartnership().copy(partnership);
+		//  Now set dynamic parms based on file name if configured to
+        String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
+		String filenameToParmsList = msg.getPartnership().getAttribute(AS2Partnership.PA_ATTRIB_NAMES_FROM_FILENAME);
+		if (filename != null && filenameToParmsList != null && filenameToParmsList.length() > 0)
+		{
+			String[] headerNames = filenameToParmsList.split("\\s*,\\s*");
+
+			String regex = msg.getPartnership().getAttribute(AS2Partnership.PA_ATTRIB_VALUES_REGEX_ON_FILENAME);
+			if (regex != null)
+			{
+				Pattern p = Pattern.compile(regex);
+				Matcher m = p.matcher(filename);
+				if (!m.find() || m.groupCount() != headerNames.length)
+				{
+					throw new OpenAS2Exception("Could not match filename (" + filename + ") to parameters required using the regex provided (" + regex + "): "
+							+ (m.find() ? ("Mismatch in parameter count to extracted group count: " + headerNames.length
+									+ "::" + m.groupCount()) : "No match found in filename"));
+				}
+				for (int i = 0; i < headerNames.length; i++)
+				{
+					msg.setAttribute(headerNames[i], m.group(i + 1));
+				}
+			}
+		}
+
 
         // Set attributes
         if (overwrite) {
@@ -57,7 +90,7 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
 
     public void updatePartnership(MessageMDN mdn, boolean overwrite) throws OpenAS2Exception {
         // Fill in any available partnership information
-        Partnership partnership = getPartnership(mdn.getPartnership());
+        Partnership partnership = getPartnership(mdn.getPartnership(), true);
         mdn.getPartnership().copy(partnership);
     }
 
