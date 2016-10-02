@@ -10,7 +10,7 @@ import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
 
 
-public abstract class PollingModule extends BaseReceiverModule {	
+public abstract class PollingModule extends MessageBuilderModule {	
 	public static final String PARAM_POLLING_INTERVAL = "interval";
 	private Timer timer;
     private boolean busy;
