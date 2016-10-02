@@ -12,6 +12,7 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +34,7 @@ import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.IOUtil;
 import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
@@ -587,7 +589,7 @@ public class AS2Util {
 		} catch (DispositionException de)
 		{
 			/*
-			 * Issue with disposition but still sent OK at HTTP level to
+			 * Issue with disposition but still send OK at HTTP level to
 			 * indicate message received
 			 */
 			if (isAsyncMDN)
@@ -597,6 +599,8 @@ public class AS2Util {
 			// Hmmmm... Error may require manual intervention but keep
 			// trying.... possibly change retry count to 1 or just fail????
 			AS2Util.resend(session.getProcessor(), sourceClass, SenderModule.DO_SEND, msg, de, retries, true);
+			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
+			msg.trackMsgState(session);
 			return;
 		} catch (OpenAS2Exception oae)
 		{
@@ -610,9 +614,13 @@ public class AS2Util {
 			oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			oae2.terminate();
 			AS2Util.resend(session.getProcessor(), sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true);
+			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
+			msg.trackMsgState(session);
 			return;
 		}
 
+		msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
+		msg.trackMsgState(session);
 		session.getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
 		msg.setStatus(Message.MSG_STATUS_MSG_CLEANUP);
 		// To support extended reporting via logging log info passing Message object
@@ -624,15 +632,19 @@ public class AS2Util {
 	}
     
     /*
-     * @description This method buiold the name of the pending info file
+     * @description This method builds the name of the pending info file
      * @param msg - the Message object containing enough information to build the pending info file name
      */
     public static String buildPendingFileName(Message msg, Processor processor, String directoryIdentifier) throws OpenAS2Exception
     {
     	String msgId = msg.getMessageID(); // this includes enclosing angled brackets <>
-		return ((String) processor.getParameters().get(directoryIdentifier)
-				+ "/"
-				+ msgId.substring(1, msgId.length() - 1));
+    	String dir = (String) processor.getParameters().get(directoryIdentifier);
+    	if (msgId == null || msgId.length() < 1)
+    	{
+    		// No ID set yet so generate a random number for uniqueness
+    		msgId = msg.getAttribute(FileAttribute.MA_FILENAME) +  "." + UUID.randomUUID();
+    	}
+		return (dir	+ "/" + msgId.substring(1, msgId.length() - 1));
     }
     /*
      * @description This method retrieves the information from the pending information file written by 
