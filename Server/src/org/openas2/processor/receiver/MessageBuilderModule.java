@@ -1,6 +1,7 @@
 package org.openas2.processor.receiver;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		super.init(session, options);
 	}
 
-	protected Message processDocument(InputStream ip, String filename, String fileSrcLocation) throws OpenAS2Exception
+	protected Message processDocument(InputStream ip, String filename, String fileSrcLocation) throws OpenAS2Exception, FileNotFoundException
 	{
 		Message msg = createMessage();
 		msg.setAttribute(FileAttribute.MA_FILEPATH, fileSrcLocation);
@@ -73,17 +74,39 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			IOUtilOld.copy(ip, fo);
 		} catch (IOException e1)
 		{
+			fo = null;
 			throw new OpenAS2Exception("Could not write file to pending folder: " + pendingFile, e1);
 		}
-		finally
+		try
 		{
-			fo = null;
+			ip.close();
+		} catch (IOException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
+		ip = null;
 		msg.setAttribute(FileAttribute.MA_ERROR_DIR, getParameter(PARAM_ERROR_DIRECTORY, true));
 		if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
 
-		updateMessage(msg, ip, filename);
+		FileInputStream fis = new FileInputStream(doc);
+		try 
+		{
+			updateMessage(msg, fis, filename);
+		}
+		finally
+		{
+			try
+			{
+				fis.close();
+			} catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			fis = null;
+		}
 		String customHeaderList = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
 		if (customHeaderList != null && customHeaderList.length() > 0)
 		{
