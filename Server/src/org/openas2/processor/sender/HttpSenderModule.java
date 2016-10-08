@@ -77,8 +77,8 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
 						connS.setSSLSocketFactory(context.getSocketFactory());
 					} catch (Exception e)
 					{
-			        	logger.error("URL connection failed connecting to to : " + url, e);
-						throw new OpenAS2Exception("Error self signed certificate management", e);
+			        	logger.error("URL connection failed connecting to : " + url, e);
+						throw new OpenAS2Exception("Error in self signed certificate management", e);
 					}
 				}
 				conn = connS;
