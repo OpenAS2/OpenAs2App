@@ -8,8 +8,8 @@
 # Default-Stop:      0 1 6
 # Short-Description: Startup script to launch OpenAS2 appliction as a daemon
 # Description:       This script can be used in any NIX based system that implements the init.d mechanism
-#					The EXECUTABLE variable below must be set to point to the OpenAS2 startup script
-#                    
+#					 The EXECUTABLE variable below must be set to point to the OpenAS2 startup script
+#                    See the OpenAS2HowTo.pdf for details on configuration checks for this mode of running OpenAS2
 ### END INIT INFO
 
 SERVICE_NAME=OpenAS2
