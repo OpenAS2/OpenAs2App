@@ -86,6 +86,15 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			e1.printStackTrace();
 		}
 		ip = null;
+		try
+		{
+			fo.close();
+		} catch (IOException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		fo = null;
 		msg.setAttribute(FileAttribute.MA_ERROR_DIR, getParameter(PARAM_ERROR_DIRECTORY, true));
 		if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
@@ -106,6 +115,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 				e.printStackTrace();
 			}
 			fis = null;
+			doc = null;
 		}
 		String customHeaderList = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
 		if (customHeaderList != null && customHeaderList.length() > 0)
