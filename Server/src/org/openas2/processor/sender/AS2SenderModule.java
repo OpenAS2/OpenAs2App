@@ -24,6 +24,7 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.logging.Logger;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.DataHistoryItem;
@@ -107,6 +108,8 @@ public class AS2SenderModule extends HttpSenderModule
 			storePendingInfo((AS2Message) msg, isResend);
 		} catch (Exception e)
 		{
+			msg.setLogMsg(org.openas2.logging.Log.getExceptionMsg(e));
+			logger.error(msg, e);
 			// Log significant msg state
 			msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
 			msg.trackMsgState(getSession());
@@ -368,7 +371,7 @@ public class AS2SenderModule extends HttpSenderModule
 		 */
 
 		Partnership partnership = msg.getPartnership();
-		String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+		String contentTxfrEncoding = partnership.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
 		if (contentTxfrEncoding == null)
 			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 
@@ -472,13 +475,20 @@ public class AS2SenderModule extends HttpSenderModule
 				logger.debug("encrypted data" + msg.getLogMsgID());
 		}
 
+		String t = dataBP.getEncoding();
+		if ((t == null || t.length() < 1) && "true".equalsIgnoreCase(partnership.getAttribute(Partnership.PA_SET_CONTENT_TRANSFER_ENCODING_OMBP)))
+		{
+			dataBP.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+		}
 		return dataBP;
 	}
 
 	protected void addCustomOuterMimeHeaders(Message msg, MimeBodyPart dataBP) throws MessagingException
 	{
 		if (logger.isTraceEnabled()) logger.trace("Adding custom headers to outer MBP...." + msg.getLogMsgID());
-		for (Map.Entry<String, String> entry : msg.getCustomOuterMimeHeaders().entrySet())
+		Map<String, String> hdrs =  msg.getCustomOuterMimeHeaders();
+		if (hdrs == null) return;
+		for (Map.Entry<String, String> entry :hdrs.entrySet())
 		{
 			dataBP.addHeader(entry.getKey(), entry.getValue());
 			if (logger.isTraceEnabled())
@@ -509,7 +519,16 @@ public class AS2SenderModule extends HttpSenderModule
 														// AS2 V1.2 additionally supports EDIINT-Features
 		// conn.setRequestProperty("EDIINT-Features",
 		// "CEM,multiple-attachments"); // TODO (possibly implement???)
-		conn.setRequestProperty("Content-Transfer-Encoding", msg.getHeader("Content-Transfer-Encoding"));
+		String cte = null;
+		try
+		{
+			cte = securedData.getEncoding();
+		} catch (MessagingException e1)
+		{
+			e1.printStackTrace();
+		}
+		if (cte == null) cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+		conn.setRequestProperty("Content-Transfer-Encoding", cte);
 		conn.setRequestProperty("Recipient-Address", partnership.getAttribute(AS2Partnership.PA_AS2_URL));
 		conn.setRequestProperty("AS2-To", partnership.getReceiverID(AS2Partnership.PID_AS2));
 		conn.setRequestProperty("AS2-From", partnership.getSenderID(AS2Partnership.PID_AS2));
