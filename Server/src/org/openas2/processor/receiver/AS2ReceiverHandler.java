@@ -466,12 +466,16 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
                 Enumeration<String> headers = mdn.getHeaders().getAllHeaderLines();
                 String header;
+                StringBuffer saveHeaders = new StringBuffer();
 
                 while (headers.hasMoreElements()) {
                     header = (String) headers.nextElement() + "\r\n";
+                    saveHeaders = saveHeaders.append(";;").append(header);
                     out.write(header.getBytes());
                 }
 
+            	if (logger.isTraceEnabled())
+              	  logger.trace("MDN HEADERS SENT: " + saveHeaders + msg.getLogMsgID());
                 out.write("\r\n".getBytes()); 
                 data.writeTo(out);
 				out.flush();
