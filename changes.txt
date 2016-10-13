@@ -6,7 +6,7 @@ Version 2.1.0 - 2016-10-11
   3. Added properties element to config to allow easy custom config property access from java modules and helper classes
   4. Added support for parsing file name into partnership attributes using regular expressions
   5. Added script to support launching OpenAS2 as a daemon using the init.d paradigm
-  6. Added system parameter to startup scripts to allow restricted HTTP headers 
+  6. Added system parameter to startup scripts to allow restricted HTTP headers that cause problems for some AS2 implementations
 
 
 Version 2.0.0 - 2016-05-31

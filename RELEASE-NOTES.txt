@@ -15,7 +15,7 @@ This release is an enhancement release:
   3. Added properties element to config to allow easy custom config property access from java modules and helper classes
   4. Added support for parsing file name into partnership attributes using regular expressions
   5. Added script to support launching OpenAS2 as a daemon using the init.d paradigm
-  6. Added system parameter to startup scripts to allow restricted HTTP headers 
+  6. Added system parameter to startup scripts to allow restricted HTTP headers that cause problems for some AS2 implementations
 
 Upgrade Notes:
   1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
