@@ -20,8 +20,9 @@ public class AS2MessageMDN extends BaseMessageMDN {
     public static final String MDNA_DISPOSITION = "DISPOSITION";
     public static final String MDNA_MIC = "MIC";
 
-    public AS2MessageMDN(AS2Message msg) {
+    public AS2MessageMDN(AS2Message msg, boolean copyMsgHeaders) {
         super(msg);
+        if (copyMsgHeaders) copyHeaders(msg.getHeaders());
         setHeader("AS2-To", msg.getHeader("AS2-From"));
         setHeader("AS2-From", msg.getHeader("AS2-To"));
     }
