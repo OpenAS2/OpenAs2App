@@ -85,6 +85,14 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return headers;
     }
 
+    public void copyHeaders(InternetHeaders srcHeaders) {
+        Enumeration<Header> headerEn = srcHeaders.getAllHeaders();
+        while (headerEn.hasMoreElements()) {
+            Header header = headerEn.nextElement();
+            setHeader(header.getName(), header.getValue());
+        }        
+    }
+
     public void setMessage(Message message) {
         this.message = message;
     }
