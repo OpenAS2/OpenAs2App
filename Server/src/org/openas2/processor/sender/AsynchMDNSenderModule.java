@@ -50,6 +50,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
 	protected void updateHttpHeaders(HttpURLConnection conn, Message msg) {
 
+		MessageMDN mdn = msg.getMDN();
 		conn.setRequestProperty("Connection", "close, TE");
 		conn.setRequestProperty("User-Agent", Session.TITLE + " (AsynchMDNSender)");
 
@@ -63,10 +64,10 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 		conn.setRequestProperty("AS2-Version", "1.1");
 		conn.setRequestProperty("Recipient-Address",
 				msg.getHeader("Recipient-Address"));
-		conn.setRequestProperty("AS2-To", msg.getHeader("AS2-To"));
-		conn.setRequestProperty("AS2-From", msg.getHeader("AS2-From"));
+		conn.setRequestProperty("AS2-To", mdn.getHeader("AS2-To"));
+		conn.setRequestProperty("AS2-From", mdn.getHeader("AS2-From"));
 		conn.setRequestProperty("Subject", msg.getHeader("Subject"));
-		conn.setRequestProperty("From", msg.getHeader("From"));
+		conn.setRequestProperty("From", mdn.getHeader("From"));
 
 	}
 
