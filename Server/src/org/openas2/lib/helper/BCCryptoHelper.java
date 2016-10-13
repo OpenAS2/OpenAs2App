@@ -428,10 +428,10 @@ public class BCCryptoHelper implements ICryptoHelper {
    	     }
    	     if (signer.verify(signerInfoVerifier))
 		 {
-				logSignerInfo("Verified signature for signer info", signer, part);
+				logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
 				return signedPart.getContent();
 		 }
-		 logSignerInfo("Failed to verify signature for signer info", signer, part);
+		 logSignerInfo("Failed to verify signature for signer info", signer, part, x509Cert);
    	 }
      throw new SignatureException("Signature Verification failed");        
     }
@@ -749,7 +749,7 @@ public class BCCryptoHelper implements ICryptoHelper {
     	return(headers);
 
     }
-    public void logSignerInfo(String msgPrefix, SignerInformation signer, MimeBodyPart part)
+    public void logSignerInfo(String msgPrefix, SignerInformation signer, MimeBodyPart part, X509Certificate cert)
     {
         if (logger.isDebugEnabled())
         {
@@ -764,6 +764,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 					+ "\n    Signature: " + signer.getSignature()
 					+ "\n    Unsigned attribs: " + signer.getUnsignedAttributes()
 					+ "\n    Content-transfer-encoding: " + part.getEncoding()
+					+ "\n    Certificate: " + cert
 					);
 			} catch (Throwable e)
 			{
