@@ -22,8 +22,7 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());
 
         if (ps == null) {
-        	// Reverse lookup means it is based on an MDN so the receiver was the sender of the original message...
-            if (reverseLookup)
+        	if (reverseLookup)
             	ps = getPartnership(p.getReceiverIDs(), p.getSenderIDs());
             else
             	ps = getPartnership(p.getSenderIDs(), p.getReceiverIDs());
@@ -90,6 +89,7 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
 
     public void updatePartnership(MessageMDN mdn, boolean overwrite) throws OpenAS2Exception {
         // Fill in any available partnership information
+        // the MDN partnership should be the one used to send original message hence reverse lookup
         Partnership partnership = getPartnership(mdn.getPartnership(), true);
         mdn.getPartnership().copy(partnership);
     }
