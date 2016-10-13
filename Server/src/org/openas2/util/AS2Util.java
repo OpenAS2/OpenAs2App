@@ -25,7 +25,6 @@ import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openas2.ComponentNotFoundException;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
@@ -34,7 +33,6 @@ import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
-import org.openas2.lib.util.IOUtil;
 import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
@@ -66,16 +64,17 @@ public class AS2Util {
 
     public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
             DispositionType disposition, String text) throws Exception {
-        AS2MessageMDN mdn = new AS2MessageMDN(msg);
+
+    	AS2MessageMDN mdn = new AS2MessageMDN(msg, true);
+        
         mdn.setHeader("AS2-Version", "1.1");
         // RFC2822 format: Wed, 04 Mar 2009 10:59:17 +0100
         mdn.setHeader("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
         mdn.setHeader("Server", Session.TITLE);
         mdn.setHeader("Mime-Version", "1.0");
-        mdn.setHeader("AS2-To", msg.getPartnership().getSenderID(AS2Partnership.PID_AS2));
-        mdn.setHeader("AS2-From", msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
-
+        
         // get the MDN partnership info
+        // not sure that it should be this way since the config should relfect the inbound original message settings but ...
         mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
         mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
         session.getPartnershipFactory().updatePartnership(mdn, true);
@@ -162,10 +161,11 @@ public class AS2Util {
             CertificateFactory certFx = session.getCertificateFactory();
 
             try {
-                X509Certificate senderCert = certFx.getCertificate(mdn,
-                        Partnership.PTYPE_SENDER);                
+            	// The receiver of the original message is the sender of the MDN....
+            	X509Certificate senderCert = certFx.getCertificate(mdn,
+                        Partnership.PTYPE_RECEIVER);                
                 PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
-        		Partnership p = mdn.getMessage().getPartnership();
+        		Partnership p = mdn.getPartnership();
                 String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
                 boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
         		if (contentTxfrEncoding == null)
@@ -272,6 +272,7 @@ public class AS2Util {
 			e.printStackTrace();
 		}
     } 
+    
     /**
      *  @description Verify disposition sytus is "processed" then check MIC is matched
      *  @param msg - the original message sent to the partner that the MDN relates to
@@ -290,6 +291,7 @@ public class AS2Util {
 		try {
 			new DispositionType(disposition).validate();
 		} catch (DispositionException de) {
+			if (logger.isWarnEnabled()) logger.warn("Disposition exception on MDN. Disposition: " + disposition + msg.getLogMsgID(), de);
 			// Something wrong detected so flag it for later use
 			dispositionHasWarning = true;
 			de.setText(msg.getMDN().getText());
@@ -541,6 +543,11 @@ public class AS2Util {
 
 		// Create a MessageMDN and copy HTTP headers
 		MessageMDN mdn = msg.getMDN();
+		// get the MDN partnership info
+		mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
+		mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
+		session.getPartnershipFactory().updatePartnership(mdn, false);
+
 		MimeBodyPart part;
 		try
 		{
@@ -556,15 +563,11 @@ public class AS2Util {
 			throw new OpenAS2Exception("Error receiving MDN. Processing stopped.");
 		}
 
-		// get the MDN partnership info
-		mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
-		mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
-		session.getPartnershipFactory().updatePartnership(mdn, false);
-
 		CertificateFactory cFx = session.getCertificateFactory();
-		X509Certificate senderCert = cFx.getCertificate(mdn, Partnership.PTYPE_SENDER);
+		X509Certificate senderCert = cFx.getCertificate(mdn, Partnership.PTYPE_RECEIVER);
 
 		msg.setStatus(Message.MSG_STATUS_MDN_PARSE);
+		if (logger.isTraceEnabled()) logger.trace("Parsing MDN: " + mdn.toString() + msg.getLogMsgID());
 		AS2Util.parseMDN(msg, senderCert);
 				
 		if (isAsyncMDN)
@@ -575,6 +578,7 @@ public class AS2Util {
 		String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
 
 		msg.setStatus(Message.MSG_STATUS_MDN_VERIFY);
+		if (logger.isTraceEnabled()) logger.trace("MDN parsed. Checking MDN report..." + msg.getLogMsgID());
 		try
 		{
 			AS2Util.checkMDN(msg);
@@ -596,6 +600,7 @@ public class AS2Util {
 				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
 			// If a disposition exception occurs then there must have been an
 			// error response in the disposition
+			if (logger.isErrorEnabled()) logger.error("Disposition exception processing MDN ..." + msg.getLogMsgID(), de);
 			// Hmmmm... Error may require manual intervention but keep
 			// trying.... possibly change retry count to 1 or just fail????
 			AS2Util.resend(session.getProcessor(), sourceClass, SenderModule.DO_SEND, msg, de, retries, true);
@@ -654,18 +659,6 @@ public class AS2Util {
     public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
-		MessageMDN mdn = msg.getMDN(); 
-		// in order to name & save the mdn with the original AS2-From + AS2-To + Message id., 
-		// the 3 msg attributes have to be reset before calling MDNFileModule 
-		msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From")); 
-		msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To")); 
-		try
-		{
-			session.getPartnershipFactory().updatePartnership(msg, false);
-		} catch (ComponentNotFoundException e)
-		{
-			throw new OpenAS2Exception("Error updating partnership: " + org.openas2.logging.Log.getExceptionMsg(e), e);
-		} 
 		// use original message ID to open the pending information file from pendinginfo folder.
 		String originalMsgId = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID);
 		// TODO: CB: Think we are supposed to verify the MDN received msg Id with what we sent
