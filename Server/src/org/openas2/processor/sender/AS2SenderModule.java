@@ -1,7 +1,6 @@
 package org.openas2.processor.sender;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +23,6 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
-import org.openas2.logging.Logger;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.DataHistoryItem;
@@ -165,6 +163,7 @@ public class AS2SenderModule extends HttpSenderModule
 				msg.trackMsgState(getSession());
 				return;
 			}
+			if (logger.isTraceEnabled()) logger.trace("Message sent. Checking if MDN will be returned..." + msg.getLogMsgID());
 			// Receive an MDN
 			if (msg.isConfiguredForMDN())
 			{
@@ -172,8 +171,9 @@ public class AS2SenderModule extends HttpSenderModule
 				// Check if the AsyncMDN is required
 				if (msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) == null)
 				{
+					if (logger.isTraceEnabled()) logger.trace("Waiting for synchronous MDN response..." + msg.getLogMsgID());
 					// Create a MessageMDN and copy HTTP headers
-					MessageMDN mdn = new AS2MessageMDN((AS2Message) msg);
+					MessageMDN mdn = new AS2MessageMDN((AS2Message) msg, false);
 					copyHttpHeaders(conn, mdn.getHeaders());
 
 					// Receive the MDN data
@@ -195,12 +195,13 @@ public class AS2SenderModule extends HttpSenderModule
 
 					try
 					{
+						String cl = mdn.getHeader("Content-Length");
 						// Retrieve the message content
-						if (mdn.getHeader("Content-Length") != null)
+						if (cl != null)
 						{
 							try
 							{
-								int contentSize = Integer.parseInt(mdn.getHeader("Content-Length"));
+								int contentSize = Integer.parseInt(cl);
 
 								IOUtilOld.copy(connIn, mdnStream, contentSize);
 							} catch (NumberFormatException nfe)
@@ -213,6 +214,9 @@ public class AS2SenderModule extends HttpSenderModule
 						}
 					} catch (IOException ioe)
 					{
+						msg.setLogMsg("IO exception receiving MDN: "
+								+ org.openas2.logging.Log.getExceptionMsg(ioe));
+						logger.error(msg, ioe);
 						// What to do???
 						resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(ioe)), retries);
 						// Log significant msg state
@@ -229,6 +233,7 @@ public class AS2SenderModule extends HttpSenderModule
 						}
 					}
 
+					if (logger.isTraceEnabled()) logger.trace("Synchronous MDN received. Start processing..." + msg.getLogMsgID());
 					msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
 					try
 					{
