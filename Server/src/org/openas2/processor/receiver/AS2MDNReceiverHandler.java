@@ -17,6 +17,7 @@ import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
+import org.openas2.partner.AS2Partnership;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.HTTPUtil;
@@ -74,10 +75,18 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			receivedPart.setHeader("Content-Type", receivedContentType.toString());
 
 			msg.setData(receivedPart);
-			// Create a MessageMDN and copy HTTP headers
-			MessageMDN mdn = new AS2MessageMDN(msg);
-			// copy headers from msg to MDN from msg
-			mdn.setHeaders(msg.getHeaders());
+
+			// Switch the msg headers since the original message went in the opposite direction
+			String to = msg.getHeader("AS2-To");
+			msg.setHeader("AS2-To", msg.getHeader("AS2-From"));
+			msg.setHeader("AS2-From", to);
+	        msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
+	        msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
+	        getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
+			
+			// Create a MessageMDN
+			MessageMDN mdn = new AS2MessageMDN(msg, true);
+			
 			if (logger.isTraceEnabled())
 				logger.trace("Incoming ASYNC MDN message - MDN struct: " + mdn.toString());
 			/*
