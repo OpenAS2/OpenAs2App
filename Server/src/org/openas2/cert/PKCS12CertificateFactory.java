@@ -171,13 +171,13 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements
             alias = ks.getCertificateAlias(cert);
 
             if (alias == null) {
-                throw new KeyNotFoundException(cert, null);
+                throw new KeyNotFoundException(cert, "-- alias null from getCertificateAlias(cert) call");
             }
 
             PrivateKey key = (PrivateKey) ks.getKey(alias, getPassword());
 
             if (key == null) {
-                throw new KeyNotFoundException(cert, null);
+                throw new KeyNotFoundException(cert, "-- key null from getKey(" + alias + ") call");
             }
 
             return key;
