@@ -1,27 +1,25 @@
               OpenAS2 Server
-              Version 2.0.0
+              Version 2.1.0
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.0.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.1.0
 
-The release download file is: OpenAS2Server-2.0.0.zip
+The release download file is: OpenAS2Server-2.1.0.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-This release is an enhancement and bug fix release that includes compatibility testing with other AS2 systems:
-  1. Add support for custom HTTP headers
-  		- configurable static headers as name/value pairs in the partnership
-  		- configurable dynamic headers with header values set from parsing the name of the file to be sent
-  2. Fix generator encoding for compression, encryption and signing
-  3. Support configurable control of canonicalization when signing
-  4. Support overriding digest "sha-1" algorithm name in signing to use "old" name without dash ("sha1")
-  5. Support AES128, AES192, AES256 ciphers
-  6. Support disabling the CMS algorithm protection OID for older AS2 systems that do not support it
-  7. Added "Troubleshooting.." section to documentation
+This release is an enhancement release:
+  1. Add message tracking module to allow easy identification of sent and received messages based on state
+  		- persists state change tracking of messages to H2 database
+  		- allow user-plugin of custom tracking module(s)
+  2. Enhanced documentation around certificate management
+  3. Added properties element to config to allow easy custom config property access from java modules and helper classes
+  4. Added support for parsing file name into partnership attributes using regular expressions
+  5. Added script to support launching OpenAS2 as a daemon using the init.d paradigm
+  6. Added system parameter to startup scripts to allow restricted HTTP headers that cause problems for some AS2 implementations
 
 Upgrade Notes:
-  1. Canonicalization may affect existing working partnerships in prior versions of OpenAS2 if using a content transfer encoding other than "binary".
-     If the partnership stops working then add the following attribute to the partnership:
-  		        <attribute name="prevent_canonicalization_for_mic" value="true"/>
+  1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
+  2. If using a custom startup script, re-integrate your customisations into the new script
   
 Java 1.5 or later is required.
 NOTE FOR JAVA 1.5: Prior to java 1.6, the Javabeans Activation Framework is NOT included in the standard Java install. Download the 1.1.1 version and extract from the zip file from this web page: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-plat-419418.html#jaf-1.1.1-fcs-oth-JPR

@@ -85,6 +85,14 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return headers;
     }
 
+    public void copyHeaders(InternetHeaders srcHeaders) {
+        Enumeration<Header> headerEn = srcHeaders.getAllHeaders();
+        while (headerEn.hasMoreElements()) {
+            Header header = headerEn.nextElement();
+            setHeader(header.getName(), header.getValue());
+        }        
+    }
+
     public void setMessage(Message message) {
         this.message = message;
     }
@@ -141,8 +149,8 @@ public abstract class BaseMessageMDN implements MessageMDN {
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("MDN From:").append(getPartnership().getSenderIDs());
-        buf.append("To:").append(getPartnership().getReceiverIDs());
+        buf.append("MDN From:").append(getPartnership().getReceiverIDs());
+        buf.append("To:").append(getPartnership().getSenderIDs());
         
         Enumeration<Header> headerEn = getHeaders().getAllHeaders();
         buf.append("\r\nHeaders:{");

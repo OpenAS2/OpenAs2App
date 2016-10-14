@@ -13,6 +13,7 @@ import org.openas2.processor.Processor;
 
 public abstract class BaseSession implements Session {
     private Map<String, Component> components;
+	private String baseDirectory;
 
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
@@ -83,4 +84,13 @@ public abstract class BaseSession implements Session {
             "message/disposition-notification;; x-java-content-handler=org.openas2.util.DispositionDataContentHandler");
         CommandMap.setDefaultCommandMap(mc);
     }
+
+	public String getBaseDirectory() {
+		return baseDirectory;
+	}
+
+	public void setBaseDirectory(String dir) {
+		baseDirectory = dir;
+	}
+
 }

@@ -137,8 +137,14 @@ public class EmailLogger extends BaseLogger {
         return VALUE_SHOW_TERMINATED;
     }
 
-    protected String getSubject(Level level, String msg) {
-        StringBuffer subject = new StringBuffer("OpenAS2 Log (" + level.getName() + "): " + msg.substring(0, msg.indexOf("\n")));
+    protected String getSubject(Level level, String msg) throws OpenAS2Exception {
+    	if (msg == null)
+    		throw new OpenAS2Exception("Message string to extract subject is null");
+    	String subj = "";
+    	int newlineNdx = msg.indexOf("\n");
+    	if (newlineNdx >= 1)
+    		subj = msg.substring(0, newlineNdx);
+        StringBuffer subject = new StringBuffer("OpenAS2 Log (" + level.getName() + "): " + subj);
 
         return subject.toString();
     }

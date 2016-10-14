@@ -32,4 +32,23 @@ public class DateUtil {
         }
         return df;
     }
+    
+    public static synchronized String getSqlTimestamp()
+    {
+        return getSqlTimestamp(new Date());
+    }
+
+    // =========================================================
+    /**
+     * @return
+     */
+    // =========================================================
+    public static synchronized String getSqlTimestamp(Date date)
+    {
+        if (date == null)
+            return "";
+        return formatDate(Properties.getProperty("sql_timestamp_format", "yyyy-MM-dd HH:mm:ss.SSS"), date);
+    }
+
+
 }

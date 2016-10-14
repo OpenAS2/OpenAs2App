@@ -312,7 +312,7 @@ public abstract class NetModule extends BaseReceiverModule {
                 }
             }
 
-            System.out.println("exited");
+            System.out.println("NetModule terminated.");
         }
 
         

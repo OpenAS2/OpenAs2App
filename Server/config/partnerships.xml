@@ -15,6 +15,7 @@
 		<attribute name="content_transfer_encoding" value="8bit"/>
 		<attribute name="compression_type" value="ZLIB"/>
 		<attribute name="subject" value="From OpenAS2A to OpenAS2B"/>
+		<attribute name="mdnsubject" value="Your requested MDN response from $receiver.as2_id$"/>
 		<attribute name="as2_url" value="http://localhost:10080"/>
 		<attribute name="as2_mdn_to" value="edi@openas2b.org"/>
 		<!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
@@ -56,6 +57,10 @@
 		Example for adding dynamic custom headers to Mime body part where filename is of form XXX-YYY.msg 
         <attribute name="custom_mime_header_names_from_filename" value="X-CustomRouteId,X-CustomCenter"/>
         <attribute name="custom_mime_header_names_regex_on_filename" value="([^-]*)-([^.]*).msg"/>
+
+		Example for parsing filename into parameters that can be referenced this is a file name of the form XXXNNNN.edi where X is alphabetic and N are numerics 
+        <attribute name="attribute_names_from_filename" value="P-DynamicParm1,P-DynamicParm2"/>
+        <attribute name="attribute_values_regex_on_filename" value="([A-Za-z]*)([^.]*).edi"/>
 		-->
 	</partnership>
 

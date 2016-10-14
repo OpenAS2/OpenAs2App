@@ -1,7 +1,6 @@
 package org.openas2.processor.sender;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +63,8 @@ public class AS2SenderModule extends HttpSenderModule
 		if (logger.isInfoEnabled())
 			logger.info("message sender invoked" + msg.getLogMsgID());
 		boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
-
+		options.put("DIRECTION", "SEND");
+		options.put("IS_RESEND", isResend?"Y":"N");
 		if (!(msg instanceof AS2Message))
 		{
 			throw new OpenAS2Exception("Can't send non-AS2 message");
@@ -106,6 +106,11 @@ public class AS2SenderModule extends HttpSenderModule
 			storePendingInfo((AS2Message) msg, isResend);
 		} catch (Exception e)
 		{
+			msg.setLogMsg(org.openas2.logging.Log.getExceptionMsg(e));
+			logger.error(msg, e);
+			// Log significant msg state
+			msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
+			msg.trackMsgState(getSession());
 			throw new OpenAS2Exception("Error setting up message for sending.", e);
 		}
 		if (logger.isTraceEnabled())
@@ -135,20 +140,30 @@ public class AS2SenderModule extends HttpSenderModule
 				// Create the HTTP connection and set up headers
 				String url = msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_URL);
 				conn = getConnection(url, true, true, false, "POST");
+				// Log significant msg state
+				msg.setOption("STATE", Message.MSG_STATE_SEND_START);
+				msg.trackMsgState(getSession());
 
 				sendMessage(conn, msg, securedData, retries);
 			} catch (HttpResponseException hre)
 			{
 				// Will have been logged so just resend
 				resend(msg, hre, retries);
+				// Log significant msg state
+				msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
+				msg.trackMsgState(getSession());
 				return;
 			} catch (Exception e)
 			{
 				msg.setLogMsg("Unexpected error sending file: " + org.openas2.logging.Log.getExceptionMsg(e));
 				logger.error(msg, e);
 				resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), retries);
+				// Log significant msg state
+				msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
+				msg.trackMsgState(getSession());
 				return;
 			}
+			if (logger.isTraceEnabled()) logger.trace("Message sent. Checking if MDN will be returned..." + msg.getLogMsgID());
 			// Receive an MDN
 			if (msg.isConfiguredForMDN())
 			{
@@ -156,8 +171,9 @@ public class AS2SenderModule extends HttpSenderModule
 				// Check if the AsyncMDN is required
 				if (msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) == null)
 				{
+					if (logger.isTraceEnabled()) logger.trace("Waiting for synchronous MDN response..." + msg.getLogMsgID());
 					// Create a MessageMDN and copy HTTP headers
-					MessageMDN mdn = new AS2MessageMDN((AS2Message) msg);
+					MessageMDN mdn = new AS2MessageMDN((AS2Message) msg, false);
 					copyHttpHeaders(conn, mdn.getHeaders());
 
 					// Receive the MDN data
@@ -171,17 +187,21 @@ public class AS2SenderModule extends HttpSenderModule
 								+ org.openas2.logging.Log.getExceptionMsg(e1));
 						logger.error(msg, e1);
 						resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e1)), retries);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MDN_RECEIVING_EXCEPTION);
+						msg.trackMsgState(getSession());
 					}
 					ByteArrayOutputStream mdnStream = new ByteArrayOutputStream();
 
 					try
 					{
+						String cl = mdn.getHeader("Content-Length");
 						// Retrieve the message content
-						if (mdn.getHeader("Content-Length") != null)
+						if (cl != null)
 						{
 							try
 							{
-								int contentSize = Integer.parseInt(mdn.getHeader("Content-Length"));
+								int contentSize = Integer.parseInt(cl);
 
 								IOUtilOld.copy(connIn, mdnStream, contentSize);
 							} catch (NumberFormatException nfe)
@@ -194,8 +214,14 @@ public class AS2SenderModule extends HttpSenderModule
 						}
 					} catch (IOException ioe)
 					{
+						msg.setLogMsg("IO exception receiving MDN: "
+								+ org.openas2.logging.Log.getExceptionMsg(ioe));
+						logger.error(msg, ioe);
 						// What to do???
 						resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(ioe)), retries);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MDN_RECEIVING_EXCEPTION);
+						msg.trackMsgState(getSession());
 					} finally
 					{
 						try
@@ -207,10 +233,14 @@ public class AS2SenderModule extends HttpSenderModule
 						}
 					}
 
+					if (logger.isTraceEnabled()) logger.trace("Synchronous MDN received. Start processing..." + msg.getLogMsgID());
 					msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
 					try
 					{
 						AS2Util.processMDN((AS2Message) msg, mdnStream.toByteArray(), null, false, getSession(), this);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
+						msg.trackMsgState(getSession());
 					} catch (Exception e)
 					{
 						if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus())
@@ -222,7 +252,7 @@ public class AS2SenderModule extends HttpSenderModule
 							 * state so not sure what the best course of action
 							 * is apart from do nothing
 							 */
-							msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
+							msg.setLogMsg("Unhandled error condition receiving synchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
 							logger.error(msg, e);
 						}
 						/*
@@ -233,10 +263,13 @@ public class AS2SenderModule extends HttpSenderModule
 						else
 						{
 							// Must have received MDN successfully
-							msg.setLogMsg("Exception receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
+							msg.setLogMsg("Exception receiving synchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
 							logger.error(msg, e);
 
 						}
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+						msg.trackMsgState(getSession());
 						AS2Util.cleanupFiles(msg, true);
 					}
 				}
@@ -343,7 +376,7 @@ public class AS2SenderModule extends HttpSenderModule
 		 */
 
 		Partnership partnership = msg.getPartnership();
-		String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+		String contentTxfrEncoding = partnership.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
 		if (contentTxfrEncoding == null)
 			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 
@@ -447,13 +480,20 @@ public class AS2SenderModule extends HttpSenderModule
 				logger.debug("encrypted data" + msg.getLogMsgID());
 		}
 
+		String t = dataBP.getEncoding();
+		if ((t == null || t.length() < 1) && "true".equalsIgnoreCase(partnership.getAttribute(Partnership.PA_SET_CONTENT_TRANSFER_ENCODING_OMBP)))
+		{
+			dataBP.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+		}
 		return dataBP;
 	}
 
 	protected void addCustomOuterMimeHeaders(Message msg, MimeBodyPart dataBP) throws MessagingException
 	{
 		if (logger.isTraceEnabled()) logger.trace("Adding custom headers to outer MBP...." + msg.getLogMsgID());
-		for (Map.Entry<String, String> entry : msg.getCustomOuterMimeHeaders().entrySet())
+		Map<String, String> hdrs =  msg.getCustomOuterMimeHeaders();
+		if (hdrs == null) return;
+		for (Map.Entry<String, String> entry :hdrs.entrySet())
 		{
 			dataBP.addHeader(entry.getKey(), entry.getValue());
 			if (logger.isTraceEnabled())
@@ -484,7 +524,16 @@ public class AS2SenderModule extends HttpSenderModule
 														// AS2 V1.2 additionally supports EDIINT-Features
 		// conn.setRequestProperty("EDIINT-Features",
 		// "CEM,multiple-attachments"); // TODO (possibly implement???)
-		conn.setRequestProperty("Content-Transfer-Encoding", msg.getHeader("Content-Transfer-Encoding"));
+		String cte = null;
+		try
+		{
+			cte = securedData.getEncoding();
+		} catch (MessagingException e1)
+		{
+			e1.printStackTrace();
+		}
+		if (cte == null) cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+		conn.setRequestProperty("Content-Transfer-Encoding", cte);
 		conn.setRequestProperty("Recipient-Address", partnership.getAttribute(AS2Partnership.PA_AS2_URL));
 		conn.setRequestProperty("AS2-To", partnership.getReceiverID(AS2Partnership.PID_AS2));
 		conn.setRequestProperty("AS2-From", partnership.getSenderID(AS2Partnership.PID_AS2));
@@ -549,14 +598,11 @@ public class AS2SenderModule extends HttpSenderModule
 	protected void storePendingInfo(AS2Message msg, boolean isResend) throws Exception
 	{
 		ObjectOutputStream oos = null;
-		File pfo = null;
-		File pfi = null;
 
 		try
 		{
 			String pendingInfoFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdninfo");
-			String pendingFile = isResend ? msg.getAttribute(FileAttribute.MA_PENDINGFILE) : AS2Util
-					.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
+			String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
 			msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
 			if (!isResend)
 			{
@@ -590,14 +636,6 @@ public class AS2SenderModule extends HttpSenderModule
 						+ msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n        Sent directory: "
 						+ msg.getAttribute(FileAttribute.MA_SENT_DIR) + msg.getLogMsgID());
 
-			if (Message.MSG_STATUS_MSG_SEND.equals(msg.getStatus()))
-			{
-				// this is first attempt to send so move from polling directory
-				// to pending directory
-				pfi = new File(msg.getAttribute(FileAttribute.MA_FILEPATH));
-				pfo = new File(pendingFile);
-				IOUtilOld.moveFile(pfi, pfo, true, false);
-			}
 			msg.setAttribute(FileAttribute.MA_STATUS, FileAttribute.MA_PENDING);
 
 		} catch (Exception e)
@@ -614,10 +652,6 @@ public class AS2SenderModule extends HttpSenderModule
 				} catch (IOException e)
 				{
 				}
-			if (pfi != null)
-				pfi = null;
-			if (pfo != null)
-				pfo = null;
 		}
 	}
 

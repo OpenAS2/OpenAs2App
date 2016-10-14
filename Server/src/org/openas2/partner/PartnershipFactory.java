@@ -19,7 +19,7 @@ public interface PartnershipFactory extends Component {
     public static final String COMPID_PARTNERSHIP_FACTORY = "partnershipfactory";
 
     // throws an exception if the partnership doesn't exist
-    public Partnership getPartnership(Partnership p) throws OpenAS2Exception;
+    public Partnership getPartnership(Partnership p, boolean reverseLookup) throws OpenAS2Exception;
 
     // looks up and fills in any header info for a specific msg's partnership
     public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception;

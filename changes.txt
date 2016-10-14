@@ -1,3 +1,14 @@
+Version 2.1.0 - 2016-10-11
+  1. Add message tracking module to allow easy identification of sent and received messages based on state
+  		- persists state change tracking of messages to H2 database
+  		- allow user-plugin of custom tracking module(s)
+  2. Enhanced documentation around certificate management
+  3. Added properties element to config to allow easy custom config property access from java modules and helper classes
+  4. Added support for parsing file name into partnership attributes using regular expressions
+  5. Added script to support launching OpenAS2 as a daemon using the init.d paradigm
+  6. Added system parameter to startup scripts to allow restricted HTTP headers that cause problems for some AS2 implementations
+
+
 Version 2.0.0 - 2016-05-31
   1. Add support for custom HTTP headers
   		- configurable static headers as name/value pairs in the partnership
@@ -8,6 +19,7 @@ Version 2.0.0 - 2016-05-31
   5. Support AES128, AES192, AES256 ciphers
   6. Support disabling the CMS algorithm protection OID for older AS2 systems that do not support it
   7. Added "Troubleshooting.." section to documentation
+  8. Authenticated SMTP for email logging
   
 Version 1.3.6 - 2015-11-23
   1. Fix handling creating a unique file name for storing message info for ASYNC MDN
