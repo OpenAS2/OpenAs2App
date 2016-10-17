@@ -1,3 +1,7 @@
+Version 2.1.1 - 2016-10-17
+This release is a bugfix release:
+  1. Fix sending HTTP headers in a synchronous MDN that are copied from the inbound message causing some AS2 implementations to fail
+
 Version 2.1.0 - 2016-10-11
   1. Add message tracking module to allow easy identification of sent and received messages based on state
   		- persists state change tracking of messages to H2 database
