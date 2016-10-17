@@ -65,7 +65,7 @@ public class AS2Util {
     public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
             DispositionType disposition, String text) throws Exception {
 
-    	AS2MessageMDN mdn = new AS2MessageMDN(msg, true);
+    	AS2MessageMDN mdn = new AS2MessageMDN(msg, false);
         
         mdn.setHeader("AS2-Version", "1.1");
         // RFC2822 format: Wed, 04 Mar 2009 10:59:17 +0100
