@@ -56,11 +56,11 @@ public abstract class DirectoryPollingModule extends PollingModule
 	{
 		try
 		{
-			// scan the directory for new files
-			scanDirectory(outboxDir);
-
 			// update tracking info. if a file is ready, process it
 			updateTracking();
+
+			// scan the directory for new files
+			scanDirectory(outboxDir);
 		} catch (OpenAS2Exception oae)
 		{
 			oae.terminate();
