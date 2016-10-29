@@ -1,14 +1,16 @@
               OpenAS2 Server
-              Version 2.1.1
+              Version 2.1.2
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.1.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.1.2
 
-The release download file is: OpenAS2Server-2.1.1.zip
+The release download file is: OpenAS2Server-2.1.2.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
+Version 2.1.2 - 2016-10-29
 This release is a bugfix release:
-  1. Fix sending HTTP headers in a synchronous MDN that are copied from the inbound message causing some AS2 implementations to fail
+  1. Swap call to scan directory with the tracking processing call to ensure there is at least one full poll interval between scan and call to tracking processing to avoid sending incomplete files.
+  2. Add documentation on Java tuning for large fiules and/or busy AS2 systems
 
 Upgrade Notes (if upgrading from versions older than 2.1.0):
   1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
