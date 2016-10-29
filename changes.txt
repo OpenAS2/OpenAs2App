@@ -1,3 +1,8 @@
+Version 2.1.2 - 2016-10-29
+This release is a bugfix release:
+  1. Swap call to scan directory with the tracking processing call to ensure there is at least one full poll interval between scan and call to tracking processing to avoid sending incomplete files.
+  2. Add documentation on Java tuning for large fiules and/or busy AS2 systems
+
 Version 2.1.1 - 2016-10-17
 This release is a bugfix release:
   1. Fix sending HTTP headers in a synchronous MDN that are copied from the inbound message causing some AS2 implementations to fail
