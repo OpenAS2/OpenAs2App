@@ -56,20 +56,20 @@ public class MDNFileModule extends BaseStorageModule {
         StringBuffer mdnBuf = new StringBuffer();
 
         // write headers to the string buffer
-        mdnBuf.append("Headers:\r\n");
+        mdnBuf.append("Headers:" + System.getProperty("line.separator"));
 
         Enumeration<String> headers = mdn.getHeaders().getAllHeaderLines();
         String header;
 
         while (headers.hasMoreElements()) {
             header = headers.nextElement();
-            mdnBuf.append(header).append("\r\n");
+            mdnBuf.append(header).append(System.getProperty("line.separator"));
         }
 
-        mdnBuf.append("\r\n");
+        mdnBuf.append(System.getProperty("line.separator"));
 
         // write attributes to the string buffer
-        mdnBuf.append("Attributes:\r\n");
+        mdnBuf.append("Attributes:" + System.getProperty("line.separator"));
 
         Iterator<Map.Entry<String,String>> attrIt = mdn.getAttributes().entrySet().iterator();
         Map.Entry<?, String> attrEntry;
@@ -77,10 +77,10 @@ public class MDNFileModule extends BaseStorageModule {
         while (attrIt.hasNext()) {
             attrEntry = attrIt.next();
             mdnBuf.append(attrEntry.getKey()).append(": ");
-            mdnBuf.append(attrEntry.getValue()).append("\r\n");
+            mdnBuf.append(attrEntry.getValue()).append(System.getProperty("line.separator"));
         }
      // finaly, write the MDN text
-        mdnBuf.append("Text:\r\n");
+        mdnBuf.append("Text:" + System.getProperty("line.separator"));
         mdnBuf.append(mdn.getText());
         
         return new ByteArrayInputStream(mdnBuf.toString().getBytes());

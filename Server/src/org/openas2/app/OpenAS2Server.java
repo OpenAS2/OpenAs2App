@@ -47,32 +47,32 @@ public class OpenAS2Server {
 		try {
 			Log logger = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
 			
-			write(Session.TITLE + "\r\nStarting Server...\r\n");
+			write(Session.TITLE + System.getProperty("line.separator") + "Starting Server..." + System.getProperty("line.separator"));
 
 			// create the OpenAS2 Session object
 			// this is used by all other objects to access global configs and functionality
-			write("Loading configuration...\r\n");
+			write("Loading configuration..." + System.getProperty("line.separator"));
 
 			if (args.length > 0) {
 				session = new XMLSession(args[0]);
 			} else {
-				write("Usage:\r\n");
-				write("java org.openas2.app.OpenAS2Server <configuration file>\r\n");
+				write("Usage:" + System.getProperty("line.separator"));
+				write("java org.openas2.app.OpenAS2Server <configuration file>" + System.getProperty("line.separator"));
 				throw new Exception("Missing configuration file");
 			}
 			// create a command processor
 
 			// get a registry of Command objects, and add Commands for the Session
-			write("Registering Session to Command Processor...\r\n");
+			write("Registering Session to Command Processor..." + System.getProperty("line.separator"));
 
 			CommandRegistry reg = session.getCommandRegistry();
 
 			// start the active processor modules
-			write("Starting Active Modules...\r\n");
+			write("Starting Active Modules..." + System.getProperty("line.separator"));
 			session.getProcessor().startActiveModules();
 
 			// enter the command processing loop
-			write("OpenAS2 V" + Session.VERSION + " Started\r\n");
+			write("OpenAS2 V" + Session.VERSION + " Started" + System.getProperty("line.separator"));
 
 			
 			logger.info("- OpenAS2 Started - V" + Session.VERSION);
@@ -81,7 +81,7 @@ public class OpenAS2Server {
 			List<BaseCommandProcessor> processors = cmdMgr.getProcessors();
 			for (int i = 0; i < processors.size(); i++) {
 				write("Loading Command Processor..." + processors.toString()
-						+ "\r\n");
+						+ System.getProperty("line.separator"));
 				cmd = (BaseCommandProcessor) processors.get(i);
 				cmd.init();
 				cmd.addCommands(reg);

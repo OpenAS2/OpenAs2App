@@ -153,7 +153,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         buf.append("To:").append(getPartnership().getSenderIDs());
         
         Enumeration<Header> headerEn = getHeaders().getAllHeaders();
-        buf.append("\r\nHeaders:{");
+        buf.append(System.getProperty("line.separator") + "Headers:{");
 
         while (headerEn.hasMoreElements()) {
             Header header = headerEn.nextElement();
@@ -165,9 +165,9 @@ public abstract class BaseMessageMDN implements MessageMDN {
         }
 
         buf.append("}");
-        buf.append("\r\nAttributes:").append(getAttributes());
-        buf.append("\r\nText: \r\n");
-        buf.append(getText()).append("\r\n");
+        buf.append(System.getProperty("line.separator") + "Attributes:").append(getAttributes());
+        buf.append(System.getProperty("line.separator") + "Text: " + System.getProperty("line.separator"));
+        buf.append(getText()).append(System.getProperty("line.separator"));
 
         return buf.toString();
     }

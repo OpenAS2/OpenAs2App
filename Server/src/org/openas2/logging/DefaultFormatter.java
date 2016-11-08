@@ -12,7 +12,7 @@ import org.openas2.util.DateUtil;
 
 public class DefaultFormatter extends BaseFormatter {
     public String getTerminatedMessage(OpenAS2Exception exception) {
-        StringBuffer buf = new StringBuffer("Termination of exception:\r\n");
+        StringBuffer buf = new StringBuffer("Termination of exception:" + System.getProperty("line.separator"));
 
         // Write exception trace
         StringWriter strWriter = new StringWriter();
@@ -27,8 +27,8 @@ public class DefaultFormatter extends BaseFormatter {
 
         while (sourceIt.hasNext()) {
             source = sourceIt.next();
-            buf.append(source.getKey().toString()).append("\r\n");
-            buf.append(source.getValue().toString()).append("\r\n\r\n");
+            buf.append(source.getKey().toString()).append(System.getProperty("line.separator"));
+            buf.append(source.getValue().toString()).append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
         }
 
         return buf.toString();
