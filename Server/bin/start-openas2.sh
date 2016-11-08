@@ -10,8 +10,8 @@ PWD_OVERRIDE=""
 # remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package    
 #
 EXTRA_PARMS="-Xms32m -Xmx384m -Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
-# By default allow restricted HTTP headers
-EXTRA_PARMS="$EXTRA_PARMS -Dsun.net.http.allowRestrictedHeaders=true"
+# For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
+#EXTRA_PARMS="$EXTRA_PARMS -Dsun.net.http.allowRestrictedHeaders=true"
 # Uncomment any of the following for enhanced debug
 #EXTRA_PARMS="$EXTRA_PARMS -Dmaillogger.debug.enabled=true"
 #EXTRA_PARMS="$EXTRA_PARMS -DlogRxdMsgMimeBodyParts=true"

@@ -5,8 +5,8 @@ rem Set some of the base system properties for the Java environment and logging
 rem remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package
 rem
 set EXTRA_PARMS=-Xms32m -Xmx384m  -Dorg.apache.commons.logging.Log=org.openas2.logging.Log
-rem By default allow restricted HTTP headers
-set EXTRA_PARMS=%EXTRA_PARMS% -Dsun.net.http.allowRestrictedHeaders=true
+rem For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
+rem set EXTRA_PARMS=%EXTRA_PARMS% -Dsun.net.http.allowRestrictedHeaders=true
 
 rem Uncomment any of the following for enhanced debug
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dmaillogger.debug.enabled=true
