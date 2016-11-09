@@ -118,7 +118,7 @@ public class EmailLogger extends BaseLogger {
                 body.append(parseText(exception, terminated, getParameter(PARAM_BODY, false)));
             }
 
-            body.append("\r\n");
+            body.append(System.getProperty("line.separator"));
 
             if (getParameter(PARAM_BODYTEMPLATE, false) != null) {
                 body.append(parseText(exception, terminated, getTemplateText()));

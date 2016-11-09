@@ -45,19 +45,19 @@ public class MimeBodyPartEncodingTest
 		System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
 		//System.setProperty("openas2log.properties", "Server/bin/openas2log.properties");
 		LogFactory.getFactory().setAttribute("level", "TRACE");
-		System.out.println("Current working directory: " + System.getProperty("user.dir") + "\n");
-		System.out.println("Logging prop: " + System.getProperty("org.apache.commons.logging.Log") + "\n");
+		System.out.println("Current working directory: " + System.getProperty("user.dir") + System.getProperty("line.separator"));
+		System.out.println("Logging prop: " + System.getProperty("org.apache.commons.logging.Log") + System.getProperty("line.separator"));
 		File f = new File(TestConfig.TEST_OUTPUT_FOLDER);
 		f.mkdirs();
 
 		try
 		{
-			write(Session.TITLE + "\r\nStarting test...\r\n");
+			write(Session.TITLE + System.getProperty("line.separator") + "Starting test..." + System.getProperty("line.separator"));
 
 			// create the OpenAS2 Session object
 			// this is used by all other objects to access global configs and
 			// functionality
-			write("Loading configuration...\r\n");
+			write("Loading configuration..." + System.getProperty("line.separator"));
 			String configFile = "Server/config/config.xml";
 			if (args.length == 1)
 			{
@@ -65,14 +65,14 @@ public class MimeBodyPartEncodingTest
 			}
 		    else if (args.length > 1)
 			{
-				write("Current working directory: " + System.getProperty("user.dir") + "\n");
-				write("Usage:\r\n");
-				write("java org.openas2.app.OpenAS2Server <configuration file>\r\n");
+				write("Current working directory: " + System.getProperty("user.dir") + System.getProperty("line.separator"));
+				write("Usage:" + System.getProperty("line.separator"));
+				write("java org.openas2.app.OpenAS2Server <configuration file>" + System.getProperty("line.separator"));
 				throw new Exception("Missing configuration file");
 			}
 			session = new XMLSession(configFile);
 			// Do the deed...
-			write("Entering test phase....\r\n");
+			write("Entering test phase...." + System.getProperty("line.separator"));
 			Message msg = new AS2Message();
 			getPartnerInfo(msg);
 			// update the message's partnership with any stored information
@@ -81,7 +81,7 @@ public class MimeBodyPartEncodingTest
 			write("Partnership attributes:\n" + msg.getPartnership().getName());
 			for (String key : attribs.keySet())
 			{
-				write("\t" + key + " ::= " + attribs.get(key) + "\n");
+				write("\t" + key + " ::= " + attribs.get(key) + System.getProperty("line.separator"));
 			}
 
 			msg.setAttribute(FileAttribute.MA_FILEPATH, TestConfig.TEST_SOURCE_FOLDER);
@@ -107,7 +107,7 @@ public class MimeBodyPartEncodingTest
 			String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
 			if (contentTxfrEncoding == null)
 				contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-			write("Using Content-Transfer-Encoding: " + contentTxfrEncoding + "\n");
+			write("Using Content-Transfer-Encoding: " + contentTxfrEncoding + System.getProperty("line.separator"));
 			body.addHeader("Content-Transfer-Encoding", contentTxfrEncoding);
 			
 			msg.setData(body);
@@ -163,7 +163,7 @@ public class MimeBodyPartEncodingTest
 		} finally
 		{
 
-			write("OpenAS2 test has shut down\r\n");
+			write("OpenAS2 test has shut down." + System.getProperty("line.separator"));
 
 			System.exit(exitStatus);
 		}
@@ -171,9 +171,9 @@ public class MimeBodyPartEncodingTest
 
 	public static void write(OutputStream os, MimeBodyPart mbp) throws MessagingException, IOException
 	{
-		os.write("\n========BEGIN MIMEBODYPART=========\n".getBytes());
+		os.write((System.getProperty("line.separator") + "========BEGIN MIMEBODYPART=========" + System.getProperty("line.separator")).getBytes());
 		mbp.writeTo(os);
-		os.write("\n========END MIMEBODYPART=========\n".getBytes());
+		os.write((System.getProperty("line.separator") + "========END MIMEBODYPART=========" + System.getProperty("line.separator")).getBytes());
 	}
 
 	public static void write(String msg)

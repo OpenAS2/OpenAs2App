@@ -74,20 +74,20 @@ public class MessageFileModule extends BaseStorageModule {
         StringBuffer headerBuf = new StringBuffer();
 
         // write headers to the string buffer
-        headerBuf.append("Headers:\r\n");
+        headerBuf.append("Headers:" + System.getProperty("line.separator"));
 
         Enumeration<String> headers = msg.getHeaders().getAllHeaderLines();
         String header;
 
         while (headers.hasMoreElements()) {
             header = (String) headers.nextElement();
-            headerBuf.append(header).append("\r\n");
+            headerBuf.append(header).append(System.getProperty("line.separator"));
         }
 
-        headerBuf.append("\r\n");
+        headerBuf.append(System.getProperty("line.separator"));
 
         // write attributes to the string buffer
-        headerBuf.append("Attributes:\r\n");
+        headerBuf.append("Attributes:" + System.getProperty("line.separator"));
 
         Iterator<Map.Entry<String,String>> attrIt = msg.getAttributes().entrySet().iterator();
         Map.Entry<String,String> attrEntry;
@@ -95,7 +95,7 @@ public class MessageFileModule extends BaseStorageModule {
         while (attrIt.hasNext()) {
             attrEntry = attrIt.next();
             headerBuf.append(attrEntry.getKey()).append(": ");
-            headerBuf.append(attrEntry.getValue()).append("\r\n");
+            headerBuf.append(attrEntry.getValue()).append(System.getProperty("line.separator"));
         }
 
         return new ByteArrayInputStream(headerBuf.toString().getBytes());

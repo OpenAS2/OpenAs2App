@@ -1,3 +1,9 @@
+Version 2.1.3 - 2016-11-09
+This release is a bugfix release:
+  1. Revert to default for allowing restricted HTTP headers (see OpenAS2HowTo for discussion on this issue)
+  2. Remove \r (CR) character from logging and use the the system property to avoid issues on NIX based systems that parse logs
+  3. Enhance documentation
+
 Version 2.1.2 - 2016-10-29
 This release is a bugfix release:
   1. Swap call to scan directory with the tracking processing call to ensure there is at least one full poll interval between scan and call to tracking processing to avoid sending incomplete files.
