@@ -116,17 +116,8 @@ public class AS2SenderModule extends HttpSenderModule
 		if (logger.isTraceEnabled())
 			try
 			{
-				String headers = "";
-				Enumeration<Header> headersEnum = msg.getData().getAllHeaders();
-				while (headersEnum.hasMoreElements())
-				{
-					Header hd = headersEnum.nextElement();
-					headers = ";;" + hd.getName() + "::" + hd.getValue();
-
-				}
-
 				logger.trace("Message object in sender module. Content-Disposition: " + msg.getContentDisposition()
-						+ "\n      Content-Type : " + msg.getContentType() + "\n      HEADERS : " + headers
+						+ "\n      Content-Type : " + msg.getContentType() + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
 						+ "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType()
 						+ msg.getLogMsgID());
 			} catch (Exception e)
@@ -168,12 +159,16 @@ public class AS2SenderModule extends HttpSenderModule
 			if (msg.isConfiguredForMDN())
 			{
 				msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
-				// Check if the AsyncMDN is required
+				// Check if it will be an AsyncMDN
 				if (msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) == null)
 				{
 					if (logger.isTraceEnabled()) logger.trace("Waiting for synchronous MDN response..." + msg.getLogMsgID());
 					// Create a MessageMDN and copy HTTP headers
+					if (logger.isTraceEnabled())
+						logger.trace("Awaiting sync MDN. Orig msg contains headers:" + AS2Util.printHeaders(msg.getHeaders().getAllHeaders()) + msg.getLogMsgID());
 					MessageMDN mdn = new AS2MessageMDN((AS2Message) msg, false);
+					if (logger.isTraceEnabled())
+						logger.trace("MDN msg initalised for inbound contains headers:" + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()) + msg.getLogMsgID());
 					copyHttpHeaders(conn, mdn.getHeaders());
 
 					// Receive the MDN data
@@ -664,6 +659,18 @@ public class AS2SenderModule extends HttpSenderModule
 				AS2Partnership.PA_AS2_MDN_OPTIONS));
 		msg.setCalculatedMIC(AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg()
 				, includeHeaders, msg.getPartnership().isPreventCanonicalization()));
+        if (logger.isTraceEnabled())
+        {
+        	// Generate some alternative MIC's to see if the partner is somehow using a different default
+        	MimeBodyPart mdt = msg.getData();
+        	String tmic = AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg()
+    				, includeHeaders, !msg.getPartnership().isPreventCanonicalization());
+        		logger.trace("MIC outbound with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());
+    		tmic = AS2Util.getCryptoHelper().calculateMIC(msg.getData(), dispOptions.getMicalg(),
+				        false, msg.getPartnership().isPreventCanonicalization());
+        		logger.trace("MIC outbound with forced exclude headers flag: " + tmic + msg.getLogMsgID());
+        	
+        }
 	}
 
 }
