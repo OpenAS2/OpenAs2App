@@ -24,6 +24,7 @@ import org.openas2.WrappedException;
 import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.processor.sender.SenderModule;
+import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
 import org.openas2.util.IOUtilOld;
 
@@ -62,18 +63,9 @@ public class DirectoryResenderModule extends BaseResenderModule {
             if (logger.isTraceEnabled())
     			try
     			{
-    				String headers = "";
-    	        	Enumeration<Header> headersEnum = msg.getData().getAllHeaders();
-    	        	while (headersEnum.hasMoreElements())
-    				{
-    					Header hd = headersEnum.nextElement();
-    					headers  = ";;" + hd.getName() + "::" + hd.getValue();
-    					
-    				}
-
     				logger.trace("Message object in resender module for storage. Content-Disposition: " + msg.getContentDisposition()
     				    + "\n      Content-Type : " + msg.getContentType()
-    				    + "\n      HEADERS : " + headers
+    				    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
     				    + "\n      Content-Disposition in MSG getData() MIMEPART: "
     				    + msg.getData().getContentType()
     					+msg.getLogMsgID()	);
@@ -163,18 +155,9 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 if (logger.isTraceEnabled())
 					try
 					{
-						String headers = "";
-			        	Enumeration<Header> headersEnum = msg.getData().getAllHeaders();
-			        	while (headersEnum.hasMoreElements())
-						{
-							Header hd = headersEnum.nextElement();
-							headers  = ";;" + hd.getName() + "::" + hd.getValue();
-							
-						}
-
 						logger.trace("Reconstituted Message object in resender. Content-Disposition: " + msg.getContentDisposition()
 						    + "\n      Content-Type : " + msg.getContentType()
-						    + "\n      HEADERS : " + headers
+						    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
 						    + "\n      Content-Disposition in MSG getData() MIMEPART: "
 						    + msg.getData().getContentType()
 							+msg.getLogMsgID()	);
