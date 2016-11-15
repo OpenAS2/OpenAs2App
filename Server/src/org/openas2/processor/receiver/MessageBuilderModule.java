@@ -188,18 +188,10 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         if (logger.isTraceEnabled())
 			try
 			{
-				String headers = "";
-	        	Enumeration<Header> headersEnum = msg.getData().getAllHeaders();
-	        	while (headersEnum.hasMoreElements())
-				{
-					Header hd = headersEnum.nextElement();
-					headers  = ";;" + hd.getName() + "::" + hd.getValue();
-					
-				}
-
+				
 				logger.trace("Message object in directory polling module. Content-Disposition: " + msg.getContentDisposition()
 				    + "\n      Content-Type : " + msg.getContentType()
-				    + "\n      HEADERS : " + headers
+				    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
 				    + "\n      Content-Disposition in MSG getData() MIMEPART: "
 				    + msg.getData().getContentType()
 					+msg.getLogMsgID()	);
@@ -244,6 +236,10 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		// Should have sender/receiver now so update the message's partnership with any stored information based on the identified partner IDs
 		getSession().getPartnershipFactory().updatePartnership(msg, true);
 		msg.updateMessageID();
+		// Set the sender and receiver in the Message object headers
+		msg.setHeader("AS2-To", msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
+		msg.setHeader("AS2-From", msg.getPartnership().getSenderID(AS2Partnership.PID_AS2));
+
 
 		try
 		{
