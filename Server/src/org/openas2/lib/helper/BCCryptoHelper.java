@@ -21,13 +21,11 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
-import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
@@ -87,6 +85,7 @@ import org.openas2.lib.util.IOUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 import org.openas2.processor.receiver.AS2ReceiverModule;
+import org.openas2.util.AS2Util;
 import org.openas2.util.DispositionType;
 
 public class BCCryptoHelper implements ICryptoHelper {
@@ -158,15 +157,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         MessageDigest md = MessageDigest.getInstance(micAlg, "BC");
 
         if (includeHeaders && logger.isTraceEnabled()) {
-        	String headers = "";
-        	Enumeration<Header> headersEnum = part.getAllHeaders();
-        	while (headersEnum.hasMoreElements())
-			{
-				Header hd = headersEnum.nextElement();
-				headers  = "\n     " + hd.getName() + "::" + hd.getValue();
-				
-			}
-        	logger.trace("Calculating MIC on MIMEPART Headers: " + headers);
+        	logger.trace("Calculating MIC on MIMEPART Headers: " + AS2Util.printHeaders(part.getAllHeaders()));
         }
         // convert the Mime data to a byte array, then to an InputStream
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -279,16 +270,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         if (logger.isDebugEnabled())
         {
-        	String headers = null;
-            try
-			{
-				headers = printHeaders(part.getAllHeaders());
-			} catch (Throwable e)
-			{
-				logger.debug("Error logging mime part for encrypting: " + org.openas2.logging.Log.getExceptionMsg(e), e);
-			}
-
-        	logger.debug("Encrypting on MIME part containing the following headers: " + headers);
+        	logger.debug("Encrypting on MIME part containing the following headers: " + AS2Util.printHeaders(part.getAllHeaders()));
         }
 
         gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
@@ -330,16 +312,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             	logger.debug("Params for creating SMIME signed generator:: SIGN DIGEST: " + digest
           		  + " PUB ENCRYPT ALG: " + encryptAlg
           		  + " X509 CERT: " + x509Cert);
-            	String headers = null;
-                try
-    			{
-    				headers = printHeaders(part.getAllHeaders());
-    			} catch (Throwable e)
-    			{
-    				logger.debug("Error logging mime part for signing: " + org.openas2.logging.Log.getExceptionMsg(e), e);
-    			}
-
-            	logger.debug("Signing on MIME part containing the following headers: " + headers);
+            	logger.debug("Signing on MIME part containing the following headers: " + AS2Util.printHeaders(part.getAllHeaders()));
             }
             // Remove the dash for SHA based digest for signing call
             if (digest.toUpperCase().startsWith("SHA-")) digest = digest.replaceAll("-", "");
@@ -405,9 +378,9 @@ public class BCCryptoHelper implements ICryptoHelper {
         	String headers = null;
             try
 			{
-				headers = printHeaders(part.getAllHeaders());
+				headers = AS2Util.printHeaders(part.getAllHeaders());
 	        	logger.trace("Headers on MimeBodyPart passed in to signature verifier: " + headers);
-				headers = printHeaders(ssp.getContent().getAllHeaders());
+				headers = AS2Util.printHeaders(ssp.getContent().getAllHeaders());
 	        	logger.trace("Checking signature on SIGNED MIME part extracted from multipart contains headers: " + headers);
 			} catch (Throwable e)
 			{
@@ -738,17 +711,6 @@ public class BCCryptoHelper implements ICryptoHelper {
 		}
     }
     
-    public String printHeaders(Enumeration<Header> hdrs)
-    {
-        String headers = "";
-			while (hdrs.hasMoreElements()) {
-				Header h = hdrs.nextElement();
-				headers = headers + "\n    " + h.getName() + " == " + h.getValue();
-			}
-
-    	return(headers);
-
-    }
     public void logSignerInfo(String msgPrefix, SignerInformation signer, MimeBodyPart part, X509Certificate cert)
     {
         if (logger.isDebugEnabled())
