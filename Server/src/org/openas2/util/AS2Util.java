@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
@@ -543,6 +544,7 @@ public class AS2Util {
 
 		// Create a MessageMDN and copy HTTP headers
 		MessageMDN mdn = msg.getMDN();
+		if (logger.isTraceEnabled()) logger.trace("HTTP headers in received MDN: " + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()));
 		// get the MDN partnership info
 		mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
 		mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
@@ -805,6 +807,23 @@ public class AS2Util {
 			msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
 			logger.error(msg, e);
 		}
+    }
+
+    public static String printHeaders(Enumeration<Header> hdrs)
+    {
+    	return printHeaders(hdrs, " == ", "\n\t\t");
+    }
+
+    public static String printHeaders(Enumeration<Header> hdrs, String nameValueSeparator, String valuePairSeparator)
+    {
+        String headers = "";
+		while (hdrs.hasMoreElements()) {
+			Header h = hdrs.nextElement();
+			headers = headers + valuePairSeparator + h.getName() + nameValueSeparator + h.getValue();
+		}
+
+    	return(headers);
+
     }
 
 }
