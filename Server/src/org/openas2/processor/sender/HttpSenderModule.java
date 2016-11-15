@@ -115,10 +115,23 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
                 while (connValuesIt.hasNext()) {
                     String value = connValuesIt.next();
 
-                    if (headers.getHeader(headerName) == null) {
+                    String[] existingVals = headers.getHeader(headerName);
+                    if (existingVals == null) {
                         headers.setHeader(headerName, value);
-                    } else {
-                        headers.addHeader(headerName, value);
+                    }
+                    else
+                    {
+                    	// Avoid duplicates of the same value since headers that exist in the HTTP headers
+                    	// may already have been inserted in the Message object
+                    	boolean exists = false;
+                    	for (int i = 0; i < existingVals.length; i++)
+						{
+							if (value.equals(existingVals[i]))
+							{
+								exists = true;
+							}
+						}
+                        if (!exists) headers.addHeader(headerName, value);
                     }
                 }
             }
