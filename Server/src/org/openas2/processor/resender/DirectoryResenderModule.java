@@ -8,13 +8,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javax.mail.Header;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

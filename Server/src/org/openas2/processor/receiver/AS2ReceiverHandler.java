@@ -392,7 +392,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		        if (logger.isTraceEnabled())
 		        {
 		        	// Generate some alternative MIC's to see if the partner is somehow using a different default
-		        	MimeBodyPart mdt = msg.getData();
 		        	String tmic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
 						        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), !msg.getPartnership().isPreventCanonicalization());
 		        		logger.trace("MIC with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());

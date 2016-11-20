@@ -9,10 +9,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
 import java.util.Map;
 
-import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
@@ -662,7 +660,6 @@ public class AS2SenderModule extends HttpSenderModule
         if (logger.isTraceEnabled())
         {
         	// Generate some alternative MIC's to see if the partner is somehow using a different default
-        	MimeBodyPart mdt = msg.getData();
         	String tmic = AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg()
     				, includeHeaders, !msg.getPartnership().isPreventCanonicalization());
         		logger.trace("MIC outbound with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());
