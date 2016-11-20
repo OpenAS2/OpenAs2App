@@ -51,10 +51,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		super.init(session, options);
 	}
 
-	protected Message processDocument(InputStream ip, String filename, String fileSrcLocation) throws OpenAS2Exception, FileNotFoundException
+	protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException
 	{
 		Message msg = createMessage();
-		msg.setAttribute(FileAttribute.MA_FILEPATH, fileSrcLocation);
 		msg.setAttribute(FileAttribute.MA_FILENAME, filename);
 		String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
 		msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
@@ -164,11 +163,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			}
 		}
 		if (logger.isInfoEnabled())
-			logger.info("file assigned to message " + fileSrcLocation + msg.getLogMsgID());
+			logger.info("File assigned to message: " + filename + msg.getLogMsgID());
 
 		if (msg.getData() == null)
 		{
-			throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + fileSrcLocation);
+			throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + filename);
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());

@@ -191,7 +191,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 
 		try
 		{
-			processDocument(new FileInputStream(file), file.getName(), file.getAbsolutePath());
+			processDocument(new FileInputStream(file), file.getName());
 			try
 			{
 				IOUtilOld.deleteFile(file);
