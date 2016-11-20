@@ -6,14 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.activation.DataHandler;
-import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
