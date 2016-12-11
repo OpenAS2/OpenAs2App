@@ -1,6 +1,7 @@
 package org.openas2.app;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
@@ -46,19 +47,27 @@ public class OpenAS2Server {
 		try {
 			Log logger = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
 			
+			write("Retrieving config file..." + System.getProperty("line.separator"));
+			// Check for passed in as parameter first then look for system property
+			String configFile = (args.length > 0)?args[0]:System.getProperty("openas2.config.file");
+			if (configFile == null || configFile.length() < 1) {
+				// Try the default location assuming the app was started in the bin folder
+				configFile = System.getProperty("user.dir") + "/../config/config.xml";
+			}
+			File cfg = new File(configFile);
+			if (!cfg.exists()) {
+				write("No config file found: " + configFile + System.getProperty("line.separator"));
+				write("Pass as the first paramter on the command line or set the system property \"openas2.config.file\" to identify the configuration file to start OpenAS2" + System.getProperty("line.separator"));
+				throw new Exception("Missing configuration file");
+			}
+			session = new XMLSession(configFile);
+
 			write("Starting Server..." + System.getProperty("line.separator"));
 
 			// create the OpenAS2 Session object
 			// this is used by all other objects to access global configs and functionality
 			write("Loading configuration..." + System.getProperty("line.separator"));
 
-			if (args.length > 0) {
-				session = new XMLSession(args[0]);
-			} else {
-				write("Usage:" + System.getProperty("line.separator"));
-				write("java org.openas2.app.OpenAS2Server <configuration file>" + System.getProperty("line.separator"));
-				throw new Exception("Missing configuration file");
-			}
 			write(session.getAppTitle() + ": Session instantiated." + System.getProperty("line.separator"));
 			// create a command processor
 
