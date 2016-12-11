@@ -71,7 +71,7 @@ public class AS2Util {
         mdn.setHeader("AS2-Version", "1.1");
         // RFC2822 format: Wed, 04 Mar 2009 10:59:17 +0100
         mdn.setHeader("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
-        mdn.setHeader("Server", Session.TITLE);
+        mdn.setHeader("Server", session.getAppTitle());
         mdn.setHeader("Mime-Version", "1.0");
         
         // get the MDN partnership info
@@ -89,7 +89,7 @@ public class AS2Util {
             mdn.setHeader("Subject", "Your Requested MDN Response");
         }
         mdn.setText(ParameterParser.parse(text, new MessageParameters(msg)));
-        mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, Session.TITLE + "@"
+        mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, session.getAppTitle() + "@"
                 + msg.getAttribute(NetAttribute.MA_DESTINATION_IP) + ":"
                 + msg.getAttribute(NetAttribute.MA_DESTINATION_PORT));
         mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, "rfc822; " + msg.getHeader("AS2-To"));
