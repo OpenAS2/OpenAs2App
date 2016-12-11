@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-Name: OpenAS2 Server
-Extension-Name: com.openas2
-Implementation-Title: com.openas2
-Bundle-Description: OpenAS2 Server
-Implementation-Version: 1.1.0
-Specification-Vendor: OpenAS2 Project
-Bundle-Version: 1.1.0
