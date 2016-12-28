@@ -8,10 +8,14 @@ set EXTRA_PARMS=-Xms32m -Xmx384m  -Dorg.apache.commons.logging.Log=org.openas2.l
 rem For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dsun.net.http.allowRestrictedHeaders=true
 
+
+rem set EXTRA_PARMS=%EXTRA_PARMS% -Dhttps.protocols=TLSv1.2
+
 rem Uncomment any of the following for enhanced debug
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dmaillogger.debug.enabled=true
 rem set EXTRA_PARMS=%EXTRA_PARMS% -DlogRxdMsgMimeBodyParts=true
 rem set EXTRA_PARMS=%EXTRA_PARMS% -DlogRxdMdnMimeBodyParts=true
+rem set EXTRA_PARMS=%EXTRA_PARMS% -Djavax.net.debug=SSL
 
 rem Setup the Java Virtual Machine
 if not "%JAVA%" == "" goto :Check_JAVA_END

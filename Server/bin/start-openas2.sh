@@ -16,6 +16,9 @@ EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${binDir}/../config/config.xml"
 
 # For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
 #EXTRA_PARMS="$EXTRA_PARMS -Dsun.net.http.allowRestrictedHeaders=true"
+
+#EXTRA_PARMS="$EXTRA_PARMS -Dhttps.protocols=TLSv1.2"
+
 # Uncomment any of the following for enhanced debug
 #EXTRA_PARMS="$EXTRA_PARMS -Dmaillogger.debug.enabled=true"
 #EXTRA_PARMS="$EXTRA_PARMS -DlogRxdMsgMimeBodyParts=true"
