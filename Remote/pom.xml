@@ -7,13 +7,13 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openas2</groupId>
-	<artifactId>openas2-server</artifactId>
-	<version>2.2.0</version>
-	<name>OpenAS2 Server</name>
+	<artifactId>openas2-remote</artifactId>
+	<version>1.0.0</version>
+	<name>OpenAS2 Remote</name>
 	<url>https://sourceforge.net/projects/openas2</url>
 	<description>Open source implementation of the AS2 stndard for signed encrypted and compressed document transfer</description>
 	<properties>
-		<project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
+		<project.dist.package.name>${project.parent.artifactId}Remote-${project.version}.zip</project.dist.package.name>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<lib.dir>${basedir}/lib</lib.dir>
 		<help.filename>OpenAS2HowTo.pdf</help.filename>
@@ -79,7 +79,7 @@
 						<index>true</index>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.openas2.app.OpenAS2Server</mainClass>
+							<mainClass>org.openas2.remote.CommandLine</mainClass>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
@@ -90,49 +90,9 @@
 	</build>
 	<dependencies>
 		<dependency>
-			<groupId>org.dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-			<version>2.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.54</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.54</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.54</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.193</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpg-jdk15on</artifactId>
-			<version>1.54</version>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
 		</dependency>
 	</dependencies>
 </project>

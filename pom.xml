@@ -8,11 +8,12 @@
 	<packaging>pom</packaging>
 	<description>
 	    This is the base Maven build file for the OpenAS2 project.
-	    The project comprises a server and a remote client component.
+	    The project comprises a server ,osgi bundle and a remote client component.
 	    There is a pom.xml for each of the components to build that component.
 	</description>
   <modules>
     <module>Server</module>
     <module>Remote</module>
+    <module>Bundle</module>
     </modules>
 </project>
