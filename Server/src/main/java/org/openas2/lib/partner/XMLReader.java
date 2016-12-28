@@ -111,7 +111,7 @@ public class XMLReader {
         }
         partnership.setReceiver(receiver);
 
-        Map attributes = XMLUtil.mapAttributes(child, new String[] { ATTRIBUTE_ALIAS, ATTRIBUTE_SENDER,
+        Map<String, String> attributes = XMLUtil.mapAttributes(child, new String[] { ATTRIBUTE_ALIAS, ATTRIBUTE_SENDER,
                 ATTRIBUTE_RECEIVER });
         partnership.getAttributes().putAll(attributes);
 
