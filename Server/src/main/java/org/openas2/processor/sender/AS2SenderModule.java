@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
+import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,6 +56,7 @@ public class AS2SenderModule extends HttpSenderModule
 		return (msg instanceof AS2Message);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception
 	{
 
@@ -140,6 +142,13 @@ public class AS2SenderModule extends HttpSenderModule
 				resend(msg, hre, retries);
 				// Log significant msg state
 				msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
+				msg.trackMsgState(getSession());
+				return;
+			} catch (SSLHandshakeException e)
+			{
+				msg.setLogMsg("Failed to connect to partner using SSL certificate. Please run the SSL certificate checker utility to identify the issue: " + conn.getURL());
+				logger.error(msg, e);
+				msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
 				msg.trackMsgState(getSession());
 				return;
 			} catch (Exception e)
