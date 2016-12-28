@@ -648,10 +648,10 @@ public class AS2Util {
     	String dir = (String) processor.getParameters().get(directoryIdentifier);
     	if (msgId == null || msgId.length() < 1)
     	{
-    		// No ID set yet so generate a random number for uniqueness
+    		// No ID set yet so generate a random string for uniqueness
     		msgId = msg.getAttribute(FileAttribute.MA_FILENAME) +  "." + UUID.randomUUID();
     	}
-		return (dir	+ "/" + msgId.substring(1, msgId.length() - 1));
+		return (dir	+ "/" + msgId);
     }
     /*
      * @description This method retrieves the information from the pending information file written by 
