@@ -23,7 +23,7 @@ import org.xml.sax.SAXException;
 public class XMLCommandRegistry extends BaseCommandRegistry {
     public static final String PARAM_FILENAME = "filename";
 
-    public void init(Session session, Map parameters) throws OpenAS2Exception {
+    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         super.init(session, parameters);
 
         refresh();

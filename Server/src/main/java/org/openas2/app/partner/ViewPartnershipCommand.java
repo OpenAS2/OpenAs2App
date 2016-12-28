@@ -36,7 +36,7 @@ public class ViewPartnershipCommand extends AliasedPartnershipsCommand {
 
 			String name = params[0].toString();
 
-			Iterator parts = partFx.getPartnerships().iterator();
+			Iterator<Partnership> parts = partFx.getPartnerships().iterator();
 
 			while (parts.hasNext()) {
 				Partnership part = (Partnership) parts.next();
