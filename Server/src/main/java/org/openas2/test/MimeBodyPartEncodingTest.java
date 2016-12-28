@@ -52,7 +52,7 @@ public class MimeBodyPartEncodingTest
 
 		try
 		{
-			write(session.getAppTitle() + System.getProperty("line.separator") + "Starting test..." + System.getProperty("line.separator"));
+			write("Starting test..." + System.getProperty("line.separator"));
 
 			// create the OpenAS2 Session object
 			// this is used by all other objects to access global configs and
