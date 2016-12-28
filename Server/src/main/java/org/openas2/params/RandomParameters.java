@@ -1,6 +1,7 @@
 package org.openas2.params;
 
 import java.text.DecimalFormat;
+import java.util.UUID;
 
 import org.openas2.util.RandomUtil;
 
@@ -13,7 +14,10 @@ public class RandomParameters extends ParameterParser {
         if (key == null) {
             throw new InvalidParameterException("Invalid key", this, key, null);
         }
-        
+        if ("uuid".equalsIgnoreCase(key))
+        {
+        	return UUID.randomUUID().toString();
+        }
         int wanted = key.length();
         String fmt = "";
         int max = 1;
