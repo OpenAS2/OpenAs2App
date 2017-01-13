@@ -1,7 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: osgi
-Bundle-SymbolicName: osgi
+Bundle-Name: OpenAS2OSGi
+Bundle-SymbolicName: OpenAS2osgi
+Bundle-Activator: org.openas2.osgi.Activator
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: openas2-server-osgi.jar,
@@ -29,6 +30,12 @@ Export-Package: com.sun.mail.auth,
  javax.mail.internet,
  javax.mail.search,
  javax.mail.util,
+ javax.servlet,
+ javax.servlet.http,
+ javax.servlet.jsp,
+ javax.servlet.jsp.resources,
+ javax.servlet.jsp.tagext,
+ javax.servlet.resources,
  org.apache.commons.lang3,
  org.apache.commons.lang3.builder,
  org.apache.commons.lang3.concurrent,
