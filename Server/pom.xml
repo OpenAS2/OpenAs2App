@@ -11,7 +11,7 @@
 	<version>2.2.0</version>
 	<name>OpenAS2 Server</name>
 	<url>https://sourceforge.net/projects/openas2</url>
-	<description>Open source implementation of the AS2 stndard for signed encrypted and compressed document transfer</description>
+	<description>Open source implementation of the AS2 standard for signed encrypted and compressed document transfer</description>
 	<properties>
 		<project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -81,6 +81,7 @@
 							<addClasspath>true</addClasspath>
 							<mainClass>org.openas2.app.OpenAS2Server</mainClass>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+							<!-- get the correct release version number into the MANIFEST file as "Implementation-Version" -->
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 					</archive>
