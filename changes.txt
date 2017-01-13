@@ -1,3 +1,15 @@
+Version 2.2.0 - 2016-12-30
+This is an enhancement and minor bugfix release:
+       IMPORTANT NOTE: As of this release, OpenAS2 no longer supports Java 1.5 and below
+  1. Provide OSGi functionality to deploy as a standard OSGi bundle
+  2. Set the sender and recipient in the Message object when MDN is created to facilitate debugging due to config issues
+  3. Extract the deployed version from the MANIFEST.MF file instead of embedding in the Session.java file
+  4. Move to Maven build process
+  5. Add an INFO level message for any files that are not writable in a polling directory
+  6. Provide ability to generate a UUID using the dynamic parameter $rand.xxx
+  7. Fix the method that creates a file name for storing pending messages (was removing the first character)
+  8. Enhance error handling when using HTTPS and certificate checker class to facilitate debugging SSL certificate issues
+
 Version 2.1.3 - 2016-11-09
 This release is a bugfix release:
   1. Revert to default for allowing restricted HTTP headers (see OpenAS2HowTo for discussion on this issue)
