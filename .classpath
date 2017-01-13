@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="Bundle/main/java/src"/>
 	<classpathentry kind="src" path="Server/src/main/java"/>
 	<classpathentry kind="src" path="Remote/src/main/java"/>
+	<classpathentry kind="src" path="Bundle/src/main/java"/>
 	<classpathentry exported="true" kind="lib" path="Server/lib/commons-lang3-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="Server/lib/commons-logging-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="Server/lib/javax.mail.jar"/>
