@@ -11,7 +11,7 @@
 	<version>2.2.0</version>
 	<name>OpenAS2 OSGi Server</name>
 	<url>https://sourceforge.net/projects/openas2</url>
-	<description>Open source implementation of the AS2 stndard for signed encrypted and compressed document transfer</description>
+	<description>Open source implementation of the AS2 standard for signed encrypted and compressed document transfer</description>
 	<properties>
 		<project.dist.package.name>${project.parent.artifactId}ServerOSGi-${project.version}.zip</project.dist.package.name>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -79,7 +79,7 @@
 						<index>true</index>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.openas2.app.OpenAS2Server</mainClass>
+							<mainClass>org.openas2.osgi.Activator</mainClass>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
