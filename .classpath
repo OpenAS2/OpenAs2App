@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="Remote/src"/>
-	<classpathentry kind="src" path="Server/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="Server/src/main/java"/>
+	<classpathentry kind="src" path="Remote/src/main/java"/>
+	<classpathentry kind="src" path="Bundle/src/main/java"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/commons-lang3-3.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/commons-logging-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/javax.mail.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/bcmail-jdk15on-154.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/bcpg-jdk15on-154.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/bcpkix-jdk15on-154.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/bcprov-jdk15on-154.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/h2-1.4.192.jar"/>
+	<classpathentry exported="true" kind="lib" path="Server/lib/dom4j-2.0.0.jar"/>
 	<classpathentry kind="lib" path="Remote/lib/servlet.jar"/>
-	<classpathentry kind="lib" path="Server/lib/commons-lang3-3.4.jar"/>
-	<classpathentry kind="lib" path="Server/lib/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="Server/lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="Server/lib/javax.mail.jar"/>
-	<classpathentry kind="lib" path="Server/lib/bcmail-jdk15on-154.jar"/>
-	<classpathentry kind="lib" path="Server/lib/bcpg-jdk15on-154.jar"/>
-	<classpathentry kind="lib" path="Server/lib/bcpkix-jdk15on-154.jar"/>
-	<classpathentry kind="lib" path="Server/lib/bcprov-jdk15on-154.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

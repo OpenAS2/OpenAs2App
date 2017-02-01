@@ -1,85 +1,91 @@
 <project name="OpenAS2" default="main" basedir=".">
 	<description>
-		Create a Java Project (JAR) with Ant build script
+		Open source implementation of the AS2 standard for signed
+		encrypted and compressed document transfer
 	</description>
-	<property name="projectName" value="OpenAS2Server" />
+	<property name="projectName" value="OpenAS2" />
+	<property name="subProject" value="Server" />
 
 	<!-- Java sources -->
-	<property name="src.dir" location="${basedir}/src" />
+	<property name="src.dir" location="${basedir}/src/main/java" />
 
-	<property name="ant.build.javac.source" value="1.5" />
-	<property name="ant.build.javac.target" value="1.5" />
-	
+	<property name="ant.build.javac.source" value="1.6" />
+	<property name="ant.build.javac.target" value="1.6" />
+
 	<!-- Java classes -->
-	<property name="build.dir" location="${basedir}/build" />
+	<property name="outputDirectory" location="${basedir}/target" />
 	<property name="lib.dir" location="${basedir}/lib" />
 	<property name="lib.jar" value="openas2-server.jar" />
-	<property name="help.filename" value="OpenAS2HowTo.pdf"/>
-	<property name="help.file.src" location="../docs/${help.filename}"/>
+	<property name="help.filename" value="OpenAS2HowTo.pdf" />
+	<property name="help.file.src" location="../docs/${help.filename}" />
 	<!-- Output, package -->
 	<property name="dist.dir" location="dist" />
 
-	<property name="version.no.src.file" location="${basedir}/src/org/openas2/Session.java" />
+	<property name="release.version" value="2.2.0" />
+	<property name="manifest.file" value="${src.dir}/META-INF/MANIFEST.MF" />
+
 	<target name="init">
 		<echo message="ANT Version: ${ant.version}" />
 		<!-- Create the time stamp -->
-		<tstamp />
+		<tstamp>
+			<format property="time.stamp" pattern="yyyy-MM-dd_HH:mm:ss" />
+		</tstamp>
+
 		<!-- Create the build directory structure used by compile -->
-		<mkdir dir="${build.dir}" />
-		<!-- get the correct release version number -->
-		<loadfile property="release.version" srcFile="${version.no.src.file}">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="^.*String VERSION\s*=\s* &quot;(.*)&quot;;.*$" />
-				</linecontainsregexp>
-				<tokenfilter>
-					<replaceregex replace="\1"
-						pattern="^.*String VERSION\s*=\s* &quot;(.*)&quot;;.*$" />
-			        <deletecharacters chars=" " />
-				</tokenfilter>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
+		<mkdir dir="${outputDirectory}" />
+
 		<echo
-			message="Current version number in Java file ${version.no.src.file} : ${release.version}" />
+			message="Current version number written to MANIFEST : ${release.version}" />
 
 	</target>
 
 	<target name="compile" depends="init" description="compile the source ">
-		<!-- Compile the java code from ${src.dir} into ${build.dir} -->
+		<!-- Compile the java code from ${src.dir} into ${outputDirectory} -->
 		<delete file="${lib.dir}/${lib.jar}" />
 		<path id="lib.path.ref">
 			<fileset dir="${lib.dir}" includes="*.jar" />
 		</path>
 		<javac compiler="modern" includeantruntime="false" srcdir="${src.dir}"
-			destdir="${build.dir}">
+			destdir="${outputDirectory}">
 			<compilerarg value="-Xbootclasspath/p:${toString:lib.path.ref}" />
 		</javac>
 	</target>
 
 	<target name="dist" depends="compile" description="package, output to JAR">
-	    <delete file="${lib.dir}/${lib.jar}" />
-		<jar jarfile="${lib.dir}/${lib.jar}" basedir="${build.dir}">
+		<delete file="${lib.dir}/${lib.jar}" />
+		<tstamp>
+			<format property="time.stamp" pattern="yyyy-MM-dd_HH:mm:ss" />
+		</tstamp>
+		<jar jarfile="${lib.dir}/${lib.jar}" basedir="${outputDirectory}">
 			<manifest>
 				<!-- create an executable Jar -->
 				<attribute name="Main-Class" value="org.openas2.app.OpenAS2Server" />
-			</manifest>
+				<attribute name="Built-By" value="OpenAS2 Ant Build ${time.stamp}" />
+				<attribute name="Specification-Title" value="${projectName}" />
+				<attribute name="Specification-Version" value="1.1" />
+				<attribute name="Specification-Vendor" value="${projectName}" />
+				<attribute name="Implementation-Title" value="${projectName} ${subProject}" />
+				<!-- get the correct release version number into the MANIFEST file as "Implementation-Version" -->
+				<attribute name="Implementation-Version" value="${release.version}" />
+				<attribute name="Implementation-Vendor" value="${projectName} - AS2 Open Source Project" />
+							</manifest>
 		</jar>
 
-		<delete dir="${build.dir}" />
+		<delete dir="${outputDirectory}" />
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist.dir}" />
-		<!--  Add the help PDF version to the distro -->
-        <copy file="${help.file.src}" todir="${basedir}"/>
-		<!-- Put everything in ${build} into the ${projectName}-${release.version}.zip file -->
-		<zip destfile="${dist.dir}/${projectName}-${release.version}.zip"
+		<!-- Add the help PDF version to the distro -->
+		<copy file="${help.file.src}" todir="${basedir}" />
+		<!-- Put everything in ${build} into the ${projectName}${subProject}-${release.version}.zip 
+			file -->
+		<zip destfile="${dist.dir}/${projectName}${subProject}-${release.version}.zip"
 			basedir="." excludes="build/**,dist/**,temp/**,logs/**,data/**" />
-		<!--  Remove the copied help file -->
-	    <delete file="${help.filename}" />
+		<!-- Remove the copied help file -->
+		<delete file="${help.filename}" />
 	</target>
 
 	<target name="clean" description="clean up">
-		<delete dir="${build.dir}" />
+		<delete dir="${outputDirectory}" />
 		<delete dir="${dist.dir}" />
 	</target>
 

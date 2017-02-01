@@ -6,12 +6,23 @@ binDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 keyStorePwd=$1
 PWD_OVERRIDE=""
 
+if [ -z $PID_FILE ]; then
+  export PID_FILE=$binDir/OpenAS2.pid
+fi
+
 # Set some of the base system properties for the Java environment and logging
 # remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package    
 #
 EXTRA_PARMS="-Xms32m -Xmx384m -Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
+
+# Set the config file location
+EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${binDir}/../config/config.xml"
+
 # For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
 #EXTRA_PARMS="$EXTRA_PARMS -Dsun.net.http.allowRestrictedHeaders=true"
+
+#EXTRA_PARMS="$EXTRA_PARMS -Dhttps.protocols=TLSv1.2"
+
 # Uncomment any of the following for enhanced debug
 #EXTRA_PARMS="$EXTRA_PARMS -Dmaillogger.debug.enabled=true"
 #EXTRA_PARMS="$EXTRA_PARMS -DlogRxdMsgMimeBodyParts=true"
@@ -44,10 +55,17 @@ fi
 LIB_JARS="${binDir}/../lib/h2-1.4.192.jar:${binDir}/../lib/javax.mail.jar:${binDir}/../lib/bcpkix-jdk15on-154.jar:${binDir}/../lib/bcprov-jdk15on-154.jar:${binDir}/../lib/bcmail-jdk15on-154.jar:${binDir}/../lib/commons-logging-1.2.jar:${binDir}/../lib/openas2-server.jar"
 JAVA_EXE=$JAVA_HOME/bin/java 
 #    
-CMD="$JAVA_EXE ${PWD_OVERRIDE} ${EXTRA_PARMS}  -cp .:${LIB_JARS}  org.openas2.app.OpenAS2Server ${binDir}/../config/config.xml"
+CMD="$JAVA_EXE ${PWD_OVERRIDE} ${EXTRA_PARMS}  -cp .:${LIB_JARS}  org.openas2.app.OpenAS2Server"
 if [ "true" = "$OPENAS2_AS_DAEMON" ]; then
   $CMD &
+  RETVAL="$?"
+  PID=$!
+  if [ "$RETVAL" = 0 ]; then
+    echo "Writing PID $PID to file $PID_FILE"
+    echo $PID > $PID_FILE
+  fi
 else
   $CMD
+  RETVAL="$?"
 fi
-exit $?
+exit $RETVAL
