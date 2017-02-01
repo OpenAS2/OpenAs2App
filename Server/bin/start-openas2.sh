@@ -6,6 +6,10 @@ binDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 keyStorePwd=$1
 PWD_OVERRIDE=""
 
+if [ -z $PID_FILE ]; then
+  export PID_FILE=$binDir/OpenAS2.pid
+fi
+
 # Set some of the base system properties for the Java environment and logging
 # remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package    
 #
@@ -57,4 +61,9 @@ if [ "true" = "$OPENAS2_AS_DAEMON" ]; then
 else
   $CMD
 fi
-exit $?
+RETVAL="$?"
+PID=$!
+if [ "$RETVAL" = 0 ]; then
+  echo $PID > $PID_FILE
+fi
+exit $RETVAL
