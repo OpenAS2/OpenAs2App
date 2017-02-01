@@ -58,12 +58,14 @@ JAVA_EXE=$JAVA_HOME/bin/java
 CMD="$JAVA_EXE ${PWD_OVERRIDE} ${EXTRA_PARMS}  -cp .:${LIB_JARS}  org.openas2.app.OpenAS2Server"
 if [ "true" = "$OPENAS2_AS_DAEMON" ]; then
   $CMD &
+  RETVAL="$?"
+  PID=$!
+  if [ "$RETVAL" = 0 ]; then
+    echo "Writing PID $PID to file $PID_FILE"
+    echo $PID > $PID_FILE
+  fi
 else
   $CMD
-fi
-RETVAL="$?"
-PID=$!
-if [ "$RETVAL" = 0 ]; then
-  echo $PID > $PID_FILE
+  RETVAL="$?"
 fi
 exit $RETVAL
