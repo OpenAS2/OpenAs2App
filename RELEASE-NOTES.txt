@@ -1,29 +1,33 @@
               OpenAS2 Server
-              Version 2.1.3
+              Version 2.2.0
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.1.3
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.2.0
 
-The release download file is: OpenAS2Server-2.1.3.zip
+The release download file is: OpenAS2Server-2.2.0.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.1.3 - 2016-11-09
-This release is a bugfix release:
-  1. Revert to default for allowing restricted HTTP headers (see OpenAS2HowTo for discussion on this issue)
-  2. Remove \r (CR) character from logging and use the the system property to avoid issues on NIX based systems that parse logs
-  3. Enhance documentation
-
+Version 2.2.0 - 2017-02-01
+This is an enhancement and minor bugfix release:
+       IMPORTANT NOTE: As of this release, OpenAS2 no longer supports Java 1.5 and below
+  1. Add sample file for running OpenAS2 under systemd on NIX based systems
+  2. Set the sender and recipient in the Message object when MDN is created to facilitate debugging due to config issues
+  3. Extract the deployed version from the MANIFEST.MF file instead of embedding in the Session.java file
+  4. Move to Maven build process
+  5. Add an INFO level message for any files that are not writable in a polling directory
+  6. Provide ability to generate a UUID using the dynamic parameter $rand.xxx
+  7. Fix the method that creates a file name for storing pending messages (was removing the first character)
+  8. Enhance error handling when using HTTPS and certificate checker class to facilitate debugging SSL certificate issues
+  9. Reworked initialization structure to provide OSGi functionality to deploy as a standard OSGi bundle (OSGi deployment should be available in next release)
+  10. Updated documentation relating to the enhancements including troubleshooting information.
+  
 Upgrade Notes (if upgrading from versions older than 2.1.0):
   1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
   2. If using a custom startup script, re-integrate your customisations into the new script
   
-Java 1.5 or later is required.
+Java 1.6 or later is required.
 
-NOTE FOR JAVA 1.5: 
-	Prior to java 1.6, the Javabeans Activation Framework is NOT included in the standard Java install. Download the 1.1.1 version and extract from the zip file from this web page:
-	   http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-java-plat-419418.html#jaf-1.1.1-fcs-oth-JPR
-	The activation.jar must be placed into the “lib” folder of the OpenAS2 server install and added to the class path in the shell or batch file as appropriate.
-	You will not be able to use the H2 databse tracking module with Java 1.5 and the module will have to be disabled in the config.xml file
+NOTE FOR JAVA 1.5: No longer supported. Use a cersion prior to 2.2.0 to run on Java 1.5
 
 NOTE FOR JAVA 1.6: 
 	The version of H2 database included in this release used for storing tracking messages will only support Java 1.7.
@@ -33,7 +37,7 @@ NOTE FOR JAVA 1.6:
 			https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/h2database/h2-2014-01-18.zip
 		- Extract the file named h2-1.3.175.jar from the zip and replace the h2-1.4.192.jar in the "lib" folder with this one.
 		- Change the startup script to include the replaced version of H2 jar in the classpath
-		- Import the DDL (located in the config folder as db_ddl.sql) into the DB created by the older version like this:
+		- Start OpenAS2 (required to run next statement successfully) and import the DDL (located in the config folder as db_ddl.sql) into the DB created by the older version like this:
 			java -cp [path to OpenAS2 install]/lib/h2-1.3.175.jar org.h2.tools.RunScript -user sa -password OpenAS2 -url jdbc:h2:tcp://localhost:9092/openas2 -script [path to OpenAS2 install]/config/db_ddl.sql
 
 Historical list of changes: see the changes.txt file in the release package
