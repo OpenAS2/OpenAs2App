@@ -7,19 +7,13 @@ The OpenAS2 project is pleased to announce the release of OpenAS2 2.2.0
 The release download file is: OpenAS2Server-2.2.0.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.2.0 - 2017-02-01
-This is an enhancement and minor bugfix release:
-       IMPORTANT NOTE: As of this release, OpenAS2 no longer supports Java 1.5 and below
-  1. Add sample file for running OpenAS2 under systemd on NIX based systems
-  2. Set the sender and recipient in the Message object when MDN is created to facilitate debugging due to config issues
-  3. Extract the deployed version from the MANIFEST.MF file instead of embedding in the Session.java file
-  4. Move to Maven build process
-  5. Add an INFO level message for any files that are not writable in a polling directory
-  6. Provide ability to generate a UUID using the dynamic parameter $rand.xxx
-  7. Fix the method that creates a file name for storing pending messages (was removing the first character)
-  8. Enhance error handling when using HTTPS and certificate checker class to facilitate debugging SSL certificate issues
-  9. Reworked initialization structure to provide OSGi functionality to deploy as a standard OSGi bundle (OSGi deployment should be available in next release)
-  10. Updated documentation relating to the enhancements including troubleshooting information.
+Version 2.2.1 - 2017-03-03
+This is a minor bugfix release:
+       IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
+
+  1. Remove the encapsulating "<" and ">" from the generated message ID as windows no longer allows that in file names 
+  2. Minor update to documentation on handling SSL certificate issues
+
   
 Upgrade Notes (if upgrading from versions older than 2.1.0):
   1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
@@ -27,7 +21,7 @@ Upgrade Notes (if upgrading from versions older than 2.1.0):
   
 Java 1.6 or later is required.
 
-NOTE FOR JAVA 1.5: No longer supported. Use a cersion prior to 2.2.0 to run on Java 1.5
+NOTE FOR JAVA 1.5: No longer supported. Use a version prior to 2.2.0 to run on Java 1.5
 
 NOTE FOR JAVA 1.6: 
 	The version of H2 database included in this release used for storing tracking messages will only support Java 1.7.
