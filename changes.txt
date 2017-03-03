@@ -1,3 +1,10 @@
+Version 2.2.1 - 2017-03-03
+This is a minor bugfix release:
+       IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
+
+  1. Remove the encapsulating "<" and ">" from the generated message ID as windows no longer allows that in file names 
+  2. Minor update to documentation on handling SSL certificate issues
+
 Version 2.2.0 - 2017-02-01
 This is an enhancement and minor bugfix release:
        IMPORTANT NOTE: As of this release, OpenAS2 no longer supports Java 1.5 and below
