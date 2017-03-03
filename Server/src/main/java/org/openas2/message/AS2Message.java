@@ -32,11 +32,7 @@ public class AS2Message extends BaseMessage implements Message {
     	if (idFormat == null) {
     		idFormat = "OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.1234$@$msg.sender.as2_id$_$msg.receiver.as2_id$";
     	}
-    	StringBuffer messageId = new StringBuffer();
-    	messageId.append("<");
-  		messageId.append(ParameterParser.parse(idFormat, params));
-    	messageId.append(">");
-        return messageId.toString();
+  		return ParameterParser.parse(idFormat, params);
     }
 
     public boolean isRequestingMDN() {
