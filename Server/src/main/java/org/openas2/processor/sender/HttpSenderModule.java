@@ -52,9 +52,18 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
 					File file = new File("jssecacerts");
 					if (file.isFile() == false)
 					{
-						char SEP = File.separatorChar;
-						File dir = new File(System.getProperty("java.home") + SEP + "lib" + SEP + "security");
-						file = new File(dir, "jssecacerts");
+			            char SEP = File.separatorChar;
+			            File dir = new File(System.getProperty("java.home") + SEP + "lib" + SEP + "security");
+			            /* Check if this is a JDK home */
+			            if (!dir.isDirectory())
+			            {
+			                dir = new File(System.getProperty("java.home") + SEP + "jre" + SEP + "lib" + SEP + "security");
+			            }
+			            if (!dir.isDirectory()) {
+			            	throw new OpenAS2Exception(
+			                        "The JSSE folder could not be identified. Please check that JSSE is installed.");
+			            }
+			            file = new File(dir, "jssecacerts");
 						if (file.isFile() == false)
 						{
 							file = new File(dir, "cacerts");
