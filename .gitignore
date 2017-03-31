@@ -1,3 +1,8 @@
 /bin/
 /classes/
 /tests/
+*.iml
+.idea/*
+.project
+.classpath
+pom.xml.versionsBackup

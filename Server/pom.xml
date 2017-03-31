@@ -1,139 +1,102 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
-		<groupId>org.openas2</groupId>
-		<artifactId>OpenAS2</artifactId>
-		<version>2.2.0</version>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.openas2</groupId>
-	<artifactId>openas2-server</artifactId>
-	<version>2.2.2</version>
-	<name>OpenAS2 Server</name>
-	<url>https://sourceforge.net/projects/openas2</url>
-	<description>Open source implementation of the AS2 standard for signed encrypted and compressed document transfer</description>
-	<properties>
-		<project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<lib.dir>${basedir}/lib</lib.dir>
-		<help.filename>OpenAS2HowTo.pdf</help.filename>
-		<help.file.src>../docs/${help.filename}</help.file.src>
-		<dist.dir>dist</dist.dir>
-	</properties>
-	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<directory>target</directory>
-		<outputDirectory>${project.build.directory}/classes</outputDirectory>
-		<!--   <finalName>${project.artifactId}-${project.version}</finalName> -->
-		<finalName>${project.artifactId}</finalName>
-		<testOutputDirectory>${project.build.directory}/test-classes</testOutputDirectory>
-		<scriptSourceDirectory>src/main/scripts</scriptSourceDirectory>
-		<testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
-		
-		<plugins>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<id>default-cli</id>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<target>
-								<delete file="${lib.dir}/${project.build.finalName}.jar" />
-								<copy file="${project.build.directory}/${project.build.finalName}.jar" todir="${lib.dir}" />
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-								<!-- Create the distribution directory -->
-								<mkdir dir="${dist.dir}" />
-								<!-- Add the help PDF version to the distro -->
-								<copy file="${help.file.src}" todir="${basedir}" />
-								<!-- create distribution package -->
-								<zip destfile="${dist.dir}/${project.dist.package.name}"
-									basedir="." excludes="dist/**,temp/**,logs/**,data/**,target/**" />
-								<!-- Remove the copied help file -->
-								<delete file="${help.filename}" />
+    <parent>
+        <groupId>org.openas2</groupId>
+        <artifactId>OpenAS2</artifactId>
+        <version>2.2.3-SNAPSHOT</version>
+    </parent>
 
-							</target>
-						</configuration>
-					</execution>
-				</executions>
+    <artifactId>openas2-server</artifactId>
 
-			</plugin>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.2</version>
-				<configuration>
-					<archive>
-						<index>true</index>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<mainClass>org.openas2.app.OpenAS2Server</mainClass>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<!-- get the correct release version number into the MANIFEST file as "Implementation-Version" -->
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	<dependencies>
-		<dependency>
-			<groupId>org.dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-			<version>2.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.54</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.54</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.54</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.193</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpg-jdk15on</artifactId>
-			<version>1.54</version>
-		</dependency>
-	</dependencies>
+    <name>OpenAS2 Server</name>
+    <description>
+        Open source implementation of the AS2 standard for signed encrypted and compressed document transfer
+    </description>
+
+    <properties>
+        <mainClass>org.openas2.app.OpenAS2Server</mainClass>
+    </properties>
+    
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <delete file="${lib.dir}/${project.build.finalName}.jar"/>
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                      todir="${lib.dir}"/>
+                                <!-- Create the distribution directory -->
+                                <mkdir dir="${dist.dir}"/>
+                                <!-- Add the help PDF version to the distro -->
+                                <copy file="${help.file.src}" todir="${basedir}"/>
+                                <!-- create distribution package -->
+                                <zip destfile="${dist.dir}/${project.dist.package.name}"
+                                     basedir="." excludes="dist/**,temp/**,logs/**,data/**,target/**"/>
+                                <!-- Remove the copied help file -->
+                                <delete file="${help.filename}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcmail-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpg-jdk15on</artifactId>
+        </dependency>
+    </dependencies>
 </project>
