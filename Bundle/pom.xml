@@ -18,12 +18,21 @@
 
     <properties>
         <mainClass>org.openas2.osgi.Activator</mainClass>
+        <project.dist.package.name>${project.parent.artifactId}Bundle-${project.version}.zip</project.dist.package.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lib.dir>${project.basedir}/lib</lib.dir>
+        <help.filename>OpenAS2HowTo.pdf</help.filename>
+        <help.file.src>../docs/${help.filename}</help.file.src>
+        <dist.dir>${project.basedir}/dist</dist.dir>
     </properties>
 
     <build>
-        <finalName>${project.artifactId}</finalName>
         <plugins>
             <!--TODO it's not clear how the artifact is distributed-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -36,18 +45,14 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <delete file="${lib.dir}/${project.build.finalName}.jar"/>
+                                <!--Copy artifact to build lib dicetory -->
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      todir="${lib.dir}"/>
-                                <!-- Create the distribution directory -->
-                                <mkdir dir="${dist.dir}"/>
+                                      todir="${project.build.directory}/dist/lib" verbose="true"/>
                                 <!-- Add the help PDF version to the distro -->
-                                <copy file="${help.file.src}" todir="${basedir}"/>
+                                <copy file="${help.file.src}" todir="${project.build.directory}/dist" verbose="true"/>
                                 <!-- create distribution package -->
-                                <zip destfile="${dist.dir}/${project.dist.package.name}"
-                                     basedir="." excludes="dist/**,temp/**,logs/**,data/**,target/**"/>
-                                <!-- Remove the copied help file -->
-                                <delete file="${help.filename}"/>
+                                <zip destfile="${project.basedir}/dist/${project.dist.package.name}"
+                                     basedir="${project.build.directory}/dist"/>
                             </target>
                         </configuration>
                     </execution>

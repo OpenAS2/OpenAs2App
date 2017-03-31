@@ -17,11 +17,25 @@
 
     <properties>
         <mainClass>org.openas2.app.OpenAS2Server</mainClass>
+        <project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
     </properties>
+
+    <distributionManagement>
+        <site>
+            <id>openas2.sf.net</id>
+            <name>openas2.sf.net</name>
+            <url>sftp://web.sourceforge.net/home/project-web/openas2/htdocs/test</url>
+        </site>
+    </distributionManagement>
     
     <build>
-        <finalName>${project.artifactId}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -34,18 +48,21 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <delete file="${lib.dir}/${project.build.finalName}.jar"/>
+                                <copy todir="${project.build.directory}/dist/bin" verbose="true">
+                                    <fileset dir="${project.basedir}/src/bin"/>
+                                </copy>
+                                <!--Copy config directory to assembly directory -->
+                                <copy todir="${project.build.directory}/dist/config" verbose="true">
+                                    <fileset dir="${project.basedir}/src/config"/>
+                                </copy>
+                                <!--Copy artifact to build lib dicetory -->
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      todir="${lib.dir}"/>
-                                <!-- Create the distribution directory -->
-                                <mkdir dir="${dist.dir}"/>
+                                      todir="${project.build.directory}/dist/lib" verbose="true"/>
                                 <!-- Add the help PDF version to the distro -->
-                                <copy file="${help.file.src}" todir="${basedir}"/>
+                                <copy file="${help.file.src}" todir="${project.build.directory}/dist" verbose="true"/>
                                 <!-- create distribution package -->
-                                <zip destfile="${dist.dir}/${project.dist.package.name}"
-                                     basedir="." excludes="dist/**,temp/**,logs/**,data/**,target/**"/>
-                                <!-- Remove the copied help file -->
-                                <delete file="${help.filename}"/>
+                                <zip destfile="${project.basedir}/dist/${project.dist.package.name}"
+                                     basedir="${project.build.directory}/dist"/>
                             </target>
                         </configuration>
                     </execution>
@@ -58,6 +75,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <inputDirectory>${project.basedir}/../docs</inputDirectory>
+                    <chmod>false</chmod>
+                    <generateReports>false</generateReports>
+                    <generatedSiteDirectory>false</generatedSiteDirectory>
+                    <generateSitemap>false</generateSitemap>
+                    <generateProjectInfo>false</generateProjectInfo>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -97,6 +126,31 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpg-jdk15on</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>findbugs</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
