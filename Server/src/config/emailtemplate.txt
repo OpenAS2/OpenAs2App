@@ -1,0 +1,9 @@
+senderid=$message.sender.as2_id$
+receiverid=$message.receiver.as2_id$
+
+exception=$exception.name$
+description=$exception.message$
+
+trace:
+$exception.trace$
+
