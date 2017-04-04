@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,6 +56,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 	{
 		Message msg = createMessage();
 		msg.setAttribute(FileAttribute.MA_FILENAME, filename);
+		msg.setPayloadFilename(filename);
+
 		String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
 		msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
 		File doc = new File(pendingFile);
