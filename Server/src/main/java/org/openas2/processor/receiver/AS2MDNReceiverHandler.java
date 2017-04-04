@@ -49,8 +49,9 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 
 		AS2Message msg = new AS2Message();
 
-        Map<Object, Object> options = new HashMap<Object, Object>();
-		options.put("DIRECTION", "SEND");
+
+		msg.getOptions().put("DIRECTION", "SEND");
+
 		byte[] data = null;
 
 		// Read in the message request, headers, and data
