@@ -50,7 +50,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 		AS2Message msg = new AS2Message();
 
 
-		msg.getOptions().put("DIRECTION", "SEND");
+		msg.setOption("DIRECTION", "SEND");
 
 		byte[] data = null;
 
