@@ -70,8 +70,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
         byte[] data = null;
         BufferedOutputStream out;
-        Map<Object, Object> options = new HashMap<Object, Object>();
-		options.put("DIRECTION", "RECEIVE");
+
+		msg.setOption("DIRECTION", "RECEIVE");
+
 		try {
 			out = new BufferedOutputStream(s.getOutputStream());
 		} catch (IOException e1) {

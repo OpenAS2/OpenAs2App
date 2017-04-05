@@ -55,6 +55,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 	{
 		Message msg = createMessage();
 		msg.setAttribute(FileAttribute.MA_FILENAME, filename);
+		msg.setPayloadFilename(filename);
+
 		String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
 		msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
 		File doc = new File(pendingFile);
