@@ -7,12 +7,11 @@ The OpenAS2 project is pleased to announce the release of OpenAS2 2.2.0
 The release download file is: OpenAS2Server-2.2.0.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.2.1 - 2017-03-03
+Version 2.2.3 - 2017-04-07
 This is a minor bugfix release:
        IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
 
-  1. Remove the encapsulating "<" and ">" from the generated message ID as windows no longer allows that in file names 
-  2. Minor update to documentation on handling SSL certificate issues
+  1. Remove appending a UUID to the received AS2 filename allowing complete user control. To add one us $rand.UUID$ in the "filename" parameter
 
   
 Upgrade Notes (if upgrading from versions older than 2.1.0):
