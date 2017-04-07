@@ -19,6 +19,7 @@ import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
+import org.openas2.params.RandomParameters;
 import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.DispositionType;
 
@@ -63,9 +64,10 @@ public class MessageFileModule extends BaseStorageModule {
      * @since 2007-06-01
      */
     protected String getFilename(Message msg, String fileParam, String action) throws InvalidParameterException {
-        CompositeParameters compParams = new CompositeParameters(false) .
-        	add ("date", new DateParameters()) .
-        	add ("msg", new MessageParameters(msg));
+        CompositeParameters compParams = new CompositeParameters(false)
+            .add("date", new DateParameters())
+        	.add("msg", new MessageParameters(msg))
+    	    .add("rand", new RandomParameters());
 
         return ParameterParser.parse(fileParam, compParams);
     }

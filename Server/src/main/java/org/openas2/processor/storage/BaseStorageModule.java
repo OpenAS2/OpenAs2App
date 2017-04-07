@@ -70,14 +70,14 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
      * @throws OpenAS2Exception
      */
     protected File getFile(Message msg, String fileParam, String action) throws IOException, OpenAS2Exception {
-    	String filename = getFilename(msg, fileParam, action); 
-    	 
+    	String filename = getFilename(msg, fileParam, action);
+		
        // make sure the parent directories exist
     	File file = new File(filename); 
     	File parentDir = file.getParentFile(); 
     	parentDir.mkdirs(); 
-        // don't overwrite existing files
-    	return IOUtilOld.getUnique(parentDir, IOUtilOld.cleanFilename(file.getName())); 
+
+    	return file; 
     
     }
 
