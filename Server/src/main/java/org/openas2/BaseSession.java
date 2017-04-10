@@ -12,14 +12,13 @@ import org.openas2.processor.Processor;
 
 
 public abstract class BaseSession implements Session {
-    private Map<String, Component> components;
-	private String baseDirectory;
+    private Map<String, Component> components = new HashMap<String, Component>();
+    private String baseDirectory;
 
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
      *
      * @throws OpenAS2Exception
-     *
      * @see #init()
      */
     public BaseSession() throws OpenAS2Exception {
@@ -30,7 +29,15 @@ public abstract class BaseSession implements Session {
         return (CertificateFactory) getComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY);
     }
 
-    public void setComponent(String componentID, Component comp) {
+    /**
+     * Registers a component to a specified ID.
+     *
+     * @param componentID registers the component to this ID
+     * @param comp        component to register
+     * @see Component
+     */
+    void setComponent(String componentID, Component comp)
+    {
         Map<String, Component> objects = getComponents();
         objects.put(componentID, comp);
     }
@@ -47,10 +54,6 @@ public abstract class BaseSession implements Session {
     }
 
     public Map<String, Component> getComponents() {
-        if (components == null) {
-            components = new HashMap<String, Component>();
-        }
-
         return components;
     }
 
@@ -78,19 +81,22 @@ public abstract class BaseSession implements Session {
      *
      * @throws OpenAS2Exception If an error occurs while initializing mime types
      */
-    protected void initJavaMail() throws OpenAS2Exception {
+    private void initJavaMail() throws OpenAS2Exception
+    {
         MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
         mc.addMailcap(
-            "message/disposition-notification;; x-java-content-handler=org.openas2.util.DispositionDataContentHandler");
+                "message/disposition-notification;; x-java-content-handler=org.openas2.util.DispositionDataContentHandler");
         CommandMap.setDefaultCommandMap(mc);
     }
 
-	public String getBaseDirectory() {
-		return baseDirectory;
-	}
+    public String getBaseDirectory()
+    {
+        return baseDirectory;
+    }
 
-	public void setBaseDirectory(String dir) {
-		baseDirectory = dir;
-	}
+    void setBaseDirectory(String dir)
+    {
+        baseDirectory = dir;
+    }
 
 }

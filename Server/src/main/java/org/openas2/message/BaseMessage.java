@@ -111,10 +111,6 @@ public abstract class BaseMessage implements Message {
         return (String) getAttributes().get(key);
     }
 
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
-    }
-
     public Map<String, String> getAttributes() {
         if (attributes == null) {
             attributes = new HashMap<String, String>();
@@ -123,12 +119,18 @@ public abstract class BaseMessage implements Message {
         return attributes;
     }
 
-    public void setContentType(String contentType) {
-        setHeader("Content-Type", contentType);
+    public void setAttributes(Map<String, String> attributes)
+    {
+        this.attributes = attributes;
     }
 
     public String getContentType() {
         return getHeader("Content-Type");
+    }
+
+    public void setContentType(String contentType)
+    {
+        setHeader("Content-Type", contentType);
     }
 
     public String getCompressionType() {
@@ -141,18 +143,19 @@ public abstract class BaseMessage implements Message {
 
     /**
      * @since 2007-06-01
-     * @param contentDisposition
-     */
-    public void setContentDisposition(String contentDisposition) {
-        setHeader("Content-Disposition", contentDisposition);
-    }
-
-    /**
-     * @since 2007-06-01
      * @return
      */
     public String getContentDisposition() {
         return getHeader("Content-Disposition");
+    }
+
+    /**
+     * @param contentDisposition
+     * @since 2007-06-01
+     */
+    public void setContentDisposition(String contentDisposition)
+    {
+        setHeader("Content-Disposition", contentDisposition);
     }
     
     public void setData(MimeBodyPart data, DataHistoryItem historyItem) {
@@ -204,10 +207,6 @@ public abstract class BaseMessage implements Message {
         return getHeaders().getHeader(key, delimiter);
     }
 
-    public void setHeaders(InternetHeaders headers) {
-        this.headers = headers;
-    }
-
     public InternetHeaders getHeaders() {
         if (headers == null) {
             headers = new InternetHeaders();
@@ -216,8 +215,9 @@ public abstract class BaseMessage implements Message {
         return headers;
     }
 
-    public void setHistory(DataHistory history) {
-        this.history = history;
+    public void setHeaders(InternetHeaders headers)
+    {
+        this.headers = headers;
     }
 
     public DataHistory getHistory() {
@@ -228,24 +228,27 @@ public abstract class BaseMessage implements Message {
         return history;
     }
 
-    public void setMDN(MessageMDN mdn) {
-        this.MDN = mdn;
+    public void setHistory(DataHistory history)
+    {
+        this.history = history;
     }
 
     public MessageMDN getMDN() {
         return MDN;
     }
 
-    public void setMessageID(String messageID) {
-        setHeader("Message-ID", messageID);
+    public void setMDN(MessageMDN mdn)
+    {
+        this.MDN = mdn;
     }
 
     public String getMessageID() {
         return getHeader("Message-ID");
     }
 
-    public void setPartnership(Partnership partnership) {
-        this.partnership = partnership;
+    public void setMessageID(String messageID)
+    {
+        setHeader("Message-ID", messageID);
     }
 
     public Partnership getPartnership() {
@@ -256,14 +259,20 @@ public abstract class BaseMessage implements Message {
         return partnership;
     }
 
-    public abstract String generateMessageID() throws InvalidParameterException;
-
-    public void setSubject(String subject) {
-        setHeader("Subject", subject);
+    public void setPartnership(Partnership partnership)
+    {
+        this.partnership = partnership;
     }
+
+    public abstract String generateMessageID() throws InvalidParameterException;
 
     public String getSubject() {
         return getHeader("Subject");
+    }
+
+    public void setSubject(String subject)
+    {
+        setHeader("Subject", subject);
     }
 
     public boolean isRxdMsgWasSigned()
@@ -370,7 +379,7 @@ public abstract class BaseMessage implements Message {
         Enumeration<String> en = headers.getAllHeaderLines();
 
         while (en.hasMoreElements()) {
-            out.writeBytes(en.nextElement().toString() + "\r\n");
+            out.writeBytes(en.nextElement() + "\r\n");
         }
 
         out.writeBytes(new String("\r\n"));
@@ -400,12 +409,13 @@ public abstract class BaseMessage implements Message {
     	return " [" + getMessageID() + "]";
     }
     
-	public void setLogMsg(String msg) {
-		logMsg = msg;
-	}
-
     public String getLogMsg() {
         return logMsg;
+    }
+
+    public void setLogMsg(String msg)
+    {
+        logMsg = msg;
     }
 
     public String getCalculatedMIC()

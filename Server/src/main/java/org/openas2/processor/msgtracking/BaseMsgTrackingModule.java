@@ -39,30 +39,6 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 	};
 	*/
 	
-	public static class FIELDS
-	{
-	    public static final String MSG_ID = "MSG_ID";
-	    public static final String MDN_ID = "MDN_ID";
-	    public static final String DIRECTION = "DIRECTION";
-	    public static final String IS_RESEND = "IS_RESEND";
-	    public static final String RESEND_COUNT = "RESEND_COUNT";
-	    public static final String SENDER_ID = "SENDER_ID";
-	    public static final String RECEIVER_ID = "RECEIVER_ID";
-	    public static final String STATUS = "STATUS";
-	    public static final String STATE = "STATE";
-	    public static final String SIGNATURE_ALGORITHM = "SIGNATURE_ALGORITHM";
-	    public static final String ENCRYPTION_ALGORITHM = "ENCRYPTION_ALGORITHM";
-	    public static final String COMPRESSION = "COMPRESSION";
-	    public static final String FILE_NAME = "FILE_NAME";
-	    public static final String CONTENT_TYPE = "CONTENT_TYPE";
-	    public static final String CONTENT_TRANSFER_ENCODING = "CONTENT_TRANSFER_ENCODING";
-	    public static final String MDN_MODE = "MDN_MODE";
-	    public static final String MDN_RESPONSE = "MDN_RESPONSE";
-	    public static final String STATE_MSG = "STATE_MSG";
-	    public static final String CREATE_DT = "CREATE_DT";
-	    public static final String UPDATE_DT = "UPDATE_DT";
-	}
-
     public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
         
     	Map<String, String> fields = buildMap(msg, options);
@@ -80,9 +56,8 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 
     protected abstract String getModuleAction();
 
-    
     protected abstract void persist(Message msg, Map<String, String> map);
-    
+
     protected Map<String, String> buildMap(Message msg, Map<Object, Object> options)
     {
     	Map<String, String> map = new HashMap<String, String>();
@@ -112,8 +87,8 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
     	map.put(FIELDS.STATUS, msg.getStatus());
     	String state = (String) options.get("STATE");
     	map.put(FIELDS.STATE,  state);
-    	map.put(FIELDS.STATE_MSG, (String) Message.STATE_MSGS.get(state));
-    	map.put(FIELDS.SIGNATURE_ALGORITHM, msg.getPartnership().getAttribute(IPartnership.ATTRIBUTE_SIGNATURE_ALGORITHM));
+        map.put(FIELDS.STATE_MSG, Message.STATE_MSGS.get(state));
+        map.put(FIELDS.SIGNATURE_ALGORITHM, msg.getPartnership().getAttribute(IPartnership.ATTRIBUTE_SIGNATURE_ALGORITHM));
     	map.put(FIELDS.ENCRYPTION_ALGORITHM, msg.getPartnership().getAttribute(IPartnership.ATTRIBUTE_ENCRYPTION_ALGORITHM));
     	map.put(FIELDS.COMPRESSION, msg.getPartnership().getAttribute(IPartnership.ATTRIBUTE_COMPRESSION_TYPE));
     	map.put(FIELDS.FILE_NAME, msg.getPayloadFilename());
@@ -122,6 +97,29 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
     	map.put(FIELDS.MDN_MODE, (msg.getPartnership().isAsyncMDN()?"ASYNC":"SYNC"));
     	
     	return map;
+    }
+
+    public static class FIELDS {
+        public static final String MSG_ID = "MSG_ID";
+        public static final String MDN_ID = "MDN_ID";
+        public static final String DIRECTION = "DIRECTION";
+        public static final String IS_RESEND = "IS_RESEND";
+        public static final String RESEND_COUNT = "RESEND_COUNT";
+        public static final String SENDER_ID = "SENDER_ID";
+        public static final String RECEIVER_ID = "RECEIVER_ID";
+        public static final String STATUS = "STATUS";
+        public static final String STATE = "STATE";
+        public static final String SIGNATURE_ALGORITHM = "SIGNATURE_ALGORITHM";
+        public static final String ENCRYPTION_ALGORITHM = "ENCRYPTION_ALGORITHM";
+        public static final String COMPRESSION = "COMPRESSION";
+        public static final String FILE_NAME = "FILE_NAME";
+        public static final String CONTENT_TYPE = "CONTENT_TYPE";
+        public static final String CONTENT_TRANSFER_ENCODING = "CONTENT_TRANSFER_ENCODING";
+        public static final String MDN_MODE = "MDN_MODE";
+        public static final String MDN_RESPONSE = "MDN_RESPONSE";
+        public static final String STATE_MSG = "STATE_MSG";
+        public static final String CREATE_DT = "CREATE_DT";
+        public static final String UPDATE_DT = "UPDATE_DT";
     }
     
 }

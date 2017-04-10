@@ -9,10 +9,6 @@ import java.util.Map.Entry;
 
 
 public class Partnership implements Serializable {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -8365608387462470629L;
 	public static final String PTYPE_SENDER = "sender"; // Sender partner type
     public static final String PTYPE_RECEIVER = "receiver"; // Receiver partner type
     public static final String PID_EMAIL = "email"; // Email address
@@ -21,19 +17,22 @@ public class Partnership implements Serializable {
     public static final String PA_CONTENT_TRANSFER_ENCODING = "content_transfer_encoding"; // optional content transfer enc value
     public static final String PA_REMOVE_PROTECTION_ATTRIB = "remove_cms_algorithm_protection_attrib"; // Some AS2 systems do not support the attribute
     public static final String PA_SET_CONTENT_TRANSFER_ENCODING_OMBP = "set_content_transfer_encoding_on_outer_mime_bodypart"; // optional content transfer enc value
-   
- 
+    /**
+     *
+     */
+    private static final long serialVersionUID = -8365608387462470629L;
     private Map<String,String> attributes;
     private Map<String,Object> receiverIDs;
     private Map<String,Object> senderIDs;
     private String name;
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     public void setAttribute(String id, String value) {
@@ -41,11 +40,7 @@ public class Partnership implements Serializable {
     }
 
     public String getAttribute(String id) {
-        return (String) getAttributes().get(id);
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+        return getAttributes().get(id);
     }
 
     public Map<String, String> getAttributes() {
@@ -56,16 +51,17 @@ public class Partnership implements Serializable {
         return attributes;
     }
 
+    public void setAttributes(Map<String, String> attributes)
+    {
+        this.attributes = attributes;
+    }
+
     public void setReceiverID(String id, String value) {
         getReceiverIDs().put(id, value);
     }
 
     public String getReceiverID(String id) {
         return (String) getReceiverIDs().get(id);
-    }
-
-    public void setReceiverIDs(Map<String, Object> receiverIDs) {
-        this.receiverIDs = receiverIDs;
     }
 
     public Map<String, Object> getReceiverIDs() {
@@ -76,6 +72,11 @@ public class Partnership implements Serializable {
         return receiverIDs;
     }
 
+    public void setReceiverIDs(Map<String, Object> receiverIDs)
+    {
+        this.receiverIDs = receiverIDs;
+    }
+
     public void setSenderID(String id, String value) {
         getSenderIDs().put(id, value);
     }
@@ -84,16 +85,17 @@ public class Partnership implements Serializable {
         return (String) getSenderIDs().get(id);
     }
 
-    public void setSenderIDs(Map<String,Object> senderIDs) {
-        this.senderIDs = senderIDs;
-    }
-
     public Map<String,Object> getSenderIDs() {
         if (senderIDs == null) {
             senderIDs = new HashMap<String,Object>();
         }
 
         return senderIDs;
+    }
+
+    public void setSenderIDs(Map<String, Object> senderIDs)
+    {
+        this.senderIDs = senderIDs;
     }
 
     public boolean matches(Partnership partnership) {

@@ -8,8 +8,6 @@ import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
@@ -17,6 +15,7 @@ import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.ParseException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.DispositionException;
@@ -460,8 +459,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 // make sure to set the content-length header
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
                 MimeBodyPart part = mdn.getData();
-                IOUtilOld.copy(part.getInputStream(), data);
-                mdn.setHeader("Content-Length", Integer.toString(data.size()));
+				IOUtils.copy(part.getInputStream(), data);
+				mdn.setHeader("Content-Length", Integer.toString(data.size()));
 
 
                 Enumeration<String> headers = mdn.getHeaders().getAllHeaderLines();

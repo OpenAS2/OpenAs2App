@@ -15,6 +15,7 @@ import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -31,7 +32,6 @@ import org.openas2.partner.Partnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
-import org.openas2.util.IOUtilOld;
 
 
 public abstract class MessageBuilderModule extends BaseReceiverModule {
@@ -70,7 +70,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		}
 		try
 		{
-			IOUtilOld.copy(ip, fo);
+			IOUtils.copy(ip, fo);
 		} catch (IOException e1)
 		{
 			fo = null;

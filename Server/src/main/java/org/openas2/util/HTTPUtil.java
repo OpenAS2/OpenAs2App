@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.StringTokenizer;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 
@@ -278,8 +277,8 @@ public class HTTPUtil {
         				// And now the CRLF after the chunk;
         				while (dataIn.readByte() != '\n');
         			}
-        			msg.setHeader("Content-Length", new Integer(length).toString());
-        		}
+                    msg.setHeader("Content-Length", Integer.toString(length));
+                }
         		else {
         			if (outStream != null) 
         				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);

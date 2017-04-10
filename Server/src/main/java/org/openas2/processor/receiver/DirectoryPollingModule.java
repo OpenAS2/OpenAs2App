@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -41,9 +40,9 @@ public abstract class DirectoryPollingModule extends PollingModule
 			sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
 			if (sentDir != null)
 				IOUtilOld.getDirectoryFile(sentDir);
-			String pendingInfoFolder = (String) getSession().getProcessor().getParameters().get("pendingmdninfo");
+            String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
             IOUtilOld.getDirectoryFile(pendingInfoFolder);
-			String pendingFolder = (String) getSession().getProcessor().getParameters().get("pendingmdn");
+            String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
             IOUtilOld.getDirectoryFile(pendingFolder);
 
 		} catch (IOException e)
@@ -121,7 +120,6 @@ public abstract class DirectoryPollingModule extends PollingModule
 						logger.debug("Directory poller detected a non-writable file and will be ignored: " + file.getCanonicalPath());
 					} catch (IOException e)
 					{
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -130,64 +128,63 @@ public abstract class DirectoryPollingModule extends PollingModule
 		return false;
 	}
 
-	protected void trackFile(File file)
-	{
+    private void trackFile(File file)
+    {
 		Map<String, Long> trackedFiles = getTrackedFiles();
 		String filePath = file.getAbsolutePath();
 		if (trackedFiles.get(filePath) == null)
 		{
-			trackedFiles.put(filePath, new Long(file.length()));
-		}
+            trackedFiles.put(filePath, file.length());
+        }
 	}
 
-	protected void updateTracking()
-	{
+    private void updateTracking()
+    {
 		// clone the trackedFiles map, iterator through the clone and modify the
 		// original to avoid iterator exceptions
 		// is there a better way to do this?
 		Map<String, Long> trackedFiles = getTrackedFiles();
 		Map<String, Long> trackedFilesClone = new HashMap<String, Long>(trackedFiles);
 
-		for (Iterator<Map.Entry<String, Long>> it = trackedFilesClone.entrySet().iterator(); it.hasNext();)
-		{
-			// get the file and it's stored length
-			Map.Entry<String, Long> fileEntry = it.next();
-			File file = new File((String) fileEntry.getKey());
-			long fileLength = ((Long) fileEntry.getValue()).longValue();
+        for (Map.Entry<String, Long> fileEntry : trackedFilesClone.entrySet())
+        {
+            // get the file and it's stored length
+            File file = new File(fileEntry.getKey());
+            long fileLength = fileEntry.getValue().longValue();
 
 			// if the file no longer exists, remove it from the tracker
-			if (!checkFile(file))
-			{
-				trackedFiles.remove(fileEntry.getKey());
-			} else
-			{
-				// if the file length has changed, update the tracker
+            if (!checkFile(file))
+            {
+                trackedFiles.remove(fileEntry.getKey());
+            } else
+            {
+                // if the file length has changed, update the tracker
 				long newLength = file.length();
-				if (newLength != fileLength)
-				{
-					trackedFiles.put((String) fileEntry.getKey(), new Long(newLength));
-				} else
-				{
-					// if the file length has stayed the same, process the file
+                if (newLength != fileLength)
+                {
+                    trackedFiles.put(fileEntry.getKey(), new Long(newLength));
+                } else
+                {
+                    // if the file length has stayed the same, process the file
 					// and stop tracking it
-					try
-					{
-						processFile(file);
-					} catch (OpenAS2Exception e)
-					{
-						e.terminate();
-						try
-						{
-							IOUtilOld.handleError(file, errorDir);
-						} catch (OpenAS2Exception e1)
-						{
-							logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
+                    try
+                    {
+                        processFile(file);
+                    } catch (OpenAS2Exception e)
+                    {
+                        e.terminate();
+                        try
+                        {
+                            IOUtilOld.handleError(file, errorDir);
+                        } catch (OpenAS2Exception e1)
+                        {
+                            logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
 							forceStop(e1);
 							return;
 						}
-					} finally
-					{
-						trackedFiles.remove(fileEntry.getKey());
+                    } finally
+                    {
+                        trackedFiles.remove(fileEntry.getKey());
 					}
 				}
 			}
@@ -218,8 +215,8 @@ public abstract class DirectoryPollingModule extends PollingModule
 
 	protected abstract Message createMessage();
 
-	public Map<String, Long> getTrackedFiles()
-	{
+    private Map<String, Long> getTrackedFiles()
+    {
 		if (trackedFiles == null)
 		{
 			trackedFiles = new HashMap<String, Long>();

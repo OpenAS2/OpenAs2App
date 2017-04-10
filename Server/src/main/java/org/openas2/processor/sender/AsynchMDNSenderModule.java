@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.mail.Header;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -115,8 +116,8 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 				try {
 					ProfilerStub transferStub = Profiler.startProfile();
 
-					int bytes = IOUtilOld.copy(messageIn, messageOut);
-					Profiler.endProfile(transferStub);
+                    int bytes = IOUtils.copy(messageIn, messageOut);
+                    Profiler.endProfile(transferStub);
 					if (logger.isInfoEnabled()) logger.info("transferred "
 							+ IOUtilOld.getTransferRate(bytes, transferStub)
 							+ msg.getLogMsgID());

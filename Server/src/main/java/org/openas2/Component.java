@@ -12,7 +12,6 @@ import java.util.Map;
  * parameters should be passed to the init  method.
  *
  * @author Aaron Silinskas
- *
  * @see BaseComponent
  * @see Session
  */
@@ -43,19 +42,26 @@ public interface Component {
     public Session getSession();
 
     /**
-     * After creating a Component object, this method should be called to set any
+     * Component lifecycle hook. After creating a Component object, this method should be called to set any
      * parameters used by the component. Component implementations typically have
      * required parameter checking and code to start timers and threads within this method.
      *
-     * @param session the component uses this object to access other components
+     * @param session    the component uses this object to access other components
      * @param parameters configuration values for the component
-     *
-     * @throws OpenAS2Exception If an error occurs while initializing the component
+     * @throws OpenAS2Exception          If an error occurs while initializing the component
      * @throws InvalidParameterException If a required parameter is null in the parameters
-     *         Map
-     *
+     *                                   Map
      * @see #getParameter(String key, boolean required)
      * @see Session
      */
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception;
+
+    /**
+     * Component lifecycle hook. If lifecycle of {@link Component} requires a destroy function this method can be used.
+     *
+     * @throws Exception
+     * @see #init(Session, Map)
+     * @see Session
+     */
+    void destroy() throws Exception;
 }
