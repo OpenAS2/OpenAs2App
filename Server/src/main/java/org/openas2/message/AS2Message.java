@@ -23,19 +23,7 @@ public class AS2Message extends BaseMessage implements Message {
     }
 
     public String generateMessageID() throws InvalidParameterException {
-    	CompositeParameters params = 
-    		new CompositeParameters(false).
-    			add("date", new DateParameters()).
-    			add("msg", new MessageParameters(this)).
-    			add("rand", new RandomParameters());
-        
-    	String idFormat = getPartnership().getAttribute(AS2Partnership.PA_MESSAGEID);
-    	if (idFormat == null)
-    	{
-    		idFormat = Properties.getProperty("as2_message_id_format"
-    				, "OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
-    	}
-  		return ParameterParser.parse(idFormat, params);
+    	return org.openas2.util.AS2Util.generateMessageID(this);
     }
 
     public boolean isRequestingMDN() {

@@ -41,8 +41,12 @@ import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.DateParameters;
+import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
+import org.openas2.params.RandomParameters;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
@@ -62,6 +66,25 @@ public class AS2Util {
 
         return ch;
     }
+    
+    public static String generateMessageID(Message msg) throws InvalidParameterException
+    {
+    	CompositeParameters params = 
+    		new CompositeParameters(false).
+    			add("date", new DateParameters()).
+    			add("msg", new MessageParameters(msg)).
+    			add("rand", new RandomParameters());
+        
+    	String idFormat = msg.getPartnership().getAttribute(AS2Partnership.PA_MESSAGEID);
+    	if (idFormat == null)
+    	{
+    		idFormat = Properties.getProperty("as2_message_id_format"
+    				, "OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
+    	}
+  		return ParameterParser.parse(idFormat, params);
+    }
+
+
 
     public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
             DispositionType disposition, String text) throws Exception {
