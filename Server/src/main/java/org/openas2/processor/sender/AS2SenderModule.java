@@ -391,7 +391,7 @@ public class AS2SenderModule extends HttpSenderModule {
 
     private void resend(Message msg, OpenAS2Exception cause, String tries) throws OpenAS2Exception
     {
-        AS2Util.resend(getSession().getProcessor(), this, SenderModule.DO_SEND, msg, cause, tries, false);
+        AS2Util.resend(getSession(), this, SenderModule.DO_SEND, msg, cause, tries, false);
     }
 
     // Returns a MimeBodyPart or MimeMultipart object

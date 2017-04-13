@@ -410,11 +410,11 @@ public class AS2Util {
 		return left;
 	}
 
-	/* @description Attempts to check if a resend should go ahead and if o decrements the resend count
+	/* @description Attempts to check if a resend should go ahead and if so decrements the resend count
 	 *  and stores the decremented retry count in the options map. If the passed in retry count is null or invalid
 	 *  it will fall back to a system default
 	 */
-    public static boolean resend(Processor processor, Object sourceClass, String how, Message msg, OpenAS2Exception cause
+    public static boolean resend(Session session, Object sourceClass, String how, Message msg, OpenAS2Exception cause
     				, String tries, boolean useOriginalMsgObject) throws OpenAS2Exception {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 		if (logger.isDebugEnabled()) logger.debug("RESEND requested.... retries to go: " + tries
@@ -433,6 +433,9 @@ public class AS2Util {
     	{
     		msg.setLogMsg("Message abandoned after retry limit reached.");
         	logger.error(msg);
+        	// Log significant msg state
+            msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+            msg.trackMsgState(session);
     		throw new OpenAS2Exception("Message abandoned after retry limit reached." + msg.getLogMsgID());
     	}
 
@@ -497,7 +500,7 @@ public class AS2Util {
     	String newMsgId = ((AS2Message)msg).generateMessageID();
     	// Set new Id in Message object so we can generate new file name
     	msg.setMessageID(newMsgId);
-    	String newPendingInfoFileName = buildPendingFileName(msg, processor, "pendingmdninfo");
+    	String newPendingInfoFileName = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
     	if (logger.isDebugEnabled())
     		logger.debug("" 
     				+ "\n        Old Msg Id: " + oldMsgId
@@ -530,7 +533,7 @@ public class AS2Util {
         options.put(ResenderModule.OPTION_INITIAL_SENDER, sourceClass);
         options.put(ResenderModule.OPTION_RESEND_METHOD, how);
         options.put(ResenderModule.OPTION_RETRIES, "" + retries);
-        processor.handle(ResenderModule.DO_RESEND, msg, options);
+        session.getProcessor().handle(ResenderModule.DO_RESEND, msg, options);
         return true;
     }
 
@@ -605,7 +608,7 @@ public class AS2Util {
 			if (logger.isErrorEnabled()) logger.error("Disposition exception processing MDN ..." + msg.getLogMsgID(), de);
 			// Hmmmm... Error may require manual intervention but keep
 			// trying.... possibly change retry count to 1 or just fail????
-			AS2Util.resend(session.getProcessor(), sourceClass, SenderModule.DO_SEND, msg, de, retries, true);
+			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, retries, true);
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
 			msg.trackMsgState(session);
 			return;
@@ -620,7 +623,7 @@ public class AS2Util {
 			oae2.initCause(oae);
 			oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			oae2.terminate();
-			AS2Util.resend(session.getProcessor(), sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true);
+			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true);
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
 			msg.trackMsgState(session);
 			return;
@@ -689,7 +692,9 @@ public class AS2Util {
 			if (logger.isTraceEnabled()) logger.trace("RETRY COUNT from pending info file: " + retries);
 			msg.setOption(ResenderModule.OPTION_RETRIES, retries);
 			// Get the original source file name from the 3rd line of pending information file
-			msg.setAttribute(FileAttribute.MA_FILENAME, (String)pifois.readObject());
+			String origFileName = (String)pifois.readObject();
+			msg.setAttribute(FileAttribute.MA_FILENAME, origFileName);
+			msg.setPayloadFilename(origFileName);
 			// Get the original pending file from the 4th line of pending information file
 			msg.setAttribute(FileAttribute.MA_PENDINGFILE, (String)pifois.readObject());
 			msg.setAttribute(FileAttribute.MA_ERROR_DIR, (String)pifois.readObject());
