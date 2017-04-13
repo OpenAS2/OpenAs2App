@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 
+import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
 
@@ -54,7 +55,7 @@ public interface MessageMDN extends Serializable {
     
     public void addHeader(String key, String value);
 
-    public String generateMessageID();
+    public String generateMessageID() throws InvalidParameterException;
 
-    public void updateMessageID();
+    public void updateMessageID() throws InvalidParameterException;
 }

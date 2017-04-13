@@ -2,6 +2,7 @@ package org.openas2.message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.openas2.params.InvalidParameterException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -145,7 +146,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         getHeaders().addHeader(key, value);
     }
 
-    public abstract String generateMessageID();
+    public abstract String generateMessageID() throws InvalidParameterException;
 
     public DataHistory getHistory() {
         if (history == null) {
@@ -185,7 +186,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return buf.toString();
     }
 
-    public void updateMessageID() {
+    public void updateMessageID() throws InvalidParameterException {
         setMessageID(generateMessageID());
     }
 
