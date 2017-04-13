@@ -8,6 +8,7 @@ import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
+import org.openas2.util.Properties;
 
 
 public class AS2Message extends BaseMessage implements Message {
@@ -29,8 +30,10 @@ public class AS2Message extends BaseMessage implements Message {
     			add("rand", new RandomParameters());
         
     	String idFormat = getPartnership().getAttribute(AS2Partnership.PA_MESSAGEID);
-    	if (idFormat == null) {
-    		idFormat = "OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.1234$@$msg.sender.as2_id$_$msg.receiver.as2_id$";
+    	if (idFormat == null)
+    	{
+    		idFormat = Properties.getProperty("as2_message_id_format"
+    				, "OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
     	}
   		return ParameterParser.parse(idFormat, params);
     }
