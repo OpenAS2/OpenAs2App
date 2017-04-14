@@ -6,7 +6,7 @@ import java.io.InputStream;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
-import org.openas2.lib.Info;
+import org.openas2.util.Properties;
 
 public class AS2MessageMDN extends EDIINTMessageMDN {
 	private AS2MDNData mdnData;
@@ -65,8 +65,8 @@ public class AS2MessageMDN extends EDIINTMessageMDN {
     
     public void setDefaults() {
         super.setDefaults();
-        setAS2Version("1.1");
-        setServer(Info.NAME_VERSION);
+        setAS2Version(Properties.getProperty(Properties.APP_VERSION_PROP, ""));
+        setServer(Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server"));
     }
     
     public void setServer(String server) {
