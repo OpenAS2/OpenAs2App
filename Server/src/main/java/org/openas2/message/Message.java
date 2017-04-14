@@ -177,5 +177,4 @@ public interface Message extends Serializable {
 
     String getAppTitle();
 
-    void setAppTitle(String title);
 }
