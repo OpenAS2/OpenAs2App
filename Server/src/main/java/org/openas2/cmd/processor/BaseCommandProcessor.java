@@ -86,10 +86,9 @@ public abstract class BaseCommandProcessor implements CommandProcessor, Componen
 
     public void terminate() throws Exception
     {
-        for (Component component : getSession().getComponents().values())
-        {
-            component.destroy();
-        }
+    	running = false;
+    	if (getSession().getServer().isTerminateJVM()) System.exit(0);
+    	else getSession().getServer().shutdown();
     }
 
     @Override
