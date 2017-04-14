@@ -5,6 +5,9 @@ import java.util.Map;
 
 public class Properties
 {
+	public static String APP_VERSION_PROP = "app.version";
+	public static String APP_TITLE_PROP = "app.title";
+	
 	private static Map<String, String> _properties = new HashMap<String, String>();
 	
 	public static void setProperties(Map<String, String> map)
