@@ -606,7 +606,8 @@ public class AS2Util {
 		String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
 
 		msg.setStatus(Message.MSG_STATUS_MDN_VERIFY);
-		if (logger.isTraceEnabled()) logger.trace("MDN parsed. Checking MDN report..." + msg.getLogMsgID());
+		if (logger.isTraceEnabled()) logger.trace("MDN parsed. \n\tPayload file name: " + msg.getPayloadFilename()
+		                   + "\n\tChecking MDN report..." + msg.getLogMsgID());
 		try
 		{
 			AS2Util.checkMDN(msg);
@@ -654,6 +655,9 @@ public class AS2Util {
 
 		msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
 		msg.trackMsgState(session);
+		if (logger.isTraceEnabled()) logger.trace("MDN processed. \n\tPayload file name: "
+		                   + msg.getPayloadFilename() + "\n\tPersisting MDN report..." + msg.getLogMsgID());
+
 		session.getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
 		msg.setStatus(Message.MSG_STATUS_MSG_CLEANUP);
 		// To support extended reporting via logging log info passing Message object
@@ -675,7 +679,7 @@ public class AS2Util {
     	if (msgId == null || msgId.length() < 1)
     	{
     		// No ID set yet so generate a random string for uniqueness
-    		msgId = msg.getAttribute(FileAttribute.MA_FILENAME) +  "." + UUID.randomUUID();
+    		msgId = AS2Util.generateMessageID(msg);
     	}
 		return (dir	+ "/" + msgId);
     }
