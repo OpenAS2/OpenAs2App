@@ -55,6 +55,10 @@
                                 <copy todir="${project.build.directory}/dist/config" verbose="true">
                                     <fileset dir="${project.basedir}/src/config"/>
                                 </copy>
+                                <!--Copy resources directory to assembly directory -->
+                                <copy todir="${project.build.directory}/dist/resources" verbose="true">
+                                    <fileset dir="${project.basedir}/src/resources"/>
+                                </copy>
                                 <!--Copy artifact to build lib dicetory -->
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                       todir="${project.build.directory}/dist/lib" verbose="true"/>
