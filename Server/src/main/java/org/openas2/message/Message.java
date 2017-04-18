@@ -28,6 +28,7 @@ public interface Message extends Serializable {
     String MSG_STATE_SEND_START = "msg_send_start";
     String MSG_STATE_SEND_EXCEPTION = "msg_send_exception";
     String MSG_STATE_SEND_FAIL = "msg_send_fail";
+    String MSG_STATE_SEND_FAIL_RESEND_QUEUED = "msg_send_fail_resend_queued";
     String MSG_STATE_RECEIVE_START = "msg_receive_start";
     String MSG_STATE_RECEIVE_EXCEPTION = "msg_receive_exception";
     String MSG_STATE_RECEIVE_FAIL = "msg_receive_fail";
@@ -49,6 +50,7 @@ public interface Message extends Serializable {
 			put(MSG_STATE_SEND_START, "Message sending started");
 			put(MSG_STATE_SEND_EXCEPTION, "Message sending exception occurred. Resend queued");
 			put(MSG_STATE_SEND_FAIL, "Message sending failed.");
+			put(MSG_STATE_SEND_FAIL_RESEND_QUEUED, "Message failed to send and resend will be attempted using a different message ID");
 			put(MSG_STATE_RECEIVE_START, "Message receiving started");
 			put(MSG_STATE_RECEIVE_EXCEPTION, "Processing exception occurred receiving message. Resend queued");
 			put(MSG_STATE_RECEIVE_FAIL, "Failed to receive inbound message successfully.");
