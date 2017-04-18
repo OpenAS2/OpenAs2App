@@ -16,8 +16,8 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
 
     @Nullable
     private JdbcConnectionPool cp = null;
-    
-	Server server = null;
+
+    private Server server = null;
 
     private String connectString = "jdbc:h2:file:DB/openas2";
 
@@ -61,8 +61,8 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
 			// Stopping the TCP server will stop the database so only do one of them
 			if (server != null)
 			{
-				server.shutdown();
-			}
+                server.stop();
+            }
 			else
 			{
 					try

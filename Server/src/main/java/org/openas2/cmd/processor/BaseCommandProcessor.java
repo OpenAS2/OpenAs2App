@@ -1,11 +1,12 @@
 package org.openas2.cmd.processor;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.openas2.Component;
@@ -41,7 +42,6 @@ public abstract class BaseCommandProcessor implements CommandProcessor, Componen
     {
         this.session = session;
         this.parameters = parameters;
-        //worker.start();
     }
 
     @Override
@@ -56,13 +56,13 @@ public abstract class BaseCommandProcessor implements CommandProcessor, Componen
         return session;
     }
 
+    @Nullable
     Command getCommand(String name)
     {
         Command currentCmd;
-        Iterator<Command> commandIt = getCommands().iterator();
-        while (commandIt.hasNext())
+        for (Command command : getCommands())
         {
-            currentCmd = commandIt.next();
+            currentCmd = command;
             if (currentCmd.getName().equals(name))
             {
                 return currentCmd;
@@ -86,9 +86,8 @@ public abstract class BaseCommandProcessor implements CommandProcessor, Componen
 
     public void terminate() throws Exception
     {
-    	running = false;
-    	if (getSession().getServer().isTerminateJVM()) System.exit(0);
-    	else getSession().getServer().shutdown();
+        running = false;
+        getSession().stop();
     }
 
     @Override
