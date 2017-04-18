@@ -86,6 +86,8 @@
 			mimetype="application/EDI-X12"/>
 		
 		<module classname="org.openas2.processor.msgtracking.DbTrackingModule"
+            use_embedded_db="true"
+            force_load_jdbc_driver="false"
 		    db_user="sa"
 		    db_pwd="OpenAS2"
 		    db_name="openas2"
