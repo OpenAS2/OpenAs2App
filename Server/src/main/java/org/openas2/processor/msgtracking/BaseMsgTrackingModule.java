@@ -48,6 +48,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
         	if (originalMsgId != null && !msgId.equals(originalMsgId)) msgId = originalMsgId;
     	}
     	map.put(FIELDS.MSG_ID, msgId);
+    	map.put(FIELDS.PRIOR_MSG_ID, msg.getAttribute(FIELDS.PRIOR_MSG_ID));
     	// Default DIRECTION to SEND for now...
     	String direction =  (String) options.get("DIRECTION");
     	map.put(FIELDS.DIRECTION,direction==null?"SEND":direction);
@@ -81,6 +82,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 
     public static class FIELDS {
         public static final String MSG_ID = "MSG_ID";
+        public static final String PRIOR_MSG_ID = "PRIOR_MSG_ID";
         public static final String MDN_ID = "MDN_ID";
         public static final String DIRECTION = "DIRECTION";
         public static final String IS_RESEND = "IS_RESEND";
