@@ -61,6 +61,7 @@ public class SchedulerComponent extends BaseComponent {
     public void destroy() throws Exception
     {
         //graceful shutdown
+        executorService.shutdown();
         executorService.awaitTermination(3, TimeUnit.SECONDS);
         executorService.shutdownNow();
     }

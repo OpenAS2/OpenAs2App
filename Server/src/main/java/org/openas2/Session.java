@@ -1,16 +1,16 @@
 package org.openas2;
 
-import org.openas2.app.OpenAS2Server;
+import java.util.Map;
+
 import org.openas2.cert.CertificateFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
-
-import java.util.Map;
 
 
 /**
  * The <code>Session</code> interface provides configuration and resource information, and a means for
  * components to access the functionality of other components.
+ * The <code>Session</code> has its own lifecycle controlled by two methods {@link #start()} and {@link #close()}.
  *
  * @author Aaron Silinskas
  * @see Component
@@ -21,6 +21,20 @@ import java.util.Map;
 public interface Session {
 
     String DEFAULT_CONTENT_TRANSFER_ENCODING = "binary";
+
+    /**
+     * Lifecycle control method.
+     *
+     * @throws Exception
+     */
+    void start() throws Exception;
+
+    /**
+     * Lifecycle control method.
+     *
+     * @throws Exception
+     */
+    void stop() throws Exception;
 
     /**
      * Short-cut method to retrieve a certificate factory.
@@ -74,9 +88,5 @@ public interface Session {
     String getAppVersion();
 
     String getAppTitle();
-    
-    OpenAS2Server getServer();
-
-	void setServer(OpenAS2Server server);
 
 }

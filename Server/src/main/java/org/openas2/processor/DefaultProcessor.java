@@ -13,8 +13,8 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 
 public class DefaultProcessor extends BaseComponent implements Processor {
+    private static final Log LOGGER = LogFactory.getLog(DefaultProcessor.class.getSimpleName());
     private List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
-    private Log logger = LogFactory.getLog(DefaultProcessor.class.getSimpleName());
 
     public List<ProcessorModule> getActiveModules()
     {
@@ -48,9 +48,9 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         ProcessorException pex = null;
         boolean moduleFound = false;
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("Processor searching for module handler for action: " + action);
+            LOGGER.debug("Processor searching for module handler for action: " + action);
         }
 
         while (moduleIt.hasNext())
@@ -84,7 +84,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                 return;
             }
             msg.setLogMsg("No handler found for action: " + action);
-            logger.error(msg);
+            LOGGER.error(msg);
             throw new NoModuleException(action, msg, options);
         }
     }
@@ -98,14 +98,14 @@ public class DefaultProcessor extends BaseComponent implements Processor {
             try
             {
                 ((ActiveModule) processorModule).start();
-                logger.info(ClassUtils.getSimpleName(processorModule.getClass()) + " started.");
+                LOGGER.info(ClassUtils.getSimpleName(processorModule.getClass()) + " started.");
             } catch (OpenAS2Exception e)
             {
                 e.terminate();
                 throw e;
             }
         }
-        logger.info(activeModules.size() + " active module(s) started.");
+        LOGGER.info(activeModules.size() + " active module(s) started.");
     }
 
     public void stopActiveModules()
@@ -116,15 +116,23 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         {
             try
             {
-                ((ActiveModule) processorModule).stop();
-                logger.info(ClassUtils.getSimpleName(processorModule.getClass()) + " stopped.");
+                if (processorModule instanceof ActiveModule)
+                {
+                    ActiveModule activeModule = ActiveModule.class.cast(processorModule);
+                    if (activeModule.isRunning())
+                    {
+                        activeModule.stop();
+                        LOGGER.info(ClassUtils.getSimpleName(processorModule.getClass()) + " stopped.");
+                    }
+                }
+
             } catch (OpenAS2Exception e)
             {
                 e.terminate();
             }
         }
 
-        logger.info(activeModules.size() + " active module(s) stopped.");
+        LOGGER.info(activeModules.size() + " active module(s) stopped.");
     }
 
     @Override

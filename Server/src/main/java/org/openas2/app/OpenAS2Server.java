@@ -1,12 +1,12 @@
 package org.openas2.app;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 
 import javax.annotation.Nonnull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.XMLSession;
 
@@ -22,13 +22,11 @@ public class OpenAS2Server {
 
     @Nonnull
     private final Session session;
-    private final boolean terminateJVM;
 
-	public OpenAS2Server(@Nonnull Session session, boolean terminateJVM)
+
+    public OpenAS2Server(@Nonnull Session session)
     {
         this.session = session;
-        this.terminateJVM = terminateJVM;
-        LOGGER.info("Starting Server with terminate set to: " + terminateJVM);
     }
 
 
@@ -54,34 +52,40 @@ public class OpenAS2Server {
 
         // start the active processor modules
         LOGGER.info("Starting Active Modules...");
-        session.getProcessor().startActiveModules();
+        session.start();
 
         // enter the command processing loop
         LOGGER.info(session.getAppTitle() + " Started");
 
-        LOGGER.info("- OpenAS2 Started - V" + session.getAppVersion());
+        LOGGER.info("- OpenAS2 Started - V" + session.getAppVersion() + ". Pid=" + getProcessPid());
 
+    }
+
+    @Nonnull
+    private String getProcessPid()
+    {
+        try
+        {
+            String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+            return jvmName.split("@")[0];
+        } catch (Throwable ex)
+        {
+            return "-1";
+        }
     }
 
     public void shutdown()
     {
         try
         {
-            session.getProcessor().stopActiveModules();
-        } catch (OpenAS2Exception same)
+            session.stop();
+        } catch (Exception same)
         {
-            same.terminate();
+            //nothing
         }
 
         LOGGER.info("OpenAS2 has shut down\r\n");
     }
-
-    public boolean isTerminateJVM()
-	{
-		return terminateJVM;
-	}
-
-
 
     public static class Builder {
         private boolean registerShutdownHook;
@@ -111,27 +115,19 @@ public class OpenAS2Server {
         {
 
             XMLSession session = new XMLSession(findConfig(args).getAbsolutePath());
-            final OpenAS2Server server = new OpenAS2Server(session, registerShutdownHook);
-            session.setServer(server);
+            final OpenAS2Server server = new OpenAS2Server(session);
 
-            registerShutdownHookIfNeeded(server);
+            registerShutdownHookIfNeeded(session);
 
             server.start();
             return server;
         }
 
-        private void registerShutdownHookIfNeeded(final OpenAS2Server server)
+        private void registerShutdownHookIfNeeded(XMLSession session)
         {
             if (registerShutdownHook)
             {
-            	LOGGER.info("Registering shutdown hook...");
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                    @Override
-                    public void run()
-                    {
-                        server.shutdown();
-                    }
-                });
+                session.registerShutdownHook();
             }
         }
 
