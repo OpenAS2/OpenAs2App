@@ -688,7 +688,8 @@ public class AS2Util {
      * 				the sender module
      * @param msg - the Message object containing enough information to build the pending info file name
      */
-    public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
+    
+	public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 		// use original message ID to open the pending information file from pendinginfo folder.
@@ -726,6 +727,7 @@ public class AS2Util {
 			msg.setAttribute(FileAttribute.MA_PENDINGFILE, (String)pifois.readObject());
 			msg.setAttribute(FileAttribute.MA_ERROR_DIR, (String)pifois.readObject());
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, (String)pifois.readObject());
+			msg.getAttributes().putAll((Map<String,String>)pifois.readObject());
 
 			msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendinginfofile);
 			if (logger.isTraceEnabled())
@@ -737,6 +739,7 @@ public class AS2Util {
 					+ "\n        Pending message file : " + msg.getAttribute(FileAttribute.MA_PENDINGFILE)
 					+ "\n        Error directory: " + msg.getAttribute(FileAttribute.MA_ERROR_DIR)
 					+ "\n        Sent directory: " + msg.getAttribute(FileAttribute.MA_SENT_DIR)
+					+ "\n        Attributes: " + msg.getAttributes()
 					+ msg.getLogMsgID()
 				);
 		} catch (IOException e)
