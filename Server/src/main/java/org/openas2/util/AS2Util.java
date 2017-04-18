@@ -51,6 +51,8 @@ import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
@@ -516,9 +518,14 @@ public class AS2Util {
 			msg = originalMsg;
 		}
 
+    	// Update the message state for the failed message as it will no longer be using the same message ID
+        msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL_RESEND_QUEUED);
+        msg.trackMsgState(session);
+
     	// Resend requires a new Message-Id and we need to update the pendinginfo file name to match....
     	// The actual file that is pending can remain the same name since it is pointed to by line in pendinginfo file
     	String oldMsgId = msg.getMessageID();
+    	msg.setAttribute(BaseMsgTrackingModule.FIELDS.PRIOR_MSG_ID, oldMsgId);
     	String oldPendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
     	String newMsgId = ((AS2Message)msg).generateMessageID();
     	// Set new Id in Message object so we can generate new file name
