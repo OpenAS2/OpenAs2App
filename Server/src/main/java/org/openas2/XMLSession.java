@@ -18,6 +18,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
@@ -55,8 +56,10 @@ public class XMLSession extends BaseSession {
 
     private CommandRegistry commandRegistry;
     private CommandManager cmdManager = new CommandManager();
+    
+    private OpenAS2Server server;
 
-    private String VERSION;
+	private String VERSION;
     private String TITLE;
 
     public XMLSession(String configAbsPath) throws OpenAS2Exception,
@@ -73,6 +76,16 @@ public class XMLSession extends BaseSession {
         // scheduler should be initializer after all modules
         addSchedulerComponent();
     }
+
+    public OpenAS2Server getServer()
+	{
+		return server;
+	}
+
+	public void setServer(OpenAS2Server server)
+	{
+		this.server = server;
+	}
 
     private void addSchedulerComponent() throws OpenAS2Exception
     {
@@ -140,6 +153,9 @@ public class XMLSession extends BaseSession {
     private void loadProperties(Node propNode)
     {
         Map<String, String> properties = XMLUtil.mapAttributes(propNode);
+        // Make key things accessible via static object for things that do not have accesss to session object
+        properties.put(Properties.APP_TITLE_PROP, getAppTitle());
+        properties.put(Properties.APP_VERSION_PROP, getAppVersion());
         Properties.setProperties(properties);
     }
 

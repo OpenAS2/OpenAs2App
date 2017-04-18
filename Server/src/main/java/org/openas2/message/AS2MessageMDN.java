@@ -1,6 +1,7 @@
 package org.openas2.message;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.CustomIDPartnership;
 import org.openas2.partner.Partnership;
@@ -31,33 +32,14 @@ public class AS2MessageMDN extends BaseMessageMDN {
 
     /**
      * Generate Random Message ID based on data in the preconfigured format, sender and receiver Ids.
-     * e.g. <OPENAS2-01042017103632+0200-7270@receiverId_senderId>
      *
      * @return a string
+     * @throws InvalidParameterException 
      */
     @Override
-    public String generateMessageID()
+    public String generateMessageID() throws InvalidParameterException
     {
-        StringBuilder buf = new StringBuilder();
-        String dateFormat = getPartnership().getAttribute(CustomIDPartnership.PA_DATE_FORMAT);
-        if (dateFormat == null)
-        {
-            dateFormat = "ddMMyyyyHHmmssZ";
-        }
-        buf.append("<OPENAS2-").append(DateUtil.formatDate(dateFormat));
-
-        buf.append("-").append(RandomStringUtils.randomNumeric(4));
-
-        Partnership partnership = getMessage().getPartnership();
-        String senderID = partnership.getSenderID(AS2Partnership.PID_AS2);
-        String receiverID = partnership.getReceiverID(AS2Partnership.PID_AS2);
-
-        buf.append("@").append(receiverID);
-        buf.append("_").append(senderID);
-
-        buf.append(">");
-
-        return buf.toString();
+        return org.openas2.util.AS2Util.generateMessageID(getMessage());
     }
 
 

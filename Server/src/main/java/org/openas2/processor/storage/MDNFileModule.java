@@ -17,6 +17,7 @@ import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.ParameterParser;
+import org.openas2.params.RandomParameters;
 
 public class MDNFileModule extends BaseStorageModule {
 
@@ -45,9 +46,10 @@ public class MDNFileModule extends BaseStorageModule {
      */
     protected String getFilename(Message msg, String fileParam, String action) throws InvalidParameterException {
         MessageMDN mdn = msg.getMDN();
-        CompositeParameters compParams = new CompositeParameters(false) .
-        	add ("date", new DateParameters()) .
-        	add ("mdn", new MessageMDNParameters(mdn));
+        CompositeParameters compParams = new CompositeParameters(false)
+        	.add("date", new DateParameters())
+        	.add("mdn", new MessageMDNParameters(mdn))
+        	.add("rand", new RandomParameters());
         	
         return ParameterParser.parse(fileParam, compParams);
     }

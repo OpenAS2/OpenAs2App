@@ -76,9 +76,11 @@ public class MessageParameters extends ParameterParser {
 			{
 				logger.warn("Failed to extract filename from content-disposition: " + org.openas2.logging.Log.getExceptionMsg(e), e);
 			}
+			if (s == null || s.length() < 1)
+				s = getTarget().getPayloadFilename();
 			if (s != null && s.length() > 0)
 				return s;
-		    return filename;
+			return filename;
 		} else {
 			throw new InvalidParameterException("Invalid area in key", this, key, null);
 		}

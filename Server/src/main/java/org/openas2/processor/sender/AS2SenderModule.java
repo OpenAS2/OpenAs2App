@@ -391,7 +391,7 @@ public class AS2SenderModule extends HttpSenderModule {
 
     private void resend(Message msg, OpenAS2Exception cause, String tries) throws OpenAS2Exception
     {
-        AS2Util.resend(getSession().getProcessor(), this, SenderModule.DO_SEND, msg, cause, tries, false);
+        AS2Util.resend(getSession(), this, SenderModule.DO_SEND, msg, cause, tries, false);
     }
 
     // Returns a MimeBodyPart or MimeMultipart object
@@ -702,13 +702,14 @@ public class AS2SenderModule extends HttpSenderModule {
             oos.writeObject(msg.getAttribute(FileAttribute.MA_ERROR_DIR));
             String sentDir = msg.getAttribute(FileAttribute.MA_SENT_DIR);
             oos.writeObject((sentDir == null ? "" : sentDir));
+            oos.writeObject(msg.getAttributes());
             if (logger.isTraceEnabled())
             {
-                logger.trace("Pending info file written to:" + pendingInfoFile + "\n        Original MIC: "
-                        + msg.getCalculatedMIC() + "\n        Retry Count: " + retries
-                        + "\n        Original file name : " + msg.getAttribute(FileAttribute.MA_FILENAME)
-                        + "\n        Pending message file : " + pendingFile + "\n        Error directory: "
-                        + msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n        Sent directory: "
+                logger.trace("Pending info file written to:" + pendingInfoFile + "\n\tOriginal MIC: "
+                        + msg.getCalculatedMIC() + "\n\tRetry Count: " + retries
+                        + "\n\tOriginal file name : " + msg.getAttribute(FileAttribute.MA_FILENAME)
+                        + "\n\tPending message file : " + pendingFile + "\n\tError directory: "
+                        + msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n\tSent directory: "
                         + msg.getAttribute(FileAttribute.MA_SENT_DIR) + msg.getLogMsgID());
             }
 

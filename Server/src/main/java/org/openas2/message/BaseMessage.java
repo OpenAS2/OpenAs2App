@@ -22,6 +22,7 @@ import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.TrackingModule;
+import org.openas2.util.Properties;
 
 
 public abstract class BaseMessage implements Message {
@@ -44,7 +45,6 @@ public abstract class BaseMessage implements Message {
     private String status = MSG_STATUS_MSG_INIT;
 	private Map<String, String> customOuterMimeHeaders = new HashMap<String, String>();
 	private String payloadFilename = null;
-	private String appTitle;
     
 
 	public BaseMessage() {
@@ -53,13 +53,7 @@ public abstract class BaseMessage implements Message {
 
 	public String getAppTitle()
 	{
-		return appTitle;
-	}
-
-	public void setAppTitle(String title)
-	{
-		appTitle = title;
-		
+		return Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server");
 	}
 
 	public Map<Object, Object> getOptions() {

@@ -53,12 +53,10 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
 	protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException
 	{
-		Message msg = createMessage();
-		msg.setAttribute(FileAttribute.MA_FILENAME, filename);
-		msg.setPayloadFilename(filename);
+		Message msg = buildMessageMetadata(filename);
 
-		String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
-		msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
+		String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
+		// Persist the file that has been passed in
 		File doc = new File(pendingFile);
 		FileOutputStream fo = null;
 		try
@@ -94,14 +92,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			e1.printStackTrace();
 		}
 		fo = null;
-		msg.setAttribute(FileAttribute.MA_ERROR_DIR, getParameter(PARAM_ERROR_DIRECTORY, true));
-		if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
-			msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
 
 		FileInputStream fis = new FileInputStream(doc);
 		try 
 		{
-			updateMessage(msg, fis, filename);
+			buildMessageData(msg, fis, filename);
 		}
 		finally
 		{
@@ -212,8 +207,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
 	protected abstract Message createMessage();
 
-	public void updateMessage(Message msg, InputStream ip, String filename) throws OpenAS2Exception
+	public Message buildMessageMetadata(String filename) throws OpenAS2Exception
 	{
+		Message msg = createMessage();
+		msg.setAttribute(FileAttribute.MA_FILENAME, filename);
+		msg.setPayloadFilename(filename);
 		MessageParameters params = new MessageParameters(msg);
 
 		// Get the parameter that should provide the link between the polled directory and an AS2 sender and recipient
@@ -238,7 +236,20 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		// Set the sender and receiver in the Message object headers
 		msg.setHeader("AS2-To", msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
 		msg.setHeader("AS2-From", msg.getPartnership().getSenderID(AS2Partnership.PID_AS2));
+		// Now build the filename since it is by default dependent on having sender and receiver ID
+		String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
+		msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
+		msg.setAttribute(FileAttribute.MA_ERROR_DIR, getParameter(PARAM_ERROR_DIRECTORY, true));
+		if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
+			msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
 
+		return msg;
+
+	}
+
+	public void buildMessageData(Message msg, InputStream ip, String filename) throws OpenAS2Exception
+	{
+		MessageParameters params = new MessageParameters(msg);
 
 		try
 		{
@@ -303,5 +314,4 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			}
 		}
 	}
-
 }

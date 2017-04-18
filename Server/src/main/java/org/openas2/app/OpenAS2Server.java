@@ -16,17 +16,19 @@ import org.openas2.XMLSession;
  * <p>
  * in this release added ability to have multiple command processors
  *
- * @author joseph mcverry
  */
 public class OpenAS2Server {
     private static final Log LOGGER = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
 
     @Nonnull
     private final Session session;
+    private final boolean terminateJVM;
 
-    public OpenAS2Server(@Nonnull Session session)
+	public OpenAS2Server(@Nonnull Session session, boolean terminateJVM)
     {
         this.session = session;
+        this.terminateJVM = terminateJVM;
+        LOGGER.info("Starting Server with terminate set to: " + terminateJVM);
     }
 
 
@@ -74,6 +76,12 @@ public class OpenAS2Server {
         LOGGER.info("OpenAS2 has shut down\r\n");
     }
 
+    public boolean isTerminateJVM()
+	{
+		return terminateJVM;
+	}
+
+
 
     public static class Builder {
         private boolean registerShutdownHook;
@@ -103,7 +111,8 @@ public class OpenAS2Server {
         {
 
             XMLSession session = new XMLSession(findConfig(args).getAbsolutePath());
-            final OpenAS2Server server = new OpenAS2Server(session);
+            final OpenAS2Server server = new OpenAS2Server(session, registerShutdownHook);
+            session.setServer(server);
 
             registerShutdownHookIfNeeded(server);
 
@@ -115,6 +124,7 @@ public class OpenAS2Server {
         {
             if (registerShutdownHook)
             {
+            	LOGGER.info("Registering shutdown hook...");
                 Runtime.getRuntime().addShutdownHook(new Thread() {
                     @Override
                     public void run()

@@ -1,5 +1,6 @@
 package org.openas2;
 
+import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
@@ -73,5 +74,9 @@ public interface Session {
     String getAppVersion();
 
     String getAppTitle();
+    
+    OpenAS2Server getServer();
+
+	void setServer(OpenAS2Server server);
 
 }

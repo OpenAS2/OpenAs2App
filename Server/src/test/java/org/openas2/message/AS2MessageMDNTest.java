@@ -27,13 +27,14 @@ public class AS2MessageMDNTest {
         when(message.getPartnership()).thenReturn(partnership);
         when(partnership.getReceiverID(eq(AS2Partnership.PID_AS2))).thenReturn("receiverId");
         when(partnership.getSenderID(eq(AS2Partnership.PID_AS2))).thenReturn("senderId");
-
+        when(message.getPartnership().getAttribute(eq(AS2Partnership.PA_MESSAGEID)))
+        .thenReturn("OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.1234$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
     }
 
     @Test
     public void shouldGenerateMessageId() throws Exception
     {
         String messageId = new AS2MessageMDN(message, false).generateMessageID();
-        assertThat("Check " + messageId, messageId.matches("^<OPENAS2-[0-9]{14}\\+[0-9]{4}-[0-9]{4}@receiverId_senderId>"), is(true));
+        assertThat("Check " + messageId, messageId.matches("^OPENAS2-[0-9]{14}\\+[0-9]{4}-[0-9]{4}@senderId_receiverId"), is(true));
     }
 }
