@@ -1,7 +1,7 @@
 <openas2>
     <properties
         sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
-            
+        as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
     />
 	<certificates classname="org.openas2.cert.PKCS12CertificateFactory"
 		filename="%home%/as2_certs.p12"
@@ -66,7 +66,7 @@
 			interval="5"			
 			delimiters="-."
                         sendfilename="true"
-			format="sender.as2_id, receiver.as2_id, attributes.fileid"			
+			format="sender.as2_id, receiver.as2_id, attributes.filename"			
 			mimetype="application/EDI-X12" />
 
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
@@ -86,6 +86,8 @@
 			mimetype="application/EDI-X12"/>
 		
 		<module classname="org.openas2.processor.msgtracking.DbTrackingModule"
+            use_embedded_db="true"
+            force_load_jdbc_driver="false"
 		    db_user="sa"
 		    db_pwd="OpenAS2"
 		    db_name="openas2"

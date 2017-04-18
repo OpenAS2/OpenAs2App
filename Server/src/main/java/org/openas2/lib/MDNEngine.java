@@ -23,6 +23,7 @@ import org.openas2.lib.message.MDNData;
 import org.openas2.lib.partner.IPartnershipChooser;
 import org.openas2.message.Message;
 import org.openas2.partner.Partnership;
+import org.openas2.util.Properties;
 
 public class MDNEngine {
     private EDIINTHelper ediintHelper;
@@ -97,7 +98,7 @@ public class MDNEngine {
 
         // generate the MDN data
         MDNData mdnData = mdn.getMDNData();
-        mdnData.setReportingUA(Info.NAME_VERSION);
+        mdnData.setReportingUA(Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server"));
         mdnData.setOriginalRecipient("rfc822; " + msg.getAS2To());
         if (results.getPartnership() != null) {
             mdnData.setFinalRecipient("rfc822; "

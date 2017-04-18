@@ -2,10 +2,12 @@ package org.openas2.message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import org.openas2.params.InvalidParameterException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
@@ -16,18 +18,20 @@ import org.openas2.partner.Partnership;
 
 public abstract class BaseMessageMDN implements MessageMDN {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private DataHistory history;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private DataHistory history;
     private InternetHeaders headers;
     private Partnership partnership;
     private Map<String, String> attributes;
+    @Nonnull
     private Message message;
     private MimeBodyPart data;
     private String text;
 
-    public BaseMessageMDN(Message msg) {
+    public BaseMessageMDN(@Nonnull Message msg)
+    {
         super();
         this.message = msg;
         msg.setMDN(this);
@@ -38,11 +42,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
     }
 
     public String getAttribute(String key) {
-        return (String) getAttributes().get(key);
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+        return getAttributes().get(key);
     }
 
     public Map<String, String> getAttributes() {
@@ -53,12 +53,18 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return attributes;
     }
 
-    public void setData(MimeBodyPart data) {
-        this.data = data;
+    public void setAttributes(Map<String, String> attributes)
+    {
+        this.attributes = attributes;
     }
 
     public MimeBodyPart getData() {
         return data;
+    }
+
+    public void setData(MimeBodyPart data)
+    {
+        this.data = data;
     }
 
     public void setHeader(String key, String value) {
@@ -73,10 +79,6 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return getHeaders().getHeader(key, delimiter);
     }
 
-    public void setHeaders(InternetHeaders headers) {
-        this.headers = headers;
-    }
-
     public InternetHeaders getHeaders() {
         if (headers == null) {
             headers = new InternetHeaders();
@@ -85,32 +87,37 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return headers;
     }
 
+    public void setHeaders(InternetHeaders headers)
+    {
+        this.headers = headers;
+    }
+
     public void copyHeaders(InternetHeaders srcHeaders) {
         Enumeration<Header> headerEn = srcHeaders.getAllHeaders();
         while (headerEn.hasMoreElements()) {
             Header header = headerEn.nextElement();
             setHeader(header.getName(), header.getValue());
-        }        
+        }
     }
 
-    public void setMessage(Message message) {
-        this.message = message;
-    }
-
+    @Nonnull
     public Message getMessage() {
         return message;
     }
 
-    public void setMessageID(String messageID) {
-        setHeader("Message-ID", messageID);
+    @Override
+    public void setMessage(@Nonnull Message message)
+    {
+        this.message = message;
     }
 
     public String getMessageID() {
         return getHeader("Message-ID");
     }
-    
-    public void setPartnership(Partnership partnership) {
-        this.partnership = partnership;
+
+    public void setMessageID(String messageID)
+    {
+        setHeader("Message-ID", messageID);
     }
 
     public Partnership getPartnership() {
@@ -120,24 +127,26 @@ public abstract class BaseMessageMDN implements MessageMDN {
 
         return partnership;
     }
-    
-    public void setText(String text) {
-        this.text = text;
+
+    public void setPartnership(Partnership partnership)
+    {
+        this.partnership = partnership;
     }
 
     public String getText() {
         return text;
     }
 
+    public void setText(String text)
+    {
+        this.text = text;
+    }
+
     public void addHeader(String key, String value) {
         getHeaders().addHeader(key, value);
     }
 
-    public abstract String generateMessageID();
-
-    public void setHistory(DataHistory history) {
-        this.history = history;
-    }
+    public abstract String generateMessageID() throws InvalidParameterException;
 
     public DataHistory getHistory() {
         if (history == null) {
@@ -147,11 +156,16 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return history;
     }
 
+    public void setHistory(DataHistory history)
+    {
+        this.history = history;
+    }
+
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append("MDN From:").append(getPartnership().getReceiverIDs());
         buf.append("To:").append(getPartnership().getSenderIDs());
-        
+
         Enumeration<Header> headerEn = getHeaders().getAllHeaders();
         buf.append(System.getProperty("line.separator") + "Headers:{");
 
@@ -172,17 +186,18 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return buf.toString();
     }
 
-    public void updateMessageID() {
+    public void updateMessageID() throws InvalidParameterException {
         setMessageID(generateMessageID());
     }
 
     private void readObject(java.io.ObjectInputStream in)
-        throws IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException
+    {
         // read in partnership
         partnership = (Partnership) in.readObject();
-        
+
         // read in attributes
-        attributes = (Map<String,String>) in.readObject();
+        attributes = (Map<String, String>) in.readObject();
 
         // read in text
         text = (String) in.readObject();
@@ -203,10 +218,11 @@ public abstract class BaseMessageMDN implements MessageMDN {
     }
 
     private void writeObject(java.io.ObjectOutputStream out)
-        throws IOException {
+            throws IOException
+    {
         // write partnership info
         out.writeObject(partnership);
-        
+
         // write attributes
         out.writeObject(attributes);
 
@@ -217,10 +233,10 @@ public abstract class BaseMessageMDN implements MessageMDN {
         Enumeration<String> en = headers.getAllHeaderLines();
 
         while (en.hasMoreElements()) {
-            out.writeBytes(en.nextElement().toString() + "\r\n");
+            out.writeBytes(en.nextElement() + "\r\n");
         }
 
-        out.writeBytes(new String("\r\n"));
+        out.writeBytes("\r\n");
 
         // write the mime body
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

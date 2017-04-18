@@ -1,11 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>2.2.3-SNAPSHOT</version>
+        <version>2.3.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>openas2-server</artifactId>
@@ -54,6 +54,10 @@
                                 <!--Copy config directory to assembly directory -->
                                 <copy todir="${project.build.directory}/dist/config" verbose="true">
                                     <fileset dir="${project.basedir}/src/config"/>
+                                </copy>
+                                <!--Copy resources directory to assembly directory -->
+                                <copy todir="${project.build.directory}/dist/resources" verbose="true">
+                                    <fileset dir="${project.basedir}/src/resources"/>
                                 </copy>
                                 <!--Copy artifact to build lib dicetory -->
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
@@ -150,7 +154,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
