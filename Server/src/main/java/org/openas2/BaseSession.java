@@ -35,7 +35,6 @@ public abstract class BaseSession implements Session {
     @Override
     public void stop() throws Exception
     {
-        getProcessor().stopActiveModules();
         for (Component component : components.values())
         {
             component.destroy();
