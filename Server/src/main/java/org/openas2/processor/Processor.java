@@ -18,5 +18,5 @@ public interface Processor extends Component {
 
     void stopActiveModules() throws OpenAS2Exception;
 
-    List<ProcessorModule> getActiveModules();
+    List<ActiveModule> getActiveModules();
 }

@@ -16,9 +16,9 @@ public class DefaultProcessor extends BaseComponent implements Processor {
     private List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
     private Log logger = LogFactory.getLog(DefaultProcessor.class.getSimpleName());
 
-    public List<ProcessorModule> getActiveModules()
+    public List<ActiveModule> getActiveModules()
     {
-        List<ProcessorModule> activeMods = new ArrayList<ProcessorModule>();
+        List<ActiveModule> activeMods = new ArrayList<ActiveModule>();
         Iterator<ProcessorModule> moduleIt = getModules().iterator();
         ProcessorModule procMod;
 
@@ -28,7 +28,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
 
             if (procMod instanceof ActiveModule)
             {
-                activeMods.add(procMod);
+                activeMods.add((ActiveModule)procMod);
             }
         }
 
@@ -92,13 +92,13 @@ public class DefaultProcessor extends BaseComponent implements Processor {
     public void startActiveModules() throws OpenAS2Exception
     {
 
-        List<ProcessorModule> activeModules = getActiveModules();
-        for (ProcessorModule processorModule : activeModules)
+        List<ActiveModule> activeModules = getActiveModules();
+        for (ActiveModule activeModule : activeModules)
         {
             try
             {
-                ((ActiveModule) processorModule).start();
-                logger.info(ClassUtils.getSimpleName(processorModule.getClass()) + " started.");
+            	activeModule.start();
+                logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " started.");
             } catch (OpenAS2Exception e)
             {
                 e.terminate();
@@ -111,20 +111,29 @@ public class DefaultProcessor extends BaseComponent implements Processor {
     public void stopActiveModules()
     {
 
-        List<ProcessorModule> activeModules = getActiveModules();
-        for (ProcessorModule processorModule : activeModules)
+        List<ActiveModule> activeModules = getActiveModules();
+        int stopCnt = 0;
+        for (ActiveModule activeModule : activeModules)
         {
-            try
+        	try
             {
-                ((ActiveModule) processorModule).stop();
-                logger.info(ClassUtils.getSimpleName(processorModule.getClass()) + " stopped.");
+        		if (activeModule.isRunning())
+        		{
+        			activeModule.stop();
+        			stopCnt++;
+                    logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " stopped.");
+        		}
             } catch (OpenAS2Exception e)
             {
                 e.terminate();
             }
         }
 
-        logger.info(activeModules.size() + " active module(s) stopped.");
+        if (logger.isInfoEnabled())
+        {
+        	if (stopCnt >0) logger.info(stopCnt + " active module(s) stopped.");
+        	else logger.info("No active module(s) are running.");
+        }
     }
 
     @Override
