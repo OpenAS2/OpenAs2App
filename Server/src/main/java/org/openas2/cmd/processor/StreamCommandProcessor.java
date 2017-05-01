@@ -146,7 +146,7 @@ public class StreamCommandProcessor extends BaseCommandProcessor {
     @Override
     public void destroy() throws Exception
     {
-        IOUtils.closeQuietly(reader); // stops terminal
+        IOUtils.closeQuietly(System.in);
         super.destroy();
     }
 }

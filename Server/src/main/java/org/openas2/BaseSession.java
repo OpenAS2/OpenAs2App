@@ -1,19 +1,26 @@
 package org.openas2;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
+import javax.annotation.Nullable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 
 
 public abstract class BaseSession implements Session {
-    private Map<String, Component> components = new HashMap<String, Component>();
+
+    private static final Log LOGGER = LogFactory.getLog(Session.class.getSimpleName());
+    private Map<String, Component> components = new LinkedHashMap<String, Component>();
     private String baseDirectory;
+    @Nullable
+    private Thread shutdownHook;
 
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
@@ -21,11 +28,44 @@ public abstract class BaseSession implements Session {
      * @throws OpenAS2Exception
      * @see #init()
      */
-    public BaseSession() throws OpenAS2Exception {
+    public BaseSession() throws OpenAS2Exception
+    {
         init();
     }
 
-    public CertificateFactory getCertificateFactory() throws ComponentNotFoundException {
+    @Override
+    public void start() throws OpenAS2Exception
+    {
+        getProcessor().startActiveModules();
+    }
+
+    @Override
+    public void stop() throws Exception
+    {
+        Processor processor = getProcessor();
+        processor.destroy();
+
+        for (Component component : components.values())
+        {
+            if (!component.equals(processor))
+            {
+                component.destroy();
+            }
+        }
+
+        unregisteredShutdownHook();
+    }
+
+    private void unregisteredShutdownHook()
+    {
+        if (shutdownHook != null)
+        {
+            Runtime.getRuntime().removeShutdownHook(shutdownHook);
+        }
+    }
+
+    public CertificateFactory getCertificateFactory() throws ComponentNotFoundException
+    {
         return (CertificateFactory) getComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY);
     }
 
@@ -42,26 +82,31 @@ public abstract class BaseSession implements Session {
         objects.put(componentID, comp);
     }
 
-    public Component getComponent(String componentID) throws ComponentNotFoundException {
+    public Component getComponent(String componentID) throws ComponentNotFoundException
+    {
         Map<String, Component> comps = getComponents();
         Component comp = comps.get(componentID);
 
-        if (comp == null) {
+        if (comp == null)
+        {
             throw new ComponentNotFoundException(componentID);
         }
 
         return comp;
     }
 
-    public Map<String, Component> getComponents() {
+    public Map<String, Component> getComponents()
+    {
         return components;
     }
 
-    public PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException {
+    public PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException
+    {
         return (PartnershipFactory) getComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY);
     }
 
-    public Processor getProcessor() throws ComponentNotFoundException {
+    public Processor getProcessor() throws ComponentNotFoundException
+    {
         return (Processor) getComponent(Processor.COMPID_PROCESSOR);
     }
 
@@ -71,7 +116,8 @@ public abstract class BaseSession implements Session {
      *
      * @throws OpenAS2Exception If an error occurs while initializing systems
      */
-    protected void init() throws OpenAS2Exception {
+    protected void init() throws OpenAS2Exception
+    {
         initJavaMail();
     }
 
@@ -99,4 +145,22 @@ public abstract class BaseSession implements Session {
         baseDirectory = dir;
     }
 
+    public void registerShutdownHook()
+    {
+        this.shutdownHook = new Thread() {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    BaseSession.this.stop();
+                } catch (Exception e)
+                {
+                    //nothing here
+                }
+            }
+        };
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
+        LOGGER.info("Shutdown hook registered.");
+    }
 }

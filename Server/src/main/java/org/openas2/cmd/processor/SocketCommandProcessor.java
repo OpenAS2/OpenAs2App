@@ -135,7 +135,7 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
 
                     if (commandName.equals(StreamCommandProcessor.EXIT_COMMAND))
                     {
-                        terminate();
+                        getSession().stop();
                     } else
                     {
                         List<String> params = new ArrayList<String>();
@@ -202,6 +202,5 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     {
         IOUtils.closeQuietly(sslserversocket);  // closes remote session
         super.destroy();
-
     }
 }
