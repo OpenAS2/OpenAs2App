@@ -139,7 +139,7 @@ public class XMLSession extends BaseSession {
 
     private void loadProperties(Node propNode)
     {
-        Map<String, String> properties = XMLUtil.mapAttributes(propNode);
+        Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
         // Make key things accessible via static object for things that do not have accesss to session object
         properties.put(Properties.APP_TITLE_PROP, getAppTitle());
         properties.put(Properties.APP_VERSION_PROP, getAppVersion());
