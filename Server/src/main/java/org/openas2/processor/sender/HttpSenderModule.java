@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
+import org.openas2.util.Properties;
 
 
 public abstract class HttpSenderModule extends BaseSenderModule implements SenderModule {
@@ -32,20 +37,22 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
 	  public static final String PARAM_READ_TIMEOUT = "readtimeout";
 	  public static final String PARAM_CONNECT_TIMEOUT = "connecttimeout";
 	  
+  	private Log logger = LogFactory.getLog(HttpSenderModule.class.getSimpleName());
 	
     public HttpURLConnection getConnection(String url, boolean output, boolean input,
         boolean useCaches, String requestMethod) throws OpenAS2Exception
     {
     	if (url == null) throw new OpenAS2Exception("HTTP sender module received empty URL string.");
-    	Log logger = LogFactory.getLog(HttpSenderModule.class.getSimpleName());
         try {
         	System.setProperty("sun.net.client.defaultReadTimeout", getParameter(PARAM_READ_TIMEOUT, "60000"));
             System.setProperty("sun.net.client.defaultConnectTimeout", getParameter(PARAM_CONNECT_TIMEOUT, "60000"));
+
+            initializeProxyAuthenticator();
             HttpURLConnection conn;
             URL urlObj = new URL(url);
             if (urlObj.getProtocol().equalsIgnoreCase("https"))
             {
-            	HttpsURLConnection connS = (HttpsURLConnection) urlObj.openConnection();
+            	HttpsURLConnection connS = (HttpsURLConnection) urlObj.openConnection(getProxy("https"));
             	String selfSignedCN = System.getProperty("org.openas2.cert.TrustSelfSignedCN");
 				if (selfSignedCN != null)
 				{
@@ -93,7 +100,7 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
 				conn = connS;
 			} else
 			{
-				conn = (HttpURLConnection) urlObj.openConnection();
+				conn = (HttpURLConnection) urlObj.openConnection(getProxy("http"));
 			}
             conn.setDoOutput(output);
             conn.setDoInput(input);
@@ -106,7 +113,40 @@ public abstract class HttpSenderModule extends BaseSenderModule implements Sende
             throw new WrappedException(ioe);
         }
     }
+    
+    private Proxy getProxy(String protocol) throws OpenAS2Exception
+    {
+        String proxyHost =Properties.getProperty(protocol + ".proxyHost", null);
+        if (proxyHost == null) proxyHost = System.getProperty(protocol + ".proxyHost");
+        if (logger.isDebugEnabled()) logger.debug("PROXY HOST: " + proxyHost + " (protocol=" + protocol + ")");
+    	if (proxyHost == null) return Proxy.NO_PROXY;
+        String proxyPort =Properties.getProperty(protocol + ".proxyPort", null);
+        if (proxyPort == null) proxyPort = System.getProperty(protocol + ".proxyPort");
+        if (proxyPort == null) throw new OpenAS2Exception("Missing PROXY port since Proxy host is set");
+        int port = Integer.parseInt(proxyPort);
+        return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, port));
 
+    }
+
+    private void initializeProxyAuthenticator() {
+        String proxyUser1 = Properties.getProperty("http.proxyUser", null);
+        final String proxyUser = proxyUser1 == null?System.getProperty("http.proxyUser"):proxyUser1;
+        String proxyPwd1 =Properties.getProperty("http.proxyPassword", null);
+        final String proxyPassword = proxyPwd1 == null?System.getProperty("http.proxyPassword"):proxyPwd1;
+
+        if (proxyUser != null && proxyPassword != null) {
+            Authenticator.setDefault(
+              new Authenticator() {
+                public PasswordAuthentication getPasswordAuthentication() {
+                  return new PasswordAuthentication(
+                    proxyUser, proxyPassword.toCharArray()
+                  );
+                }
+              }
+            );
+        }
+    }
+    
     // Copy headers from an Http connection to an InternetHeaders object
     protected void copyHttpHeaders(HttpURLConnection conn, InternetHeaders headers) {
         Iterator<Map.Entry<String,List<String>>> connHeadersIt = conn.getHeaderFields().entrySet().iterator();
