@@ -114,7 +114,7 @@ public class XMLUtil {
         return attributes;
     }
 
-    public static Map<String, String> mapAttributes(Node node)
+    public static Map<String, String> mapAttributes(Node node, boolean keyToLowerCase)
     {
         Map<String, String> attrMap = new HashMap<String, String>();
         NamedNodeMap attrNodes = node.getAttributes();
@@ -124,12 +124,18 @@ public class XMLUtil {
         for (int i = 0; i < attrCount; i++)
         {
             attribute = attrNodes.item(i);
-            attrMap.put(attribute.getNodeName().toLowerCase(), attribute.getNodeValue());
+            String key = attribute.getNodeName();
+            if (keyToLowerCase) key = key.toLowerCase();
+            attrMap.put(key, attribute.getNodeValue());
         }
 
         return attrMap;
     }
 
+    public static Map<String, String> mapAttributes(Node node)
+    {
+    	return mapAttributes(node, true);
+    }
     public static Map<String, String> mapAttributes(Node node, String[] requiredAttributes)
             throws OpenAS2Exception
     {
