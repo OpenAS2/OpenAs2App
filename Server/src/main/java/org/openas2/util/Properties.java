@@ -25,7 +25,6 @@ public class Properties
 		String val = _properties.get(key);
 		if (val == null)
 		{
-			_properties.put(key, fallback);
 			return fallback;
 		}
 		return val;
