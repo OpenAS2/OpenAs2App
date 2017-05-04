@@ -62,6 +62,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     			{
     				logger.trace("Message object in resender module for storage. Content-Disposition: " + msg.getContentDisposition()
     				    + "\n      Content-Type : " + msg.getContentType()
+    				    + "\n      Retries : " + retries
     				    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
     				    + "\n      Content-Disposition in MSG getData() MIMEPART: "
     				    + msg.getData().getContentType()

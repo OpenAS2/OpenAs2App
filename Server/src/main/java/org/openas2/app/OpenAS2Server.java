@@ -22,13 +22,11 @@ public class OpenAS2Server {
 
     @Nonnull
     private final Session session;
-    private final boolean terminateJVM;
 
-	public OpenAS2Server(@Nonnull Session session, boolean terminateJVM)
+
+    public OpenAS2Server(@Nonnull Session session)
     {
         this.session = session;
-        this.terminateJVM = terminateJVM;
-        LOGGER.info("Starting Server with terminate set to: " + terminateJVM);
     }
 
 
@@ -54,7 +52,7 @@ public class OpenAS2Server {
 
         // start the active processor modules
         LOGGER.info("Starting Active Modules...");
-        session.getProcessor().startActiveModules();
+        session.start();
 
         // enter the command processing loop
         LOGGER.info(session.getAppTitle() + " Started");
@@ -75,13 +73,6 @@ public class OpenAS2Server {
 
         LOGGER.info("OpenAS2 has shut down\r\n");
     }
-
-    public boolean isTerminateJVM()
-	{
-		return terminateJVM;
-	}
-
-
 
     public static class Builder {
         private boolean registerShutdownHook;
@@ -111,8 +102,7 @@ public class OpenAS2Server {
         {
 
             XMLSession session = new XMLSession(findConfig(args).getAbsolutePath());
-            final OpenAS2Server server = new OpenAS2Server(session, registerShutdownHook);
-            session.setServer(server);
+            final OpenAS2Server server = new OpenAS2Server(session);
 
             registerShutdownHookIfNeeded(server);
 
@@ -124,7 +114,6 @@ public class OpenAS2Server {
         {
             if (registerShutdownHook)
             {
-            	LOGGER.info("Registering shutdown hook...");
                 Runtime.getRuntime().addShutdownHook(new Thread() {
                     @Override
                     public void run()
@@ -132,6 +121,7 @@ public class OpenAS2Server {
                         server.shutdown();
                     }
                 });
+                LOGGER.info("Shutdown hook registered.");
             }
         }
 

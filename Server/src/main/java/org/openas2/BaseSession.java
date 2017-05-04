@@ -21,11 +21,28 @@ public abstract class BaseSession implements Session {
      * @throws OpenAS2Exception
      * @see #init()
      */
-    public BaseSession() throws OpenAS2Exception {
+    public BaseSession() throws OpenAS2Exception
+    {
         init();
     }
 
-    public CertificateFactory getCertificateFactory() throws ComponentNotFoundException {
+    @Override
+    public void start() throws OpenAS2Exception
+    {
+        getProcessor().startActiveModules();
+    }
+
+    @Override
+    public void stop() throws Exception
+    {
+        for (Component component : components.values())
+        {
+            component.destroy();
+        }
+    }
+
+    public CertificateFactory getCertificateFactory() throws ComponentNotFoundException
+    {
         return (CertificateFactory) getComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY);
     }
 
@@ -42,26 +59,31 @@ public abstract class BaseSession implements Session {
         objects.put(componentID, comp);
     }
 
-    public Component getComponent(String componentID) throws ComponentNotFoundException {
+    public Component getComponent(String componentID) throws ComponentNotFoundException
+    {
         Map<String, Component> comps = getComponents();
         Component comp = comps.get(componentID);
 
-        if (comp == null) {
+        if (comp == null)
+        {
             throw new ComponentNotFoundException(componentID);
         }
 
         return comp;
     }
 
-    public Map<String, Component> getComponents() {
+    public Map<String, Component> getComponents()
+    {
         return components;
     }
 
-    public PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException {
+    public PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException
+    {
         return (PartnershipFactory) getComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY);
     }
 
-    public Processor getProcessor() throws ComponentNotFoundException {
+    public Processor getProcessor() throws ComponentNotFoundException
+    {
         return (Processor) getComponent(Processor.COMPID_PROCESSOR);
     }
 
@@ -71,7 +93,8 @@ public abstract class BaseSession implements Session {
      *
      * @throws OpenAS2Exception If an error occurs while initializing systems
      */
-    protected void init() throws OpenAS2Exception {
+    protected void init() throws OpenAS2Exception
+    {
         initJavaMail();
     }
 
