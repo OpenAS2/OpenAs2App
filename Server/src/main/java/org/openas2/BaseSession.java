@@ -12,53 +12,78 @@ import org.openas2.processor.Processor;
 
 
 public abstract class BaseSession implements Session {
-    private Map<String, Component> components;
-	private String baseDirectory;
+    private Map<String, Component> components = new HashMap<String, Component>();
+    private String baseDirectory;
 
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
      *
      * @throws OpenAS2Exception
-     *
      * @see #init()
      */
-    public BaseSession() throws OpenAS2Exception {
+    public BaseSession() throws OpenAS2Exception
+    {
         init();
     }
 
-    public CertificateFactory getCertificateFactory() throws ComponentNotFoundException {
+    @Override
+    public void start() throws OpenAS2Exception
+    {
+        getProcessor().startActiveModules();
+    }
+
+    @Override
+    public void stop() throws Exception
+    {
+        for (Component component : components.values())
+        {
+            component.destroy();
+        }
+    }
+
+    public CertificateFactory getCertificateFactory() throws ComponentNotFoundException
+    {
         return (CertificateFactory) getComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY);
     }
 
-    public void setComponent(String componentID, Component comp) {
+    /**
+     * Registers a component to a specified ID.
+     *
+     * @param componentID registers the component to this ID
+     * @param comp        component to register
+     * @see Component
+     */
+    void setComponent(String componentID, Component comp)
+    {
         Map<String, Component> objects = getComponents();
         objects.put(componentID, comp);
     }
 
-    public Component getComponent(String componentID) throws ComponentNotFoundException {
+    public Component getComponent(String componentID) throws ComponentNotFoundException
+    {
         Map<String, Component> comps = getComponents();
         Component comp = comps.get(componentID);
 
-        if (comp == null) {
+        if (comp == null)
+        {
             throw new ComponentNotFoundException(componentID);
         }
 
         return comp;
     }
 
-    public Map<String, Component> getComponents() {
-        if (components == null) {
-            components = new HashMap<String, Component>();
-        }
-
+    public Map<String, Component> getComponents()
+    {
         return components;
     }
 
-    public PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException {
+    public PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException
+    {
         return (PartnershipFactory) getComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY);
     }
 
-    public Processor getProcessor() throws ComponentNotFoundException {
+    public Processor getProcessor() throws ComponentNotFoundException
+    {
         return (Processor) getComponent(Processor.COMPID_PROCESSOR);
     }
 
@@ -68,7 +93,8 @@ public abstract class BaseSession implements Session {
      *
      * @throws OpenAS2Exception If an error occurs while initializing systems
      */
-    protected void init() throws OpenAS2Exception {
+    protected void init() throws OpenAS2Exception
+    {
         initJavaMail();
     }
 
@@ -78,19 +104,22 @@ public abstract class BaseSession implements Session {
      *
      * @throws OpenAS2Exception If an error occurs while initializing mime types
      */
-    protected void initJavaMail() throws OpenAS2Exception {
+    private void initJavaMail() throws OpenAS2Exception
+    {
         MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
         mc.addMailcap(
-            "message/disposition-notification;; x-java-content-handler=org.openas2.util.DispositionDataContentHandler");
+                "message/disposition-notification;; x-java-content-handler=org.openas2.util.DispositionDataContentHandler");
         CommandMap.setDefaultCommandMap(mc);
     }
 
-	public String getBaseDirectory() {
-		return baseDirectory;
-	}
+    public String getBaseDirectory()
+    {
+        return baseDirectory;
+    }
 
-	public void setBaseDirectory(String dir) {
-		baseDirectory = dir;
-	}
+    void setBaseDirectory(String dir)
+    {
+        baseDirectory = dir;
+    }
 
 }

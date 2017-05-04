@@ -1,6 +1,7 @@
 package org.openas2.processor.msgtracking;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -10,10 +11,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.h2.tools.Server;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
-import org.openas2.database.H2DBHandler;
 import org.openas2.message.Message;
 import org.openas2.params.ComponentParameters;
 import org.openas2.params.CompositeParameters;
@@ -35,18 +34,20 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 	public static final String PARAM_JDBC_SERVER_URL = "jdbc_server_url";
 	public static final String PARAM_JDBC_PARAMS = "jdbc_extra_paramters";
 
-	public static final String DEFAULT_TRACKING_DB_HANDLER_CLASS = "org.openas2.processor.msgtracking.DBHandler";
-	public static final String PARAM_TRACKING_DB_HANDLER_CLASS = "tracking_db_handler_class";
+	public static final String PARAM_USE_EMBEDDED_DB = "use_embedded_db";
+	public static final String PARAM_FORCE_LOAD_JDBC_DRIVER = "force_load_jdbc_driver";
 
 	private String dbUser = null;
 	private String dbPwd = null;
-	private String dbDirectory = null;
 	private String jdbcConnectString = null;
 	private String configBaseDir = null;
-	//private String jdbcDriver = null;
+	private String jdbcDriver = null;
 	private boolean isRunning = false;
 	private String sqlEscapeChar = "'";
-	Server server = null;
+	private boolean useEmbeddedDB = true;
+	private boolean forceLoadJdbcDriver = false;
+	private String dbPlatform = "h2";
+	IDBHandler dbHandler = null;
 
 	private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
 
@@ -56,14 +57,32 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		CompositeParameters paramParser = createParser();
 		dbUser = getParameter(PARAM_DB_USER, true);
 		dbPwd = getParameter(PARAM_DB_PWD, true);
-		dbDirectory = getParameter(PARAM_DB_DIRECTORY, true);
 		configBaseDir = session.getBaseDirectory();
 		jdbcConnectString = getParameter(PARAM_JDBC_CONNECT_STRING, true);
 		jdbcConnectString.replace("%home%", configBaseDir);
 		// Support component attributes in connect string
 		jdbcConnectString = ParameterParser.parse(jdbcConnectString, paramParser);
-		//jdbcDriver = getParameter(PARAM_JDBC_DRIVER, false);
+		dbPlatform = jdbcConnectString.replaceAll(".*jdbc:([^:]*):.*", "$1");
+		jdbcDriver = getParameter(PARAM_JDBC_DRIVER, false);
 		sqlEscapeChar = Properties.getProperty("sql_escape_character", "'");
+		useEmbeddedDB = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "true"));
+		forceLoadJdbcDriver = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "false"));
+		if (!useEmbeddedDB && forceLoadJdbcDriver)
+		{
+			try
+			{
+
+				Class.forName(jdbcDriver);
+
+			} catch (ClassNotFoundException e)
+			{
+
+				logger.error("Failed to load JDBC driver: " + jdbcDriver, e);
+				e.printStackTrace();
+				return;
+
+			}
+		}
 	}
 
 	protected String getModuleAction()
@@ -84,24 +103,31 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		Connection conn = null;
 		try
 		{
-			conn = DBConnection.getConnection(jdbcConnectString, dbUser, dbPwd);
+			if (useEmbeddedDB)
+				conn = dbHandler.getConnection();
+			else
+			{
+				conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+			}
 			Statement s = conn.createStatement();
 			String msgIdField = FIELDS.MSG_ID;
-			ResultSet rs = s.executeQuery("select * from msg_metadata where " + msgIdField + " = '"
-					+ map.get(msgIdField) + "'");
+			ResultSet rs = s.executeQuery(
+					"select * from msg_metadata where " + msgIdField + " = '" + map.get(msgIdField) + "'");
 			ResultSetMetaData meta = rs.getMetaData();
 			boolean isUpdate = rs.next(); // Record already exists so update
 			StringBuffer fieldStmt = new StringBuffer();
+			StringBuffer valuesStmt = new StringBuffer();
 			for (int i = 0; i < meta.getColumnCount(); i++)
 			{
 				String colName = meta.getColumnLabel(i + 1);
-				if (colName.equalsIgnoreCase("ID")) continue;
+				if (colName.equalsIgnoreCase("ID"))
+					continue;
 				else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT))
 				{
 					// Ignore if not update mode
-					if (isUpdate) appendField(colName, DateUtil.getSqlTimestamp(), fieldStmt, meta.getColumnType(i + 1));
-									}
-				else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT))
+					if (isUpdate)
+						appendFieldForUpdate(colName, DateUtil.getSqlTimestamp(), fieldStmt, meta.getColumnType(i + 1));
+				} else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT))
 					map.remove(FIELDS.CREATE_DT);
 				else if (isUpdate)
 				{
@@ -117,12 +143,16 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 						// Unchanged value so remove from map
 						continue;
 					}
-					appendField(colName, mapVal, fieldStmt, meta.getColumnType(i + 1));
-				}
-				else
+					appendFieldForUpdate(colName, mapVal, fieldStmt, meta.getColumnType(i + 1));
+				} else
 				{
-					// For new record add every field
-					appendField(colName, map.get(colName.toUpperCase()), fieldStmt, meta.getColumnType(i + 1));
+					// For new record add every field that is not NULL
+					String mapVal = map.get(colName.toUpperCase());
+					if (mapVal == null)
+					{
+						continue;
+					}
+					appendFieldForInsert(colName, mapVal, fieldStmt, valuesStmt, meta.getColumnType(i + 1));
 				}
 			}
 			if (fieldStmt.length() > 0)
@@ -130,40 +160,35 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 				String stmt = "";
 				if (isUpdate)
 				{
-					stmt = "update msg_metadata set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '" + map.get(msgIdField) + "'"; 
-				}
-				else
-					stmt = "insert into msg_metadata set " + fieldStmt.toString();
+					stmt = "update msg_metadata set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
+							+ map.get(msgIdField) + "'";
+				} else
+					stmt = "insert into msg_metadata (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
 				if (s.executeUpdate(stmt) > 0)
 				{
-					if (logger.isDebugEnabled()) logger.debug("Tracking record successfully persisted to database: " + map);
-				}
-				else
+					if (logger.isDebugEnabled())
+						logger.debug("Tracking record successfully persisted to database: " + map);
+				} else
 				{
 					throw new OpenAS2Exception("Failed to persist tracking record to DB: " + map);
 				}
-			}
-			else
+			} else
 			{
-				if (logger.isInfoEnabled()) logger.info("No change from existing record in DB. Tracking record not updated: " + map);
+				if (logger.isInfoEnabled())
+					logger.info("No change from existing record in DB. Tracking record not updated: " + map);
 			}
 		} catch (Exception e)
 		{
 			msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.logging.Log.getExceptionMsg(e)
 					+ " ::: Data map: " + map);
 			logger.error(msg, e);
-		}
-		finally
+		} finally
 		{
 			if (conn != null)
 			{
 				try
 				{
-					DBConnection.releaseConnection(conn);
-				} catch (OpenAS2Exception e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					conn.close();
 				} catch (SQLException e)
 				{
 					// TODO Auto-generated catch block
@@ -173,126 +198,93 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		}
 
 	}
-	
-	private void appendField(String name, String value, StringBuffer sb, int dataType)
-	{
-		String valueEncap = "'";
-		boolean requiresEncap = true; // Assume it is a field requiring encapsulation
-		if (value == null) requiresEncap = false; // setting field to NULL 
-		else
-		{
-			switch (dataType)
-			{
-			case Types.BIGINT:
-			case Types.DECIMAL:
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.INTEGER:
-			case Types.NUMERIC:
-			case Types.REAL:
-			case Types.ROWID:
-			case Types.SMALLINT:
-				requiresEncap = false;
-				break;
-			}
-		}
 
+	private String formatField(String value, int dataType)
+	{
+		if (value == null)
+			return "NULL";
+		switch (dataType)
+		{
+		case Types.BIGINT:
+		case Types.DECIMAL:
+		case Types.DOUBLE:
+		case Types.FLOAT:
+		case Types.INTEGER:
+		case Types.NUMERIC:
+		case Types.REAL:
+		case Types.SMALLINT:
+		case Types.BINARY:
+		case Types.TINYINT:
+		//case Types.ROWID:
+			return value;
+		case Types.TIME_WITH_TIMEZONE:
+		case Types.TIMESTAMP_WITH_TIMEZONE:
+		case Types.DATE:
+		case Types.TIME:
+		case Types.TIMESTAMP:
+			if ("oracle".equalsIgnoreCase(dbPlatform))
+			{
+				if (value.length() > 19)
+					return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
+				else
+					return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
+			} else if ("mssql".equalsIgnoreCase(dbPlatform))
+				return ("CAST('" + value + "' AS DATETIME)");
+			else
+				return "'" + value + "'";
+
+		}
+		// Must be some kind of string value if it gets here
+		return "'" + value.replaceAll("'", sqlEscapeChar + "'") + "'";
+
+	}
+
+	private void appendFieldForUpdate(String name, String value, StringBuffer sb, int dataType)
+	{
 		if (sb.length() > 0)
 			sb.append(",");
 
-		sb.append(name).append("=");
-		if (requiresEncap) sb.append(valueEncap).append(value.replaceAll("'", sqlEscapeChar+"'")).append(valueEncap);
-		else sb.append(value);
+		sb.append(name).append("=").append(formatField(value, dataType));
+
+	}
+
+	private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values, int dataType)
+	{
+		if (names.length() > 0)
+		{
+			names.append(",");
+			values.append(",");
+		}
+
+		names.append(name);
+		values.append(formatField(value, dataType));
 
 	}
 
 	public boolean isRunning()
 	{
-		return isRunning;
+		if (useEmbeddedDB)
+			return isRunning;
+		else
+			return true;
 	}
 
 	public void start() throws OpenAS2Exception
 	{
-		DBConnection.start(jdbcConnectString, dbUser, dbPwd);
+		if (!useEmbeddedDB)
+			return;
+
+		dbHandler = new EmbeddedDBHandler();
+		dbHandler.start(jdbcConnectString, dbUser, dbPwd, getParameters());
 		isRunning = true;
-		if ("true".equalsIgnoreCase(getParameter(PARAM_TCP_SERVER_START, "true")))
-		{
-			String tcpPort = getParameter(PARAM_TCP_SERVER_PORT, "9092");
-			String tcpPwd = getParameter(PARAM_TCP_SERVER_PWD, "OpenAS2");
-					
-			try
-			{
-				server = Server.createTcpServer( "-tcpPort", tcpPort, "-tcpPassword", tcpPwd, "-baseDir", dbDirectory, "-tcpAllowOthers").start();
-			} catch (SQLException e)
-			{
-				throw new OpenAS2Exception("Failed to start TCP server", e);
-			}
-		}
 	}
 
 	public void stop()
 	{
-		try
-		{
-			// Stopping the TCP server will stop the database so only do one of them
-			if (server != null)
-			{
-				server.shutdown();
-			}
-			else
-			{
-				DBConnection.stop(jdbcConnectString);
-			}
-			isRunning = false;
-		} catch (Exception e)
-		{
-			if (logger.isErrorEnabled())
-				logger.error("Failed to stop database for message tracking module.", e);
-		}
-	}
+		if (!useEmbeddedDB)
+			return;
 
-	/*
-	 * Use a static class to make sure we only have one instance of the database
-	 * connection pool no matter how many DbTrackingModule instances there are.
-	 */
-	private static class DBConnection
-	{
-		private static H2DBHandler dbHandler = null;
-
-		public static Connection getConnection(String connectString, String userId, String pwd)
-				throws OpenAS2Exception, SQLException
-		{
-			if (dbHandler == null)
-				throw new OpenAS2Exception("Database has not been started: " + connectString);
-			return dbHandler.getConnection();
-		}
-
-		public static void releaseConnection(Connection c) throws OpenAS2Exception, SQLException
-		{
-			if (dbHandler == null)
-				throw new OpenAS2Exception("Database has not been started trying to release connection");
-			c.close();
-		
-		}
-
-		public static void start(String connectString, String userId, String pwd) throws OpenAS2Exception
-		{
-			if (dbHandler == null)
-			{
-				dbHandler = new H2DBHandler();
-				dbHandler.createConnectionPool(connectString, userId, pwd);
-			} else
-				throw new OpenAS2Exception("Database was already started: " + connectString);
-		}
-
-		public static void stop(String connectString) throws OpenAS2Exception, SQLException
-		{
-			if (dbHandler != null)
-			{
-				dbHandler.shutdown(connectString);
-				dbHandler.destroyConnectionPool();
-			}
-		}
+		dbHandler.stop();
 	}
 
 }

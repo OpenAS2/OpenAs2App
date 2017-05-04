@@ -5,26 +5,32 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
-import org.openas2.cmd.CommandRegistryFactory;
 import org.openas2.cmd.processor.BaseCommandProcessor;
 import org.openas2.logging.LogManager;
 import org.openas2.logging.Logger;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
+import org.openas2.schedule.SchedulerComponent;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
@@ -35,232 +41,292 @@ import org.xml.sax.SAXException;
 
 /**
  * original author unknown
- * 
+ * <p>
  * in this release added command registry methods
- * @author joseph mcverry
  *
+ * @author joseph mcverry
  */
-public class XMLSession extends BaseSession implements CommandRegistryFactory {
-	public static final String EL_PROPERTIES = "properties";
-	public static final String EL_CERTIFICATES = "certificates";
-	public static final String EL_CMDPROCESSOR = "commandProcessors";
-	public static final String EL_PROCESSOR = "processor";
-	public static final String EL_PARTNERSHIPS = "partnerships";
-	public static final String EL_COMMANDS = "commands";
-	public static final String EL_LOGGERS = "loggers";
-	public static final String PARAM_BASE_DIRECTORY = "basedir";
-	private CommandRegistry commandRegistry;
-	private CommandManager cmdManager;
+public class XMLSession extends BaseSession {
+    private static final String EL_PROPERTIES = "properties";
+    private static final String EL_CERTIFICATES = "certificates";
+    private static final String EL_CMDPROCESSOR = "commandProcessors";
+    private static final String EL_PROCESSOR = "processor";
+    private static final String EL_PARTNERSHIPS = "partnerships";
+    private static final String EL_COMMANDS = "commands";
+    private static final String EL_LOGGERS = "loggers";
+    private static final String PARAM_BASE_DIRECTORY = "basedir";
 
-	private  String VERSION;
-	private  String TITLE;
+    private CommandRegistry commandRegistry;
+    private CommandManager cmdManager = new CommandManager();
 
-	
-	public XMLSession(InputStream in) throws OpenAS2Exception,
-			ParserConfigurationException, SAXException, IOException {
-		super();
-		load(in);
-	}
+    private String VERSION;
+    private String TITLE;
 
-	public XMLSession(String filename) throws OpenAS2Exception,
-			ParserConfigurationException, SAXException, IOException {
-		File file = new File(filename).getAbsoluteFile();
-		setBaseDirectory(file.getParent());
-		FileInputStream fin = new FileInputStream(file);
-		try {
-			load(fin);
-		} finally {
-			fin.close();
-		}
-	}
+    private static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
 
-	public void setCommandRegistry(CommandRegistry registry) {
-		commandRegistry = registry;
-	}
-
-	public CommandRegistry getCommandRegistry() {
-		return commandRegistry;
-	}
-
-	protected void load(InputStream in) throws ParserConfigurationException,
-			SAXException, IOException, OpenAS2Exception {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
-		DocumentBuilder parser = factory.newDocumentBuilder();
-		Document document = parser.parse(in);
-		Element root = document.getDocumentElement();
-
-		NodeList rootNodes = root.getChildNodes();
-		Node rootNode;
-		String nodeName;
-
-		for (int i = 0; i < rootNodes.getLength(); i++) {
-			rootNode = rootNodes.item(i);
-
-			nodeName = rootNode.getNodeName();
-
-			if (nodeName.equals(EL_PROPERTIES)) {
-				loadProperties(rootNode);
-			} else if (nodeName.equals(EL_CERTIFICATES)) {
-				loadCertificates(rootNode);
-			} else if (nodeName.equals(EL_PROCESSOR)) {
-				loadProcessor(rootNode);
-			} else if (nodeName.equals(EL_CMDPROCESSOR)) {
-				loadCommandProcessors(rootNode);
-			} else if (nodeName.equals(EL_PARTNERSHIPS)) {
-				loadPartnerships(rootNode);
-			} else if (nodeName.equals(EL_COMMANDS)) {
-				loadCommands(rootNode);
-			} else if (nodeName.equals(EL_LOGGERS)) {
-				loadLoggers(rootNode);
-			} else if (nodeName.equals("#text")) {
-				// do nothing
-			} else if (nodeName.equals("#comment")) {
-				// do nothing
-			} else {
-				throw new OpenAS2Exception("Undefined tag: " + nodeName);
-			}
-		}
-	}
-	
-    protected void loadProperties(Node propNode)
+    public XMLSession(String configAbsPath) throws OpenAS2Exception,
+            ParserConfigurationException, SAXException, IOException
     {
-    	Map<String, String> properties = XMLUtil.mapAttributes(propNode);
-    	Properties.setProperties(properties);
+        File configXml = new File(configAbsPath);
+        File configDir = configXml.getParentFile();
+
+        FileInputStream configAsStream = new FileInputStream(configXml);
+        setBaseDirectory(configDir.getAbsolutePath());
+
+        load(configAsStream);
+
+        // scheduler should be initializer after all modules
+        addSchedulerComponent();
     }
 
-	protected void loadCertificates(Node rootNode) throws OpenAS2Exception {
-		CertificateFactory certFx = (CertificateFactory) XMLUtil.getComponent(
-				rootNode, this);
-		setComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY, certFx);
-	}
+    private void addSchedulerComponent() throws OpenAS2Exception
+    {
+        SchedulerComponent comp = new SchedulerComponent();
+        setComponent("scheduler", comp);
+        comp.init(this, Collections.<String, String>emptyMap());
+    }
 
-	protected void loadCommands(Node rootNode) throws OpenAS2Exception {
-		CommandRegistry cmdReg = (CommandRegistry) XMLUtil.getComponent(
-				rootNode, this);
-		setCommandRegistry(cmdReg);
-	}
 
-	protected void loadLoggers(Node rootNode) throws OpenAS2Exception {
-		
-		LogManager manager = LogManager.getLogManager();
-		if (LogManager.isRegisteredWithApache())
-			; // continue
-		else {
-			// if using the OpenAS2 loggers the log manager must registered with the jvm argument
-			// -Dorg.apache.commons.logging.Log=org.openas2.logging.Log
-			throw new OpenAS2Exception("the OpenAS2 loggers' log manager must registered with the jvm argument -Dorg.apache.commons.logging.Log=org.openas2.logging.Log");
-		}
-		NodeList loggers = rootNode.getChildNodes();
-		Node logger;
+    protected void load(InputStream in) throws ParserConfigurationException,
+            SAXException, IOException, OpenAS2Exception
+    {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-		for (int i = 0; i < loggers.getLength(); i++) {
-			logger = loggers.item(i);
+        DocumentBuilder parser = factory.newDocumentBuilder();
+        Document document = parser.parse(in);
+        Element root = document.getDocumentElement();
 
-			if (logger.getNodeName().equals("logger")) {
-				loadLogger(manager, logger);
-			}
-		}
-	}
+        NodeList rootNodes = root.getChildNodes();
+        Node rootNode;
+        String nodeName;
 
-	protected void loadLogger(LogManager manager, Node loggerNode)
-			throws OpenAS2Exception {
-		Logger logger = (Logger) XMLUtil.getComponent(loggerNode, this);
-		manager.addLogger(logger);
-	}
+        // this is used by all other objects to access global configs and functionality
+        LOGGER.info("Loading configuration...");
+        for (int i = 0; i < rootNodes.getLength(); i++)
+        {
+            rootNode = rootNodes.item(i);
 
-	protected void loadCommandProcessors(Node rootNode) throws OpenAS2Exception {
-		cmdManager = CommandManager.getCmdManager();
+            nodeName = rootNode.getNodeName();
 
-		NodeList cmdProcessor = rootNode.getChildNodes();
-		Node processor;
+            // enter the command processing loop
+            if (nodeName.equals(EL_PROPERTIES))
+            {
+                loadProperties(rootNode);
+            } else if (nodeName.equals(EL_CERTIFICATES))
+            {
+                loadCertificates(rootNode);
+            } else if (nodeName.equals(EL_PROCESSOR))
+            {
+                loadProcessor(rootNode);
+            } else if (nodeName.equals(EL_CMDPROCESSOR))
+            {
+                loadCommandProcessors(rootNode);
+            } else if (nodeName.equals(EL_PARTNERSHIPS))
+            {
+                loadPartnerships(rootNode);
+            } else if (nodeName.equals(EL_COMMANDS))
+            {
+                loadCommands(rootNode);
+            } else if (nodeName.equals(EL_LOGGERS))
+            {
+                loadLoggers(rootNode);
+            } else if (nodeName.equals("#text"))
+            {
+                // do nothing
+            } else if (nodeName.equals("#comment"))
+            {
+                // do nothing
+            } else
+            {
+                throw new OpenAS2Exception("Undefined tag: " + nodeName);
+            }
+        }
 
-		for (int i = 0; i < cmdProcessor.getLength(); i++) {
-			processor = cmdProcessor.item(i);
+        cmdManager.registerCommands(commandRegistry);
+    }
 
-			if (processor.getNodeName().equals("commandProcessor")) {
-				loadCommandProcessor(cmdManager, processor);
-			}
-		}
-	}
+    private void loadProperties(Node propNode)
+    {
+        LOGGER.info("Loading properties...");
 
-	public CommandManager getCommandManager() {
-		return cmdManager;
-	}
+        Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
+        // Make key things accessible via static object for things that do not have accesss to session object
+        properties.put(Properties.APP_TITLE_PROP, getAppTitle());
+        properties.put(Properties.APP_VERSION_PROP, getAppVersion());
+        Properties.setProperties(properties);
+    }
 
-	protected void loadCommandProcessor(CommandManager manager,
-			Node cmdPrcessorNode) throws OpenAS2Exception {
-		BaseCommandProcessor cmdProcesor = (BaseCommandProcessor) XMLUtil
-				.getComponent(cmdPrcessorNode, this);
-		manager.addProcessor(cmdProcesor);
-	}
-	protected void loadPartnerships(Node rootNode) throws OpenAS2Exception {
-		PartnershipFactory partnerFx = (PartnershipFactory) XMLUtil
-				.getComponent(rootNode, this);
-		setComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY, partnerFx);
-	}
+    private void loadCertificates(Node rootNode) throws OpenAS2Exception
+    {
+        CertificateFactory certFx = (CertificateFactory) XMLUtil.getComponent(
+                rootNode, this);
+        setComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY, certFx);
+    }
 
-	protected void loadProcessor(Node rootNode) throws OpenAS2Exception {
-		Processor proc = (Processor) XMLUtil.getComponent(rootNode, this);
-		setComponent(Processor.COMPID_PROCESSOR, proc);
+    private void loadCommands(Node rootNode) throws OpenAS2Exception
+    {
+        Component component = XMLUtil.getComponent(rootNode, this);
+        commandRegistry = (CommandRegistry) component;
+    }
 
-		NodeList modules = rootNode.getChildNodes();
-		Node module;
+    private void loadLoggers(Node rootNode) throws OpenAS2Exception
+    {
+        LOGGER.info("Loading log manager(s)...");
 
-		for (int i = 0; i < modules.getLength(); i++) {
-			module = modules.item(i);
+        LogManager manager = LogManager.getLogManager();
+        if (LogManager.isRegisteredWithApache())
+        {
+            ; // continue
+        } else
+        {
+            // if using the OpenAS2 loggers the log manager must registered with the jvm argument
+            // -Dorg.apache.commons.logging.Log=org.openas2.logging.Log
+            throw new OpenAS2Exception("the OpenAS2 loggers' log manager must registered with the jvm argument -Dorg.apache.commons.logging.Log=org.openas2.logging.Log");
+        }
+        NodeList loggers = rootNode.getChildNodes();
+        Node logger;
 
-			if (module.getNodeName().equals("module")) {
-				loadProcessorModule(proc, module);
-			}
-		}
-	}
+        for (int i = 0; i < loggers.getLength(); i++)
+        {
+            logger = loggers.item(i);
 
-	protected void loadProcessorModule(Processor proc, Node moduleNode)
-			throws OpenAS2Exception {
-		ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(
-				moduleNode, this);
-		proc.getModules().add(procmod);
-	}
+            if (logger.getNodeName().equals("logger"))
+            {
+                loadLogger(manager, logger);
+            }
+        }
+    }
 
-	private String getManifestAttribValue(String attrib) {
-	    Enumeration<?> resEnum;
-	    try {
-	        resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
-	        while (resEnum.hasMoreElements()) {
-	            try {
-	                URL url = (URL)resEnum.nextElement();
-	                if (!url.getPath().contains("openas2")) continue;
-	                InputStream is = url.openStream();
-	                if (is != null) {
-	                    Manifest manifest = new Manifest(is);
-	                    Attributes mainAttribs = manifest.getMainAttributes();
-	                    String value = mainAttribs.getValue(attrib);
-	                    if(value != null) {
-	                        return value;
-	                    }
-	                }
-	            }
-	            catch (Exception e) {
-	                // Silently ignore wrong manifests on classpath?
-	            }
-	        }
-	    } catch (IOException e1) {
-	        // Silently ignore wrong manifests on classpath?
-	    }
-	    return null; 
-	}
+    private void loadLogger(LogManager manager, Node loggerNode)
+            throws OpenAS2Exception
+    {
+        Logger logger = (Logger) XMLUtil.getComponent(loggerNode, this);
+        manager.addLogger(logger);
+    }
 
-	public String getAppVersion()
-	{
-	    if (VERSION == null) VERSION = getManifestAttribValue("Implementation-Version");
-	    return VERSION;
-	}
+    private void loadCommandProcessors(Node rootNode) throws OpenAS2Exception
+    {
 
-	public String getAppTitle()
-	{
-	    if (TITLE == null) TITLE = getManifestAttribValue("Implementation-Title") + " v" + getAppVersion();
-	    return TITLE;
+        // get a registry of Command objects, and add Commands for the Session
+        LOGGER.info("Loading command processor(s)...");
 
-	}
+        NodeList cmdProcessor = rootNode.getChildNodes();
+        Node processor;
+
+        for (int i = 0; i < cmdProcessor.getLength(); i++)
+        {
+            processor = cmdProcessor.item(i);
+
+            if (processor.getNodeName().equals("commandProcessor"))
+            {
+                loadCommandProcessor(cmdManager, processor);
+            }
+        }
+    }
+
+    private void loadCommandProcessor(CommandManager manager,
+                                      Node cmdPrcessorNode) throws OpenAS2Exception
+    {
+        BaseCommandProcessor cmdProcesor = (BaseCommandProcessor) XMLUtil
+                .getComponent(cmdPrcessorNode, this);
+        manager.addProcessor(cmdProcesor);
+
+        setComponent(cmdProcesor.getName(), cmdProcesor);
+    }
+
+    private void loadPartnerships(Node rootNode) throws OpenAS2Exception
+    {
+        LOGGER.info("Loading partnerships...");
+
+        PartnershipFactory partnerFx = (PartnershipFactory) XMLUtil
+                .getComponent(rootNode, this);
+        setComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY, partnerFx);
+    }
+
+    private void loadProcessor(Node rootNode) throws OpenAS2Exception
+    {
+        Processor proc = (Processor) XMLUtil.getComponent(rootNode, this);
+        setComponent(Processor.COMPID_PROCESSOR, proc);
+
+        LOGGER.info("Loading processor modules...");
+
+        NodeList modules = rootNode.getChildNodes();
+        Node module;
+
+        for (int i = 0; i < modules.getLength(); i++)
+        {
+            module = modules.item(i);
+
+            if (module.getNodeName().equals("module"))
+            {
+                loadProcessorModule(proc, module);
+            }
+        }
+    }
+
+    private void loadProcessorModule(Processor proc, Node moduleNode)
+            throws OpenAS2Exception
+    {
+        ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(
+                moduleNode, this);
+        proc.getModules().add(procmod);
+    }
+
+    @Nullable
+    private String getManifestAttribValue(@Nonnull String attrib)
+    {
+        Enumeration<?> resEnum;
+        try
+        {
+            resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
+            while (resEnum.hasMoreElements())
+            {
+                try
+                {
+                    URL url = (URL) resEnum.nextElement();
+                    if (!url.getPath().contains("openas2"))
+                    {
+                        continue;
+                    }
+                    InputStream is = url.openStream();
+                    if (is != null)
+                    {
+                        Manifest manifest = new Manifest(is);
+                        Attributes mainAttribs = manifest.getMainAttributes();
+                        String value = mainAttribs.getValue(attrib);
+                        if (value != null)
+                        {
+                            return value;
+                        }
+                    }
+                } catch (Exception e)
+                {
+                    // Silently ignore wrong manifests on classpath?
+                }
+            }
+        } catch (IOException e1)
+        {
+            // Silently ignore wrong manifests on classpath?
+        }
+        return null;
+    }
+
+    public String getAppVersion()
+    {
+        if (VERSION == null)
+        {
+            VERSION = getManifestAttribValue("Implementation-Version");
+        }
+        return VERSION;
+    }
+
+    public String getAppTitle()
+    {
+        if (TITLE == null)
+        {
+            TITLE = getManifestAttribValue("Implementation-Title") + " v" + getAppVersion();
+        }
+        return TITLE;
+
+    }
 }

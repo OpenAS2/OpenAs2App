@@ -10,58 +10,62 @@ import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
 
 
-public abstract class PollingModule extends MessageBuilderModule {	
-	public static final String PARAM_POLLING_INTERVAL = "interval";
-	private Timer timer;
+public abstract class PollingModule extends MessageBuilderModule {
+    private static final String PARAM_POLLING_INTERVAL = "interval";
+    private Timer timer;
     private boolean busy;
-	
-	public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
-		super.init(session, options);
-		getParameter(PARAM_POLLING_INTERVAL, true);		
-	}
 
-	public void setInterval(int seconds) {
-		setParameter(PARAM_POLLING_INTERVAL, seconds);
-	}
+    public void init(Session session, Map<String, String> options) throws OpenAS2Exception
+    {
+        super.init(session, options);
+        getParameter(PARAM_POLLING_INTERVAL, true);
+    }
 
-	public int getInterval() throws InvalidParameterException {		
-		
-			return getParameterInt(PARAM_POLLING_INTERVAL, true);
-		
-	}
+    private int getInterval() throws InvalidParameterException
+    {
+        return getParameterInt(PARAM_POLLING_INTERVAL, true);
+    }
 
-	public abstract void poll();
+    public abstract void poll();
 
-	public void doStart() throws OpenAS2Exception {
-		timer = new Timer(true);
-		timer.scheduleAtFixedRate(new PollTask(), 0, getInterval() * 1000);
-	}
+    public void doStart() throws OpenAS2Exception
+    {
+        timer = new Timer(getName(), false);
+        timer.scheduleAtFixedRate(new PollTask(), 0, getInterval() * 1000);
+    }
 
-	public void doStop() throws OpenAS2Exception {
-		if (timer != null) {
-			timer.cancel();
-			timer = null;
-		}
-	}
+    public void doStop() throws OpenAS2Exception
+    {
+        if (timer != null)
+        {
+            timer.cancel();
+            timer = null;
+        }
+    }
 
-	private class PollTask extends TimerTask {
-		public void run() {
-            if (!isBusy()) {
-                setBusy(true);                
-			     poll();
-                 setBusy(false);
-            } else {
-                System.out.println("Miss tick");
-            }
-		}
-	}
-
-    public boolean isBusy() {
+    private boolean isBusy()
+    {
         return busy;
     }
 
-    public void setBusy(boolean b) {
+    private void setBusy(boolean b)
+    {
         busy = b;
+    }
+
+    private class PollTask extends TimerTask {
+        public void run()
+        {
+            if (!isBusy())
+            {
+                setBusy(true);
+                poll();
+                setBusy(false);
+            } else
+            {
+                System.out.println("Miss tick");
+            }
+        }
     }
 
 }

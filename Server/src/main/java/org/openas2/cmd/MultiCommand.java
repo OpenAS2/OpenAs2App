@@ -28,7 +28,7 @@ public class MultiCommand extends BaseCommand {
         Command cmd;
 
         for (int i = 0; i < commands.size(); i++) {
-            cmd = (Command) commands.get(i);
+            cmd = commands.get(i);
 
             if (cmd.getName().equals(name)) {
                 return cmd;

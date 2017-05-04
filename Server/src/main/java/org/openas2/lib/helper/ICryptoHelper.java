@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
-
 import javax.mail.internet.MimeBodyPart;
 
 import org.bouncycastle.mail.smime.SMIMEException;
@@ -52,8 +51,6 @@ public interface ICryptoHelper {
     String calculateMIC(MimeBodyPart part, String digest, boolean includeHeaders, boolean noCanonicalize) throws Exception;
 
     MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) throws Exception;
-
-    void deinitialize() throws Exception;
 
     MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm, String contentTxfrEncoding) throws Exception;
 

@@ -1,100 +1,95 @@
 package org.openas2.logging;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import org.openas2.message.Message;
 
 
 public class LogManager {
-    private static LogManager defaultManager;
-    private List<Logger> loggers;
-
-    public static LogManager getLogManager() {
-        if (defaultManager == null) {
-            defaultManager = new LogManager();
-        }
-
-        return defaultManager;
-    }
-    
+    /**
+     * A default logger. It used when no loggers are configured in config.xml
+     */
+    private final static ConsoleLogger DEFAULT_LOGGER = new ConsoleLogger();
     private static boolean registeredWithApache = false;
+    private final List<String> requestors = Collections.synchronizedList(new ArrayList<String>());
+    private List<Logger> loggers = Collections.synchronizedList(new ArrayList<Logger>());
 
-    public void setLoggers(List<Logger> listeners) {
+    public static LogManager getLogManager()
+    {
+        return DefaultManager.INSTANCE;
+    }
+
+    /**
+     * @return the registeredWithApache
+     */
+    public static boolean isRegisteredWithApache()
+    {
+        return registeredWithApache;
+    }
+
+    public void setLoggers(List<Logger> listeners)
+    {
         this.loggers = listeners;
     }
 
-    public List<Logger> getLoggers() {
-        if (loggers == null) {
-            loggers = new ArrayList<Logger>();
-        }
-
-        return loggers;
-    }
-
-    public void addLogger(Logger logger) {
-        List<Logger> loggers = getLoggers();
+    public void addLogger(Logger logger)
+    {
         loggers.add(logger);
     }
 
-    public void log(Throwable e, boolean terminated) {
-        Iterator<?> loggerIt = getLoggers().iterator();
-
-        if (loggerIt.hasNext()) {
-            while (loggerIt.hasNext()) {
-                Logger logger = (Logger) loggerIt.next();
+    public void log(@Nonnull Throwable e, boolean terminated)
+    {
+        if (loggers.isEmpty())
+        {
+            DEFAULT_LOGGER.log(e, Level.ERROR, terminated);
+        } else
+        {
+            for (Logger logger : loggers)
+            {
                 logger.log(e, Level.ERROR, terminated); // might want to pass LEVEL in from caller
             }
-        } else {
-            e.printStackTrace();
         }
     }
-
 
     /**
      * @param level
      * @param clazzName - the name of the class that the log was generated in
-     * @param message - the logging object to create the message from
+     * @param msg       - the logging object to create the message from
      */
-    public void log(Level level, String clazzName, Object msg) {
-        Iterator<?> loggerIt = getLoggers().iterator();
-
-        if (loggerIt.hasNext()) {
-            while (loggerIt.hasNext()) {
-                Logger logger = (Logger) loggerIt.next();
-                if (msg instanceof Message) logger.log(level, clazzName + ": " + ((Message)msg).getLogMsg(), (Message) msg);
-                else logger.log(level, clazzName + ": " + msg.toString(), null);
+    public void log(Level level, String clazzName, @Nonnull Object msg)
+    {
+        if (loggers.isEmpty())
+        {
+            DEFAULT_LOGGER.log(level, clazzName + ": " + msg.toString(), null);
+        } else
+        {
+            for (Logger logger : loggers)
+            {
+                if (msg instanceof Message)
+                {
+                    logger.log(level, clazzName + ": " + ((Message) msg).getLogMsg(), (Message) msg);
+                } else
+                {
+                    logger.log(level, clazzName + ": " + msg.toString(), null);
+                }
             }
-        } else {
-            System.out.println(level.getName() + " " + msg.toString());
         }
     }
 
-    ArrayList<String> requestors = new ArrayList<String>();
-	/**
-	 * @param log
-	 */
-	public void addRequestors(String inName) {
-		requestors.add(inName);
-		setRegisteredWithApache(true);
-	}
+    /**
+     * @param inName
+     */
+    void addRequestors(String inName)
+    {
+        requestors.add(inName);
+        LogManager.registeredWithApache = true;
+    }
 
-	/**
-	 * @param registeredWithApache the registedWithApache to set
-	 */
-	public static void setRegisteredWithApache(boolean registedWithApache) {
-		LogManager.registeredWithApache = registedWithApache;
-	}
-
-	/**
-	 * @return the registeredWithApache
-	 */
-	public static boolean isRegisteredWithApache() {
-		return registeredWithApache;
-	}
-    
-    
-    
-    
+    private static class DefaultManager {
+        private static LogManager INSTANCE = new LogManager();
+    }
 }

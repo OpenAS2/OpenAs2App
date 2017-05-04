@@ -1,18 +1,23 @@
               OpenAS2 Server
-              Version 2.2.0
+              Version 2.3.0
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.2.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.3.0
 
-The release download file is: OpenAS2Server-2.2.0.zip
+The release download file is: OpenAS2Server-2.3.0.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.2.1 - 2017-03-03
-This is a minor bugfix release:
+Version 2.3.0 - 2017-05-04
+This is an enhancement and minor bugfix release:
        IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
 
-  1. Remove the encapsulating "<" and ">" from the generated message ID as windows no longer allows that in file names 
-  2. Minor update to documentation on handling SSL certificate issues
+  1. Enhance message state tracking to correctly handle resends
+  2. Support external databases that have JDBC drivers for message state tracking via configuration.
+  3. Allow AS2 Message ID format to be configurable globally and overridden on a per partnership basis
+  4. Persist message attributes for the full lifecycle of the message including resends.
+  5. Provide support for proxy server authentication.
+  6. Fix resending ASYNC MDN messages
+  7. Document all of the enhancements and imporve existing documentation.
 
   
 Upgrade Notes (if upgrading from versions older than 2.1.0):
@@ -21,7 +26,7 @@ Upgrade Notes (if upgrading from versions older than 2.1.0):
   
 Java 1.6 or later is required.
 
-NOTE FOR JAVA 1.5: No longer supported. Use a version prior to 2.2.0 to run on Java 1.5
+NOTE FOR JAVA 1.5: No longer supported. Use a version prior to 2.3.0 to run on Java 1.5
 
 NOTE FOR JAVA 1.6: 
 	The version of H2 database included in this release used for storing tracking messages will only support Java 1.7.

@@ -12,7 +12,6 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,12 +40,17 @@ import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.DateParameters;
+import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
+import org.openas2.params.RandomParameters;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
@@ -62,6 +66,25 @@ public class AS2Util {
 
         return ch;
     }
+    
+    public static String generateMessageID(Message msg) throws InvalidParameterException
+    {
+    	CompositeParameters params = 
+    		new CompositeParameters(false).
+    			add("date", new DateParameters()).
+    			add("msg", new MessageParameters(msg)).
+    			add("rand", new RandomParameters());
+        
+    	String idFormat = msg.getPartnership().getAttribute(AS2Partnership.PA_MESSAGEID);
+    	if (idFormat == null)
+    	{
+    		idFormat = Properties.getProperty("as2_message_id_format"
+    				, "OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
+    	}
+  		return ParameterParser.parse(idFormat, params);
+    }
+
+
 
     public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
             DispositionType disposition, String text) throws Exception {
@@ -410,11 +433,11 @@ public class AS2Util {
 		return left;
 	}
 
-	/* @description Attempts to check if a resend should go ahead and if o decrements the resend count
+	/* @description Attempts to check if a resend should go ahead and if so decrements the resend count
 	 *  and stores the decremented retry count in the options map. If the passed in retry count is null or invalid
 	 *  it will fall back to a system default
 	 */
-    public static boolean resend(Processor processor, Object sourceClass, String how, Message msg, OpenAS2Exception cause
+    public static boolean resend(Session session, Object sourceClass, String how, Message msg, OpenAS2Exception cause
     				, String tries, boolean useOriginalMsgObject) throws OpenAS2Exception {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 		if (logger.isDebugEnabled()) logger.debug("RESEND requested.... retries to go: " + tries
@@ -433,6 +456,9 @@ public class AS2Util {
     	{
     		msg.setLogMsg("Message abandoned after retry limit reached.");
         	logger.error(msg);
+        	// Log significant msg state
+            msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+            msg.trackMsgState(session);
     		throw new OpenAS2Exception("Message abandoned after retry limit reached." + msg.getLogMsgID());
     	}
 
@@ -490,14 +516,19 @@ public class AS2Util {
 			msg = originalMsg;
 		}
 
+    	// Update the message state for the failed message as it will no longer be using the same message ID
+        msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL_RESEND_QUEUED);
+        msg.trackMsgState(session);
+
     	// Resend requires a new Message-Id and we need to update the pendinginfo file name to match....
     	// The actual file that is pending can remain the same name since it is pointed to by line in pendinginfo file
     	String oldMsgId = msg.getMessageID();
+    	msg.setAttribute(BaseMsgTrackingModule.FIELDS.PRIOR_MSG_ID, oldMsgId);
     	String oldPendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
     	String newMsgId = ((AS2Message)msg).generateMessageID();
     	// Set new Id in Message object so we can generate new file name
     	msg.setMessageID(newMsgId);
-    	String newPendingInfoFileName = buildPendingFileName(msg, processor, "pendingmdninfo");
+    	String newPendingInfoFileName = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
     	if (logger.isDebugEnabled())
     		logger.debug("" 
     				+ "\n        Old Msg Id: " + oldMsgId
@@ -530,7 +561,7 @@ public class AS2Util {
         options.put(ResenderModule.OPTION_INITIAL_SENDER, sourceClass);
         options.put(ResenderModule.OPTION_RESEND_METHOD, how);
         options.put(ResenderModule.OPTION_RETRIES, "" + retries);
-        processor.handle(ResenderModule.DO_RESEND, msg, options);
+        session.getProcessor().handle(ResenderModule.DO_RESEND, msg, options);
         return true;
     }
 
@@ -580,7 +611,8 @@ public class AS2Util {
 		String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
 
 		msg.setStatus(Message.MSG_STATUS_MDN_VERIFY);
-		if (logger.isTraceEnabled()) logger.trace("MDN parsed. Checking MDN report..." + msg.getLogMsgID());
+		if (logger.isTraceEnabled()) logger.trace("MDN parsed. \n\tPayload file name: " + msg.getPayloadFilename()
+		                   + "\n\tChecking MDN report..." + msg.getLogMsgID());
 		try
 		{
 			AS2Util.checkMDN(msg);
@@ -605,7 +637,7 @@ public class AS2Util {
 			if (logger.isErrorEnabled()) logger.error("Disposition exception processing MDN ..." + msg.getLogMsgID(), de);
 			// Hmmmm... Error may require manual intervention but keep
 			// trying.... possibly change retry count to 1 or just fail????
-			AS2Util.resend(session.getProcessor(), sourceClass, SenderModule.DO_SEND, msg, de, retries, true);
+			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, retries, true);
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
 			msg.trackMsgState(session);
 			return;
@@ -620,7 +652,7 @@ public class AS2Util {
 			oae2.initCause(oae);
 			oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			oae2.terminate();
-			AS2Util.resend(session.getProcessor(), sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true);
+			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true);
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
 			msg.trackMsgState(session);
 			return;
@@ -628,6 +660,9 @@ public class AS2Util {
 
 		msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
 		msg.trackMsgState(session);
+		if (logger.isTraceEnabled()) logger.trace("MDN processed. \n\tPayload file name: "
+		                   + msg.getPayloadFilename() + "\n\tPersisting MDN report..." + msg.getLogMsgID());
+
 		session.getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
 		msg.setStatus(Message.MSG_STATUS_MSG_CLEANUP);
 		// To support extended reporting via logging log info passing Message object
@@ -649,7 +684,7 @@ public class AS2Util {
     	if (msgId == null || msgId.length() < 1)
     	{
     		// No ID set yet so generate a random string for uniqueness
-    		msgId = msg.getAttribute(FileAttribute.MA_FILENAME) +  "." + UUID.randomUUID();
+    		msgId = AS2Util.generateMessageID(msg);
     	}
 		return (dir	+ "/" + msgId);
     }
@@ -658,7 +693,8 @@ public class AS2Util {
      * 				the sender module
      * @param msg - the Message object containing enough information to build the pending info file name
      */
-    public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
+    
+	public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 		// use original message ID to open the pending information file from pendinginfo folder.
@@ -689,11 +725,14 @@ public class AS2Util {
 			if (logger.isTraceEnabled()) logger.trace("RETRY COUNT from pending info file: " + retries);
 			msg.setOption(ResenderModule.OPTION_RETRIES, retries);
 			// Get the original source file name from the 3rd line of pending information file
-			msg.setAttribute(FileAttribute.MA_FILENAME, (String)pifois.readObject());
+			String origFileName = (String)pifois.readObject();
+			msg.setAttribute(FileAttribute.MA_FILENAME, origFileName);
+			msg.setPayloadFilename(origFileName);
 			// Get the original pending file from the 4th line of pending information file
 			msg.setAttribute(FileAttribute.MA_PENDINGFILE, (String)pifois.readObject());
 			msg.setAttribute(FileAttribute.MA_ERROR_DIR, (String)pifois.readObject());
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, (String)pifois.readObject());
+			msg.getAttributes().putAll((Map<String,String>)pifois.readObject());
 
 			msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendinginfofile);
 			if (logger.isTraceEnabled())
@@ -705,6 +744,7 @@ public class AS2Util {
 					+ "\n        Pending message file : " + msg.getAttribute(FileAttribute.MA_PENDINGFILE)
 					+ "\n        Error directory: " + msg.getAttribute(FileAttribute.MA_ERROR_DIR)
 					+ "\n        Sent directory: " + msg.getAttribute(FileAttribute.MA_SENT_DIR)
+					+ "\n        Attributes: " + msg.getAttributes()
 					+ msg.getLogMsgID()
 				);
 		} catch (IOException e)

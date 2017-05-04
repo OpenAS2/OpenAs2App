@@ -1,9 +1,8 @@
 package org.openas2.params;
 
 import java.text.DecimalFormat;
+import java.util.Random;
 import java.util.UUID;
-
-import org.openas2.util.RandomUtil;
 
 public class RandomParameters extends ParameterParser {
     public void setParameter(String key, String value) throws InvalidParameterException {
@@ -28,7 +27,7 @@ public class RandomParameters extends ParameterParser {
         }
 
         DecimalFormat randomFormatter = new DecimalFormat(fmt);
-        return randomFormatter.format(RandomUtil.getRandomGenerator().nextInt(max));
+        return randomFormatter.format(new Random().nextInt(max));
     }
 }
  	  	 

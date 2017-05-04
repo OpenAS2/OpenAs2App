@@ -8,13 +8,15 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 
 public interface Processor extends Component {
-	public static final String COMPID_PROCESSOR = "processor";
-	
-	public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception;	
-	public List<ProcessorModule> getModules();
-	public void setModules(List<ProcessorModule> modules);
-	
-	public void startActiveModules() throws OpenAS2Exception;
-	public void stopActiveModules();
-	public List<ProcessorModule> getActiveModules();
+    String COMPID_PROCESSOR = "processor";
+
+    void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception;
+
+    List<ProcessorModule> getModules();
+
+    void startActiveModules() throws OpenAS2Exception;
+
+    void stopActiveModules() throws OpenAS2Exception;
+
+    List<ActiveModule> getActiveModules();
 }
