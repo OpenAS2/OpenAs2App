@@ -39,26 +39,9 @@ public class OpenAS2Server {
 
     private void start() throws Exception
     {
-        LOGGER.info("Starting Server...");
-        // create the OpenAS2 Session object
-        // this is used by all other objects to access global configs and functionality
-        LOGGER.info("Loading configuration...");
-
-        LOGGER.info(session.getAppTitle() + ": Session instantiated.");
-        // create a command processor
-
-        // get a registry of Command objects, and add Commands for the Session
-        LOGGER.info("Registering Session to Command Processor...");
-
-        // start the active processor modules
-        LOGGER.info("Starting Active Modules...");
+        LOGGER.info("Starting " + session.getAppTitle() + "...");
         session.start();
-
-        // enter the command processing loop
-        LOGGER.info(session.getAppTitle() + " Started");
-
-        LOGGER.info("- OpenAS2 Started - V" + session.getAppVersion());
-
+        LOGGER.info(session.getAppTitle() + " started.");
     }
 
     public void shutdown()

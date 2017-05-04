@@ -18,6 +18,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
@@ -59,6 +62,8 @@ public class XMLSession extends BaseSession {
     private String VERSION;
     private String TITLE;
 
+    private static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
+
     public XMLSession(String configAbsPath) throws OpenAS2Exception,
             ParserConfigurationException, SAXException, IOException
     {
@@ -95,12 +100,15 @@ public class XMLSession extends BaseSession {
         Node rootNode;
         String nodeName;
 
+        // this is used by all other objects to access global configs and functionality
+        LOGGER.info("Loading configuration...");
         for (int i = 0; i < rootNodes.getLength(); i++)
         {
             rootNode = rootNodes.item(i);
 
             nodeName = rootNode.getNodeName();
 
+            // enter the command processing loop
             if (nodeName.equals(EL_PROPERTIES))
             {
                 loadProperties(rootNode);
@@ -139,6 +147,8 @@ public class XMLSession extends BaseSession {
 
     private void loadProperties(Node propNode)
     {
+        LOGGER.info("Loading properties...");
+
         Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
         // Make key things accessible via static object for things that do not have accesss to session object
         properties.put(Properties.APP_TITLE_PROP, getAppTitle());
@@ -161,6 +171,7 @@ public class XMLSession extends BaseSession {
 
     private void loadLoggers(Node rootNode) throws OpenAS2Exception
     {
+        LOGGER.info("Loading log manager(s)...");
 
         LogManager manager = LogManager.getLogManager();
         if (LogManager.isRegisteredWithApache())
@@ -196,6 +207,9 @@ public class XMLSession extends BaseSession {
     private void loadCommandProcessors(Node rootNode) throws OpenAS2Exception
     {
 
+        // get a registry of Command objects, and add Commands for the Session
+        LOGGER.info("Loading command processor(s)...");
+
         NodeList cmdProcessor = rootNode.getChildNodes();
         Node processor;
 
@@ -222,6 +236,8 @@ public class XMLSession extends BaseSession {
 
     private void loadPartnerships(Node rootNode) throws OpenAS2Exception
     {
+        LOGGER.info("Loading partnerships...");
+
         PartnershipFactory partnerFx = (PartnershipFactory) XMLUtil
                 .getComponent(rootNode, this);
         setComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY, partnerFx);
@@ -231,6 +247,8 @@ public class XMLSession extends BaseSession {
     {
         Processor proc = (Processor) XMLUtil.getComponent(rootNode, this);
         setComponent(Processor.COMPID_PROCESSOR, proc);
+
+        LOGGER.info("Loading processor modules...");
 
         NodeList modules = rootNode.getChildNodes();
         Node module;
