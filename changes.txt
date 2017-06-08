@@ -1,3 +1,12 @@
+Version 2.3.1 - 2017-06-09
+This is a minor enhancement release:
+       IMPORTANT NOTE: Please review release notes for upgrade steps if you are upgrading
+
+  1. Remove reserved characters from dynamically generated file names
+  2. Document feature to change reserved character list foe file names.
+  3. Document java tuning requirements for large files
+  4. Document upgrade process as an appendix in OpenAS2HowTo
+
 Version 2.3.0 - 2017-05-04
 This is an enhancement and minor bugfix release:
        IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
@@ -8,7 +17,7 @@ This is an enhancement and minor bugfix release:
   4. Persist message attributes for the full lifecycle of the message including resends.
   5. Provide support for proxy server authentication.
   6. Fix resending ASYNC MDN messages
-  7. Document all of the enhancements and imporve existing documentation.
+  7. Document all of the enhancements and improve existing documentation.
 
 Version 2.2.3 - 2017-04-07
 This is a minor bugfix release:
