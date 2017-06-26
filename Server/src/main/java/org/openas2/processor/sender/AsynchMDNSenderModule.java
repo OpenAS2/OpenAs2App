@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.mail.Header;
@@ -26,6 +27,7 @@ import org.openas2.util.DispositionType;
 import org.openas2.util.IOUtilOld;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
+import org.openas2.util.Properties;
 
 public class AsynchMDNSenderModule extends HttpSenderModule {
 
@@ -55,8 +57,11 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 		conn.setRequestProperty("Connection", "close, TE");
 		conn.setRequestProperty("User-Agent", msg.getAppTitle() + " (AsynchMDNSender)");
 
-		conn.setRequestProperty("Date",
-				DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
+		// Ensure date is formatted in english so there are only USASCII chars to avoid error
+        conn.setRequestProperty("Date",
+        		DateUtil.formatDate(
+        				Properties.getProperty("HTTP_HEADER_DATE_FORMAT", "EEE, dd MMM yyyy HH:mm:ss Z")
+        				, Locale.ENGLISH));
 		conn.setRequestProperty("Message-ID", msg.getMessageID());
 		conn.setRequestProperty("Mime-Version", "1.0"); // make sure this is the
 														// encoding used in the

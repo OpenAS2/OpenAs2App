@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.mail.MessagingException;
@@ -41,6 +42,7 @@ import org.openas2.util.DispositionOptions;
 import org.openas2.util.IOUtilOld;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
+import org.openas2.util.Properties;
 
 public class AS2SenderModule extends HttpSenderModule {
 
@@ -575,7 +577,11 @@ public class AS2SenderModule extends HttpSenderModule {
         conn.setRequestProperty("Connection", "close, TE");
         conn.setRequestProperty("User-Agent", msg.getAppTitle() + " (AS2Sender)");
 
-        conn.setRequestProperty("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
+		// Ensure date is formatted in english so there are only USASCII chars to avoid error
+        conn.setRequestProperty("Date",
+        		DateUtil.formatDate(
+        				Properties.getProperty("HTTP_HEADER_DATE_FORMAT", "EEE, dd MMM yyyy HH:mm:ss Z")
+        				, Locale.ENGLISH));
         conn.setRequestProperty("Message-ID", msg.getMessageID());
         conn.setRequestProperty("Mime-Version", "1.0"); // make sure this is the
         // encoding used in the

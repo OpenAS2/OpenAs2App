@@ -2,6 +2,7 @@ package org.openas2.util;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 
@@ -13,9 +14,19 @@ public class DateUtil {
         return FastDateFormat.getInstance(format).format(value);
     }
 
+    public static String formatDate(String format, Date value, Locale locale)
+    {
+        return FastDateFormat.getInstance(format, locale).format(value);
+    }
+
     public static String formatDate(String format)
     {
         return formatDate(format, new Date());
+    }
+
+    public static String formatDate(String format, Locale locale)
+    {
+        return formatDate(format, new Date(), locale);
     }
 
     public static Date parseDate(String format, String value) throws ParseException
