@@ -38,11 +38,11 @@ public class DefaultFormatter extends BaseFormatter {
 		PrintWriter writer = new PrintWriter(out);
         
         // Write timestamp		
-	    writer.print(DateUtil.formatDate("MM/dd/yy HH:mm:ss"));		
+	    writer.print(DateUtil.formatDate(dateFormat));		
 		
 		// Write log level
-		//writer.print(" ");
-	    //writer.print(level.getName().toUpperCase());
+		writer.print(" ");
+	    writer.print(level.getName().toUpperCase());
 	    
 	    // Write message
 	    writer.print(" ");

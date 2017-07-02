@@ -14,4 +14,6 @@ public interface Formatter {
 	public void format(Level level, String msg, OutputStream out);
 	
 	public void format(OpenAS2Exception exception, boolean terminated, OutputStream out);
+	
+	public void setDateFormat(String dateFormat);
 }
