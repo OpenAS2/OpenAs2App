@@ -1,5 +1,6 @@
 <openas2>
     <properties
+        log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
         sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
         as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
     />
