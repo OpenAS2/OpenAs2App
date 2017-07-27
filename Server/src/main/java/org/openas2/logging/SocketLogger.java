@@ -70,8 +70,8 @@ public class SocketLogger extends BaseLogger {
 		return VALUE_SHOW_ALL;
 	}
 
-	protected void doLog(OpenAS2Exception exception, boolean terminated) {
-		sendToSocket(getFormatter().format(exception, terminated));
+	protected void doLog(Throwable t, boolean terminated) {
+		sendToSocket(getFormatter().format(t, terminated));
 	}
 
 }
