@@ -1,9 +1,6 @@
 package org.openas2.params;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import org.openas2.OpenAS2Exception;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openas2.WrappedException;
 
 public class ExceptionParameters extends ParameterParser {
@@ -11,10 +8,10 @@ public class ExceptionParameters extends ParameterParser {
     public static final String KEY_MESSAGE = "message";
     public static final String KEY_TRACE = "trace";
     public static final String KEY_TERMINATED = "terminated";
-    private OpenAS2Exception target;
+    private Throwable target;
     private boolean terminated;
 
-    public ExceptionParameters(OpenAS2Exception target, boolean terminated) {
+    public ExceptionParameters(Throwable target, boolean terminated) {
         super();
         this.target = target;
         this.terminated = terminated;
@@ -36,8 +33,8 @@ public class ExceptionParameters extends ParameterParser {
             throw new InvalidParameterException("Invalid key", this, key, null);
         }
 
-        OpenAS2Exception target = getTarget();
-        Exception unwrappedTarget;
+        Throwable target = getTarget();
+        Throwable unwrappedTarget = target;
 
         if (target instanceof WrappedException) {
             unwrappedTarget = ((WrappedException) target).getSource();
@@ -45,8 +42,6 @@ public class ExceptionParameters extends ParameterParser {
             if (unwrappedTarget == null) {
                 unwrappedTarget = target;
             }
-        } else {
-            unwrappedTarget = target;
         }
 
         if (key.equals(KEY_NAME)) {
@@ -54,11 +49,14 @@ public class ExceptionParameters extends ParameterParser {
         } else if (key.equals(KEY_MESSAGE)) {
             return unwrappedTarget.getMessage();
         } else if (key.equals(KEY_TRACE)) {
-            StringWriter sw = new StringWriter();
+            /*
+        	StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             target.printStackTrace(pw);
 
             return sw.toString();
+            */
+        	return ExceptionUtils.getStackTrace(target);
         } else if (key.equals(KEY_TERMINATED)) {
             if (isTerminated()) {
                 return "terminated";
@@ -69,11 +67,11 @@ public class ExceptionParameters extends ParameterParser {
         }
     }
 
-    public void setTarget(OpenAS2Exception target) {
+    public void setTarget(Exception target) {
         this.target = target;
     }
 
-    public OpenAS2Exception getTarget() {
+    public Throwable getTarget() {
         return target;
     }
 
