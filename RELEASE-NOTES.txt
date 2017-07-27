@@ -12,20 +12,28 @@ This is a minor enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
 
   1. Remove reserved characters from dynamically generated file names
-  2. Document feature to change reserved character list foe file names.
+  2. Document feature to change reserved character list for file names.
   3. Document java tuning requirements for large files
-  4. Document upgrade process as an appendix in OpenAS2HowTo
-  
+  4. Change default logging date format to international standard
+  5. Document logging date format configuration
+  6. Document upgrade process as an appendix in OpenAS2HowTo
+  7. Prevent HTTP header folding by default with config option to allow.
+  8. Change email logger to allow any exception to be logged through exception parser (not just OpenAS2Exception)
+  9. Add support for Sentry logger for exceptions
+  10. Enhanced documentation on logging system
+  11. Change default log file name to use international date format 
+
 Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
  Below are some specific things to focus on depending on which version you are upgrading from.
- The upgrade notes are cumulative and you must review all notes for the relevant intermediate versions from your version to this release version. 
+ You must review all notes for the relevant intermediate versions from your version to this release version. 
 
     If upgrading from versions older than 2.3.0:
-      1. If using a custom startup script, re-integrate your customizations into the new script as the jar file for OpenAS2 is now tagged with its release version.
+      1. If using a custom startup script, re-integrate your customizations into the new script as the jar file for OpenAS2 is now tagged with its release version. (use asterisk [*] in classpath)
     If upgrading from versions older than 2.1.0:
       1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
       2. If using a custom startup script, re-integrate your customizations into the new script
+      3. As of 2.3.1 the log date format was changed to international standard. If you have log processing utilities that rely on a specific date format then you must change as needed (see documentation for mechanism)
   
 Java 1.6 or later is required.
 
