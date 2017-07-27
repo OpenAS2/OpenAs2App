@@ -17,7 +17,7 @@ This is a minor enhancement release:
   4. Change default logging date format to international standard
   5. Document logging date format configuration
   6. Document upgrade process as an appendix in OpenAS2HowTo
-  7. Prevent HTTP header folding by default with config option to allow.
+  7. Prevent HTTP header folding by default with config option to allow. (Fixes issue with NGINX)
   8. Change email logger to allow any exception to be logged through exception parser (not just OpenAS2Exception)
   9. Add support for Sentry logger for exceptions
   10. Enhanced documentation on logging system
