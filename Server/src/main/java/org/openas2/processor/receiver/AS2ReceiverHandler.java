@@ -42,9 +42,11 @@ import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtilOld;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
+import org.openas2.util.Properties;
 
 public class AS2ReceiverHandler implements NetModuleHandler {
     private AS2ReceiverModule module;
+    private boolean removeHeaderFolding;
 
 	private Log logger = LogFactory.getLog(AS2ReceiverHandler.class.getSimpleName());
 
@@ -52,6 +54,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     public AS2ReceiverHandler(AS2ReceiverModule module) {
         super();
         this.module = module;
+        removeHeaderFolding = "true".equals(Properties.getProperty("remove_http_header_folding", "true"));
     }
 
     public String getClientInfo(Socket s) {
@@ -468,9 +471,12 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 StringBuffer saveHeaders = new StringBuffer();
 
                 while (headers.hasMoreElements()) {
-                    header = (String) headers.nextElement() + "\r\n";
+                    header = (String) headers.nextElement();
+                    // Support https://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-13#section-3.2
                     saveHeaders = saveHeaders.append(";;").append(header);
-                    out.write(header.getBytes());
+                    if (removeHeaderFolding)
+                    	header = header.replaceAll("\r\n[ \t]*", " ");
+                    out.write((header + "\r\n").getBytes());
                 }
 
             	if (logger.isTraceEnabled())
