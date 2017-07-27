@@ -85,9 +85,7 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
         String reservedFilenameChars = Properties.getProperty("reservedFilenameCharacters", "<>:\"|?*");
         if (reservedFilenameChars != null && reservedFilenameChars.length() > 0)
         {
-        	System.out.println("XXXXXXXXXXXXXXX         STRING: " + filename);
         	String srchReplStr = reservedFilenameChars.replaceAll("\\[", "\\[").replaceAll("\\]", "\\]");
-           	System.out.println("XXXXXXXXXXXXXXX         MATCH: " + filename.matches("^[a-zA-Z]{1}:.*"));
            	if (reservedFilenameChars.contains(":") && filename.matches("^[a-zA-Z]{1}:.*"))
         	{
         		filename = filename.substring(0,  2) + filename.substring(2).replaceAll("["+srchReplStr + "]", "");
