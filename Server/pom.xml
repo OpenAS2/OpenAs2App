@@ -20,6 +20,8 @@
         <project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
+        <release.notes>${project.basedir}/../RELEASE-NOTES.txt</release.notes>
+        <release.history>${project.basedir}/../changes.txt</release.history>
     </properties>
 
     <distributionManagement>
@@ -64,6 +66,9 @@
                                       todir="${project.build.directory}/dist/lib" verbose="true"/>
                                 <!-- Add the help PDF version to the distro -->
                                 <copy file="${help.file.src}" todir="${project.build.directory}/dist" verbose="true"/>
+                                <!-- Add the release notes files -->
+                                <copy file="${release.notes}" todir="${project.build.directory}/dist" verbose="true"/>
+                                <copy file="${release.history}" todir="${project.build.directory}/dist" verbose="true"/>
                                 <!-- create distribution package -->
                                 <zip destfile="${project.basedir}/dist/${project.dist.package.name}"
                                      basedir="${project.build.directory}/dist"/>
