@@ -93,7 +93,12 @@ public class EmailLogger extends BaseLogger {
     	}
     	isDebugOn = "true".equalsIgnoreCase(System.getProperty("maillogger.debug.enabled", "false"));
         try {
-            String subject = getSubject(level, msgText);
+            String subject = getParameter(PARAM_SUBJECT, false);
+
+            if (subject == null) {
+                subject = getSubject(null);
+            }
+            subject = parseText(null, false, subject);
             sendMessage(subject, getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
         } catch (Exception e) {
             System.out.println("Failed to send email: " + org.openas2.logging.Log.getExceptionMsg(e));
@@ -101,29 +106,29 @@ public class EmailLogger extends BaseLogger {
         }
     }
 
-    protected void doLog(OpenAS2Exception exception, boolean terminated) {
+    protected void doLog(Throwable t, boolean terminated) {
     	isDebugOn = "true".equalsIgnoreCase(System.getProperty("maillogger.debug.enabled", "false"));
-        try {
+    	try {
             String subject = getParameter(PARAM_SUBJECT, false);
 
             if (subject == null) {
-                subject = getSubject(exception);
+                subject = getSubject(t);
             }
 
-            subject = parseText(exception, terminated, subject);
+            subject = parseText(t, terminated, subject);
 
             StringBuffer body = new StringBuffer();
 
             if (getParameter(PARAM_BODY, false) != null) {
-                body.append(parseText(exception, terminated, getParameter(PARAM_BODY, false)));
+                body.append(parseText(t, terminated, getParameter(PARAM_BODY, false)));
             }
 
             body.append(System.getProperty("line.separator"));
 
             if (getParameter(PARAM_BODYTEMPLATE, false) != null) {
-                body.append(parseText(exception, terminated, getTemplateText()));
+                body.append(parseText(t, terminated, getTemplateText()));
             } else {
-                body.append(getFormatter().format(exception, terminated));
+                body.append(getFormatter().format(t, terminated));
             }
 
             sendMessage(subject, body.toString());
@@ -144,21 +149,22 @@ public class EmailLogger extends BaseLogger {
     	int newlineNdx = msg.indexOf("\n");
     	if (newlineNdx >= 1)
     		subj = msg.substring(0, newlineNdx);
+    	else subj = msg;
         StringBuffer subject = new StringBuffer("OpenAS2 Log (" + level.getName() + "): " + subj);
 
         return subject.toString();
     }
 
-    protected String getSubject(OpenAS2Exception e) {
+    protected String getSubject(Throwable t) {
         StringBuffer subject = new StringBuffer("OpenAS2 Exception: ");
 
-        if (e instanceof WrappedException) {
-            subject.append(((WrappedException) e).getSource().getClass().getName());
+        if (t instanceof WrappedException) {
+            subject.append(((WrappedException) t).getSource().getClass().getName());
         } else {
-            subject.append(e.getClass().getName());
+            subject.append(t.getClass().getName());
         }
 
-        subject.append(": ").append(e.getMessage());
+        subject.append(": ").append(t.getMessage());
 
         return subject.toString();
     }
@@ -188,7 +194,7 @@ public class EmailLogger extends BaseLogger {
         return compParams;
     }
 
-    protected CompositeParameters createParser(AS2Message msg, OpenAS2Exception exception,
+    protected CompositeParameters createParser(AS2Message msg, Throwable t,
         boolean terminated) {
         CompositeParameters params = new CompositeParameters(true);
 
@@ -198,14 +204,14 @@ public class EmailLogger extends BaseLogger {
             params.add("message", null);
         }
 
-        if (msg != null && (Object) msg instanceof MessageMDN) {
-            params.add("mdn", new MessageMDNParameters((MessageMDN) (Object) msg));
+        if (msg != null && msg instanceof MessageMDN) {
+            params.add("mdn", new MessageMDNParameters((MessageMDN) msg));
         } else {
             params.add("mdn", null);
         }
 
-        if (exception != null) {
-            params.add("exception", new ExceptionParameters(exception, terminated));
+        if (t != null) {
+            params.add("exception", new ExceptionParameters(t, terminated));
         } else {
             params.add("exception", null);
         }
@@ -213,11 +219,12 @@ public class EmailLogger extends BaseLogger {
         return params;
     }
 
-    protected String parseText(OpenAS2Exception exception, boolean terminated, String text)
+    protected String parseText(Throwable t, boolean terminated, String text)
         throws InvalidParameterException {
-        AS2Message msg = (AS2Message) exception.getSource(OpenAS2Exception.SOURCE_MESSAGE);
+    	AS2Message msg = null;
+        if (t instanceof OpenAS2Exception) msg = (AS2Message) ((OpenAS2Exception) t).getSource(OpenAS2Exception.SOURCE_MESSAGE);
         
-        CompositeParameters parser = createParser(msg, exception, terminated);
+        CompositeParameters parser = createParser(msg, t, terminated);
         
         return ParameterParser.parse(text, parser);
         

@@ -13,6 +13,7 @@ import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.processor.BaseProcessorModule;
 import org.openas2.util.IOUtilOld;
+import org.openas2.util.Properties;
 
 public abstract class BaseStorageModule extends BaseProcessorModule implements StorageModule {
     public static final String PARAM_FILENAME = "filename";
@@ -81,6 +82,17 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
     protected File getFile(Message msg, String fileParam, String action) throws IOException, OpenAS2Exception
     {
         String filename = getFilename(msg, fileParam, action);
+        String reservedFilenameChars = Properties.getProperty("reservedFilenameCharacters", "<>:\"|?*");
+        if (reservedFilenameChars != null && reservedFilenameChars.length() > 0)
+        {
+        	String srchReplStr = reservedFilenameChars.replaceAll("\\[", "\\[").replaceAll("\\]", "\\]");
+           	if (reservedFilenameChars.contains(":") && filename.matches("^[a-zA-Z]{1}:.*"))
+        	{
+        		filename = filename.substring(0,  2) + filename.substring(2).replaceAll("["+srchReplStr + "]", "");
+        	}
+        	else filename = filename.replaceAll("[" + srchReplStr + "]", "");        	
+        }
+        
 
         // make sure the parent directories exist
         File file = new File(filename);

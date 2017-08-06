@@ -80,7 +80,7 @@ public class FileLogger extends BaseLogger {
         return compParams;
     }
 
-    protected void doLog(OpenAS2Exception exception, boolean terminated) {
-        appendToFile(getFormatter().format(exception, terminated));
+    protected void doLog(Throwable t, boolean terminated) {
+        appendToFile(getFormatter().format(t, terminated));
     }
 }

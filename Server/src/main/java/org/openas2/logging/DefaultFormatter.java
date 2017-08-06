@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openas2.OpenAS2Exception;
 import org.openas2.util.DateUtil;
 
@@ -38,11 +39,11 @@ public class DefaultFormatter extends BaseFormatter {
 		PrintWriter writer = new PrintWriter(out);
         
         // Write timestamp		
-	    writer.print(DateUtil.formatDate("MM/dd/yy HH:mm:ss"));		
+	    writer.print(DateUtil.formatDate(dateFormat));		
 		
 		// Write log level
-		//writer.print(" ");
-	    //writer.print(level.getName().toUpperCase());
+		writer.print(" ");
+	    writer.print(level.getName().toUpperCase());
 	    
 	    // Write message
 	    writer.print(" ");
@@ -50,18 +51,28 @@ public class DefaultFormatter extends BaseFormatter {
 		writer.flush();
     }
 
-    public void format(OpenAS2Exception exception, boolean terminated, OutputStream out) {
-        PrintWriter writer = new PrintWriter(out);
+    public void format(Throwable t, boolean terminated, OutputStream out) {
+    	PrintWriter writer = new PrintWriter(out);
+        writer.println(format(t, terminated));
+        writer.println();
+		writer.flush();
+    }
+
+	@Override
+	public String format(Throwable t, boolean terminated)
+	{
+        StringBuffer sb = new StringBuffer();
 
         if (terminated) {
-            writer.println("Termination of exception:");
+            sb.append("Termination of exception:");
         }
 
         // Write exception trace
-        exception.printStackTrace(writer);
+        sb.append(ExceptionUtils.getStackTrace(t));
 
         // Write sources if terminated
-        if (terminated) {
+        if (terminated && t instanceof OpenAS2Exception) {
+        	OpenAS2Exception exception = (OpenAS2Exception) t;
             Map<String, Object> sources = exception.getSources();
             Iterator<Map.Entry<String, Object>> sourceIt = sources.entrySet().iterator();
             Map.Entry<String, Object> source;
@@ -69,18 +80,17 @@ public class DefaultFormatter extends BaseFormatter {
             while (sourceIt.hasNext()) {
                 source = sourceIt.next();
                 if (source.getKey() != null) {                
-                	writer.println(source.getKey().toString());
+                	sb.append(source.getKey().toString());
                 } else {
-                	writer.println("null key");
+                	sb.append("null key");
                 }
                 if (source.getValue() != null) {                
-                writer.println(source.getValue().toString());
+                sb.append(source.getValue().toString());
                 } else {
-                	writer.println("null value");
+                	sb.append("null value");
                 }
             }
         }
-		writer.println();
-		writer.flush();
-    }
+        return sb.toString();
+	}
 }

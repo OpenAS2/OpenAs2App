@@ -25,7 +25,7 @@ public class SentryLogger extends BaseLogger {
     public void doLog(Level level, String msgText, Message as2Msg) {
     }
 
-    protected void doLog(OpenAS2Exception exception, boolean terminated) {
-        Sentry.capture(exception);
+    protected void doLog(Throwable t, boolean terminated) {
+        Sentry.capture(t);
     }
 }

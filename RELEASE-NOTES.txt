@@ -1,32 +1,43 @@
               OpenAS2 Server
-              Version 2.3.0
+              Version 2.3.1
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.3.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.3.1
 
-The release download file is: OpenAS2Server-2.3.0.zip
+The release download file is: OpenAS2Server-2.3.1.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.3.0 - 2017-05-04
-This is an enhancement and minor bugfix release:
-       IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
+Version 2.3.1 - 2017-08-06
+This is a minor enhancement release:
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
 
-  1. Enhance message state tracking to correctly handle resends
-  2. Support external databases that have JDBC drivers for message state tracking via configuration.
-  3. Allow AS2 Message ID format to be configurable globally and overridden on a per partnership basis
-  4. Persist message attributes for the full lifecycle of the message including resends.
-  5. Provide support for proxy server authentication.
-  6. Fix resending ASYNC MDN messages
-  7. Document all of the enhancements and imporve existing documentation.
+  1. Remove reserved characters from dynamically generated file names
+  2. Document feature to change reserved character list for file names.
+  3. Document java tuning requirements for large files
+  4. Change default logging date format to international standard
+  5. Document logging date format configuration
+  6. Document upgrade process as an appendix in OpenAS2HowTo
+  7. Prevent HTTP header folding by default with config option to allow. (Fixes issue with NGINX)
+  8. Change email logger to allow any exception to be logged through exception parser (not just OpenAS2Exception)
+  9. Add support for Sentry logger for exceptions
+  10. Enhanced documentation on logging system
+  11. Change default log file name to use international date format 
 
-  
-Upgrade Notes (if upgrading from versions older than 2.1.0):
-  1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
-  2. If using a custom startup script, re-integrate your customisations into the new script
+Upgrade Notes
+ See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
+ Below are some specific things to focus on depending on which version you are upgrading from.
+ You must review all notes for the relevant intermediate versions from your version to this release version. 
+
+    If upgrading from versions older than 2.3.0:
+      1. If using a custom startup script, re-integrate your customizations into the new script as the jar file for OpenAS2 is now tagged with its release version. (use asterisk [*] in classpath)
+    If upgrading from versions older than 2.1.0:
+      1. Add the new module to your existing config.xml (see classname="org.openas2.processor.msgtracking.DbTrackingModule" in release config.xml)
+      2. If using a custom startup script, re-integrate your customizations into the new script
+      3. As of 2.3.1 the log date format was changed to international standard. If you have log processing utilities that rely on a specific date format then you must change as needed (see documentation for mechanism)
   
 Java 1.6 or later is required.
 
-NOTE FOR JAVA 1.5: No longer supported. Use a version prior to 2.3.0 to run on Java 1.5
+NOTE FOR JAVA 1.5: No longer supported. Use a version prior to 2.2.0 to run on Java 1.5
 
 NOTE FOR JAVA 1.6: 
 	The version of H2 database included in this release used for storing tracking messages will only support Java 1.7.

@@ -44,6 +44,7 @@ public abstract class BaseLogger extends BaseComponent implements Logger {
 				}
 			}
 		}
+		else if (t != null) doLog(t, false);
 		else
 		{
 			// Print the exception to a stacktrace as it is probably something unknown and needs decent logging
@@ -117,7 +118,7 @@ public abstract class BaseLogger extends BaseComponent implements Logger {
 		return false;
 	}
 
-	protected abstract void doLog(OpenAS2Exception exception, boolean terminated);
+	protected abstract void doLog(Throwable throwable, boolean terminated);
 
 	protected abstract void doLog(Level level, String msgText, Message message);
 }
