@@ -30,7 +30,7 @@
 		-->
 
 		<logger classname="org.openas2.logging.FileLogger"
-			filename="%home%/../logs/log-$date.yyyyMMdd.txt"/>
+			filename="%home%/../logs/log-$date.yyyyMMdd$.txt"/>
         <!-- Remove this comment to enable socket logging
 		<logger classname="org.openas2.logging.SocketLogger"
 		    ipaddr="127.0.0.1"
