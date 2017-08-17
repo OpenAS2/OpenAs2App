@@ -6,10 +6,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
+
+import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.message.Message;
 
 public class HTTPUtil {
@@ -285,10 +290,27 @@ public class HTTPUtil {
         			throw new IOException("Transfer-Encoding unimplemented: " + transfer_encoding);
         		}
         	}
-        	else if (msg.getHeader("Content-Length") == null) { 
+        	else { 
         		if (outStream != null) 
     				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
-                throw new IOException("Content-Length missing");
+        		Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
+                String headers = "";
+                Enumeration<Header> hdrs = msg.getHeaders().getAllHeaders();
+        		while (hdrs.hasMoreElements()) {
+        			Header h = hdrs.nextElement();
+        			headers = headers + " :: " + h.getName() + "==" + h.getValue();
+        		}
+        		int b;
+        		StringBuilder buf = new StringBuilder(512);
+        		while ((b = dataIn.read()) != -1) {
+        		    buf.append((char) b);
+        		}
+
+
+        		logger.error("Inbound HTTP request: " + request.toString()
+        		            + "\n\tHeaders: " + headers
+	                        + "\n\tData: " + buf.toString());
+                throw new IOException("Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
         	}
         }
         else {

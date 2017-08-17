@@ -1,3 +1,10 @@
+Version 2.3.2 - 2017-08-17
+This is a minor enhancement release:
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
+
+  1. Enhance the HTTP reader to allow logging the raw data when unable to determine how to process the data
+  2. Correct the config.xml that was missing a $ sign in the log file name
+
 Version 2.3.1 - 2017-08-06
 This is a minor enhancement release:
        IMPORTANT NOTE: Please review release notes for upgrade steps if you are upgrading
