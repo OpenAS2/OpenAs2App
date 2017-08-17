@@ -1,27 +1,18 @@
               OpenAS2 Server
-              Version 2.3.1
+              Version 2.3.2
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.3.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.3.2
 
-The release download file is: OpenAS2Server-2.3.1.zip
+The release download file is: OpenAS2Server-2.3.2.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.3.1 - 2017-08-06
+Version 2.3.2 - 2017-08-17
 This is a minor enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
 
-  1. Remove reserved characters from dynamically generated file names
-  2. Document feature to change reserved character list for file names.
-  3. Document java tuning requirements for large files
-  4. Change default logging date format to international standard
-  5. Document logging date format configuration
-  6. Document upgrade process as an appendix in OpenAS2HowTo
-  7. Prevent HTTP header folding by default with config option to allow. (Fixes issue with NGINX)
-  8. Change email logger to allow any exception to be logged through exception parser (not just OpenAS2Exception)
-  9. Add support for Sentry logger for exceptions
-  10. Enhanced documentation on logging system
-  11. Change default log file name to use international date format 
+  1. Enhance the HTTP reader to allow logging the raw data when unable to determine how to process the data
+  2. Correct the config.xml that was missing a $ sign in the log file name
 
 Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

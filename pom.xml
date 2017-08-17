@@ -2,9 +2,9 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.openas2</groupId>
+    <groupId>net.sf.openas2</groupId>
     <artifactId>OpenAS2</artifactId>
-    <version>2.3.1</version>
+    <version>2.3.2</version>
     <name>OpenAS2</name>
     <packaging>pom</packaging>
 
