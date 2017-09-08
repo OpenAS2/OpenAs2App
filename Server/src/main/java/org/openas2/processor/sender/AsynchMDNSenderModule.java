@@ -32,6 +32,7 @@ import org.openas2.util.Properties;
 public class AsynchMDNSenderModule extends HttpSenderModule {
 
 	private Log logger = LogFactory.getLog(AsynchMDNSenderModule.class.getSimpleName());
+	private boolean removeHeaderFolding;
 
 	public boolean canHandle(String action, Message msg,
 			Map<Object, Object> options) {
@@ -44,7 +45,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
 	public void handle(String action, Message msg, Map<Object, Object> options)
 			throws OpenAS2Exception {
-
+		removeHeaderFolding = "true".equals(Properties.getProperty("remove_http_header_folding", "true"));
 		if (logger.isDebugEnabled()) logger.debug("ASYNC MDN send started...");
 		if (options == null) options = new HashMap<Object, Object>();
 		options.put("DIRECTION", "RECEIVE");
@@ -106,6 +107,8 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 				while (headers.hasMoreElements()) {
 					header = headers.nextElement();
 					String headerValue = header.getValue();
+					if (removeHeaderFolding)
+						headerValue = headerValue.replaceAll("\r\n[ \t]*", " ");
 					headerValue.replace('\t', ' ');
 					headerValue.replace('\n', ' ');
 					headerValue.replace('\r', ' ');
