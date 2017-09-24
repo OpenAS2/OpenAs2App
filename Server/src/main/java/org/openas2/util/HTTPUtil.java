@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.mail.Header;
@@ -229,19 +232,28 @@ public class HTTPUtil {
         return msg;
     }
 
-    public static byte[] readData(InputStream inStream, OutputStream outStream, Message msg) throws IOException, MessagingException {
+    public static byte[] readHTTP(InputStream inStream, OutputStream outStream, InternetHeaders headerCache, List<String> httpRequest) throws IOException, MessagingException {
         byte[] data = null;
+        Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
 
         // Get the stream and read in the HTTP request and headers
         BufferedInputStream in = new BufferedInputStream(inStream);
         String[] request = HTTPUtil.readRequest(in);
-        msg.setAttribute(MA_HTTP_REQ_TYPE, request[0]);
-        msg.setAttribute(MA_HTTP_REQ_URL, request[1]);
-        msg.setHeaders(new InternetHeaders(in));
+        for (int i = 0; i < request.length; i++)
+		{
+            httpRequest.add(request[i]);			
+		}
+        headerCache.load(in);
+		if (logger.isDebugEnabled())
+			logger.debug("HTTP received request: " + request[0] + "  " + request[1]
+						+ "\n\tHeaders: " + printHeaders(headerCache.getAllHeaders(), "==", ";;")
+						
+					);
+
         DataInputStream dataIn = new DataInputStream(in);
         // Retrieve the message content
-        if (msg.getHeader("Content-Length") == null) {
-        	String transfer_encoding = msg.getHeader("Transfer-Encoding");
+        if (headerCache.getHeader("Content-Length") == null) {
+        	String transfer_encoding = headerCache.getHeader("Transfer-Encoding", ",");
         	
         	if (transfer_encoding != null) {
         		if (transfer_encoding.replaceAll("\\s+", "").equalsIgnoreCase("chunked")) {
@@ -282,7 +294,7 @@ public class HTTPUtil {
         				// And now the CRLF after the chunk;
         				while (dataIn.readByte() != '\n');
         			}
-                    msg.setHeader("Content-Length", Integer.toString(length));
+                    headerCache.setHeader("Content-Length", Integer.toString(length));
                 }
         		else {
         			if (outStream != null) 
@@ -291,34 +303,38 @@ public class HTTPUtil {
         		}
         	}
         	else { 
-        		if (outStream != null) 
-    				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
-        		Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
-                String headers = "";
-                Enumeration<Header> hdrs = msg.getHeaders().getAllHeaders();
-        		while (hdrs.hasMoreElements()) {
-        			Header h = hdrs.nextElement();
-        			headers = headers + " :: " + h.getName() + "==" + h.getValue();
-        		}
-        		int b;
-        		StringBuilder buf = new StringBuilder(512);
-        		while ((b = dataIn.read()) != -1) {
-        		    buf.append((char) b);
-        		}
-
-
-        		logger.error("Inbound HTTP request: " + request.toString()
-        		            + "\n\tHeaders: " + headers
-	                        + "\n\tData: " + buf.toString());
-                throw new IOException("Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
+        		return null;
         	}
         }
         else {
         	    // Receive the transmission's data
-        	    int contentSize = Integer.parseInt(msg.getHeader("Content-Length"));
+        	    int contentSize = Integer.parseInt(headerCache.getHeader("Content-Length", ","));
         	    data = new byte[contentSize];
         	    dataIn.readFully(data);
         	}
+        return data;
+    }
+
+    /*
+     * TODO: Move this out of HTTPUtil class so that class does not depend on AS2 specific stuff
+     */
+    public static byte[] readData(InputStream inStream, OutputStream outStream, Message msg) throws IOException, MessagingException {
+        List<String> request = new ArrayList<String>(2);
+    	byte[] data = readHTTP(inStream, outStream, msg.getHeaders(), request);
+        
+        msg.setAttribute(MA_HTTP_REQ_TYPE, request.get(0));
+        msg.setAttribute(MA_HTTP_REQ_URL, request.get(1));
+        if (data == null)
+        {
+			HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
+            Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
+        	logger.error("Inbound HTTP request does not provide means to determine data length: "
+                 + request.get(0) + " " + request.get(1)
+                 + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaderLines(), "==", ";;")
+                );
+            throw new IOException("Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
+
+        }
         return data;
     }
 
@@ -370,5 +386,17 @@ public class HTTPUtil {
             out.write("\r\n".getBytes());
             out.write(httpResponse.toString().getBytes());
         }
+    }
+
+    public static String printHeaders(Enumeration<Header> hdrs, String nameValueSeparator, String valuePairSeparator)
+    {
+        String headers = "";
+		while (hdrs.hasMoreElements()) {
+			Header h = hdrs.nextElement();
+			headers = headers + valuePairSeparator + h.getName() + nameValueSeparator + h.getValue();
+		}
+
+    	return(headers);
+
     }
 }
