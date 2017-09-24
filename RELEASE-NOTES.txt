@@ -1,18 +1,19 @@
               OpenAS2 Server
-              Version 2.3.2
+              Version 2.4.0
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.3.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.4.0
 
-The release download file is: OpenAS2Server-2.3.2.zip
+The release download file is: OpenAS2Server-2.4.0.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.3.2 - 2017-08-17
-This is a minor enhancement release:
+Version 2.4.0 - 2017-09-25
+This is an enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
 
-  1. Enhance the HTTP reader to allow logging the raw data when unable to determine how to process the data
-  2. Correct the config.xml that was missing a $ sign in the log file name
+  1. Add initial basic health check listener on HTTP port for load balancer/high availability deployment
+  2. Enhance POM to deploy code base to central maven repository 
+ 
 
 Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
