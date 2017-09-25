@@ -9,9 +9,9 @@ public interface Logger extends Component {
 
 	/**
 	 * 
-	 * @param level
-	 * @param msgText
-	 * @param message
+	 * @param level The log level we are spewing out
+	 * @param msgText The message to log
+	 * @param message The context object that will provide additional information
 	 */
 	public void log(Level level, String msgText, Message message);
     

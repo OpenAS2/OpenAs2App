@@ -39,7 +39,7 @@ public class SocketLogging {
 	 * add a new line character if told to
 	 * repeat
 	 * @param out - PrintStream object to log to
-	 * @param doCRLF - after each logging event add a new line ?
+	 * @param addOn - after each logging event add a new line ?
 	 * @throws IOException - socket or io errors are possible 
 	 */
 	public void logToPrintStream(PrintStream out, String addOn) throws IOException  {
@@ -57,9 +57,6 @@ public class SocketLogging {
 
 	}
 
-	/**
-	 * 
-	 */
 	public void close() {
 		try {
 			ss.close();

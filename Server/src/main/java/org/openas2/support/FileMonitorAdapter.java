@@ -6,9 +6,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.openas2.OpenAS2Exception;
 
-/**
- * An adapter between
- */
 public abstract class FileMonitorAdapter implements FileMonitorListener {
 
 
@@ -53,7 +50,7 @@ public abstract class FileMonitorAdapter implements FileMonitorListener {
     /**
      * A template method which is triggered once observing file is changed.
      *
-     * @throws OpenAS2Exception
+     * @throws OpenAS2Exception - an internally handled error has occurred
      */
     public abstract void onConfigFileChanged() throws OpenAS2Exception;
 }

@@ -60,7 +60,12 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
 
     /**
      * Add one more method "getFile" to make no impact to all modules who call this method with
-     * only two parameter "Message msg" & "String fileParam"
+     * only two parameter "Message msg" &amp; "String fileParam"
+     * @param msg the context object
+     * @param fileParam Name of the file
+     * @throws IOException - IO system has a problem
+     * @throws OpenAS2Exception - internally handled error condition occurred
+     * @return a File object
      */
 
 
@@ -71,13 +76,13 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
     }
 
     /**
-     * @param msg
-     * @param fileParam
-     * @param action
-     * @return
-     * @throws IOException
-     * @throws OpenAS2Exception
-     * @since 2007-06-01
+     * Extracts name of the file from the file parameter and returns a File object with the file name
+     * @param msg the context object
+     * @param fileParam The parameter containing the format string for the file name
+     * @param action what to do
+     * @return a File object
+     * @throws IOException - IO system has a problem
+     * @throws OpenAS2Exception - internally handled error condition occurred
      */
     protected File getFile(Message msg, String fileParam, String action) throws IOException, OpenAS2Exception
     {

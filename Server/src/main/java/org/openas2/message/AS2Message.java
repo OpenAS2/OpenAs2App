@@ -12,9 +12,7 @@ import org.openas2.util.Properties;
 
 
 public class AS2Message extends BaseMessage implements Message {
-    /**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	public static final String PROTOCOL_AS2 = "as2";
 	

@@ -26,7 +26,7 @@ import org.openas2.util.CommandTokenizer;
  * actual socket command processor
  * takes commands from socket/port and passes them to the OpenAS2Server
  * message format
- * <command userid="abc" pasword="xyz"> the actual command </command>
+ * &lt;command userid="abc" pasword="xyz"&gt; the actual command &lt;/command&gt;
  * <p>
  * when inited the valid userid and password is passed, then as each
  * command is processed the processCommand method verifies the two fields correctness

@@ -654,12 +654,13 @@ public class BCCryptoHelper implements ICryptoHelper {
 
 
     /**
-     * @param algorithm
-     * @return the OutputEncryptor of the given hash algorithm
-     * @throws NoSuchAlgorithmException
-     * @description Looks up the correct ASN1 OID of the passed in algorithm string and returns the encryptor.
+     * Looks up the correct ASN1 OID of the passed in algorithm string and returns the encryptor.
      * The encryption key length is set where necessary
-     * <p>
+     * 
+     * @param algorithm The name of the algorithm to use for encryption
+     * @return the OutputEncryptor of the given hash algorithm
+     * @throws NoSuchAlgorithmException - Houston we have a problem
+     * 
      * TODO: Possibly just use new ASN1ObjectIdentifier(algorithm) instead of explicit lookup to support random configured algorithms
      * but will require determining if this has any side effects from a security point of view.
      */

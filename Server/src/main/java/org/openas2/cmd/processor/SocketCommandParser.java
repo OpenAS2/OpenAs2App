@@ -20,7 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * used to parse  commands from the socket command processor
  * message format 
- *   <command userid="abc" pasword="xyz"> the actual command </command>
+ *   &lt;command userid="abc" pasword="xyz"&gt; the actual command &lt;/command&gt;
  * 
  * @author joseph mcverry
  *
