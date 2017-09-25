@@ -137,6 +137,14 @@
         <tag>HEAD</tag>
     </scm>
 
+    <developers>
+            <developer>
+                    <id>uhurusurfa</id>
+                    <name>Christopher Broderick</name>
+                    <email>uhurusurfa@users.sf.net</email>
+            </developer>
+    </developers>
+    
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -245,7 +253,6 @@
 							</execution>
 						</executions>
 					</plugin>
-					<!--
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
@@ -259,7 +266,6 @@
 							</execution>
 						</executions>
 					</plugin>
-					-->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
