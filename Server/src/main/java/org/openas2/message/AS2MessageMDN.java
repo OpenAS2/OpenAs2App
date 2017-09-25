@@ -1,11 +1,6 @@
 package org.openas2.message;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.openas2.params.InvalidParameterException;
-import org.openas2.partner.AS2Partnership;
-import org.openas2.partner.CustomIDPartnership;
-import org.openas2.partner.Partnership;
-import org.openas2.util.DateUtil;
 
 public class AS2MessageMDN extends BaseMessageMDN {
     public static final String MDNA_REPORTING_UA = "REPORTING_UA";
@@ -31,10 +26,10 @@ public class AS2MessageMDN extends BaseMessageMDN {
     }
 
     /**
-     * Generate Random Message ID based on data in the preconfigured format, sender and receiver Ids.
+     * Generate Random Message ID based on data in the preconfigured format, sender and receiver IDs.
      *
      * @return a string
-     * @throws InvalidParameterException 
+     * @throws InvalidParameterException - the message ID generator could not identfy a parameter in the ID format string
      */
     @Override
     public String generateMessageID() throws InvalidParameterException

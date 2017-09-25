@@ -137,5 +137,12 @@
 			resenddir="%home%/../data/resend"
 			errordir="%home%/../data/resend/error"
 			resenddelay="60"/>
+		<!--
+		<module classname="org.openas2.processor.receiver.HealthCheckModule"
+			port="10099"
+		/>
+		-->
+		
+		
 	</processor>
 </openas2>

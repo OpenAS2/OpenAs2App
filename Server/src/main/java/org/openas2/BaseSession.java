@@ -18,7 +18,7 @@ public abstract class BaseSession implements Session {
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
      *
-     * @throws OpenAS2Exception
+     * @throws OpenAS2Exception - - Houston we have a problem
      * @see #init()
      */
     public BaseSession() throws OpenAS2Exception

@@ -396,7 +396,12 @@ public class AS2SenderModule extends HttpSenderModule {
         AS2Util.resend(getSession(), this, SenderModule.DO_SEND, msg, cause, tries, false);
     }
 
-    // Returns a MimeBodyPart or MimeMultipart object
+    /**
+     * Returns a MimeBodyPart or MimeMultipart object
+     * @param msg The message object carried around containing necessary information
+     * @return The secured mimebodypart
+     * @throws Exception some unforseen issue has occurred
+     */
     protected MimeBodyPart secure(Message msg) throws Exception
     {
         // Set up encrypt/sign variables
@@ -664,14 +669,15 @@ public class AS2SenderModule extends HttpSenderModule {
     }
 
     /**
-     * @param msg AS2Message
-     * @param mic
-     * @throws WrappedException
-     * @description Stores metadata into pending information file and storing
+     * Stores metadata into pending information file and storing
      * message object from first send attempt. The message object
      * is written to a separate file to avoid repeated rewrites of
      * possibly very large objects since it contains the original
      * file data
+     * @param msg AS2Message structure
+     * @param isResend Boolean to determine if this is a resend of an already sent message or not
+     * @throws Exception some unforseen issue has occurred
+     *
      */
     protected void storePendingInfo(AS2Message msg, boolean isResend) throws Exception
     {

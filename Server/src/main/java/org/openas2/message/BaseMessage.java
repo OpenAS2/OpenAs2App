@@ -136,16 +136,16 @@ public abstract class BaseMessage implements Message {
     }
 
     /**
-     * @since 2007-06-01
-     * @return
+     * Gets the "Content-Disposition" header from the message object
+     * @return the string value of the header
      */
     public String getContentDisposition() {
         return getHeader("Content-Disposition");
     }
 
     /**
-     * @param contentDisposition
-     * @since 2007-06-01
+     * Sets the "Content-Disposition" header in the message object
+     * @param contentDisposition the string value to be set
      */
     public void setContentDisposition(String contentDisposition)
     {

@@ -136,6 +136,7 @@ public class Log implements org.apache.commons.logging.Log {
 
     /**
      * Get logging level.
+     * @return the current logging level
      */
     public int getLevel() {
         return currentLogLevel;
