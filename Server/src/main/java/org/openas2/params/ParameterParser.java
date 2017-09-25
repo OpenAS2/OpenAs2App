@@ -17,7 +17,7 @@ public abstract class ParameterParser {
     /**
      * Set parameters from a string, like "msg.sender.as2_id=ME,msg.headers.content-type=application/X12"
      * @param encodedParams string to parse
-     * @throws InvalidParameterException
+     * @throws InvalidParameterException - error in the parameter format string
      */
     public void setParameters(String encodedParams) throws InvalidParameterException {
         StringTokenizer params = new StringTokenizer(encodedParams, "=,", false);
@@ -42,7 +42,7 @@ public abstract class ParameterParser {
      * 						<code>msg.sender.as2_id,msg.receiver.as2_id,msg.header.content-type</code>
      * @param delimiters	delimiters in string to parse, like "-."
      * @param value			string to parse, like <code>"NORINCO-WALMART.application/X12"</code>
-     * @throws OpenAS2Exception
+     * @throws OpenAS2Exception - error in the parameter format string
      */
     public void setParameters(String format, String delimiters, String value)
         throws OpenAS2Exception {
@@ -70,7 +70,7 @@ public abstract class ParameterParser {
      * @param format	the format to fill in
      * @param parser	the place to get the parsed info
      * @return			the filled in format
-     * @throws InvalidParameterException
+     * @throws InvalidParameterException - error in the parameter format string
      */
     public static String parse(String format, ParameterParser parser)
     	throws InvalidParameterException
@@ -82,7 +82,7 @@ public abstract class ParameterParser {
      * Fill in a format string with information from a ParameterParser
      * @param format	the format string to fill in
      * @return			the filled in format string.
-     * @throws InvalidParameterException
+     * @throws InvalidParameterException - error in the parameter format string
      */
     public String format(String format) throws InvalidParameterException {
         StringBuffer result = new StringBuffer();

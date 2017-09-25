@@ -49,9 +49,6 @@ public interface Component {
      * @param session    the component uses this object to access other components
      * @param parameters configuration values for the component
      * @throws OpenAS2Exception          If an error occurs while initializing the component
-     * @throws InvalidParameterException If a required parameter is null in the parameters
-     *                                   Map
-     * @see #getParameter(String key, boolean required)
      * @see Session
      */
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception;
@@ -59,7 +56,7 @@ public interface Component {
     /**
      * Component lifecycle hook. If lifecycle of {@link Component} requires a destroy function this method can be used.
      *
-     * @throws Exception
+     * @throws Exception Something went wrong
      * @see #init(Session, Map)
      * @see Session
      */

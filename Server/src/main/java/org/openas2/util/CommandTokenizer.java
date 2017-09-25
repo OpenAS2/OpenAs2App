@@ -14,7 +14,7 @@ public class CommandTokenizer {
 	int len = -1;
 	/**
 	 * constructor
-	 * @param inString
+	 * @param inString the string to parse
 	 */
 	public CommandTokenizer(String inString) {
 		workString = inString;
@@ -24,7 +24,7 @@ public class CommandTokenizer {
 	/**
 	 * any more tokens in String
 	 * @return true if there are any more tokens 
-	 * @throws WrappedException 
+	 * @throws WrappedException - internally handled error
 	 */
 	public boolean hasMoreTokens() throws WrappedException {
 		try {
@@ -43,7 +43,7 @@ public class CommandTokenizer {
 	/**
 	 * returns the next token, this handles spaces and quotes
 	 * @return a string
-	 * @throws WrappedException 
+	 * @throws WrappedException  - internally handled error
 	 * 
 	 */
 	public String nextToken() throws WrappedException {

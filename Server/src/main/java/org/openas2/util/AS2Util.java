@@ -298,8 +298,10 @@ public class AS2Util {
     } 
     
     /**
-     *  @description Verify disposition sytus is "processed" then check MIC is matched
+     *  Verify disposition status is "processed" then check MIC is matched
      *  @param msg - the original message sent to the partner that the MDN relates to
+     *  @throws DispositionException - something wrong t=with the Disposition structure
+     *  @throws OpenAS2Exception - an internally handled error has occurred
      *  @return true if mdn processed  
      */
 	public static boolean checkMDN(AS2Message msg) throws DispositionException, OpenAS2Exception {
@@ -566,8 +568,16 @@ public class AS2Util {
     }
 
     /**
-     * method for receiving & processing Async MDN sent from receiver.
-     */ 
+     * Processing MDN sent from receiver.
+     * @param msg The context object
+     * @param data Received data
+     * @param out HTTP output stream
+     * @param isAsyncMDN boolean indicating if this is an ASYNC MDN
+     * @param session - Session object
+     * @param sourceClass - who invoked this method
+     * @throws OpenAS2Exception - an internally handled error has occurred
+     * @throws IOException - the IO system has a problem
+     */
 	public static void processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Object sourceClass)
 			throws OpenAS2Exception, IOException
 	{

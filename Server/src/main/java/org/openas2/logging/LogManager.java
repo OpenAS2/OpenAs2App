@@ -24,6 +24,7 @@ public class LogManager {
     }
 
     /**
+     * Check to confirm the logger is registered with Apache library
      * @return the registeredWithApache
      */
     public static boolean isRegisteredWithApache()
@@ -56,7 +57,8 @@ public class LogManager {
     }
 
     /**
-     * @param level
+     * Logs a message to the configured logging systems
+     * @param level - current log level 
      * @param clazzName - the name of the class that the log was generated in
      * @param msg       - the logging object to create the message from
      */

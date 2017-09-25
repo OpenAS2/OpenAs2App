@@ -72,6 +72,7 @@ public class PGPEncryptionUtil
 
 	/**
 	 * Get an output stream connected to the encrypted file payload.
+	 * @return The output stream for the payload to be sent
 	 */
 	public OutputStream getPayloadOutputStream()
 	{
@@ -80,6 +81,7 @@ public class PGPEncryptionUtil
 
 	/**
 	 * Close the encrypted output writers.
+	 * @throws IOException - stream handling had a problem
 	 */
 	public void close() throws IOException
 	{
