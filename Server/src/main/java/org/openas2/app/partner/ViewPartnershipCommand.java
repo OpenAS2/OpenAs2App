@@ -40,9 +40,9 @@ public class ViewPartnershipCommand extends AliasedPartnershipsCommand {
 
 			while (parts.hasNext()) {
 				Partnership part = (Partnership) parts.next();
-				if (part.getName().equals(name))
-					return new CommandResult(CommandResult.TYPE_OK, part
-							.toString());
+				if (part.getName().equals(name)) {
+                                    return  new CommandResult(CommandResult.TYPE_OK,part);
+                                }
 			}
 
 			return new CommandResult(CommandResult.TYPE_ERROR,

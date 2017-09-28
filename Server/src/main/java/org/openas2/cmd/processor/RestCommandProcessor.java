@@ -5,33 +5,24 @@
  */
 package org.openas2.cmd.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.IOException;
-import java.io.StringWriter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.jersey.internal.util.collection.ImmutableMultivaluedMap;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.restapi.ControlResource;
-import org.openas2.util.CommandTokenizer;
 
 /**
  *
@@ -40,17 +31,9 @@ import org.openas2.util.CommandTokenizer;
 public class RestCommandProcessor extends BaseCommandProcessor {
 
     private final Log logger = LogFactory.getLog(RestCommandProcessor.class.getSimpleName());
-
     public static final String BASE_URI = "http://localhost:8080/";
     private HttpServer server;
-    private final ObjectMapper mapper;
-    public RestCommandProcessor() {
-        super();
-        // create the mapper
-        mapper = new ObjectMapper();
-        // enable pretty printing
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    }
+
 
     @Override
     public void processCommand() throws Exception {
@@ -59,8 +42,8 @@ public class RestCommandProcessor extends BaseCommandProcessor {
     }
 
 
-    public String feedCommand(String commandText,  List<String> params) throws WrappedException, Exception {
-        StringWriter output = new StringWriter();
+    public CommandResult feedCommand(String commandText,  List<String> params) throws WrappedException, Exception {
+        CommandResult result = null;
         if (commandText != null && commandText.length() > 0) {
             String commandName = commandText.toLowerCase();
             if (commandName.equals(StreamCommandProcessor.EXIT_COMMAND)) {
@@ -68,27 +51,18 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             } else {
                 Command cmd = getCommand(commandName);
                 if (cmd != null) {
-                    CommandResult result = cmd.execute(params.toArray());
-                    if (result.getType() == null ? CommandResult.TYPE_OK == null : result.getType().equals(CommandResult.TYPE_OK)) {
-                        // serialize the object
-                        mapper.writeValue(output,result.getResults());
-                    } else {
-                        output.append(StreamCommandProcessor.COMMAND_ERROR);
-                        mapper.writeValue(output,result.getResults());
-                    }
+                    result = cmd.execute(params.toArray());
                 } else {
-                    output.append(StreamCommandProcessor.COMMAND_NOT_FOUND);
+                    result= new CommandResult(StreamCommandProcessor.COMMAND_NOT_FOUND);
                     List<Command> l = getCommands();
-                    output.append("List of commands:" + "\r\n");
                     for (int i = 0; i < l.size(); i++) {
                         cmd = l.get(i);
-                        output.append(cmd.getName() + "\r\n");
+                        result.getResults().add(cmd.getName());
                     }
                 }
             }
         }
-
-        return output.toString();
+        return result;
     }
 
     @Override
