@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -54,6 +55,7 @@ public class ControlResource {
         return processor.getSession().getAppTitle();
     }
     
+    @RolesAllowed("ADMIN")
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -83,6 +85,7 @@ public class ControlResource {
         
     }
     
+    @RolesAllowed("ADMIN")
     @POST
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
