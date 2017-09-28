@@ -21,7 +21,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
-import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.message.AS2Message;
@@ -39,6 +38,7 @@ import org.openas2.processor.resender.ResenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
 import org.openas2.util.DispositionOptions;
+import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtilOld;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
@@ -205,7 +205,7 @@ public class AS2SenderModule extends HttpSenderModule {
                     {
                         logger.trace("MDN msg initalised for inbound contains headers:" + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()) + msg.getLogMsgID());
                     }
-                    copyHttpHeaders(conn, mdn.getHeaders());
+                    HTTPUtil.copyHttpHeaders(conn, mdn.getHeaders());
 
                     // Receive the MDN data
                     InputStream connIn = null;

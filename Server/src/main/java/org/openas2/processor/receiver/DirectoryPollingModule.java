@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -49,6 +50,20 @@ public abstract class DirectoryPollingModule extends PollingModule
 		{
 			throw new OpenAS2Exception("Failed to initialise directory poller.", e);
 		}
+	}
+
+    @Override
+	public boolean healthcheck(List<String> failures)
+	{
+    	try
+		{
+			IOUtilOld.getDirectoryFile(outboxDir);
+		} catch (IOException e)
+		{
+			failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
+			return false;
+		}
+    	return true;
 	}
 
 	public void poll()
