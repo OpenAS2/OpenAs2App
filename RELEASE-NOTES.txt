@@ -1,18 +1,17 @@
               OpenAS2 Server
-              Version 2.4.0
+              Version 2.4.1
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.4.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.4.1
 
-The release download file is: OpenAS2Server-2.4.0.zip
+The release download file is: OpenAS2Server-2.4.1.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.4.0 - 2017-09-25
-This is an enhancement release:
+Version 2.4.1 - 2017-09-28
+This is a minor enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
 
-  1. Add initial basic health check listener on HTTP port for load balancer/high availability deployment
-  2. Enhance POM to deploy code base to central maven repository 
+  1. Enhance health check module to test all active modules. All modules now require implementing a healthcheck() method for self test.
  
 
 Upgrade Notes
@@ -20,6 +19,8 @@ Upgrade Notes
  Below are some specific things to focus on depending on which version you are upgrading from.
  You must review all notes for the relevant intermediate versions from your version to this release version. 
 
+    If upgrading from versions older than 2.4.1:
+      1. If you have developed custom modules to enhance OpenAS2 they will need to be upgraded to include a healthcheck() method.
     If upgrading from versions older than 2.3.0:
       1. If using a custom startup script, re-integrate your customizations into the new script as the jar file for OpenAS2 is now tagged with its release version. (use asterisk [*] in classpath)
     If upgrading from versions older than 2.1.0:

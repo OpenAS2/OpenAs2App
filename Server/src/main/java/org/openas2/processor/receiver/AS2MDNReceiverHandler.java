@@ -58,6 +58,29 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 		try
 		{
 			data = HTTPUtil.readData(s.getInputStream(), s.getOutputStream(), msg);
+			if (data == null)
+			{
+				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck")))
+				{
+					if (logger.isInfoEnabled())
+						logger.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]"
+								+ msg.getLogMsgID());
+					return;
+				}
+				else
+				{
+					try
+					{
+						HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
+					} catch (IOException e1)
+					{
+					}
+					OpenAS2Exception oe = new OpenAS2Exception("Missing data in MDN response message");
+					msg.setLogMsg("Error receiving asynchronous MDN. There is no data.");
+					logger.error(msg, oe);
+					return;
+				}
+			}
 			// check if the requested URL is defined in attribute "as2_receipt_option"
 			// in one of partnerships, if yes, then process incoming AsyncMDN
 			if (logger.isInfoEnabled())

@@ -99,7 +99,31 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			Profiler.endProfile(transferStub);
 			
 			String mic = null;
-			if (data != null) {
+			if (data == null)
+			{
+				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck")))
+				{
+					if (logger.isInfoEnabled())
+						logger.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]"
+								+ msg.getLogMsgID());
+					return;
+				}
+				else
+				{
+					try
+					{
+						HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
+					} catch (IOException e1)
+					{
+					}
+					OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
+					msg.setLogMsg("Error receiving message for inbound AS2 request. There is no data.");
+					logger.error(msg, oe);
+					return;
+				}
+			}
+			else
+			{
 				if (logger.isInfoEnabled())
 						logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
 								+ msg.getLogMsgID());

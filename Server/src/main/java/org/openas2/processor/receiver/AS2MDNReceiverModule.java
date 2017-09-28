@@ -1,10 +1,14 @@
 package org.openas2.processor.receiver;
 
 public class AS2MDNReceiverModule extends NetModule {
+	private NetModuleHandler module;
 
     
-     protected NetModuleHandler getHandler() {
-        return new AS2MDNReceiverHandler(this);
-    }
+     protected NetModuleHandler getHandler()
+     {
+        module = new AS2MDNReceiverHandler(this);
+        return module;
+     }     
+     
 
 }

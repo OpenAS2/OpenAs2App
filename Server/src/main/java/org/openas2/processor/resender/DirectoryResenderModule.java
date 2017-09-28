@@ -30,6 +30,8 @@ public class DirectoryResenderModule extends BaseResenderModule {
 	public static final String PARAM_RESEND_DIRECTORY = "resenddir";
 	public static final String PARAM_ERROR_DIRECTORY = "errordir";
     public static final String PARAM_RESEND_DELAY = "resenddelay"; // in seconds
+    
+	private String resendDirPath;
 
 	// TODO Resend set to 15 minutes. Implement a scaling resend time with eventual permanent failure of transmission    
 	public static final long DEFAULT_RESEND_DELAY = 15 * 60 * 1000; // 15 minutes
@@ -45,7 +47,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
 		throws OpenAS2Exception {
 		ObjectOutputStream oos = null;
 		try {                        
-			File resendDir = IOUtilOld.getDirectoryFile(getParameter(PARAM_RESEND_DIRECTORY, true));
+			File resendDir = IOUtilOld.getDirectoryFile(resendDirPath);
 			File resendFile = IOUtilOld.getUnique(resendDir, getFilename());
 			oos = new ObjectOutputStream(new FileOutputStream(resendFile));
 			String method = (String) options.get (ResenderModule.OPTION_RESEND_METHOD);
@@ -84,7 +86,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     
 	public void init(Session session, Map<String,String> options) throws OpenAS2Exception {
 		super.init(session, options);
-		getParameter(PARAM_RESEND_DIRECTORY, true);
+		resendDirPath = getParameter(PARAM_RESEND_DIRECTORY, true);
 		getParameter(PARAM_ERROR_DIRECTORY, true);        
 	}
 
@@ -109,6 +111,20 @@ public class DirectoryResenderModule extends BaseResenderModule {
 			oae.terminate();
 			forceStop(oae);
 		}
+	}
+
+    @Override
+	public boolean healthcheck(List<String> failures)
+	{
+    	try
+		{
+        	IOUtilOld.getDirectoryFile(resendDirPath);
+		} catch (IOException e)
+		{
+			failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + resendDirPath);
+			return false;
+		}
+    	return true;
 	}
 
 	protected String getFilename() throws InvalidParameterException {		

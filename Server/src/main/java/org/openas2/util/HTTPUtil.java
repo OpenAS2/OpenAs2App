@@ -1,23 +1,52 @@
 package org.openas2.util;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.OpenAS2Exception;
+import org.openas2.WrappedException;
 import org.openas2.message.Message;
 
 public class HTTPUtil {
@@ -244,10 +273,9 @@ public class HTTPUtil {
             httpRequest.add(request[i]);			
 		}
         headerCache.load(in);
-		if (logger.isDebugEnabled())
-			logger.debug("HTTP received request: " + request[0] + "  " + request[1]
-						+ "\n\tHeaders: " + printHeaders(headerCache.getAllHeaders(), "==", ";;")
-						
+		if (logger.isTraceEnabled())
+			logger.trace("HTTP received request: " + request[0] + "  " + request[1]
+						+ "\n\tHeaders: " + printHeaders(headerCache.getAllHeaders(), "==", ";;")		
 					);
 
         DataInputStream dataIn = new DataInputStream(in);
@@ -318,7 +346,8 @@ public class HTTPUtil {
     /*
      * TODO: Move this out of HTTPUtil class so that class does not depend on AS2 specific stuff
      */
-    public static byte[] readData(InputStream inStream, OutputStream outStream, Message msg) throws IOException, MessagingException {
+    @SuppressWarnings("unchecked")
+	public static byte[] readData(InputStream inStream, OutputStream outStream, Message msg) throws IOException, MessagingException {
         List<String> request = new ArrayList<String>(2);
     	byte[] data = readHTTP(inStream, outStream, msg.getHeaders(), request);
         
@@ -326,14 +355,26 @@ public class HTTPUtil {
         msg.setAttribute(MA_HTTP_REQ_URL, request.get(1));
         if (data == null)
         {
-			HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
-            Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
-        	logger.error("Inbound HTTP request does not provide means to determine data length: "
-                 + request.get(0) + " " + request.get(1)
-                 + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaderLines(), "==", ";;")
-                );
-            throw new IOException("Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
-
+        	String healthCheckUri = Properties.getProperty("health_check_uri", "healthcheck");
+        	if ("GET".equalsIgnoreCase(request.get(0)) && request.get(1).matches("^[/]{0,1}"+healthCheckUri+"*"))
+        	{
+        		if (outStream != null)
+        		{
+    				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_OK, false);
+    				msg.setAttribute("isHealthCheck", "true"); // provide means for caller to know what happened
+        		}
+        		return null;
+        	}
+        	else
+        	{
+    			HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
+                Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
+            	logger.error("Inbound HTTP request does not provide means to determine data length: "
+                     + request.get(0) + " " + request.get(1)
+                     + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;")
+                    );
+                throw new IOException("Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");        		
+        	}
         }
         return data;
     }
@@ -399,4 +440,298 @@ public class HTTPUtil {
     	return(headers);
 
     }
+    
+    /**
+     * Simple method to query a site and return the response code and content (if any) in a hashmap.
+     * The returned map key for response code - "response_code"
+     * The returned map key for data - "response_content"
+     * @param urlStr - the string representation of the URL connection
+     * @param params - any parameters to be appended to URL
+     * @return - the response data if any
+     * @throws Exception
+     */
+	public static Map<String, String> querySite(String urlStr, String method, Map<String, String> params,  Map<String, String> properties) throws Exception
+	{
+		StringBuilder result = new StringBuilder();
+		Map<String, String> responseWrapper = new HashMap<String, String>();
+		boolean doOutput = (params != null && !params.isEmpty())?true:false;
+		HttpURLConnection conn = getConnection(urlStr, true, true, false, method);
+		conn.setRequestMethod(method);
+		if (properties != null) {
+			for (Map.Entry<String, String> entry : params.entrySet())
+			{
+				conn.setRequestProperty(entry.getKey(), entry.getValue());				
+			}			
+		}
+		if (doOutput)
+		{
+			DataOutputStream out = new DataOutputStream(conn.getOutputStream());
+			out.writeBytes(getParamsString(params));
+			out.flush();
+			out.close();
+		}
+		
+		//Now get the response
+		responseWrapper.put("response_code", "" + conn.getResponseCode());
+
+		BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		String line;
+		while ((line = rd.readLine()) != null)
+		{
+			result.append(line);
+		}
+		rd.close();
+		conn.disconnect();
+		responseWrapper.put("response_content", "" + result.toString());
+
+		return responseWrapper;
+	}
+    
+    /**
+     * Simple method to query a localhost URL with HTTPS using an overridden name verifier to avoid SSL exceptions
+     * Return the response code and content (if any) in a hashmap.
+     * The returned map key for response code - "response_code"
+     * The returned map key for data - "response_content"
+     * @param urlStr - the string representation of the URL connection
+     * @param params - any parameters to be appended to URL
+     * @return - the response data if any
+     * @throws Exception
+     */
+	public static Map<String, String> querySiteSSLVerifierOverride(String urlStr, String method,
+			Map<String, String> params, Map<String, String> properties) throws Exception
+	{
+		HostnameVerifier hnv = HttpsURLConnection.getDefaultHostnameVerifier();
+		HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier()
+		{
+
+			@Override
+			public boolean verify(String hostname, SSLSession session)
+			{
+				return true;
+			}
+		});
+		Map<String, String> responseWrapper = querySite(urlStr, method, params,  properties);
+		// reset back to original
+		HttpsURLConnection.setDefaultHostnameVerifier(hnv);
+
+		return responseWrapper;
+	}
+    
+    public static String getParamsString(Map<String, String> params) 
+          throws UnsupportedEncodingException
+    {
+            StringBuilder result = new StringBuilder();
+     
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+              result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+              result.append("=");
+              result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+              result.append("&");
+            }
+     
+            String resultString = result.toString();
+            return resultString.length() > 0
+              ? resultString.substring(0, resultString.length() - 1)
+              : resultString;
+    }
+    
+    public static boolean isLocalhostBound(InetAddress addr) {
+        // Check if the address is a valid special local or loop back
+        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress())
+            return true;
+
+        // Check if the address is defined on any interface
+        try {
+            return NetworkInterface.getByInetAddress(addr) != null;
+        } catch (SocketException e) {
+            return false;
+        }
+    }
+
+
+    public static HttpURLConnection getConnection(String url, boolean output, boolean input,
+            boolean useCaches, String requestMethod) throws OpenAS2Exception
+    {
+        	if (url == null) throw new OpenAS2Exception("HTTP getConnection method received empty URL string.");
+            try {
+                initializeProxyAuthenticator();
+                HttpURLConnection conn;
+                URL urlObj = new URL(url);
+                if (urlObj.getProtocol().equalsIgnoreCase("https"))
+                {
+                	HttpsURLConnection connS = (HttpsURLConnection) urlObj.openConnection(getProxy("https"));
+                	String selfSignedCN = System.getProperty("org.openas2.cert.TrustSelfSignedCN");
+    				if (selfSignedCN != null)
+    				{
+    					File file = new File("jssecacerts");
+    					if (file.isFile() == false)
+    					{
+    			            char SEP = File.separatorChar;
+    			            File dir = new File(System.getProperty("java.home") + SEP + "lib" + SEP + "security");
+    			            /* Check if this is a JDK home */
+    			            if (!dir.isDirectory())
+    			            {
+    			                dir = new File(System.getProperty("java.home") + SEP + "jre" + SEP + "lib" + SEP + "security");
+    			            }
+    			            if (!dir.isDirectory()) {
+    			            	throw new OpenAS2Exception(
+    			                        "The JSSE folder could not be identified. Please check that JSSE is installed.");
+    			            }
+    			            file = new File(dir, "jssecacerts");
+    						if (file.isFile() == false)
+    						{
+    							file = new File(dir, "cacerts");
+    						}
+    					}
+    					InputStream in = new FileInputStream(file);
+    					try
+    					{
+    						KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+    						ks.load(in, "changeit".toCharArray());
+    						in.close();
+    						SSLContext context = SSLContext.getInstance("TLS");
+    						TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory
+    								.getDefaultAlgorithm());
+    						tmf.init(ks);
+    						X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
+    						SelfSignedTrustManager tm = new SelfSignedTrustManager(defaultTrustManager);
+    						tm.setTrustCN(selfSignedCN);
+    						context.init(null, new TrustManager[] { tm }, null);
+    						connS.setSSLSocketFactory(context.getSocketFactory());
+    					} catch (Exception e)
+    					{
+    			        	throw new OpenAS2Exception("Self-signed certificate URL connection failed connecting to : " + url, e);
+    					}
+    				}
+    				conn = connS;
+    			} else
+    			{
+    				conn = (HttpURLConnection) urlObj.openConnection(getProxy("http"));
+    			}
+                conn.setDoOutput(output);
+                conn.setDoInput(input);
+                conn.setUseCaches(useCaches);
+                conn.setRequestMethod(requestMethod);
+
+                return conn;
+            } catch (IOException ioe) {
+            	throw new WrappedException("URL connection failed connecting to: " + url, ioe);
+            }
+        }
+        
+        private static Proxy getProxy(String protocol) throws OpenAS2Exception
+        {
+            String proxyHost =Properties.getProperty(protocol + ".proxyHost", null);
+            if (proxyHost == null) proxyHost = System.getProperty(protocol + ".proxyHost");
+           if (proxyHost == null) return Proxy.NO_PROXY;
+            String proxyPort =Properties.getProperty(protocol + ".proxyPort", null);
+            if (proxyPort == null) proxyPort = System.getProperty(protocol + ".proxyPort");
+            if (proxyPort == null) throw new OpenAS2Exception("Missing PROXY port since Proxy host is set");
+            int port = Integer.parseInt(proxyPort);
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, port));
+
+        }
+
+        private static void initializeProxyAuthenticator() {
+            String proxyUser1 = Properties.getProperty("http.proxyUser", null);
+            final String proxyUser = proxyUser1 == null?System.getProperty("http.proxyUser"):proxyUser1;
+            String proxyPwd1 =Properties.getProperty("http.proxyPassword", null);
+            final String proxyPassword = proxyPwd1 == null?System.getProperty("http.proxyPassword"):proxyPwd1;
+
+            if (proxyUser != null && proxyPassword != null) {
+                Authenticator.setDefault(
+                  new Authenticator() {
+                    public PasswordAuthentication getPasswordAuthentication() {
+                      return new PasswordAuthentication(
+                        proxyUser, proxyPassword.toCharArray()
+                      );
+                    }
+                  }
+                );
+            }
+        }
+        
+        // Copy headers from an Http connection to an InternetHeaders object
+        public static void copyHttpHeaders(HttpURLConnection conn, InternetHeaders headers) {
+            Iterator<Map.Entry<String,List<String>>> connHeadersIt = conn.getHeaderFields().entrySet().iterator();
+            Iterator<String> connValuesIt;
+            Map.Entry<String,List<String>> connHeader;
+            String headerName;
+
+            while (connHeadersIt.hasNext()) {
+                connHeader = connHeadersIt.next();
+                headerName = connHeader.getKey();
+
+                if (headerName != null) {
+                    connValuesIt = connHeader.getValue().iterator();
+
+                    while (connValuesIt.hasNext()) {
+                        String value = connValuesIt.next();
+
+                        String[] existingVals = headers.getHeader(headerName);
+                        if (existingVals == null) {
+                            headers.setHeader(headerName, value);
+                        }
+                        else
+                        {
+                        	// Avoid duplicates of the same value since headers that exist in the HTTP headers
+                        	// may already have been inserted in the Message object
+                        	boolean exists = false;
+                        	for (int i = 0; i < existingVals.length; i++)
+    						{
+    							if (value.equals(existingVals[i]))
+    							{
+    								exists = true;
+    							}
+    						}
+                            if (!exists) headers.addHeader(headerName, value);
+                        }
+                    }
+                }
+            }
+        }
+
+    	private static class SelfSignedTrustManager implements X509TrustManager
+    	{
+
+    		private final X509TrustManager tm;
+    		private String[] trustCN = null;
+
+
+    		SelfSignedTrustManager(X509TrustManager tm)
+    		{
+    			this.tm = tm;
+    		}
+
+    		public X509Certificate[] getAcceptedIssuers()
+    		{
+    			return tm.getAcceptedIssuers();
+    		}
+
+    		public void checkClientTrusted(X509Certificate[] chain, String authType)
+    		{
+    			throw new UnsupportedOperationException();
+    		}
+
+    		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
+    		{
+    			if (chain.length == 1)
+    			{
+    				// Only ignore the check for self signed certs where CN (Canonical Name) matches
+    				String dn = chain[0].getIssuerDN().getName();
+    				for (int i = 0; i < trustCN.length; i++)
+    				{
+    					if (dn.contains("CN="+trustCN[i]))
+    						return;
+    				}
+    			}
+    		    tm.checkServerTrusted(chain, authType);
+    		}
+
+    		public void setTrustCN(String trustCN)
+    		{
+    			this.trustCN = trustCN.split(",");
+    		}
+
+    	}
 }

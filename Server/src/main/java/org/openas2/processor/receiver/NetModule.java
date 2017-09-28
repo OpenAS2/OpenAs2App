@@ -6,13 +6,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -33,7 +36,9 @@ import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
+import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtilOld;
+import org.openas2.util.Properties;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
@@ -90,11 +95,43 @@ public abstract class NetModule extends BaseReceiverModule {
         if (pwd != null)
         {
             setParameter(PARAM_SSL_KEYSTORE_PASSWORD, pwd);
-            ;
         }
 
     }
 
+    @Override
+	public boolean healthcheck(List<String> failures)
+	{
+    	try
+		{
+			String hcHost = getParameter(PARAM_ADDRESS, Properties.getProperty("ssl_host_name", "localhost"));
+			String hcPort = getParameter(PARAM_PORT, true);
+	    	String hcProtocol = getParameter(PARAM_PROTOCOL, "http");
+	    	String urlString = hcProtocol + "://" + hcHost + ":" + hcPort + "/" + Properties.getProperty("health_check_uri", "healthcheck");
+
+	    	if (logger.isTraceEnabled())
+	    		logger.trace("Helthcheck about to try URL: " + urlString);
+	    	Map<String, String> responseWrapper = null;
+	    	if ("https".equalsIgnoreCase(hcProtocol))
+			{
+	    		responseWrapper = HTTPUtil.querySite(urlString, "GET", null, null);
+	    		//responseWrapper =HTTPUtil.querySiteSSLVerifierOverride(urlString, "GET", null, null);
+			}
+	    	else responseWrapper = HTTPUtil.querySite(urlString, "GET", null, null);
+	    	if (!"200".equals(responseWrapper.get("response_code")))
+	    	{
+	    		failures.add(this.getClass().getSimpleName() + " - Error making HTTP connection. Rsponse code: " + responseWrapper.get("response_code"));
+				return false;
+	    	}
+		} catch (Exception e)
+		{
+			logger.error("Failed to execute healthcheck.", e);
+			failures.add(this.getClass().getSimpleName() + " - Failed to execute HTTP connection to listener: " + e.getMessage());
+			return false;
+		}
+		return true;
+	}
+    
     protected abstract NetModuleHandler getHandler();
 
     protected void handleError(Message msg, OpenAS2Exception oae)

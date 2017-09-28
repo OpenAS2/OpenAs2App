@@ -32,13 +32,10 @@ public class HealthCheckHandler implements NetModuleHandler {
 
 	public void handle(NetModule owner, Socket s)
 	{
-
-		if (logger.isInfoEnabled())
-			logger.info("Healthcheck connection: " + " [" + getClientInfo(s) + "]");
-
+		if (logger.isTraceEnabled())
+			logger.trace("Healthcheck connection: " + " [" + getClientInfo(s) + "]");
 		
 		byte[] data = null;
-
 		// Read in the message request, headers, and data
 		try
 		{
@@ -47,11 +44,32 @@ public class HealthCheckHandler implements NetModuleHandler {
 			data = HTTPUtil.readHTTP(s.getInputStream(), s.getOutputStream(), headers, request);
 			if (logger.isDebugEnabled())
 				logger.debug("HealthCheck received request: " + request.toString()
-							+ "\n\tHeaders: " + headers
+							+ "\n\tHeaders: " + HTTPUtil.printHeaders(headers.getAllHeaders(), "==", ";;")
 							+ "\n\tData: " + data);
-			// TODO: Implement internal healthcheck calls for different components of the system
-			// For now just return OK
-			HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, false);
+			// Invoke each configured modules healthcheck method
+			List<String> failures = new ArrayList<String>();
+			
+			boolean isHealthy = module.getSession().getProcessor().checkActiveModules(failures);
+			// TODO : Add other (non-module) checks 
+			if (isHealthy)
+				// For now just return OK
+			    HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, false);
+			if (logger.isTraceEnabled())
+				logger.trace("Healthcheck executed succesfully: " + " [" + getClientInfo(s) + "]");
+			else
+			{
+				// TODO: Implement mechanism to use a param to indicate if should return messages
+				HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_INTERNAL_ERROR, false);
+				StringBuilder sb = new StringBuilder("Healthcheck execution failed: ");
+				for (int i = 0; i < failures.size(); i++)
+				{
+					sb.append("\n\t").append(i).append(".").append(failures.get(i));
+				}
+				if (logger.isTraceEnabled())
+					logger.trace( sb);
+
+				
+			}
 
 		} catch (Exception e)
 		{

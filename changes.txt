@@ -1,3 +1,9 @@
+Version 2.4.1 - 2017-09-28
+This is a minor enhancement release:
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
+
+  1. Enhance health check module to test all active modules. All modules now require implementing a healthcheck() method for self test.
+ 
 Version 2.4.0 - 2017-09-25
 This is a minor enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
