@@ -41,6 +41,7 @@
 		filename="%home%/commands.xml"/>
 
 	<commandProcessors>
+          <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor"/>
 	  <commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
 	  <commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"  portId="14321"
 	    userid="userID" password="pWd"/>
