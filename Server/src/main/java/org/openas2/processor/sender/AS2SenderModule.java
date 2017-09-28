@@ -443,12 +443,16 @@ public class AS2SenderModule extends HttpSenderModule {
             logger.trace("Compression type from config: " + compressionType);
         }
         boolean isCompress = false;
-        if (compressionType != null)
+        if (compressionType != null && !"NONE".equalsIgnoreCase(compressionType))
         {
             if (compressionType.equalsIgnoreCase(ICryptoHelper.COMPRESSION_ZLIB))
             {
                 isCompress = true;
             } 
+            else
+            {
+                throw new OpenAS2Exception("Unsupported compression type: " + compressionType);
+            }
         }
         String compressionMode = msg.getPartnership().getAttribute("compression_mode");
         boolean isCompressBeforeSign = true; // Defaults to compressing the
