@@ -448,10 +448,7 @@ public class AS2SenderModule extends HttpSenderModule {
             if (compressionType.equalsIgnoreCase(ICryptoHelper.COMPRESSION_ZLIB))
             {
                 isCompress = true;
-            } else
-            {
-                throw new OpenAS2Exception("Unsupported compression type: " + compressionType);
-            }
+            } 
         }
         String compressionMode = msg.getPartnership().getAttribute("compression_mode");
         boolean isCompressBeforeSign = true; // Defaults to compressing the
