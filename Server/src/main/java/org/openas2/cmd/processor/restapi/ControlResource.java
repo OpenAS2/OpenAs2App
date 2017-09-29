@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -49,6 +50,7 @@ public class ControlResource {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
     
+    @PermitAll
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String getVersion() {
@@ -121,6 +123,7 @@ public class ControlResource {
         }
     }
 
+    @RolesAllowed("ADMIN")
     @PUT
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -129,6 +132,7 @@ public class ControlResource {
         return postCommand(resource, "add", itemId,formParams);
     }
 
+    @RolesAllowed("ADMIN")
     @DELETE
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -136,6 +140,7 @@ public class ControlResource {
         return getCommand(resource, "delete", itemId);
     }
 
+    @RolesAllowed("ADMIN")
     @HEAD
     @Path("/{resource}{action:(/[^/]+?)?}{id:(/[^/]+?)?}")
     public Response headCommand(@PathParam("param") String command) {

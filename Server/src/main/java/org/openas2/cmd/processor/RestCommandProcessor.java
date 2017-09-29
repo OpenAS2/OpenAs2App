@@ -82,7 +82,10 @@ public class RestCommandProcessor extends BaseCommandProcessor {
         // create a resource config that scans for JAX-RS resources and providers
         // in com.example.rest package
         final ResourceConfig rc = new ResourceConfig();//.packages("org.openas2.cmd.processor.restapi");
-        rc.register(new ControlResource(this)).register(AuthenticationFilter.class);
+        rc.register(new AuthenticationFilter(
+                parameters.getOrDefault("userid","userid"),
+                parameters.getOrDefault("password","pWd")
+        )).register(new ControlResource(this));
         URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
 
         /**
@@ -98,8 +101,8 @@ public class RestCommandProcessor extends BaseCommandProcessor {
                 //Secure Server
                 SSLContextConfigurator sslCon = new SSLContextConfigurator();
 
-                sslCon.setKeyStoreFile(parameters.get("keyStoreFile"));
-                sslCon.setKeyStorePass(parameters.getOrDefault("keyStorePass", ""));
+                sslCon.setKeyStoreFile(parameters.get("ssl_keystore"));
+                sslCon.setKeyStorePass(parameters.getOrDefault("ssl_keystore_password", ""));
 
                 GrizzlyHttpContainer container = (GrizzlyHttpContainer) ContainerFactory.createContainer(GrizzlyHttpContainer.class, rc);
                 SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslCon, false, false, false);

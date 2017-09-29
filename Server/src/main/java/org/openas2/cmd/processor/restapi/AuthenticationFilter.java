@@ -38,6 +38,13 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
             .entity("You cannot access this resource").build();
     private static final Response ACCESS_FORBIDDEN = Response.status(Response.Status.FORBIDDEN)
             .entity("Access blocked for all users !!").build();
+    private String adminUsername;
+    private String adminPassword;
+
+    public AuthenticationFilter(String adminUsername, String adminPassword) {
+        this.adminUsername = adminUsername;
+        this.adminPassword = adminPassword;
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
@@ -98,7 +105,8 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
         //If both match then get the defined role for user from database and continue; else return isAllowed [false]
         //Access the database and do this part yourself
         //String userRole = userMgr.getUserRole(username);
-        if (username.equals("howtodoinjava") && password.equals("password")) {
+        
+        if (username.equals(adminUsername) && password.equals(adminPassword)) {
             String userRole = "ADMIN";
 
             //Step 2. Verify user role
