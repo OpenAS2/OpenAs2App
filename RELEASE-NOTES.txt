@@ -1,18 +1,18 @@
               OpenAS2 Server
-              Version 2.4.1
+              Version 2.4.2
               RELEASE NOTES
 
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.4.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.4.2
 
-The release download file is: OpenAS2Server-2.4.1.zip
+The release download file is: OpenAS2Server-2.4.2.zip
 The zip file contains a PDF document providing information on installing and using the application.
 
-Version 2.4.1 - 2017-09-28
-This is a minor enhancement release:
+Version 2.4.2 - 2017-10-12
+This is a minor bugfix and documentation enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
 
-  1. Enhance health check module to test all active modules. All modules now require implementing a healthcheck() method for self test.
- 
+  1. Fix using a Java 1.8 call to ensure 1.6 compatibility
+  2. Enhance documentation around certifcate creation and deployment. 
 
 Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

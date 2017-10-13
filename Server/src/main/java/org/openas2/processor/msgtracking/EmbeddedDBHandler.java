@@ -40,8 +40,10 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
 		createConnectionPool(connectString, userName, pwd);
 		if ("true".equalsIgnoreCase(getParameter(PARAM_TCP_SERVER_START, "true")))
 		{
-			String tcpPort = params.getOrDefault(PARAM_TCP_SERVER_PORT, "9092");
-			String tcpPwd = params.getOrDefault(PARAM_TCP_SERVER_PWD, "OpenAS2");
+			String tcpPort = params.get(PARAM_TCP_SERVER_PORT);
+			if (tcpPort == null || tcpPort.length() < 1) tcpPort = "9092";
+			String tcpPwd = params.get(PARAM_TCP_SERVER_PWD);
+			if (tcpPwd == null || tcpPwd.length() < 1) tcpPwd = "OpenAS2";
 			String dbDirectory = params.get(PARAM_DB_DIRECTORY);
 			if (dbDirectory == null || dbDirectory.length() < 1)
 				throw new OpenAS2Exception("TCP server requireds parameter: " + PARAM_DB_DIRECTORY);
