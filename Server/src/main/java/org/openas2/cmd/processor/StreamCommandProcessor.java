@@ -8,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
@@ -146,7 +145,7 @@ public class StreamCommandProcessor extends BaseCommandProcessor {
     @Override
     public void destroy() throws Exception
     {
-        IOUtils.closeQuietly(reader); // stops terminal
+        reader = null; // Cannot close System.in
         super.destroy();
     }
 }
