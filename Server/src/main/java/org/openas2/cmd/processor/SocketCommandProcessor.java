@@ -15,11 +15,14 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
+import org.openas2.processor.sender.AS2SenderModule;
 import org.openas2.util.CommandTokenizer;
 
 /**
@@ -41,8 +44,11 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     private SSLServerSocket sslserversocket = null;
     private String userid, password;
 
+    private Log logger = LogFactory.getLog(SocketCommandProcessor.class.getSimpleName());
+
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception
     {
+    	super.init(session, parameters);
         String p = parameters.get("portid");
         try
         {
@@ -109,6 +115,8 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
 
             String line;
             line = rdr.readLine();
+            if (logger.isTraceEnabled())
+            	logger.trace("Socket command processor received command: " + line);
 
             parser.parse(line);
 
@@ -135,6 +143,11 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
 
                     if (commandName.equals(StreamCommandProcessor.EXIT_COMMAND))
                     {
+                    	wrtr.write("Server terminating...");
+                    	wrtr.flush();
+                    	rdr.close();
+                    	wrtr.close();
+                    	IOUtils.closeQuietly(socket);
                         terminate();
                     } else
                     {
@@ -200,6 +213,8 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     @Override
     public void destroy() throws Exception
     {
+    	if (logger.isTraceEnabled())
+    			logger.trace("SocketCommandProcessor.destroy called...");
         IOUtils.closeQuietly(sslserversocket);  // closes remote session
         super.destroy();
 
