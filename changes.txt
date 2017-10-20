@@ -1,3 +1,9 @@
+Version 2.4.3 - 2017-10-20
+This is a minor bugfix release:
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
+
+  1. Fix EXIT command not working when executed from remote socket comand processor. 
+
 Version 2.4.2 - 2017-10-12
 This is a minor bugfix and documentation enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
