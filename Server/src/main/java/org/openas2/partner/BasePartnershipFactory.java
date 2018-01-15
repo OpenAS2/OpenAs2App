@@ -1,6 +1,7 @@
 package org.openas2.partner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.openas2.params.ParameterParser;
 
 public abstract class BasePartnershipFactory extends BaseComponent implements PartnershipFactory {
     private List<Partnership> partnerships;
+    protected Map<String, Object> partners;
 
     public Partnership getPartnership(Partnership p, boolean reverseLookup) throws OpenAS2Exception {
         Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());
@@ -45,6 +47,19 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         }
 
         return partnerships;
+    }
+
+    public void setPartners(Map map) {
+        getPartners().putAll(map);
+    }
+
+    @Override
+    public Map getPartners() {
+        if (partners == null) {
+            partners = new HashMap();
+        }
+
+        return partners;
     }
 
     public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception

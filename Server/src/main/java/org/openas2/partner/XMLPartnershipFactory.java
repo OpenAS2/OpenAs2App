@@ -45,8 +45,6 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     public static final String PARAM_FILENAME = "filename";
     public static final String PARAM_INTERVAL = "interval";
 
-    private Map<String, Object> partners;
-
     private Log logger = LogFactory.getLog(XMLPartnershipFactory.class.getSimpleName());
 
 
@@ -58,21 +56,6 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     String getFilename() throws InvalidParameterException
     {
         return getParameter(PARAM_FILENAME, true);
-    }
-
-    public Map<String, Object> getPartners()
-    {
-        if (partners == null)
-        {
-            partners = new HashMap<String, Object>();
-        }
-
-        return partners;
-    }
-
-    private void setPartners(Map<String, Object> map)
-    {
-        partners = map;
     }
 
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception
@@ -243,9 +226,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             PrintWriter pw = new PrintWriter(new FileOutputStream(fn));
 
 
-            Map<String, Object> partner = partners;
             pw.println("<partnerships>");
-            Iterator<Map.Entry<String, Object>> partnerIt = partner.entrySet().iterator();
+            Iterator<Map.Entry<String, Object>> partnerIt = partners.entrySet().iterator();
             while (partnerIt.hasNext())
             {
                 Map.Entry<String, Object> ptrnData = partnerIt.next();

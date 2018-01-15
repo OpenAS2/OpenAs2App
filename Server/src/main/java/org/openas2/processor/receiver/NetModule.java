@@ -224,8 +224,8 @@ public abstract class NetModule extends BaseReceiverModule {
             String sslProtocol = "TLS";
             try
             {
-                protocol = owner.getParameter(PARAM_PROTOCOL, "http");
-                sslProtocol = owner.getParameter(PARAM_SSL_PROTOCOL, "TLS");
+			protocol = owner.getParameter(PARAM_PROTOCOL, "http");
+			sslProtocol = owner.getParameter(PARAM_SSL_PROTOCOL, "TLS");
             } catch (InvalidParameterException e)
             {
                 // Do nothing

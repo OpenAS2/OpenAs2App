@@ -14,7 +14,10 @@ public class Partnership implements Serializable {
     public static final String PID_EMAIL = "email"; // Email address
     public static final String PA_PROTOCOL = "protocol"; // AS1 or AS2
     public static final String PA_SUBJECT = "subject"; // Subject sent in messages    
-    public static final String PA_CONTENT_TRANSFER_ENCODING = "content_transfer_encoding"; // optional content transfer enc value
+    public static final String PA_CONTENT_TRANSFER_ENCODING = "content_transfer_encoding"; // optional content transfer enc value - "BASE64" / "QUOTED-PRINTABLE" /  "8BIT"   / "7BIT" /  "BINARY" / x-token
+    public static final String PA_NO_SET_TRANSFER_ENCODING_FOR_SIGNING = "no_set_transfer_encoding_for_signing";
+    public static final String PA_NO_SET_TRANSFER_ENCODING_FOR_ENCRYPTION = "no_set_transfer_encoding_for_encryption";
+    public static final String PA_RENAME_DIGEST_TO_OLD_NAME = "rename_digest_to_old_name";
     public static final String PA_REMOVE_PROTECTION_ATTRIB = "remove_cms_algorithm_protection_attrib"; // Some AS2 systems do not support the attribute
     public static final String PA_SET_CONTENT_TRANSFER_ENCODING_OMBP = "set_content_transfer_encoding_on_outer_mime_bodypart"; // optional content transfer enc value
     /**
@@ -99,12 +102,12 @@ public class Partnership implements Serializable {
     }
 
     public boolean matches(Partnership partnership) {
-        Map<String,Object> senderIDs = partnership.getSenderIDs();
-        Map<String,Object> receiverIDs = partnership.getReceiverIDs();
+        Map<String,Object> senderIDsByPartnership = partnership.getSenderIDs();
+        Map<String,Object> receiverIDsByPartnership = partnership.getReceiverIDs();
 
-        if (compareIDs(senderIDs, getSenderIDs())) {
+        if (compareIDs(senderIDsByPartnership, getSenderIDs())) {
             return true;
-        } else if (compareIDs(receiverIDs, getReceiverIDs())) {
+        } else if (compareIDs(receiverIDsByPartnership, getReceiverIDs())) {
             return true;
         }
 
@@ -112,8 +115,8 @@ public class Partnership implements Serializable {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("Partnership " + getName());
+        StringBuilder buf = new StringBuilder();
+        buf.append("Partnership ").append(getName());
         buf.append(" Sender IDs = ").append(getSenderIDs());
         buf.append(" Receiver IDs = ").append(getReceiverIDs());
         buf.append(" Attributes = ").append(getAttributes());
@@ -174,13 +177,13 @@ public class Partnership implements Serializable {
 
     public boolean isPreventCanonicalization()
     {
-		String preventCanonicalization = getAttribute("prevent_canonicalization_for_mic");
+        String preventCanonicalization = getAttribute(AS2Partnership.PA_PREVENT_CANONICALIZATION_FOR_MIC);
         return (preventCanonicalization != null && "true".equals(preventCanonicalization));
     }
 
     public boolean isRenameDigestToOldName()
     {
-		String removeDash = getAttribute("rename_digest_to_old_name");
+        String removeDash = getAttribute(PA_RENAME_DIGEST_TO_OLD_NAME);
         return (removeDash != null && "true".equals(removeDash));
     }
     

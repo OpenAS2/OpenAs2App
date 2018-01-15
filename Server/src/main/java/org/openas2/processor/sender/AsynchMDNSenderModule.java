@@ -4,21 +4,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.mail.Header;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.DBFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
+import org.openas2.XMLSession;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
+import org.openas2.processor.receiver.AS2ReceiverHandler;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
@@ -157,6 +163,12 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 				// Log significant msg state
 				msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
 				msg.trackMsgState(getSession());
+				String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
+				try {
+					DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_RECEIVED, msg.getMDN().getText(), msg.getMDN().getMessageID(), new Date());
+				} catch (OpenAS2Exception ex) {
+					Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
+				}
 
 			} finally {
 				conn.disconnect();

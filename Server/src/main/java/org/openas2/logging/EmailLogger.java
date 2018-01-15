@@ -251,7 +251,7 @@ public class EmailLogger extends BaseLogger {
         javax.mail.Session jmSession = null;
 		try
 		{
-			isAuth = "true".equalsIgnoreCase(getParameter("smtpauth", "false"));
+		isAuth = "true".equalsIgnoreCase(getParameter("smtpauth", "false"));
 		} catch (InvalidParameterException e)
 		{
 		}

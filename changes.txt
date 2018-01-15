@@ -1,3 +1,15 @@
+Version 2.4.4 - 2018-01-15  - Beta  https://github.com/lucguinchard/OpenAs2App
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
+       
+  1. Better JCE error handling (Java Cryptography Extension)
+  2. Invalid code in OpenAS2Exception
+  3. Add a DBFactory class to manage the database
+  4. Adding a database configuration tag in config.xml
+         Sample : <dbconfig name="as2_bdA" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="openas2"/>
+  5. Modifying the BasePartnershipFactory class to take into account partners and parnerships outside config.xml
+  6. Added a DBPartnershipFactory class to search for parnerships and partner in database.
+  7. Added Unit tests to test the configuration with the database (environments + createDefaultTable.sql)
+
 Version 2.4.3 - 2017-10-20
 This is a minor bugfix release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading

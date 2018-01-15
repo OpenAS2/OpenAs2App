@@ -9,8 +9,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -19,8 +22,10 @@ import javax.net.ssl.SSLHandshakeException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.DBFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
+import org.openas2.XMLSession;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.message.AS2Message;
@@ -31,9 +36,12 @@ import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.params.MessageParameters;
+import org.openas2.params.ParameterParser;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.SecurePartnership;
+import org.openas2.processor.receiver.AS2ReceiverHandler;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
@@ -61,7 +69,7 @@ public class AS2SenderModule extends HttpSenderModule {
     @SuppressWarnings("unchecked")
     public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception
     {
-
+        String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
         if (logger.isInfoEnabled())
         {
             logger.info("message sender invoked" + msg.getLogMsgID());
@@ -188,6 +196,7 @@ public class AS2SenderModule extends HttpSenderModule {
             if (msg.isConfiguredForMDN())
             {
                 msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
+                DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_WAITING, null);
                 // Check if it will be an AsyncMDN
                 if (msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) == null)
                 {
@@ -270,12 +279,22 @@ public class AS2SenderModule extends HttpSenderModule {
                         logger.trace("Synchronous MDN received. Start processing..." + msg.getLogMsgID());
                     }
                     msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
+                    DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MSG_SENT, null);
                     try
                     {
                         AS2Util.processMDN((AS2Message) msg, mdnStream.toByteArray(), null, false, getSession(), this);
                         // Log significant msg state
                         msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
                         msg.trackMsgState(getSession());
+                        try {
+                            DBFactory.updateMessage(
+                                dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_RECEIVED,
+                                    ParameterParser.parse(msg.getMDN().getText(), new MessageParameters(msg)),
+                                    msg.getMDN().getMessageID(), new Date()
+                                );
+                        } catch (OpenAS2Exception ex) {
+                            Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     } catch (Exception e)
                     {
                         if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus())
@@ -306,6 +325,10 @@ public class AS2SenderModule extends HttpSenderModule {
                         msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
                         msg.trackMsgState(getSession());
                         AS2Util.cleanupFiles(msg, true);
+                        DBFactory.updateMessage(
+                                dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_ERROR, 
+                                ParameterParser.parse(msg.getMDN().getText(), new MessageParameters(msg)),
+                                msg.getMDN().getMessageID(), new Date());
                     }
                 }
             }
@@ -437,7 +460,7 @@ public class AS2SenderModule extends HttpSenderModule {
         }
 
         // Check if compression is enabled
-        String compressionType = msg.getPartnership().getAttribute("compression_type");
+        String compressionType = msg.getPartnership().getAttribute(SecurePartnership.PA_COMPRESSION_TYPE);
         if (logger.isTraceEnabled())
         {
             logger.trace("Compression type from config: " + compressionType);
