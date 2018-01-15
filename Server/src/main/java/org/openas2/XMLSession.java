@@ -20,7 +20,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
@@ -33,8 +32,10 @@ import org.openas2.processor.ProcessorModule;
 import org.openas2.schedule.SchedulerComponent;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -54,6 +55,7 @@ public class XMLSession extends BaseSession {
     private static final String EL_PARTNERSHIPS = "partnerships";
     private static final String EL_COMMANDS = "commands";
     private static final String EL_LOGGERS = "loggers";
+    public static final String EL_DATABASECONFIG = "dbconfig";
     private static final String PARAM_BASE_DIRECTORY = "basedir";
 
     private CommandRegistry commandRegistry;
@@ -130,6 +132,9 @@ public class XMLSession extends BaseSession {
             } else if (nodeName.equals(EL_LOGGERS))
             {
                 loadLoggers(rootNode);
+            } else if (nodeName.equals(EL_DATABASECONFIG))
+            {
+                loadDBConfig(rootNode);
             } else if (nodeName.equals("#text"))
             {
                 // do nothing
@@ -194,6 +199,31 @@ public class XMLSession extends BaseSession {
             {
                 loadLogger(manager, logger);
             }
+        }
+    }
+
+    private void loadDBConfig(Node node) throws OpenAS2Exception {
+        LOGGER.info("Loading DB configuration...");
+        NamedNodeMap namedNodeMap = node.getAttributes();
+        try {
+            String name = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_NAME).getNodeValue();
+            String url = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_URL).getNodeValue();
+            String user = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_USER).getNodeValue();
+            String password = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_PASSWORD).getNodeValue();
+            String tableMessage = null;
+            try {
+                tableMessage = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_TABLE_MESSAGE).getNodeValue();
+            } catch(NullPointerException e){
+                //nothing
+            }
+            DBFactory bFactory = new DBFactory(url, user, password, tableMessage);
+            DBFactory.DBFactoryList.put(name, bFactory);
+        } catch(DOMException e){
+            throw new OpenAS2Exception("Attributes '" + DBFactory.CONFIG_NAMED_NODE_NAME + "', '" + DBFactory.CONFIG_NAMED_NODE_URL + "', '" 
+                 + DBFactory.CONFIG_NAMED_NODE_USER + "' and '" + DBFactory.CONFIG_NAMED_NODE_PASSWORD + "' are mandatory for " + EL_DATABASECONFIG + "!");
+        } catch(NullPointerException e){
+            throw new OpenAS2Exception("Attributes '" + DBFactory.CONFIG_NAMED_NODE_NAME + "', '" + DBFactory.CONFIG_NAMED_NODE_URL + "', '" 
+                 + DBFactory.CONFIG_NAMED_NODE_USER + "' and '" + DBFactory.CONFIG_NAMED_NODE_PASSWORD + "' are mandatory for " + EL_DATABASECONFIG + "!");
         }
     }
 

@@ -11,6 +11,7 @@ public interface AS2Partnership {
 	public static final String PA_MESSAGEID = "messageid";  // format to use for message-id if not default
 	public static final String PA_RESEND_MAX_RETRIES = "resend_max_retries";  // format to use for message-id if not default
 	public static final String PA_CUSTOM_MIME_HEADERS = "custom_mime_headers"; // list of nme/value pairs for setting custom mime headers
+	public static final String PA_PREVENT_CANONICALIZATION_FOR_MIC = "prevent_canonicalization_for_mic";
 	public static final String PA_ADD_CUSTOM_MIME_HEADERS_TO_HTTP = "add_custom_mime_headers_to_http"; // Add the custom mime headers (if any) to HTTP header if "true"
 	public static final String PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME = "custom_mime_header_names_from_filename"; // List of header names to be set from parsed filename
 	public static final String PA_CUSTOM_MIME_HEADER_NAME_DELIMITERS_IN_FILENAME = "custom_mime_header_name_delimiters_in_filename"; // Delimiters to split filename into values

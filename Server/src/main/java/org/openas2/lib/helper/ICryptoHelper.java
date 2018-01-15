@@ -37,6 +37,7 @@ public interface ICryptoHelper {
     static final String COMPRESSION_NONE = "none";
     static final String COMPRESSION_ZLIB = "zlib";
 
+    static final String CONTENT_TRANSFER_ENCODING_8BIT = "8bit";
 
     boolean isEncrypted(MimeBodyPart part) throws Exception;
 

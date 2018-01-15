@@ -18,9 +18,11 @@ import javax.mail.internet.MimeBodyPart;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.DBFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
+import org.openas2.XMLSession;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
@@ -53,6 +55,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
 	protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException
 	{
+		String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
 		Message msg = buildMessageMetadata(filename);
 
 		String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
@@ -195,9 +198,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			msg.setStatus(Message.MSG_STATUS_MSG_SEND);
 			// Transmit the message
 			getSession().getProcessor().handle(SenderModule.DO_SEND, msg, options);
+			//DBFactory.updateMessage(dbConfig, msg.getMessageID(), filename, DBFactory.MSG_STATUS.FILE_SUBMITTED, null);
 		} catch (Exception e)
 		{
 			msg.setLogMsg("Fatal error sending message: " + org.openas2.logging.Log.getExceptionMsg(e));
+			DBFactory.updateMessage(dbConfig, msg.getMessageID(), filename, DBFactory.MSG_STATUS.MDN_NOTSENT, msg.getLogMsg());
 			logger.error(msg, e);
 			AS2Util.cleanupFiles(msg, true);
 		}
@@ -243,6 +248,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
 
+		String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
+		DBFactory.addMessage(dbConfig, msg.getMessageID(), msg.getPartnership().getName(), filename, DBFactory.MSG_STATUS.FILE_SUBMITTED, null);
 		return msg;
 
 	}

@@ -39,7 +39,7 @@ public class BaseComponent implements Component {
     public String getParameter(String key, boolean required)
             throws InvalidParameterException
     {
-        String parameter = getParameters().get(key);
+        String parameter = getParameter(key);
 
         if (required && (parameter == null))
         {
@@ -59,6 +59,12 @@ public class BaseComponent implements Component {
         }
 
         return value;
+    }
+
+    public String getParameter(String key)
+    {
+        if (parameters == null) return null;
+        return parameters.get(key);
     }
 
     public int getParameterInt(String key, boolean required)
