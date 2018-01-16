@@ -4,7 +4,7 @@
 
     />
 
-	<dbconfig name="as2_dbB" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="2oM2905Z#8" table_message="as2_message2"/>
+    <dbconfig name="as2_dbB" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="2oM2905Z#8" table_message="as2_message2"/>
     <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
                   filename="%home%/as2_certs.p12"
                   password="testas2"
@@ -54,11 +54,11 @@
                pendingMDNinfo="%home%/../data/pendinginfoMDN3">
 
         <module classname="org.openas2.processor.sender.AS2SenderModule"
-				dbconfig="as2_dbB">
+                dbconfig="as2_dbB">
         </module>
 
         <module classname="org.openas2.processor.sender.AsynchMDNSenderModule"
-				dbconfig="as2_dbB">
+                dbconfig="as2_dbB">
         </module>
 
         <!-- This will parse the filename to get a sender and receiver. For instance a file
@@ -68,7 +68,7 @@
                 errordir="%home%/../data/toAny/error"
                 interval="5"
                 delimiters="-."
-				dbconfig="as2_dbB"
+                dbconfig="as2_dbB"
                 sendfilename="true"
                 format="sender.as2_id, receiver.as2_id, attributes.fileid"
                 mimetype="application/EDI-X12"/>
@@ -77,7 +77,7 @@
                 outboxdir="%home%/../data/toOpenAS2A/"
                 errordir="%home%/../data/toOpenAS2A/error"
                 interval="5"
-				dbconfig="as2_dbB"
+                dbconfig="as2_dbB"
                 defaults="sender.as2_id=OpenAS2B_DB, receiver.as2_id=OpenAS2A_DB"
                 sendfilename="true"
                 mimetype="application/EDI-X12"/>
@@ -88,7 +88,7 @@
                 interval="5"
                 defaults="sender.as2_id=OpenAS2A_DB, receiver.as2_id=OpenAS2B_DB"
                 sendFilename="true"
-				dbconfig="as2_dbB"
+                dbconfig="as2_dbB"
                 mimetype="application/EDI-X12"/>
 
         <!--module classname="org.openas2.processor.msgtracking.DbTrackingModule"
@@ -107,19 +107,19 @@
         <module classname="org.openas2.processor.storage.MDNFileModule"
                 filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
                 protocol="as2"
-				dbconfig="as2_dbB"
+                dbconfig="as2_dbB"
                 tempdir="%home%/../data/temp"/>
 
         <module classname="org.openas2.processor.storage.MessageFileModule"
                 filename="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
                 header="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
                 protocol="as2"
-				dbconfig="as2_dbB"
+                dbconfig="as2_dbB"
                 tempdir="%home%/../data/temp"/>
 
         <module classname="org.openas2.processor.receiver.AS2ReceiverModule"
                 port="20090"
-				dbconfig="as2_dbB"
+                dbconfig="as2_dbB"
                 errordir="%home%/../data/inbox/error"
                 errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
         <!--
@@ -134,17 +134,17 @@
             -->
 
         <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule" port="20091"
-				dbconfig="as2_dbB"/>
+                dbconfig="as2_dbB"/>
 
-        <!--
-		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"			
-			port="10444"
-			protocol="https"
-			ssl_protocol="TLS"
-			ssl_keystore="%home%/ssl_certs.jks"
-			ssl_keystore_password="testas2"
-			/>
-			-->
+<!--
+        <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"			
+                port="10444"
+                protocol="https"
+                ssl_protocol="TLS"
+                ssl_keystore="%home%/ssl_certs.jks"
+                ssl_keystore_password="testas2"
+         />
+-->
 
         <module classname="org.openas2.processor.resender.DirectoryResenderModule"
                 resenddir="%home%/../data/resend"
