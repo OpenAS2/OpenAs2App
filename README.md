@@ -7,8 +7,8 @@ The current version of the application is extracted from the POM and instered in
 More detailed information is available in the DeveloperGuide.odt in the docs folder in Github
 
 To test this version it is necessary to indicate an existing database.
-    config.xml : `<pre><dbconfig name="as2_bd" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="openas2"/></pre>`
-    The queries to create the tables for JUnit: createDefaultTable.sql
+* config.xml : `<dbconfig name="as2_db" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="openas2"/>`
+* The queries to create the tables for JUnit: createDefaultTable.sql
 
 ## Build
 
