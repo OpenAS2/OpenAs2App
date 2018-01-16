@@ -236,7 +236,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 		Map newPartners = new HashMap();
 		List newPartnerships = new ArrayList();
 
-		DBFactory dBFactory = DBFactory.getdbBFactory(getParameter(XMLSession.EL_DATABASECONFIG, null));
+		DBFactory dBFactory = DBFactory.getDBFactory(getParameter(XMLSession.EL_DATABASECONFIG, null));
 
 		Connection connexion = null;
 		try {

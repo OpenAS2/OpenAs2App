@@ -102,23 +102,23 @@ public class DBFactory {
 		}
 	}
 
-	public static DBFactory getdbBFactory(String dbConfig) throws OpenAS2Exception{
+	public static DBFactory getDBFactory(String dbConfig) throws OpenAS2Exception{
 		DBFactory dBFactory = null;
 		if(dbConfig != null){
 			logger.debug(XMLSession.EL_DATABASECONFIG + ":" + dbConfig);
 			dBFactory = DBFactoryList.get(dbConfig);
 			if(dBFactory == null){
 				if(DBFactoryList.size()!=1) {
-					throw new OpenAS2Exception("A " + XMLSession.EL_DATABASECONFIG + " '" + dbConfig + "' is missing !");
+					throw new OpenAS2Exception("A " + XMLSession.EL_DATABASECONFIG + " '" + dbConfig + "' is missing!");
 				}
 				dBFactory = DBFactoryList.values().iterator().next();
-				logger.info("Connection to Default DBFactory : " + DBFactoryList.keySet().iterator().next());
+				logger.info("Connection to default DBFactory: " + DBFactoryList.keySet().iterator().next());
 			}
-			logger.debug("Connection to URL : " + dBFactory.getUrl());
+			logger.debug("Connection to URL: " + dBFactory.getUrl());
 		}else{
 			if(DBFactoryList.size() == 1) {
 				dBFactory = DBFactoryList.values().iterator().next();
-				logger.info("Connection to Default DBFactory : " + DBFactoryList.keySet().iterator().next());
+				logger.info("Connection to default DBFactory: " + DBFactoryList.keySet().iterator().next());
 			} else {
 				logger.info("No DBFactory.");
 			}
@@ -136,7 +136,7 @@ public class DBFactory {
 	}
 	
 	public static void addMessage(String dbConfig, String messageId, String partnershipName, String payload, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
-		DBFactory dBFactory = DBFactory.getdbBFactory(dbConfig);
+		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
 		if(dBFactory != null){
 			Connection connection = null;
 			String requete = null;
@@ -174,7 +174,7 @@ public class DBFactory {
 	}
 
 	public static void updateMessage(String dbConfig, String messageId, String fileName) throws OpenAS2Exception{
-		DBFactory dBFactory = DBFactory.getdbBFactory(dbConfig);
+		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
 		if(dBFactory != null){
 			Connection connection = null;
 			String requete = null;
@@ -214,7 +214,7 @@ public class DBFactory {
 	}
 
 	public static void updateMessage(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception{
-		DBFactory dBFactory = DBFactory.getdbBFactory(dbConfig);
+		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
 		if(dBFactory != null){
 			Connection connection = null;
 			String requete = null;
