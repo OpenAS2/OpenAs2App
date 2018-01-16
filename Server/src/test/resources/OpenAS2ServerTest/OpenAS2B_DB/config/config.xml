@@ -4,7 +4,7 @@
 
     />
 
-	<dbconfig name="as2_bdB" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="openas2" table_message="as2_message2"/>
+	<dbconfig name="as2_bdB" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="2oM2905Z#8" table_message="as2_message2"/>
     <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
                   filename="%home%/as2_certs.p12"
                   password="testas2"

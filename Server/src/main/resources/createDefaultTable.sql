@@ -1,4 +1,7 @@
-CREATE TABLE `AS2_partner` (
+CREATE SCHEMA `openas2` ;
+USE `openas2`;
+
+CREATE TABLE `as2_partner` (
   `name` VARCHAR(60) NOT NULL,
   `as2_id` VARCHAR(128) NOT NULL COMMENT 'The AS2 ID must be comprised of 1 to 128 printable ASCII characters and is case-sensitive',
 
@@ -11,7 +14,7 @@ INSERT INTO `openas2`.`as2_partner` (`name`, `as2_id`, `x509_alias`, `email`) VA
 INSERT INTO `openas2`.`as2_partner` (`name`, `as2_id`, `x509_alias`, `email`) VALUES ('OpenAS2B_DB', 'OpenAS2B_DB', 'openas2b', 'as2@amtrust.fr');
 
 
-CREATE TABLE `AS2_partnership` (
+CREATE TABLE `as2_partnership` (
   `name` VARCHAR(255),
   `sender` VARCHAR(60) NOT NULL,
   `receiver` VARCHAR(60) NOT NULL,
@@ -34,8 +37,8 @@ CREATE TABLE `AS2_partnership` (
   `remove_cms_algorithm_protection_attrib` BOOLEAN NULL,
   PRIMARY KEY (`name`),
   UNIQUE INDEX `unique_sender_receiver` (`sender` ASC, `receiver` ASC),
-  FOREIGN KEY (`sender`) REFERENCES `AS2_partner` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (`receiver`) REFERENCES `AS2_partner` (`name`) ON DELETE CASCADE ON UPDATE CASCADE)
+  FOREIGN KEY (`sender`) REFERENCES `as2_partner` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`receiver`) REFERENCES `as2_partner` (`name`) ON DELETE CASCADE ON UPDATE CASCADE)
   DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci;
 
 INSERT INTO `openas2`.`as2_partnership` (`name`, `sender`, `receiver`, `protocol`, `content_transfer_encoding`, `compression_type`, `subject`, `mdnsubject`, `as2_url`, `as2_mdn_to`, `as2_receipt_option`, `as2_mdn_options`, `encrypt`, `sign`, `resend_max_retries`, `prevent_canonicalization_for_mic`, `no_set_transfer_encoding_for_signing`, `no_set_transfer_encoding_for_encryption`, `rename_digest_to_old_name`, `remove_cms_algorithm_protection_attrib`) 
@@ -112,3 +115,8 @@ KEY `messageId_as2_message2` (`message_id`),
 CONSTRAINT `fk_partnership_as2_message2` FOREIGN KEY (`partnership`) REFERENCES `as2_partnership` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT `fk_status_as2_message2` FOREIGN KEY (`status`) REFERENCES `as2_message_status` (`status`) ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci;
+
+
+CREATE USER 'openas2'@'localhost' IDENTIFIED BY '2oM2905Z#8';
+GRANT ALL PRIVILEGES ON openas2.* TO 'openas2'@'localhost';
+FLUSH PRIVILEGES;

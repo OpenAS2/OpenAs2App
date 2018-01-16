@@ -11,7 +11,7 @@
     <!--partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                   filename="%home%/partnerships.xml"/-->
 
-	<dbconfig name="as2_bdA" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="openas2"/>
+	<dbconfig name="as2_bdA" url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8" user="openas2" password="2oM2905Z#8"/>
 	<!--dbconfig name="as2_bd1" url="jdbc:h2:tcp://localhost:9092/openas2" user="sa" password="OpenAS2"/-->
     <partnerships classname="org.openas2.partner.DBPartnershipFactory" dbconfig="as2_bdA"/>
 
