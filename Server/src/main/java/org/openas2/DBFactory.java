@@ -27,7 +27,7 @@ public class DBFactory {
 	public static final String CONFIG_NAMED_NODE_PASSWORD = "password";
 	public static final String CONFIG_NAMED_NODE_TABLE_MESSAGE = "table_message";
 	//Fields of table : AS2_Message
-	public static final MessageFormat TABLE_FORMAT = new MessageFormat("`{0}`");
+	public static final String TABLE_FORMAT = "`{0}`";
 	public static final String TABLE_MESSAGE = "as2_message";
 	public static final String FIELD_MESSAGE_PARTNERSHIP = "`partnership`";
 	public static final String FIELD_MESSAGE_ID = "`message_id`";
@@ -143,8 +143,8 @@ public class DBFactory {
 			try {
 				List<Object> vars = new ArrayList();
 				connection = dBFactory.getConnection();
-				requete = "INSERT INTO `"+ dBFactory.getTableMessage() + "` ("
-						+ TABLE_FORMAT.format(FIELD_MESSAGE_PARTNERSHIP) + ", "
+				requete = "INSERT INTO "+ MessageFormat.format(TABLE_FORMAT, dBFactory.getTableMessage()) + " ("
+						+ FIELD_MESSAGE_PARTNERSHIP + ", "
 						+ FIELD_MESSAGE_ID + ", "
 						+ FIELD_MESSAGE_FILENAME + ", "
 						+ FIELD_MESSAGE_STATUS + ", "
