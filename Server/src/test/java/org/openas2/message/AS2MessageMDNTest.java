@@ -35,6 +35,6 @@ public class AS2MessageMDNTest {
     public void shouldGenerateMessageId() throws Exception
     {
         String messageId = new AS2MessageMDN(message, false).generateMessageID();
-        assertThat("Check " + messageId, messageId.matches("^OPENAS2-[0-9]{14}\\+[0-9]{4}-[0-9]{4}@senderId_receiverId"), is(true));
+        assertThat("Check " + messageId, messageId.matches("^OPENAS2-[0-9]{14}[-+][0-9]{4}-[0-9]{4}@senderId_receiverId"), is(true));
     }
 }
