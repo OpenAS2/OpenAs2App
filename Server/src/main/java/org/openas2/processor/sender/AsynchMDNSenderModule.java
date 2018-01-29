@@ -165,7 +165,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 				msg.trackMsgState(getSession());
 				String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
 				try {
-					DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_RECEIVED, msg.getMDN().getText(), msg.getMDN().getMessageID(), new Date());
+					DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_SENT, msg.getMDN().getText(), msg.getMDN().getMessageID(), new Date());
 				} catch (OpenAS2Exception ex) {
 					Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
 				}

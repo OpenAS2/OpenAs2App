@@ -288,7 +288,7 @@ public class AS2SenderModule extends HttpSenderModule {
                         msg.trackMsgState(getSession());
                         try {
                             DBFactory.updateMessage(
-                                dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_RECEIVED,
+                                dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_SENT,
                                     ParameterParser.parse(msg.getMDN().getText(), new MessageParameters(msg)),
                                     msg.getMDN().getMessageID(), new Date()
                                 );
