@@ -289,6 +289,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 						+ getPaternshipFieldProtocol() + ", "
 						+ getPaternshipContentTransferEncoding() + ", "
 						+ getPaternshipFieldCompressionType() + ", "
+						+ getPaternshipFieldCompressionMode() + ", "
 						+ getPaternshipFieldSubject() + ", "
 						+ getPaternshipFieldMDNSubject() + ", "
 						+ getPaternshipFieldAs2Url() + ", "
