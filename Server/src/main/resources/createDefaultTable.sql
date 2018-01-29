@@ -42,8 +42,8 @@ CREATE TABLE `as2_partnership` (
   FOREIGN KEY (`receiver`) REFERENCES `as2_partner` (`name`) ON DELETE CASCADE ON UPDATE CASCADE)
   DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci;
 
-INSERT INTO `openas2`.`as2_partnership` (`name`, `sender`, `receiver`, `protocol`, `content_transfer_encoding`, `compression_type`, `subject`, `mdnsubject`, `as2_url`, `as2_mdn_to`, `as2_receipt_option`, `as2_mdn_options`, `encrypt`, `sign`, `resend_max_retries`, `prevent_canonicalization_for_mic`, `no_set_transfer_encoding_for_signing`, `no_set_transfer_encoding_for_encryption`, `rename_digest_to_old_name`, `remove_cms_algorithm_protection_attrib`) 
-VALUES ('OpenAS2A_DB-to-OpenAS2B_DB', 'OpenAS2A_DB', 'OpenAS2B_DB', 'as2', '8bit', 'zlib', 'From OpenAS2A_DB to OpenAS2B_DB', 'Your requested MDN response from $receiver.as2_id$', 'http://localhost:20090', 'edi@openas2b.org', 'http://localhost:10091', 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256', '3des', 'sha256', '3', '0', '0', '0', '0', '0');
+INSERT INTO `openas2`.`as2_partnership` (`name`, `sender`, `receiver`, `protocol`, `content_transfer_encoding`, `compression_type`, `compression_mode`, `subject`, `mdnsubject`, `as2_url`, `as2_mdn_to`, `as2_receipt_option`, `as2_mdn_options`, `encrypt`, `sign`, `resend_max_retries`, `prevent_canonicalization_for_mic`, `no_set_transfer_encoding_for_signing`, `no_set_transfer_encoding_for_encryption`, `rename_digest_to_old_name`, `remove_cms_algorithm_protection_attrib`) 
+VALUES ('OpenAS2A_DB-to-OpenAS2B_DB', 'OpenAS2A_DB', 'OpenAS2B_DB', 'as2', '8bit', 'zlib', 'compress-before-signing', 'From OpenAS2A_DB to OpenAS2B_DB', 'Your requested MDN response from $receiver.as2_id$', 'http://localhost:20090', 'edi@openas2b.org', 'http://localhost:10091', 'signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256', '3des', 'sha256', '3', '0', '0', '0', '0', '0');
 
 
 
