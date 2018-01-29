@@ -21,6 +21,7 @@ CREATE TABLE `as2_partnership` (
   `protocol` ENUM('as1', 'as2') NOT NULL  DEFAULT 'as2',
   `content_transfer_encoding` VARCHAR(30) NOT NULL DEFAULT '8bit',
   `compression_type` ENUM('zlib') DEFAULT NULL,
+  `compression_mode` ENUM('compress-before-signing', 'compress-after-signing') NOT NULL DEFAULT 'compress-before-signing',
   `subject` VARCHAR(255) NULL,
   `mdnsubject` VARCHAR(255) NULL,
   `as2_url` VARCHAR(255) NULL,
@@ -28,7 +29,7 @@ CREATE TABLE `as2_partnership` (
   `as2_receipt_option` VARCHAR(255) NULL,
   `as2_mdn_options` VARCHAR(255) NULL,
   `encrypt` ENUM('3des', 'cast5', 'idea', 'rc2', 'rc2_cbc', 'aes128', 'aes192', 'aes256', 'aes256_wrap') NOT NULL  DEFAULT '3des',
-  `sign` ENUM( 'md2', 'md5', 'sha224', 'sha256', 'sha384', 'sha512') NOT NULL  DEFAULT 'sha512',
+  `sign` ENUM( 'md2', 'md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512') NOT NULL  DEFAULT 'sha256',
   `resend_max_retries` SMALLINT UNSIGNED NULL,
   `prevent_canonicalization_for_mic` BOOLEAN NULL,
   `no_set_transfer_encoding_for_signing` BOOLEAN NULL,
@@ -77,23 +78,23 @@ INSERT INTO `openas2`.`as2_message_status` (`status`, `type`, `message_direction
 INSERT INTO `openas2`.`as2_message_status` (`status`, `type`, `message_direction`, `label`, `label_fr`) VALUES ('MSG_SENT', 'DONE', 'out', 'Message sent without MDN request', 'Message envoyé sans demande de MDN');
 
 CREATE TABLE `as2_message` (
-`id` int(11) NOT NULL AUTO_INCREMENT,
-`partnership` varchar(255) NOT NULL,
-`message_id` varchar(255) NOT NULL,
-`filename` varchar(255) DEFAULT NULL,
-`date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-`mdn_id` varchar(255) DEFAULT NULL,
-`mdn_filename` varchar(255) DEFAULT NULL,
-`mdn_date` timestamp NULL DEFAULT NULL,
-`status` varchar(20) DEFAULT NULL,
-`comment` varchar(2000) DEFAULT NULL,
-PRIMARY KEY (`id`),
-KEY `fk_partnership_as2_message` (`partnership`),
-KEY `date_as2_message` (`date`),
-KEY `status_as2_message` (`status`),
-KEY `messageId_as2_message` (`message_id`),
-CONSTRAINT `fk_partnership_as2_message` FOREIGN KEY (`partnership`) REFERENCES `as2_partnership` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT `fk_status_as2_message` FOREIGN KEY (`status`) REFERENCES `as2_message_status` (`status`) ON UPDATE CASCADE
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `partnership` varchar(255) NOT NULL,
+  `message_id` varchar(255) NOT NULL,
+  `filename` varchar(255) DEFAULT NULL,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `mdn_id` varchar(255) DEFAULT NULL,
+  `mdn_filename` varchar(255) DEFAULT NULL,
+  `mdn_date` timestamp NULL DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
+  `comment` varchar(2000) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_partnership_as2_message` (`partnership`),
+  KEY `date_as2_message` (`date`),
+  KEY `status_as2_message` (`status`),
+  KEY `messageId_as2_message` (`message_id`),
+  CONSTRAINT `fk_partnership_as2_message` FOREIGN KEY (`partnership`) REFERENCES `as2_partnership` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_status_as2_message` FOREIGN KEY (`status`) REFERENCES `as2_message_status` (`status`) ON UPDATE CASCADE
 ) DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci;
 
 CREATE TABLE `as2_message2` (

@@ -56,6 +56,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 	public static final String PARAM_PARTNERSHIP_FIELD_CONTENT_TRANSFER_ENCODING = "partnerfield_content_transfer_encoding";
 	public static final String PARAM_PARTNERSHIP_FIELD_AS2_URL = "partnerfield_as2_url";
 	public static final String PARAM_PARTNERSHIP_FIELD_COMPRESSION_TYPE = "partnerfield_compression_type";
+	public static final String PARAM_PARTNERSHIP_FIELD_COMPRESSION_MODE = "partnerfield_compression_mode";
 	public static final String PARAM_PARTNERSHIP_FIELD_SUBJECT = "partnerfield_subject";
 	public static final String PARAM_PARTNERSHIP_FIELD_MDNSUBJECT = "partnerfield_mdnsubject";
 	public static final String PARAM_PARTNERSHIP_FIELD_RESEND_MAX_RETRIES = "partnerfield_resend_max_retries";
@@ -154,6 +155,10 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 
 	public String getPaternshipFieldCompressionType() throws InvalidParameterException {
 		return getParameter(PARAM_PARTNERSHIP_FIELD_COMPRESSION_TYPE, SecurePartnership.PA_COMPRESSION_TYPE);
+	}
+
+	public String getPaternshipFieldCompressionMode() throws InvalidParameterException {
+		return getParameter(PARAM_PARTNERSHIP_FIELD_COMPRESSION_MODE, SecurePartnership.PA_COMPRESSION_MODE);
 	}
 
 	public String getPaternshipFieldSubject() throws InvalidParameterException {
@@ -313,6 +318,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 					properties.put(Partnership.PA_PROTOCOL, resultat.getString(getPaternshipFieldProtocol()));
 					properties.put(Partnership.PA_CONTENT_TRANSFER_ENCODING, resultat.getString(getPaternshipContentTransferEncoding()));
 					properties.put(SecurePartnership.PA_COMPRESSION_TYPE, resultat.getString(getPaternshipFieldCompressionType()));
+					properties.put(SecurePartnership.PA_COMPRESSION_MODE, resultat.getString(getPaternshipFieldCompressionMode()));
 					properties.put(Partnership.PA_SUBJECT, resultat.getString(getPaternshipFieldSubject()));
 					properties.put(ASXPartnership.PA_MDN_SUBJECT, resultat.getString(getPaternshipFieldMDNSubject()));
 					properties.put(AS2Partnership.PA_AS2_URL, resultat.getString(getPaternshipFieldAs2Url()));
@@ -346,6 +352,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 				builder.append("  `").append(getPaternshipContentTransferEncoding()).append("` VARCHAR(30) NOT NULL DEFAULT '").append(ICryptoHelper.CONTENT_TRANSFER_ENCODING_8BIT).append("',").append("\n");
 				
 				builder.append("  `").append(getPaternshipFieldCompressionType()).append("` ENUM('" + ICryptoHelper.COMPRESSION_ZLIB + "') DEFAULT NULL,").append("\n");
+				builder.append("  `").append(getPaternshipFieldCompressionMode()).append("` ENUM('" + ICryptoHelper.COMPRESSION_BEFORE_SIGNING + "', '" + ICryptoHelper.COMPRESSION_AFTER_SIGNING + "') NOT NULL DEFAULT '" + ICryptoHelper.COMPRESSION_BEFORE_SIGNING + "',").append("\n");
 				builder.append("  `").append(getPaternshipFieldSubject()).append("` VARCHAR(255) NULL,").append("\n");
 				builder.append("  `").append(getPaternshipFieldMDNSubject()).append("` VARCHAR(255) NULL,").append("\n");
 				
@@ -377,12 +384,12 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 						+ ") NOT NULL  DEFAULT '" + ICryptoHelper.DIGEST_SHA256 + "',").append("\n");
 
 
-				builder.append("  `").append(getPaternshipFieldResendMaxRetries()).append("` SMALLINT UNSIGNED NULL,").append("\n");
-				builder.append("  `").append(getPaternshipFieldPrecentCanonicalizationForMic()).append("` BOOLEAN NULL,").append("\n");
-				builder.append("  `").append(getPaternshipFieldNoSetTransfertEncodingForSigning()).append("` BOOLEAN NULL,").append("\n");
-				builder.append("  `").append(getPaternshipFieldNoSetTransfertEncodingForEncryption()).append("` BOOLEAN NULL,").append("\n");
-				builder.append("  `").append(getPaternshipFieldRenameDigestToOldName()).append("` BOOLEAN NULL,").append("\n");
-				builder.append("  `").append(getPaternshipFieldRemoveProtectionAttrib()).append("` BOOLEAN NULL,").append("\n");
+				builder.append("  `").append(getPaternshipFieldResendMaxRetries()).append("` SMALLINT UNSIGNED NOT NULL,").append("\n");
+				builder.append("  `").append(getPaternshipFieldPrecentCanonicalizationForMic()).append("` BOOLEAN NOT NULL,").append("\n");
+				builder.append("  `").append(getPaternshipFieldNoSetTransfertEncodingForSigning()).append("` BOOLEAN NOT NULL,").append("\n");
+				builder.append("  `").append(getPaternshipFieldNoSetTransfertEncodingForEncryption()).append("` BOOLEAN NOT NULL,").append("\n");
+				builder.append("  `").append(getPaternshipFieldRenameDigestToOldName()).append("` BOOLEAN NOT NULL,").append("\n");
+				builder.append("  `").append(getPaternshipFieldRemoveProtectionAttrib()).append("` BOOLEAN NOT NULL,").append("\n");
 				builder.append("  PRIMARY KEY (`").append(getPaternshipFieldName()).append("`),").append("\n");
 				builder.append("  UNIQUE INDEX `unique_").append(getPaternshipFieldSender()).append("_").append(getPaternshipFieldReceiver()).append("` (`").append(getPaternshipFieldSender()).append("` ASC, `").append(getPaternshipFieldReceiver()).append("` ASC),").append("\n");
 				builder.append("  FOREIGN KEY (`").append(getPaternshipFieldSender()).append("`) REFERENCES `").append(getTablePartner()).append("` (`").append(getPaternFieldName()).append("`) ON DELETE CASCADE ON UPDATE CASCADE,").append("\n");
@@ -395,6 +402,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 				builder.append("   - " + PARAM_PARTNERSHIP_FIELD_PROTOCOL).append("\n");
 				builder.append("   - " + PARAM_PARTNERSHIP_FIELD_CONTENT_TRANSFER_ENCODING).append("\n");
 				builder.append("   - " + PARAM_PARTNERSHIP_FIELD_COMPRESSION_TYPE).append("\n");
+				builder.append("   - " + PARAM_PARTNERSHIP_FIELD_COMPRESSION_MODE).append("\n");
 				builder.append("   - " + PARAM_PARTNERSHIP_FIELD_SUBJECT).append("\n");
 				builder.append("   - " + PARAM_PARTNERSHIP_FIELD_MDNSUBJECT).append("\n");
 				builder.append("   - " + PARAM_PARTNERSHIP_FIELD_AS2_URL).append("\n");
