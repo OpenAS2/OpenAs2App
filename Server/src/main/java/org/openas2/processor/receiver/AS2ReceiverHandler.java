@@ -71,7 +71,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     }
 
     public void handle(NetModule owner, Socket s) {
-		String dbConfig = module.getParameter(XMLSession.EL_DATABASECONFIG);
         if (logger.isInfoEnabled()) logger.info("incoming connection"+getClientInfo(s));
 
         AS2Message msg = createMessage(s);
@@ -165,13 +164,13 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						// Set the transfer encoding if necessary
 						String cte =  receivedPart.getEncoding();
 						if (cte == null)
-					    {
+						{
 							// Not in the MimeBodyPart so try the HTTP headers...
 							cte = msg.getHeader("Content-Transfer-Encoding");
 							// Nada ... set to system default
 							if (cte == null) cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 							receivedPart.setHeader("Content-Transfer-Encoding", cte);
-					    }
+						}
 						else if (logger.isTraceEnabled())
 						{
 							logger.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
@@ -205,11 +204,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					{
 						// Extract and Store the received filename of the payload
 						msg.setPayloadFilename(msg.extractPayloadFilename());
-						try {
-							DBFactory.addMessage(dbConfig, msg.getMessageID(), msg.getPartnership().getName(), msg.getPayloadFilename(), DBFactory.MSG_STATUS.MSG_RECEIVED, msg.getSubject() + msg.getPartnership().getName());
-						} catch (OpenAS2Exception ex) {
-							Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
-						}
 					} catch (ParseException e1)
 					{
 						logger.error("Failed to extract the file name from received content-disposition", e1);
@@ -250,21 +244,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 							// Log significant msg state
 							msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
 							msg.trackMsgState(getModule().getSession());
-							try {
-								DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_RECEIVED, msg.getMDN().getText(), msg.getMDN().getMessageID(), new Date());
-							} catch (OpenAS2Exception ex) {
-								Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
-							}
 
 						} else {
 							HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
 							out.flush();
 							logger.info("sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
-							try {
-								DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_NOT_RECEIVED, msg.getMDN().getText(), msg.getMDN().getMessageID(), new Date());
-							} catch (OpenAS2Exception ex) {
-								Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
-							}
 						}
 					} catch (Exception e) {
 						msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
@@ -277,11 +261,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					}
 
 				} catch (DispositionException de) {
-					try {
-						DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_ERROR, de.getText());
-					} catch (OpenAS2Exception ex) {
-						Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
-					}
 					// Log significant msg state
 					msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
 					msg.trackMsgState(getModule().getSession());

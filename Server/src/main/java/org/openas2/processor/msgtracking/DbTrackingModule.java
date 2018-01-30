@@ -2,6 +2,7 @@ package org.openas2.processor.msgtracking;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -29,6 +30,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 	public static final String PARAM_DB_USER = "db_user";
 	public static final String PARAM_DB_PWD = "db_pwd";
 	public static final String PARAM_DB_NAME = "db_name";
+	public static final String PARAM_DB_TABLE = "db_table";
 	public static final String PARAM_DB_DIRECTORY = "db_directory";
 	public static final String PARAM_JDBC_CONNECT_STRING = "jdbc_connect_string";
 	public static final String PARAM_JDBC_DRIVER = "jdbc_driver";
@@ -40,6 +42,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 
 	private String dbUser = null;
 	private String dbPwd = null;
+	private String dbTable = null;
 	private String jdbcConnectString = null;
 	private String configBaseDir = null;
 	private String jdbcDriver = null;
@@ -58,6 +61,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		CompositeParameters paramParser = createParser();
 		dbUser = getParameter(PARAM_DB_USER, true);
 		dbPwd = getParameter(PARAM_DB_PWD, true);
+		dbTable = getParameter(PARAM_DB_TABLE, "msg_metadata");
 		configBaseDir = session.getBaseDirectory();
 		jdbcConnectString = getParameter(PARAM_JDBC_CONNECT_STRING, true);
 		jdbcConnectString.replace("%home%", configBaseDir);
@@ -84,6 +88,53 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 
 			}
 		}
+		Connection conn = null;
+		try
+		{
+			if (useEmbeddedDB)
+				conn = dbHandler.getConnection();
+			else
+			{
+				conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+			}
+			Statement statement = conn.createStatement();
+			ResultSet resultat = statement.executeQuery( "SELECT 1 FROM `" + dbTable + "` LIMIT 1;" );
+			while (resultat.next()) {
+			}
+			
+		} catch ( SQLException e ) {
+				logger.error("Error in module " + getClass().getName());
+				logger.error(e.getMessage());
+				StringBuilder builder = new StringBuilder("\n------ CREATE TABLE ------").append("\n");
+				builder.append("CREATE TABLE `").append(dbTable).append("` (").append("\n")
+				.append("`ID` int(11) NOT NULL AUTO_INCREMENT,\n")
+				.append("`MSG_ID` longtext NOT NULL,\n")
+				.append("`MDN_ID` longtext,\n")
+				.append("`DIRECTION` varchar(25) DEFAULT NULL,\n")
+				.append("`IS_RESEND` varchar(1) DEFAULT 'N',\n")
+				.append("`RESEND_COUNT` int(11) DEFAULT '0',\n")
+				.append("`SENDER_ID` varchar(255) NOT NULL,\n")
+				.append("`RECEIVER_ID` varchar(255) NOT NULL,\n")
+				.append("`STATUS` varchar(255) DEFAULT NULL,\n")
+				.append("`STATE` varchar(255) DEFAULT NULL,\n")
+				.append("`SIGNATURE_ALGORITHM` varchar(255) DEFAULT NULL,\n")
+				.append("`ENCRYPTION_ALGORITHM` varchar(255) DEFAULT NULL,\n")
+				.append("`COMPRESSION` varchar(255) DEFAULT NULL,\n")
+				.append("`FILE_NAME` varchar(255) DEFAULT NULL,\n")
+				.append("`CONTENT_TYPE` varchar(255) DEFAULT NULL,\n")
+				.append("`CONTENT_TRANSFER_ENCODING` varchar(255) DEFAULT NULL,\n")
+				.append("`MDN_MODE` varchar(255) DEFAULT NULL,\n")
+				.append("`MDN_RESPONSE` longtext,\n")
+				.append("`STATE_MSG` longtext,\n")
+				.append("`CREATE_DT` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n")
+				.append("`UPDATE_DT` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',\n")
+				.append("PRIMARY KEY (`ID`)\n")
+				.append(") ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1\n");
+
+				builder.append("------------").append("\n");
+				logger.info(builder);
+				throw new OpenAS2Exception(e.getMessage());
+			}
 	}
 
 	protected String getModuleAction()
@@ -113,7 +164,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			Statement s = conn.createStatement();
 			String msgIdField = FIELDS.MSG_ID;
 			ResultSet rs = s.executeQuery(
-					"select * from msg_metadata where " + msgIdField + " = '" + map.get(msgIdField) + "'");
+					"select * from " + dbTable + " where " + msgIdField + " = '" + map.get(msgIdField) + "'");
 			ResultSetMetaData meta = rs.getMetaData();
 			boolean isUpdate = rs.next(); // Record already exists so update
 			StringBuffer fieldStmt = new StringBuffer();
@@ -161,10 +212,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 				String stmt = "";
 				if (isUpdate)
 				{
-					stmt = "update msg_metadata set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
+					stmt = "update " + dbTable + " set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
 							+ map.get(msgIdField) + "'";
 				} else
-					stmt = "insert into msg_metadata (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
+					stmt = "insert into " + dbTable + " (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
 				if (s.executeUpdate(stmt) > 0)
 				{
 					if (logger.isDebugEnabled())
@@ -302,7 +353,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			}
 			Statement s = conn.createStatement();
 			ResultSet rs = s.executeQuery(
-					"select count(*) from msg_metadata");
+					"select count(*) from " + dbTable);
 		} catch (Exception e)
 		{
 			failures.add(this.getClass().getSimpleName()

@@ -55,7 +55,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
 	protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException
 	{
-		String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
 		Message msg = buildMessageMetadata(filename);
 
 		String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
@@ -202,7 +201,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		} catch (Exception e)
 		{
 			msg.setLogMsg("Fatal error sending message: " + org.openas2.logging.Log.getExceptionMsg(e));
-			DBFactory.updateMessage(dbConfig, msg.getMessageID(), filename, DBFactory.MSG_STATUS.MDN_NOTSENT, msg.getLogMsg());
 			logger.error(msg, e);
 			AS2Util.cleanupFiles(msg, true);
 		}
@@ -249,7 +247,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
 
 		String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
-		DBFactory.addMessage(dbConfig, msg.getMessageID(), msg.getPartnership().getName(), filename, DBFactory.MSG_STATUS.FILE_SUBMITTED, null);
 		return msg;
 
 	}

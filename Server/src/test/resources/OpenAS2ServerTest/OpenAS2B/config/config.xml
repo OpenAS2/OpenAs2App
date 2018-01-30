@@ -85,7 +85,7 @@
                 sendFilename="true"
                 mimetype="application/EDI-X12"/>
 
-        <module classname="org.openas2.processor.msgtracking.DbTrackingModule"
+        <!--module classname="org.openas2.processor.msgtracking.DbTrackingModule"
                 db_user="sa"
                 db_pwd="OpenAS2"
                 db_name="openas2"
@@ -96,7 +96,7 @@
                 tcp_server_start="true"
                 tcp_server_port="29092"
                 tcp_server_password="openas2"
-        />
+        /-->
 
         <module classname="org.openas2.processor.storage.MDNFileModule"
                 filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"

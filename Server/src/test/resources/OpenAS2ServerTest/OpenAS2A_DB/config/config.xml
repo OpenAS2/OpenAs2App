@@ -56,12 +56,10 @@
                pendingMDN="%home%/../data/pendingMDN3"
                pendingMDNinfo="%home%/../data/pendinginfoMDN3">
 
-        <module classname="org.openas2.processor.sender.AS2SenderModule"
-                dbconfig="as2_dbA">
+        <module classname="org.openas2.processor.sender.AS2SenderModule">
         </module>
 
-        <module classname="org.openas2.processor.sender.AsynchMDNSenderModule"
-                dbconfig="as2_dbA">
+        <module classname="org.openas2.processor.sender.AsynchMDNSenderModule" >
         </module>
 
         <!-- This will parse the filename to get a sender and receiver. For instance a file
@@ -69,7 +67,6 @@
         <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
                 outboxdir="%home%/../data/toAny"
                 errordir="%home%/../data/toAny/error"
-                dbconfig="as2_dbA"
                 interval="1"
                 delimiters="-."
                 sendfilename="true"
@@ -79,7 +76,6 @@
         <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
                 outboxdir="%home%/../data/toOpenAS2A_DB/"
                 errordir="%home%/../data/toOpenAS2A_DB/error"
-                dbconfig="as2_dbA"
                 interval="1"
                 defaults="sender.as2_id=OpenAS2B_DB, receiver.as2_id=OpenAS2A_DB"
                 sendfilename="true"
@@ -88,43 +84,40 @@
         <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
                 outboxdir="%home%/../data/toOpenAS2B_DB"
                 errordir="%home%/../data/toOpenAS2B_DB/error"
-                dbconfig="as2_dbA"
                 interval="1"
                 defaults="sender.as2_id=OpenAS2A_DB, receiver.as2_id=OpenAS2B_DB"
                 sendFilename="true"
                 mimetype="application/EDI-X12"/>
 
-        <!--module classname="org.openas2.processor.msgtracking.DbTrackingModule"
-                db_user="sa"
-                db_pwd="OpenAS2"
+        <module classname="org.openas2.processor.msgtracking.DbTrackingModule"
+                db_user="openas2"
+                db_pwd="2oM2905Z#8"
                 db_name="openas2"
-                db_directory="%home%/DB"
-                jdbc_driver="org.h2.Driver"
-                jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
+                db_table="as2_message_A"
+                jdbc_driver="com.mysql.jdbc.Driver"
+                jdbc_connect_string="jdbc:mysql://127.0.0.1/openas2"
                 sql_escape_character="'"
-                tcp_server_start="true"
-                tcp_server_port="9092"
-                tcp_server_password="openas2"
-        /-->
+                tcp_server_start="false"
+                tcp_server_port="3306"
+                use_embedded_db="false"
+        /> 
 
         <module classname="org.openas2.processor.storage.MDNFileModule"
                 filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
                 protocol="as2"
-                dbconfig="as2_dbA"
                 tempdir="%home%/../data/temp"/>
 
         <module classname="org.openas2.processor.storage.MessageFileModule"
                 filename="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
                 header="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
                 protocol="as2"
-                dbconfig="as2_dbA"
                 tempdir="%home%/../data/temp"/>
 
         <module classname="org.openas2.processor.receiver.AS2ReceiverModule"
                 port="10090"
                 errordir="%home%/../data/inbox/error"
                 errorformat="sender.as2_id, receiver.as2_id, headers.message-id"
-                dbconfig="as2_dbA"/>
+        />
         <!--
         <module classname="org.openas2.processor.receiver.AS2ReceiverModule"			
             port="10443"
@@ -137,7 +130,6 @@
             -->
 
         <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
-                dbconfig="as2_dbA"
                 port="10091"/>
 
 <!--
@@ -151,7 +143,6 @@
 -->
 
         <module classname="org.openas2.processor.resender.DirectoryResenderModule"
-                dbconfig="as2_dbA"
                 resenddir="%home%/../data/resend"
                 errordir="%home%/../data/resend/error"
                 resenddelay="60"/>

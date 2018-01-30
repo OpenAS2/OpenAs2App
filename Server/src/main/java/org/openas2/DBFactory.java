@@ -135,7 +135,7 @@ public class DBFactory {
 		
 	}
 	
-	public static void addMessage(String dbConfig, String messageId, String partnershipName, String payload, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
+	public static void addMessageZ(String dbConfig, String messageId, String partnershipName, String payload, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
 		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
 		if(dBFactory != null){
 			Connection connection = null;
@@ -173,7 +173,7 @@ public class DBFactory {
 		}
 	}
 
-	public static void updateMessage(String dbConfig, String messageId, String fileName) throws OpenAS2Exception{
+	public static void updateMessageZ(String dbConfig, String messageId, String fileName) throws OpenAS2Exception{
 		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
 		if(dBFactory != null){
 			Connection connection = null;
@@ -201,19 +201,19 @@ public class DBFactory {
 		}
 	}
 
-	public static void updateMessage(String dbConfig, String messageId, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
-		updateMessage(dbConfig, messageId, null, status, statusComment);
+	public static void updateMessageZ(String dbConfig, String messageId, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
+		updateMessageZ(dbConfig, messageId, null, status, statusComment);
 	}
 
-	public static void updateMessage(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
-		updateMessage(dbConfig, messageId, filename, status, statusComment, null, null);
+	public static void updateMessageZ(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
+		updateMessageZ(dbConfig, messageId, filename, status, statusComment, null, null);
 	}
 
-	public static void updateMessage(String dbConfig, String messageId, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception{
-		updateMessage(dbConfig, messageId, null, status, statusComment, mdn, mdnDate);
+	public static void updateMessageZ(String dbConfig, String messageId, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception{
+		updateMessageZ(dbConfig, messageId, null, status, statusComment, mdn, mdnDate);
 	}
 
-	public static void updateMessage(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception{
+	public static void updateMessageZ(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception{
 		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
 		if(dBFactory != null){
 			Connection connection = null;

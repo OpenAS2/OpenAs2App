@@ -3,9 +3,6 @@ package org.openas2.processor.receiver;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.mail.internet.ContentType;
@@ -13,9 +10,7 @@ import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openas2.DBFactory;
 import org.openas2.OpenAS2Exception;
-import org.openas2.XMLSession;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
@@ -46,8 +41,6 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 
 	public void handle(NetModule owner, Socket s)
 	{
-		String dbConfig = module.getParameter(XMLSession.EL_DATABASECONFIG);
-
 		if (logger.isInfoEnabled())
 			logger.info("incoming connection" + " [" + getClientInfo(s) + "]");
 
@@ -108,9 +101,9 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			String to = msg.getHeader("AS2-To");
 			msg.setHeader("AS2-To", msg.getHeader("AS2-From"));
 			msg.setHeader("AS2-From", to);
-	        msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
-	        msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
-	        getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
+			msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
+			msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
+			getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
 			
 			// Create a MessageMDN
 			MessageMDN mdn = new AS2MessageMDN(msg, true);
@@ -127,11 +120,6 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			// Log significant msg state
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
 			msg.trackMsgState(getModule().getSession());
-			try {
-				DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_RECEIVED, msg.getMDN().getText(), msg.getMDN().getMessageID(), new Date());
-			} catch (OpenAS2Exception ex) {
-				Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
-			}
 
 		} catch (Exception e)
 		{
@@ -174,12 +162,6 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
 			msg.trackMsgState(getModule().getSession());
 			AS2Util.cleanupFiles(msg, true);
-			try {
-				DBFactory.updateMessage(dbConfig, msg.getMessageID(), msg.getPayloadFilename(), DBFactory.MSG_STATUS.MDN_ERROR, msg.getLogMsg());
-			} catch (OpenAS2Exception ex) {
-				Logger.getLogger(AS2MDNReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
-			}
 		}
-
 	}
 }

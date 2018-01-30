@@ -196,7 +196,6 @@ public class AS2SenderModule extends HttpSenderModule {
             if (msg.isConfiguredForMDN())
             {
                 msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
-                DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_WAITING, null);
                 // Check if it will be an AsyncMDN
                 if (msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) == null)
                 {
@@ -279,22 +278,12 @@ public class AS2SenderModule extends HttpSenderModule {
                         logger.trace("Synchronous MDN received. Start processing..." + msg.getLogMsgID());
                     }
                     msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
-                    DBFactory.updateMessage(dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MSG_SENT, null);
                     try
                     {
                         AS2Util.processMDN((AS2Message) msg, mdnStream.toByteArray(), null, false, getSession(), this);
                         // Log significant msg state
                         msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
                         msg.trackMsgState(getSession());
-                        try {
-                            DBFactory.updateMessage(
-                                dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_RECEIVED,
-                                    ParameterParser.parse(msg.getMDN().getText(), new MessageParameters(msg)),
-                                    msg.getMDN().getMessageID(), new Date()
-                                );
-                        } catch (OpenAS2Exception ex) {
-                            Logger.getLogger(AS2ReceiverHandler.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                     } catch (Exception e)
                     {
                         if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus())
@@ -325,10 +314,6 @@ public class AS2SenderModule extends HttpSenderModule {
                         msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
                         msg.trackMsgState(getSession());
                         AS2Util.cleanupFiles(msg, true);
-                        DBFactory.updateMessage(
-                                dbConfig, msg.getMessageID(), DBFactory.MSG_STATUS.MDN_ERROR, 
-                                ParameterParser.parse(msg.getMDN().getText(), new MessageParameters(msg)),
-                                msg.getMDN().getMessageID(), new Date());
                     }
                 }
             }
