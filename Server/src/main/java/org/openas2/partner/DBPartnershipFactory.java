@@ -422,37 +422,6 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 				LOGGER.info(builder);
 				throw e;
 			}
-			try{
-				ResultSet resultat = statement.executeQuery( "SELECT 1 FROM `" + dBFactory.getTableMessage() + "`;" );
-				while (resultat.next()) {
-				}
-			} catch ( SQLException e ) {
-				LOGGER.error("Error in module " + getClass().getName());
-				LOGGER.error(e.getMessage());
-				StringBuilder builder = new StringBuilder("\n------ CREATE TABLE ------").append("\n");
-				builder.append("CREATE TABLE `").append(dBFactory.getTableMessage()).append("` (").append("\n")
-				.append("`id` int(11) NOT NULL AUTO_INCREMENT,\n")
-				.append("`partnership` varchar(255) NOT NULL,\n")
-				.append("`message_id` varchar(255) NOT NULL,\n")
-				.append("`filename` varchar(255) DEFAULT NULL,\n")
-				.append("`date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n")
-				.append("`mdn_id` varchar(255) DEFAULT NULL,\n")
-				.append("`mdn_filename` varchar(255) DEFAULT NULL,\n")
-				.append("`mdn_date` timestamp NULL DEFAULT NULL,\n")
-				.append("`status` varchar(20) DEFAULT NULL,\n")
-				.append("`comment` varchar(2000) DEFAULT NULL,\n")
-				.append("PRIMARY KEY (`id`),\n")
-				.append("KEY `fk_partnership_").append(dBFactory.getTableMessage()).append("` (`partnership`),\n")
-				.append("KEY `date_").append(dBFactory.getTableMessage()).append("` (`date`),\n")
-				.append("KEY `status_").append(dBFactory.getTableMessage()).append("` (`status`),\n")
-				.append("KEY `messageId_").append(dBFactory.getTableMessage()).append("` (`message_id`),\n")
-				.append("CONSTRAINT `fk_partnership_").append(dBFactory.getTableMessage()).append("` FOREIGN KEY (`partnership`) REFERENCES `as2_partnership` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,\n")
-				.append("CONSTRAINT `fk_status_").append(dBFactory.getTableMessage()).append("` FOREIGN KEY (`status`) REFERENCES `as2_message_status` (`status`) ON UPDATE CASCADE\n")
-				.append(") DEFAULT CHARACTER SET = utf8 COLLATE = utf8_general_ci;\n");
-				builder.append("------------").append("\n");
-				LOGGER.info(builder);
-				throw e;
-			}
 		} catch(SQLException e) {
 			LOGGER.error("Error in module " + getClass().getName());
 			throw e;
