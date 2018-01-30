@@ -451,7 +451,7 @@ public class AS2SenderModule extends HttpSenderModule {
             logger.trace("Compression type from config: " + compressionType);
         }
         boolean isCompress = false;
-        if (compressionType != null && !"NONE".equalsIgnoreCase(compressionType))
+        if (compressionType != null && !ICryptoHelper.COMPRESSION_NONE.equalsIgnoreCase(compressionType))
         {
             if (compressionType.equalsIgnoreCase(ICryptoHelper.COMPRESSION_ZLIB))
             {
@@ -462,11 +462,11 @@ public class AS2SenderModule extends HttpSenderModule {
                 throw new OpenAS2Exception("Unsupported compression type: " + compressionType);
             }
         }
-        String compressionMode = msg.getPartnership().getAttribute("compression_mode");
+        String compressionMode = msg.getPartnership().getAttribute(SecurePartnership.PA_COMPRESSION_MODE);
         boolean isCompressBeforeSign = true; // Defaults to compressing the
         // entire message before signing
         // and encryption
-        if (compressionMode != null && compressionMode.equalsIgnoreCase("compress-after-signing"))
+        if (compressionMode != null && compressionMode.equalsIgnoreCase(ICryptoHelper.COMPRESSION_AFTER_SIGNING))
         {
             isCompressBeforeSign = false;
         }

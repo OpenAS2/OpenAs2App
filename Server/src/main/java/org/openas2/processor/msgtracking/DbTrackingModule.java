@@ -52,6 +52,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 	private boolean forceLoadJdbcDriver = false;
 	private String dbPlatform = "h2";
 	IDBHandler dbHandler = null;
+	protected boolean isTcpServerStart = false;
 
 	private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
 
@@ -62,6 +63,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		dbUser = getParameter(PARAM_DB_USER, true);
 		dbPwd = getParameter(PARAM_DB_PWD, true);
 		dbTable = getParameter(PARAM_DB_TABLE, "msg_metadata");
+		isTcpServerStart = "true".equals(getParameter(PARAM_TCP_SERVER_START, "true"));
 		configBaseDir = session.getBaseDirectory();
 		jdbcConnectString = getParameter(PARAM_JDBC_CONNECT_STRING, true);
 		jdbcConnectString.replace("%home%", configBaseDir);
