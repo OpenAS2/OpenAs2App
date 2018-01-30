@@ -246,7 +246,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
 
-		String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
 		return msg;
 
 	}

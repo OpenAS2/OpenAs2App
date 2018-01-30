@@ -69,7 +69,6 @@ public class AS2SenderModule extends HttpSenderModule {
     @SuppressWarnings("unchecked")
     public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception
     {
-        String dbConfig = getParameter(XMLSession.EL_DATABASECONFIG, null);
         if (logger.isInfoEnabled())
         {
             logger.info("message sender invoked" + msg.getLogMsgID());
