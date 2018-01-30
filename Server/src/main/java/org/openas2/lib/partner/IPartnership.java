@@ -9,7 +9,7 @@ public interface IPartnership {
     public static final String ATTRIBUTE_SOURCE = "source";
     public static final String ATTRIBUTE_DESTINATION = "destination";
     public static final String ATTRIBUTE_MDN_OPTIONS = "mdnoptions";
-    public static final String ATTRIBUTE_COMPRESSION_TYPE = "compression";
+    public static final String ATTRIBUTE_COMPRESSION_TYPE = "compression_type";
 
     Map<String, String> getAttributes();
 
