@@ -197,7 +197,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			msg.setStatus(Message.MSG_STATUS_MSG_SEND);
 			// Transmit the message
 			getSession().getProcessor().handle(SenderModule.DO_SEND, msg, options);
-			//DBFactory.updateMessage(dbConfig, msg.getMessageID(), filename, DBFactory.MSG_STATUS.FILE_SUBMITTED, null);
 		} catch (Exception e)
 		{
 			msg.setLogMsg("Fatal error sending message: " + org.openas2.logging.Log.getExceptionMsg(e));
