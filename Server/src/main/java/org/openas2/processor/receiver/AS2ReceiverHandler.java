@@ -299,7 +299,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					out.close();
 				} catch (IOException e) {
 					msg.setLogMsg("Failed to close output connection.");
-					logger.error(msg, e);;
+					logger.error(msg, e);
 				}
 			}
 		}
@@ -308,8 +308,15 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     // Create a new message and record the source ip and port
     protected AS2Message createMessage(Socket s) {
         AS2Message msg = new AS2Message();
-
-        msg.setAttribute(NetAttribute.MA_SOURCE_IP, s.getInetAddress().toString());
+        String sourceIpAddress;
+        
+        // check if request is forwarded by a reverse proxy
+        if ((sourceIpAddress = msg.getXForwardedFor()).isEmpty()) {
+        	if ((sourceIpAddress = msg.getXRealIP()).isEmpty()) {
+        		sourceIpAddress = s.getInetAddress().toString();
+        	}
+        }
+        msg.setAttribute(NetAttribute.MA_SOURCE_IP, sourceIpAddress);
         msg.setAttribute(NetAttribute.MA_SOURCE_PORT, Integer.toString(s.getPort()));
         msg.setAttribute(NetAttribute.MA_DESTINATION_IP, s.getLocalAddress().toString());
         msg.setAttribute(NetAttribute.MA_DESTINATION_PORT, Integer.toString(s.getLocalPort()));
