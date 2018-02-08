@@ -7,126 +7,132 @@ import java.util.StringTokenizer;
 
 import org.openas2.OpenAS2Exception;
 
-
 public abstract class ParameterParser {
-    public abstract void setParameter(String key, String value)
-        throws InvalidParameterException;
 
-    public abstract String getParameter(String key) throws InvalidParameterException;
+	public abstract void setParameter(String key, String value)
+			throws InvalidParameterException;
 
-    /**
-     * Set parameters from a string, like "msg.sender.as2_id=ME,msg.headers.content-type=application/X12"
-     * @param encodedParams string to parse
-     * @throws InvalidParameterException - error in the parameter format string
-     */
-    public void setParameters(String encodedParams) throws InvalidParameterException {
-        StringTokenizer params = new StringTokenizer(encodedParams, "=,", false);
-        String key;
-        String value;
+	public abstract String getParameter(String key) throws InvalidParameterException;
 
-        while (params.hasMoreTokens()) {
-            key = params.nextToken().trim();
+	/**
+	 * Set parameters from a string, like
+	 * "msg.sender.as2_id=ME,msg.headers.content-type=application/X12"
+	 *
+	 * @param encodedParams string to parse
+	 * @throws InvalidParameterException - error in the parameter format string
+	 */
+	public void setParameters(String encodedParams) throws InvalidParameterException {
+		StringTokenizer params = new StringTokenizer(encodedParams, "=,", false);
+		String key;
+		String value;
 
-            if (!params.hasMoreTokens()) {
-                throw new InvalidParameterException("Invalid value for encoded param \"" + encodedParams + "\"", this, key, null);
-            }
+		while (params.hasMoreTokens()) {
+			key = params.nextToken().trim();
 
-            value = params.nextToken();
-            setParameter(key, value);
-        }
-    }
+			if (!params.hasMoreTokens()) {
+				throw new InvalidParameterException("Invalid value for encoded param \"" + encodedParams + "\"", this, key, null);
+			}
 
-    /**
-     * Set parameters from a string seperated by delimiters.
-     * @param format		Comma seperated list of parameters to set, like
-     * 						<code>msg.sender.as2_id,msg.receiver.as2_id,msg.header.content-type</code>
-     * @param delimiters	delimiters in string to parse, like "-."
-     * @param value			string to parse, like <code>"NORINCO-WALMART.application/X12"</code>
-     * @throws OpenAS2Exception - error in the parameter format string
-     */
-    public void setParameters(String format, String delimiters, String value)
-        throws OpenAS2Exception {
-        List<String> keys = parseKeys(format);
+			value = params.nextToken();
+			setParameter(key, value);
+		}
+	}
 
-        StringTokenizer valueTokens = new StringTokenizer(value, delimiters, false);
-        Iterator<String> keyIt = keys.iterator();
-        String key;
+	/**
+	 * Set parameters from a string seperated by delimiters.
+	 *
+	 * @param format	Comma seperated list of parameters to set, like
+	 * <code>msg.sender.as2_id,msg.receiver.as2_id,msg.header.content-type</code>
+	 * @param delimiters	delimiters in string to parse, like "-."
+	 * @param value	string to parse, like
+	 * <code>"NORINCO-WALMART.application/X12"</code>
+	 * @throws OpenAS2Exception - error in the parameter format string
+	 */
+	public void setParameters(String format, String delimiters, String value)
+			throws OpenAS2Exception {
+		List<String> keys = parseKeys(format);
 
-        while (keyIt.hasNext()) {
-            if (!valueTokens.hasMoreTokens()) {
-                throw new OpenAS2Exception("String value does not match format: Format=" + format + " ::: Value=" + value + " ::: String delimiters=" + delimiters);
-            }
+		StringTokenizer valueTokens = new StringTokenizer(value, delimiters, false);
+		Iterator<String> keyIt = keys.iterator();
+		String key;
 
-            key = ((String) keyIt.next()).trim();
+		while (keyIt.hasNext()) {
+			if (!valueTokens.hasMoreTokens()) {
+				throw new OpenAS2Exception("String value does not match format: Format=" + format + " ::: Value=" + value + " ::: String delimiters=" + delimiters);
+			}
 
-            if (!key.equals("")) {
-                setParameter(key, valueTokens.nextToken());
-            }
-        }
-    }
+			key = ((String) keyIt.next()).trim();
 
-    /**
-     * Static way (why?) of getting at format method.
-     * @param format	the format to fill in
-     * @param parser	the place to get the parsed info
-     * @return			the filled in format
-     * @throws InvalidParameterException - error in the parameter format string
-     */
-    public static String parse(String format, ParameterParser parser)
-    	throws InvalidParameterException
-    {
-    	return parser.format(format);
-    }
+			if (!key.equals("")) {
+				setParameter(key, valueTokens.nextToken());
+			}
+		}
+	}
 
-    /**
-     * Fill in a format string with information from a ParameterParser
-     * @param format	the format string to fill in
-     * @return			the filled in format string.
-     * @throws InvalidParameterException - error in the parameter format string
-     */
-    public String format(String format) throws InvalidParameterException {
-        StringBuffer result = new StringBuffer();
-        
-        for (int next = 0; next < format.length (); ++next) {
-        	int prev = next;
-        	
-        	// Find start of $xxx$ sequence.
-        	next = format.indexOf('$', prev);
-        	if (next == -1) {
-        		result.append(format.substring (prev, format.length ()));
-        		break;
-        	}
-        	
-        	// Save text before $xxx$ sequence, if there is any
-        	if (next > prev)
-        		result.append(format.substring(prev, next));
-        		
-        	// Find end of $xxx$ sequence
-        	prev = next + 1;
-        	next = format.indexOf('$', prev);
-        	if (next == -1)
-            	throw new InvalidParameterException("Invalid key (missing closing $)");
-        	
-        	// If we have just $$ then output $, else we have $xxx$, lookup xxx
-        	if (next == prev) {
-        		result.append("$");
-        	}
-        	else {
-        		result.append(getParameter(format.substring(prev, next)));
-        	}
-        }
-        
-        return result.toString();
-    }
+	/**
+	 * Static way (why?) of getting at format method.
+	 *
+	 * @param format	the format to fill in
+	 * @param parser	the place to get the parsed info
+	 * @return	the filled in format
+	 * @throws InvalidParameterException - error in the parameter format string
+	 */
+	public static String parse(String format, ParameterParser parser)
+			throws InvalidParameterException {
+		return parser.format(format);
+	}
 
-    protected List<String> parseKeys(String format) {
-        StringTokenizer tokens = new StringTokenizer(format, ",", false);
-        List<String> keys = new ArrayList<String>();
+	/**
+	 * Fill in a format string with information from a ParameterParser
+	 *
+	 * @param format	the format string to fill in
+	 * @return	the filled in format string.
+	 * @throws InvalidParameterException - error in the parameter format string
+	 */
+	public String format(String format) throws InvalidParameterException {
+		StringBuffer result = new StringBuffer();
 
-        while (tokens.hasMoreTokens()) {
-            keys.add(tokens.nextToken());
-        }
+		for (int next = 0; next < format.length(); ++next) {
+			int prev = next;
 
-        return keys;
-    }
+			// Find start of $xxx$ sequence.
+			next = format.indexOf('$', prev);
+			if (next == -1) {
+				result.append(format.substring(prev, format.length()));
+				break;
+			}
+
+			// Save text before $xxx$ sequence, if there is any
+			if (next > prev) {
+				result.append(format.substring(prev, next));
+			}
+
+			// Find end of $xxx$ sequence
+			prev = next + 1;
+			next = format.indexOf('$', prev);
+			if (next == -1) {
+				throw new InvalidParameterException("Invalid key (missing closing $)");
+			}
+
+			// If we have just $$ then output $, else we have $xxx$, lookup xxx
+			if (next == prev) {
+				result.append("$");
+			} else {
+				result.append(getParameter(format.substring(prev, next)));
+			}
+		}
+
+		return result.toString();
+	}
+
+	protected List<String> parseKeys(String format) {
+		StringTokenizer tokens = new StringTokenizer(format, ",", false);
+		List<String> keys = new ArrayList<String>();
+
+		while (tokens.hasMoreTokens()) {
+			keys.add(tokens.nextToken());
+		}
+
+		return keys;
+	}
 }

@@ -14,11 +14,12 @@ import org.w3c.dom.Element;
 
 /**
  * adds a new partner entry in partnership store
- * 
+ *
  * @author joseph mcverry
- * 
+ *
  */
 public class AddPartnerCommand extends AliasedPartnershipsCommand {
+
 	public String getDefaultDescription() {
 		return "Add a new partner to partnership store.";
 	}
@@ -66,9 +67,10 @@ public class AddPartnerCommand extends AliasedPartnershipsCommand {
 					root.setAttribute(param.substring(0, pos), param
 							.substring(pos + 1));
 
-				} else
+				} else {
 					return new CommandResult(CommandResult.TYPE_ERROR,
 							"incoming parameter missing value");
+				}
 
 			}
 

@@ -4,7 +4,9 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 public class Disposition {
+
 	// The MDN has been automatically generated
+
 	public static final String DISP_AUTOMATIC_ACTION = "automatic-action/MDN-sent-automatically; ";
 	// The message has been processed successfully
 	public static final String DISP_PROCESSED = DISP_AUTOMATIC_ACTION + "processed";
@@ -18,7 +20,7 @@ public class Disposition {
 	public static final String DISP_DECRYPTION_FAILED = DISP_PROCESSED_ERROR + "decryption-failed";
 	// The message signature could not be verified
 	public static final String DISP_SIGNATURE_FAILED = DISP_PROCESSED_ERROR + "integrity-check-failed";
-	
+
 	private String action;
 	private String mdnAction;
 	private String status;

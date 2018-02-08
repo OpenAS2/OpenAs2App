@@ -11,131 +11,135 @@ import org.openas2.lib.message.EDIINTMessage;
 import org.openas2.message.Message;
 import org.openas2.partner.Partnership;
 
-
 public class EDIINTHelper {
-    private ICryptoHelper cryptoHelper;
 
-    public EDIINTHelper(ICryptoHelper crypto) {
-        super();
-        setCryptoHelper(crypto);
-    }
+	private ICryptoHelper cryptoHelper;
 
-    public void encrypt(EDIINTMessage msg, Certificate cert, String algorithm)
-        throws CryptoException {
-        try {
-            // get the data that should be encrypted    	
-            MimeBodyPart data = msg.getData();
+	public EDIINTHelper(ICryptoHelper crypto) {
+		super();
+		setCryptoHelper(crypto);
+	}
 
-    		String contentTxfrEncoding = ((Message)msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-    		if (contentTxfrEncoding == null)
-    			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-            // encrypt the data using CryptoHelper 
-            MimeBodyPart encryptedData = getCryptoHelper().encrypt(data, cert, algorithm, contentTxfrEncoding);
+	public void encrypt(EDIINTMessage msg, Certificate cert, String algorithm)
+			throws CryptoException {
+		try {
+			// get the data that should be encrypted    	
+			MimeBodyPart data = msg.getData();
 
-            // update the message's data and content type
-            msg.setData(encryptedData);
-            msg.setContentType(encryptedData.getContentType());
-            msg.setHeader("Content-Transfer-Encoding", encryptedData.getEncoding());
-        } catch (Exception e) {
-            throw new CryptoException("Encryption failed", e);
-        }
-    }
+			String contentTxfrEncoding = ((Message) msg).getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+			if (contentTxfrEncoding == null) {
+				contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+			}
+			// encrypt the data using CryptoHelper 
+			MimeBodyPart encryptedData = getCryptoHelper().encrypt(data, cert, algorithm, contentTxfrEncoding);
 
-    public void decrypt(EDIINTMessage msg, Certificate cert, Key key)
-        throws CryptoException {
-        try {
-            ICryptoHelper crypto = getCryptoHelper();
+			// update the message's data and content type
+			msg.setData(encryptedData);
+			msg.setContentType(encryptedData.getContentType());
+			msg.setHeader("Content-Transfer-Encoding", encryptedData.getEncoding());
+		} catch (Exception e) {
+			throw new CryptoException("Encryption failed", e);
+		}
+	}
 
-            // get the data to decrypt
-            MimeBodyPart data = msg.getData();
+	public void decrypt(EDIINTMessage msg, Certificate cert, Key key)
+			throws CryptoException {
+		try {
+			ICryptoHelper crypto = getCryptoHelper();
 
-            // make sure the data is encrypted
-            if (!crypto.isEncrypted(data)) {
-                throw new CryptoException("Data is not encrypted");
-            }
+			// get the data to decrypt
+			MimeBodyPart data = msg.getData();
 
-            // decrypt the data
-            MimeBodyPart decryptedData = crypto.decrypt(data, cert, key);
+			// make sure the data is encrypted
+			if (!crypto.isEncrypted(data)) {
+				throw new CryptoException("Data is not encrypted");
+			}
 
-            // update the message's data and content type
-            msg.setData(decryptedData);
-            msg.setContentType(decryptedData.getContentType());
-            msg.setHeader("Content-Transfer-Encoding", decryptedData.getEncoding());
-        } catch (Exception e) {
-            throw new CryptoException("Decryption failed", e);
-        }
-    }
+			// decrypt the data
+			MimeBodyPart decryptedData = crypto.decrypt(data, cert, key);
 
-    public void sign(EDIINTMessage msg, Certificate cert, Key key, String digest)
-        throws CryptoException {
-        try {
-            // get the data to sign
-            MimeBodyPart data = msg.getData();
+			// update the message's data and content type
+			msg.setData(decryptedData);
+			msg.setContentType(decryptedData.getContentType());
+			msg.setHeader("Content-Transfer-Encoding", decryptedData.getEncoding());
+		} catch (Exception e) {
+			throw new CryptoException("Decryption failed", e);
+		}
+	}
 
-    		Partnership p = ((Message)msg).getPartnership();
-            String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-            boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
-    		if (contentTxfrEncoding == null)
-    			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-            // sign the data using CryptoHelper
-            MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key, digest, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
+	public void sign(EDIINTMessage msg, Certificate cert, Key key, String digest)
+			throws CryptoException {
+		try {
+			// get the data to sign
+			MimeBodyPart data = msg.getData();
 
-            // update the message's data and content type
-            msg.setData(signedData);
-            msg.setContentType(signedData.getContentType());
-            String contentTxfrEnc = signedData.getEncoding();
-            if (contentTxfrEnc == null) contentTxfrEnc = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-            msg.setHeader("Content-Transfer-Encoding", contentTxfrEnc);
-        } catch (Exception e) {
-            throw new CryptoException("Sign failed", e);
-        }
-    }
+			Partnership p = ((Message) msg).getPartnership();
+			String contentTxfrEncoding = p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+			boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
+			if (contentTxfrEncoding == null) {
+				contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+			}
+			// sign the data using CryptoHelper
+			MimeBodyPart signedData = getCryptoHelper().sign(data, cert, key, digest, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
 
-    public void verify(EDIINTMessage msg, Certificate cert)
-        throws CryptoException {
-        try {
-            ICryptoHelper crypto = getCryptoHelper();
+			// update the message's data and content type
+			msg.setData(signedData);
+			msg.setContentType(signedData.getContentType());
+			String contentTxfrEnc = signedData.getEncoding();
+			if (contentTxfrEnc == null) {
+				contentTxfrEnc = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+			}
+			msg.setHeader("Content-Transfer-Encoding", contentTxfrEnc);
+		} catch (Exception e) {
+			throw new CryptoException("Sign failed", e);
+		}
+	}
 
-            // get the data to verify
-            MimeBodyPart data = msg.getData();
+	public void verify(EDIINTMessage msg, Certificate cert)
+			throws CryptoException {
+		try {
+			ICryptoHelper crypto = getCryptoHelper();
 
-            // make sure the data is signed
-            if (!crypto.isSigned(data)) {
-                throw new CryptoException("Data is not signed");
-            }
+			// get the data to verify
+			MimeBodyPart data = msg.getData();
 
-            // verify the data
-            MimeBodyPart verifiedData = crypto.verifySignature(data, cert);
+			// make sure the data is signed
+			if (!crypto.isSigned(data)) {
+				throw new CryptoException("Data is not signed");
+			}
 
-            // update the message's data and content type
-            msg.setData(verifiedData);
-            msg.setContentType(verifiedData.getContentType());
-        } catch (Exception e) {
-            throw new CryptoException("Verify failed", e);
-        }
-    }
+			// verify the data
+			MimeBodyPart verifiedData = crypto.verifySignature(data, cert);
 
-    public boolean isEncrypted(EDIINTMessage msg) throws CryptoException {
-        try {
-            return getCryptoHelper().isEncrypted(msg.getData());
-        } catch (Exception e) {
-            throw new CryptoException("Error detecting encryption", e);
-        }
-    }
+			// update the message's data and content type
+			msg.setData(verifiedData);
+			msg.setContentType(verifiedData.getContentType());
+		} catch (Exception e) {
+			throw new CryptoException("Verify failed", e);
+		}
+	}
 
-    public boolean isSigned(EDIINTMessage msg) throws CryptoException {
-        try {
-            return getCryptoHelper().isSigned(msg.getData());
-        } catch (Exception e) {
-            throw new CryptoException("Error detecting signature", e);
-        }
-    }
+	public boolean isEncrypted(EDIINTMessage msg) throws CryptoException {
+		try {
+			return getCryptoHelper().isEncrypted(msg.getData());
+		} catch (Exception e) {
+			throw new CryptoException("Error detecting encryption", e);
+		}
+	}
 
-    public ICryptoHelper getCryptoHelper() {
-        return cryptoHelper;
-    }
+	public boolean isSigned(EDIINTMessage msg) throws CryptoException {
+		try {
+			return getCryptoHelper().isSigned(msg.getData());
+		} catch (Exception e) {
+			throw new CryptoException("Error detecting signature", e);
+		}
+	}
 
-    public void setCryptoHelper(ICryptoHelper cryptoHelper) {
-        this.cryptoHelper = cryptoHelper;
-    }
+	public ICryptoHelper getCryptoHelper() {
+		return cryptoHelper;
+	}
+
+	public void setCryptoHelper(ICryptoHelper cryptoHelper) {
+		this.cryptoHelper = cryptoHelper;
+	}
 }

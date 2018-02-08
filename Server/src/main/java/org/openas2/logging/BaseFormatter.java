@@ -6,44 +6,42 @@ import java.io.IOException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.util.Properties;
 
-
 public abstract class BaseFormatter implements Formatter {
-	
+
 	protected String dateFormat = Properties.getProperty("log_date_format", "yyyy-MM-dd HH:mm:ss.SSS");
-	
+
 	@Override
-	public void setDateFormat(String dateFormat)
-	{
+	public void setDateFormat(String dateFormat) {
 		this.dateFormat = dateFormat;
 	}
 
-    public String format(Level level, String msg) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        format(level, msg, baos);
+	public String format(Level level, String msg) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		format(level, msg, baos);
 
-        String output = new String(baos.toByteArray());
+		String output = new String(baos.toByteArray());
 
-        try {
-            baos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		try {
+			baos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-        return output;
-    }
+		return output;
+	}
 
-    public String format(OpenAS2Exception exception, boolean terminated) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        format(exception, terminated, baos);
+	public String format(OpenAS2Exception exception, boolean terminated) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		format(exception, terminated, baos);
 
-        String output = new String(baos.toByteArray());
+		String output = new String(baos.toByteArray());
 
-        try {
-            baos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		try {
+			baos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-        return output;
-    }
+		return output;
+	}
 }

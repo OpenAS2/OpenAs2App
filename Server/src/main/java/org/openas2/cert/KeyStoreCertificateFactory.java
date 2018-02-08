@@ -4,7 +4,8 @@ import java.security.KeyStore;
 
 public interface KeyStoreCertificateFactory extends CertificateFactory {
 
-    public void setKeyStore(KeyStore keyStore);
-    public KeyStore getKeyStore();
+	public void setKeyStore(KeyStore keyStore);
+
+	public KeyStore getKeyStore();
 
 }

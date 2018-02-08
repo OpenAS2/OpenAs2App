@@ -19,104 +19,87 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-
 public class XMLCommandRegistry extends BaseCommandRegistry {
-    public static final String PARAM_FILENAME = "filename";
 
-    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception
-    {
-        super.init(session, parameters);
+	public static final String PARAM_FILENAME = "filename";
 
-        refresh();
-    }
+	public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
+		super.init(session, parameters);
 
-    public void load(InputStream in)
-            throws ParserConfigurationException, SAXException, IOException, OpenAS2Exception
-    {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		refresh();
+	}
 
-        DocumentBuilder parser = factory.newDocumentBuilder();
-        Document document = parser.parse(in);
-        Element root = document.getDocumentElement();
-        NodeList rootNodes = root.getChildNodes();
-        Node rootNode;
-        String nodeName;
+	public void load(InputStream in)
+			throws ParserConfigurationException, SAXException, IOException, OpenAS2Exception {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-        getCommands().clear();
+		DocumentBuilder parser = factory.newDocumentBuilder();
+		Document document = parser.parse(in);
+		Element root = document.getDocumentElement();
+		NodeList rootNodes = root.getChildNodes();
+		Node rootNode;
+		String nodeName;
 
-        for (int i = 0; i < rootNodes.getLength(); i++)
-        {
-            rootNode = rootNodes.item(i);
+		getCommands().clear();
 
-            nodeName = rootNode.getNodeName();
+		for (int i = 0; i < rootNodes.getLength(); i++) {
+			rootNode = rootNodes.item(i);
 
-            if (nodeName.equals("command"))
-            {
-                loadCommand(rootNode, null);
-            } else if (nodeName.equals("multicommand"))
-            {
-                loadMultiCommand(rootNode, null);
-            }
-        }
-    }
+			nodeName = rootNode.getNodeName();
 
-    public void refresh() throws OpenAS2Exception
-    {
-        try
-        {
-            load(new FileInputStream(getParameter(PARAM_FILENAME, true)));
-        } catch (Exception e)
-        {
-            throw new WrappedException(e);
-        }
-    }
+			if (nodeName.equals("command")) {
+				loadCommand(rootNode, null);
+			} else if (nodeName.equals("multicommand")) {
+				loadMultiCommand(rootNode, null);
+			}
+		}
+	}
 
-    protected void loadCommand(Node node, MultiCommand parent)
-            throws OpenAS2Exception
-    {
-        Command cmd = (Command) XMLUtil.getComponent(node, (XMLSession) getSession());
+	public void refresh() throws OpenAS2Exception {
+		try {
+			load(new FileInputStream(getParameter(PARAM_FILENAME, true)));
+		} catch (Exception e) {
+			throw new WrappedException(e);
+		}
+	}
 
-        if (parent != null)
-        {
-            parent.getCommands().add(cmd);
-        } else
-        {
-            getCommands().add(cmd);
-        }
-    }
+	protected void loadCommand(Node node, MultiCommand parent)
+			throws OpenAS2Exception {
+		Command cmd = (Command) XMLUtil.getComponent(node, (XMLSession) getSession());
 
-    protected void loadMultiCommand(Node node, MultiCommand parent)
-            throws OpenAS2Exception
-    {
-        MultiCommand cmd = new MultiCommand();
-        cmd.init(getSession(), XMLUtil.mapAttributes(node));
+		if (parent != null) {
+			parent.getCommands().add(cmd);
+		} else {
+			getCommands().add(cmd);
+		}
+	}
 
-        if (parent != null)
-        {
-            parent.getCommands().add(cmd);
-        } else
-        {
-            getCommands().add(cmd);
-        }
+	protected void loadMultiCommand(Node node, MultiCommand parent)
+			throws OpenAS2Exception {
+		MultiCommand cmd = new MultiCommand();
+		cmd.init(getSession(), XMLUtil.mapAttributes(node));
 
-        NodeList childCmds = node.getChildNodes();
+		if (parent != null) {
+			parent.getCommands().add(cmd);
+		} else {
+			getCommands().add(cmd);
+		}
 
-        Node childNode;
-        String childName;
+		NodeList childCmds = node.getChildNodes();
 
-        for (int i = 0; i < childCmds.getLength(); i++)
-        {
-            childNode = childCmds.item(i);
+		Node childNode;
+		String childName;
 
-            childName = childNode.getNodeName();
+		for (int i = 0; i < childCmds.getLength(); i++) {
+			childNode = childCmds.item(i);
 
-            if (childName.equals("command"))
-            {
-                loadCommand(childNode, cmd);
-            } else if (childName.equals("multicommand"))
-            {
-                loadMultiCommand(childNode, cmd);
-            }
-        }
-    }
+			childName = childNode.getNodeName();
+
+			if (childName.equals("command")) {
+				loadCommand(childNode, cmd);
+			} else if (childName.equals("multicommand")) {
+				loadMultiCommand(childNode, cmd);
+			}
+		}
+	}
 }

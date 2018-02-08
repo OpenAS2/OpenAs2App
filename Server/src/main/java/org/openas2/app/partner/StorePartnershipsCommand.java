@@ -8,10 +8,12 @@ import org.openas2.partner.XMLPartnershipFactory;
 
 /**
  * replaces the partnership store, backs up the original store
+ *
  * @author joseph mcverry
  *
  */
 public class StorePartnershipsCommand extends BaseCommand {
+
 	public String getDefaultDescription() {
 		return "Stores the current partnerships in storage";
 	}

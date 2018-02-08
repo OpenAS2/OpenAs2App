@@ -4,10 +4,10 @@ import java.net.InetAddress;
 
 import org.openas2.OpenAS2Exception;
 
-
 public class NetException extends OpenAS2Exception {
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 

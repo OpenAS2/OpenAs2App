@@ -24,68 +24,60 @@ import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.TrackingModule;
 import org.openas2.util.Properties;
 
-
 public abstract class BaseMessage implements Message {
-    /**
-	 * 
+
+	/**
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	private DataHistory history;
-    private InternetHeaders headers;
-    private Map<String,String> attributes;
-    private MessageMDN MDN;
-    private MimeBodyPart data;
-    private Partnership partnership;
+	private InternetHeaders headers;
+	private Map<String, String> attributes;
+	private MessageMDN MDN;
+	private MimeBodyPart data;
+	private Partnership partnership;
 	private String compressionType = ICryptoHelper.COMPRESSION_NONE;
 	private boolean rxdMsgWasSigned = false;
 	private boolean rxdMsgWasEncrypted = false;
 	private Map<Object, Object> options = new HashMap<Object, Object>();
 	private String calculatedMIC = null;
 	private String logMsg = null;
-    private String status = MSG_STATUS_MSG_INIT;
+	private String status = MSG_STATUS_MSG_INIT;
 	private Map<String, String> customOuterMimeHeaders = new HashMap<String, String>();
 	private String payloadFilename = null;
-    
 
 	public BaseMessage() {
-        super();
-    }
+		super();
+	}
 
-	public String getAppTitle()
-	{
+	public String getAppTitle() {
 		return Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server");
 	}
 
 	public Map<Object, Object> getOptions() {
-        if (options == null) {
-            options = new HashMap<Object, Object>();
-        }
+		if (options == null) {
+			options = new HashMap<Object, Object>();
+		}
 		return options;
 	}
-	
-    public String getStatus()
-	{
+
+	public String getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status)
-	{
+	public void setStatus(String status) {
 		this.status = status;
 	}
 
-	public Map<String, String> getCustomOuterMimeHeaders()
-	{
+	public Map<String, String> getCustomOuterMimeHeaders() {
 		return customOuterMimeHeaders;
 	}
 
-
-	public void setCustomOuterMimeHeaders(Map<String, String> customOuterMimeHeaders)
-	{
+	public void setCustomOuterMimeHeaders(Map<String, String> customOuterMimeHeaders) {
 		this.customOuterMimeHeaders = customOuterMimeHeaders;
 	}
 
-	public void addCustomOuterMimeHeader(String key, String value)
-	{
+	public void addCustomOuterMimeHeader(String key, String value) {
 		this.customOuterMimeHeaders.put(key, value);
 	}
 
@@ -93,202 +85,190 @@ public abstract class BaseMessage implements Message {
 		getOptions().put(key, value);
 	}
 
-    public Object getOption(Object key) {
-        return getOptions().get(key);
-    }
+	public Object getOption(Object key) {
+		return getOptions().get(key);
+	}
 
-    public void setAttribute(String key, String value) {
-        getAttributes().put(key, value);
-    }
+	public void setAttribute(String key, String value) {
+		getAttributes().put(key, value);
+	}
 
-    public String getAttribute(String key) {
-        return (String) getAttributes().get(key);
-    }
+	public String getAttribute(String key) {
+		return (String) getAttributes().get(key);
+	}
 
-    public Map<String, String> getAttributes() {
-        if (attributes == null) {
-            attributes = new HashMap<String, String>();
-        }
+	public Map<String, String> getAttributes() {
+		if (attributes == null) {
+			attributes = new HashMap<String, String>();
+		}
 
-        return attributes;
-    }
+		return attributes;
+	}
 
-    public void setAttributes(Map<String, String> attributes)
-    {
-        this.attributes = attributes;
-    }
+	public void setAttributes(Map<String, String> attributes) {
+		this.attributes = attributes;
+	}
 
-    public String getContentType() {
-        return getHeader("Content-Type");
-    }
+	public String getContentType() {
+		return getHeader("Content-Type");
+	}
 
-    public void setContentType(String contentType)
-    {
-        setHeader("Content-Type", contentType);
-    }
+	public void setContentType(String contentType) {
+		setHeader("Content-Type", contentType);
+	}
 
-    public String getCompressionType() {
-        return (compressionType);
-    }
+	public String getCompressionType() {
+		return (compressionType);
+	}
 
-    public void setCompressionType(String myCompressionType) {
-        compressionType = myCompressionType;
-    }
+	public void setCompressionType(String myCompressionType) {
+		compressionType = myCompressionType;
+	}
 
-    /**
-     * Gets the "Content-Disposition" header from the message object
-     * @return the string value of the header
-     */
-    public String getContentDisposition() {
-        return getHeader("Content-Disposition");
-    }
+	/**
+	 * Gets the "Content-Disposition" header from the message object
+	 *
+	 * @return the string value of the header
+	 */
+	public String getContentDisposition() {
+		return getHeader("Content-Disposition");
+	}
 
-    /**
-     * Sets the "Content-Disposition" header in the message object
-     * @param contentDisposition the string value to be set
-     */
-    public void setContentDisposition(String contentDisposition)
-    {
-        setHeader("Content-Disposition", contentDisposition);
-    }
-    
-    public void setData(MimeBodyPart data, DataHistoryItem historyItem) {
-        this.data = data;
+	/**
+	 * Sets the "Content-Disposition" header in the message object
+	 *
+	 * @param contentDisposition the string value to be set
+	 */
+	public void setContentDisposition(String contentDisposition) {
+		setHeader("Content-Disposition", contentDisposition);
+	}
 
-        if (data != null) {
-            try {
-                setContentType(data.getContentType());
-            } catch (MessagingException e) {
-                setContentType(null);
-            }
-            try { 
-            	setContentDisposition(data.getHeader("Content-Disposition", null)); 
-            }
-            catch (MessagingException e) { 
-            	setContentDisposition(null); // TODO: why ignore?????
-            } 
-        }
+	public void setData(MimeBodyPart data, DataHistoryItem historyItem) {
+		this.data = data;
 
-        if (historyItem != null) {
-            getHistory().getItems().add(historyItem);
-        }
-    }
+		if (data != null) {
+			try {
+				setContentType(data.getContentType());
+			} catch (MessagingException e) {
+				setContentType(null);
+			}
+			try {
+				setContentDisposition(data.getHeader("Content-Disposition", null));
+			} catch (MessagingException e) {
+				setContentDisposition(null); // TODO: why ignore?????
+			}
+		}
 
-    public DataHistoryItem setData(MimeBodyPart data) throws OpenAS2Exception {
-        try {
-            DataHistoryItem historyItem = new DataHistoryItem(data.getContentType());
-            setData(data, historyItem);
+		if (historyItem != null) {
+			getHistory().getItems().add(historyItem);
+		}
+	}
 
-            return historyItem;
-        } catch (Exception e) {
-            throw new WrappedException(e);
-        }
-    }
+	public DataHistoryItem setData(MimeBodyPart data) throws OpenAS2Exception {
+		try {
+			DataHistoryItem historyItem = new DataHistoryItem(data.getContentType());
+			setData(data, historyItem);
 
-    public MimeBodyPart getData() {
-        return data;
-    }
+			return historyItem;
+		} catch (Exception e) {
+			throw new WrappedException(e);
+		}
+	}
 
-    public void setHeader(String key, String value) {
-        getHeaders().setHeader(key, value);
-    }
+	public MimeBodyPart getData() {
+		return data;
+	}
 
-    public String getHeader(String key) {
-        return getHeader(key, ", ");
-    }
+	public void setHeader(String key, String value) {
+		getHeaders().setHeader(key, value);
+	}
 
-    public String getHeader(String key, String delimiter) {
-        return getHeaders().getHeader(key, delimiter);
-    }
+	public String getHeader(String key) {
+		return getHeader(key, ", ");
+	}
 
-    public InternetHeaders getHeaders() {
-        if (headers == null) {
-            headers = new InternetHeaders();
-        }
+	public String getHeader(String key, String delimiter) {
+		return getHeaders().getHeader(key, delimiter);
+	}
 
-        return headers;
-    }
+	public InternetHeaders getHeaders() {
+		if (headers == null) {
+			headers = new InternetHeaders();
+		}
 
-    public void setHeaders(InternetHeaders headers)
-    {
-        this.headers = headers;
-    }
+		return headers;
+	}
 
-    public DataHistory getHistory() {
-        if (history == null) {
-            history = new DataHistory();
-        }
+	public void setHeaders(InternetHeaders headers) {
+		this.headers = headers;
+	}
 
-        return history;
-    }
+	public DataHistory getHistory() {
+		if (history == null) {
+			history = new DataHistory();
+		}
 
-    public void setHistory(DataHistory history)
-    {
-        this.history = history;
-    }
+		return history;
+	}
 
-    public MessageMDN getMDN() {
-        return MDN;
-    }
+	public void setHistory(DataHistory history) {
+		this.history = history;
+	}
 
-    public void setMDN(MessageMDN mdn)
-    {
-        this.MDN = mdn;
-    }
+	public MessageMDN getMDN() {
+		return MDN;
+	}
 
-    public String getMessageID() {
-        return getHeader("Message-ID");
-    }
+	public void setMDN(MessageMDN mdn) {
+		this.MDN = mdn;
+	}
 
-    public void setMessageID(String messageID)
-    {
-        setHeader("Message-ID", messageID);
-    }
+	public String getMessageID() {
+		return getHeader("Message-ID");
+	}
 
-    public Partnership getPartnership() {
-        if (partnership == null) {
-            partnership = new Partnership();
-        }
+	public void setMessageID(String messageID) {
+		setHeader("Message-ID", messageID);
+	}
 
-        return partnership;
-    }
+	public Partnership getPartnership() {
+		if (partnership == null) {
+			partnership = new Partnership();
+		}
 
-    public void setPartnership(Partnership partnership)
-    {
-        this.partnership = partnership;
-    }
+		return partnership;
+	}
 
-    public abstract String generateMessageID() throws InvalidParameterException;
+	public void setPartnership(Partnership partnership) {
+		this.partnership = partnership;
+	}
 
-    public String getSubject() {
-        return getHeader("Subject");
-    }
+	public abstract String generateMessageID() throws InvalidParameterException;
 
-    public void setSubject(String subject)
-    {
-        setHeader("Subject", subject);
-    }
+	public String getSubject() {
+		return getHeader("Subject");
+	}
 
-    public boolean isRxdMsgWasSigned()
-	{
+	public void setSubject(String subject) {
+		setHeader("Subject", subject);
+	}
+
+	public boolean isRxdMsgWasSigned() {
 		return rxdMsgWasSigned;
 	}
 
-	public void setRxdMsgWasSigned(boolean rxdMsgWasSigned)
-	{
+	public void setRxdMsgWasSigned(boolean rxdMsgWasSigned) {
 		this.rxdMsgWasSigned = rxdMsgWasSigned;
 	}
 
-	public boolean isRxdMsgWasEncrypted()
-	{
+	public boolean isRxdMsgWasEncrypted() {
 		return rxdMsgWasEncrypted;
 	}
 
-	public void setRxdMsgWasEncrypted(boolean rxdMsgWasEncrypted)
-	{
+	public void setRxdMsgWasEncrypted(boolean rxdMsgWasEncrypted) {
 		this.rxdMsgWasEncrypted = rxdMsgWasEncrypted;
 	}
-	
+
 	public String getXForwardedFor() {
 		return getHeader("X-Forwarded-For");
 	}
@@ -297,198 +277,188 @@ public abstract class BaseMessage implements Message {
 		return getHeader("X-Real-IP");
 	}
 
-    public void addHeader(String key, String value) {
-        getHeaders().addHeader(key, value);
-    }
+	public void addHeader(String key, String value) {
+		getHeaders().addHeader(key, value);
+	}
 
-    public String toString() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("Message From:").append(getPartnership().getSenderIDs());
-        buf.append("To:").append(getPartnership().getReceiverIDs());
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("Message From:").append(getPartnership().getSenderIDs());
+		buf.append("To:").append(getPartnership().getReceiverIDs());
 
-        Enumeration<Header> headerEn = getHeaders().getAllHeaders();
-        buf.append(System.getProperty("line.separator") + "Headers:{");
+		Enumeration<Header> headerEn = getHeaders().getAllHeaders();
+		buf.append(System.getProperty("line.separator") + "Headers:{");
 
-        while (headerEn.hasMoreElements()) {
-            Header header = headerEn.nextElement();
-            buf.append(header.getName()).append("=").append(header.getValue());
+		while (headerEn.hasMoreElements()) {
+			Header header = headerEn.nextElement();
+			buf.append(header.getName()).append("=").append(header.getValue());
 
-            if (headerEn.hasMoreElements()) {
-                buf.append(", ");
-            }
-        }
+			if (headerEn.hasMoreElements()) {
+				buf.append(", ");
+			}
+		}
 
-        buf.append("}");
-        buf.append(System.getProperty("line.separator") + "Attributes:").append(getAttributes());
+		buf.append("}");
+		buf.append(System.getProperty("line.separator") + "Attributes:").append(getAttributes());
 
-        MessageMDN mdn = getMDN();
+		MessageMDN mdn = getMDN();
 
-        if (mdn != null) {
-            buf.append(System.getProperty("line.separator") + "MDN:");
-            buf.append(mdn.toString());
-        }
+		if (mdn != null) {
+			buf.append(System.getProperty("line.separator") + "MDN:");
+			buf.append(mdn.toString());
+		}
 
-        return buf.toString();
-    }
+		return buf.toString();
+	}
 
-    public void updateMessageID() throws InvalidParameterException {
-        setMessageID(generateMessageID());
-    }
+	public void updateMessageID() throws InvalidParameterException {
+		setMessageID(generateMessageID());
+	}
 
-    private void readObject(java.io.ObjectInputStream in)
-        throws IOException, ClassNotFoundException {
-        // read in partnership
-        partnership = (Partnership) in.readObject();
+	private void readObject(java.io.ObjectInputStream in)
+			throws IOException, ClassNotFoundException {
+		// read in partnership
+		partnership = (Partnership) in.readObject();
 
-        // read in attributes
-        attributes = (Map<String, String>) in.readObject();
-		
+		// read in attributes
+		attributes = (Map<String, String>) in.readObject();
+
 		// read in data history
 		history = (DataHistory) in.readObject();
-		
-        try {
-            // read in message headers
-            headers = new InternetHeaders(in);
 
-            // read in mime body 
-            if (in.read() == 1) {
-                data = new MimeBodyPart(in);
-            }
-        } catch (MessagingException me) {
-            throw new IOException("Messaging exception: " + me.getMessage());
-        }
+		try {
+			// read in message headers
+			headers = new InternetHeaders(in);
 
-        // read in MDN
-        MDN = (MessageMDN) in.readObject();
+			// read in mime body 
+			if (in.read() == 1) {
+				data = new MimeBodyPart(in);
+			}
+		} catch (MessagingException me) {
+			throw new IOException("Messaging exception: " + me.getMessage());
+		}
 
-        if (MDN != null) {
-            MDN.setMessage(this);
-        }
-    }
+		// read in MDN
+		MDN = (MessageMDN) in.readObject();
 
-    private void writeObject(java.io.ObjectOutputStream out)
-        throws IOException {
-        // write partnership info
-        out.writeObject(partnership);
+		if (MDN != null) {
+			MDN.setMessage(this);
+		}
+	}
 
-        // write attributes
-        out.writeObject(attributes);
-		
+	private void writeObject(java.io.ObjectOutputStream out)
+			throws IOException {
+		// write partnership info
+		out.writeObject(partnership);
+
+		// write attributes
+		out.writeObject(attributes);
+
 		// write data history
 		out.writeObject(history);
-		
-        // write message headers
-        Enumeration<String> en = headers.getAllHeaderLines();
 
-        while (en.hasMoreElements()) {
-            out.writeBytes(en.nextElement() + "\r\n");
-        }
+		// write message headers
+		Enumeration<String> en = headers.getAllHeaderLines();
 
-        out.writeBytes(new String("\r\n"));
+		while (en.hasMoreElements()) {
+			out.writeBytes(en.nextElement() + "\r\n");
+		}
 
-        // write the mime body
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		out.writeBytes(new String("\r\n"));
 
-        try {
-            if (data != null) {
-                baos.write(1);
-                data.writeTo(baos);
-            } else {
-                baos.write(0);
-            }
-        } catch (MessagingException e) {
-            throw new IOException("Messaging exception: " + e.getMessage());
-        }
+		// write the mime body
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        out.write(baos.toByteArray());
-        baos.close();
+		try {
+			if (data != null) {
+				baos.write(1);
+				data.writeTo(baos);
+			} else {
+				baos.write(0);
+			}
+		} catch (MessagingException e) {
+			throw new IOException("Messaging exception: " + e.getMessage());
+		}
 
-        // write the message's MDN
-        out.writeObject(MDN);
-    }
-    
-    public String getLogMsgID() {
-    	return " [" + getMessageID() + "]";
-    }
-    
-    public String getLogMsg() {
-        return logMsg;
-    }
+		out.write(baos.toByteArray());
+		baos.close();
 
-    public void setLogMsg(String msg)
-    {
-        logMsg = msg;
-    }
+		// write the message's MDN
+		out.writeObject(MDN);
+	}
 
-    public String getCalculatedMIC()
-	{
+	public String getLogMsgID() {
+		return " [" + getMessageID() + "]";
+	}
+
+	public String getLogMsg() {
+		return logMsg;
+	}
+
+	public void setLogMsg(String msg) {
+		logMsg = msg;
+	}
+
+	public String getCalculatedMIC() {
 		return calculatedMIC;
 	}
 
-	public void setCalculatedMIC(String calculatedMIC)
-	{
+	public void setCalculatedMIC(String calculatedMIC) {
 		this.calculatedMIC = calculatedMIC;
 	}
 
-	public String getPayloadFilename()
-	{
+	public String getPayloadFilename() {
 		return payloadFilename;
 	}
 
-	public void setPayloadFilename(String filename)
-	{
+	public void setPayloadFilename(String filename) {
 		payloadFilename = filename;
 	}
-	
-	public void trackMsgState(Session session)
-	{
+
+	public void trackMsgState(Session session) {
 		// Log a start sending fail state but do not allow exceptions to stop the process
-		try
-		{
+		try {
 			options.put("OPTIONAL_MODULE", "true");
 			session.getProcessor().handle(TrackingModule.DO_TRACK_MSG, this, options);
-		} catch (Exception et)
-		{
+		} catch (Exception et) {
 			setLogMsg("Unable to persist message tracking state: " + org.openas2.logging.Log.getExceptionMsg(et));
 			LogFactory.getLog(BaseMessage.class.getSimpleName()).error(this, et);
 		}
 
 	}
-	
-	public String extractPayloadFilename() throws ParseException
-	{
+
+	public String extractPayloadFilename() throws ParseException {
 		String s = getContentDisposition();
-		if (s == null || s.length() < 1)
+		if (s == null || s.length() < 1) {
 			return null;
-			// TODO: This should be a case insensitive lookup per RFC6266
-            String tmpFilename = null;
+		}
+		// TODO: This should be a case insensitive lookup per RFC6266
+		String tmpFilename = null;
 
-			ContentDisposition cd = new ContentDisposition(s);
-			tmpFilename = cd.getParameter("filename");
-			
-			if (tmpFilename == null || tmpFilename.length() < 1)
-			{
-				/* Try to extract manually */
-				int n = s.indexOf("filename=");
-				if (n > -1)
-				{
-					tmpFilename = s.substring(n);
-					tmpFilename = tmpFilename.replaceFirst("filename=", "");
+		ContentDisposition cd = new ContentDisposition(s);
+		tmpFilename = cd.getParameter("filename");
 
-					int n1 = tmpFilename.indexOf(",");
-					if (n1 > -1)
-						s = s.substring(0, n1 - 1);
-					tmpFilename = tmpFilename.replaceAll("\"", "");
-					s = s.trim();
+		if (tmpFilename == null || tmpFilename.length() < 1) {
+			/* Try to extract manually */
+			int n = s.indexOf("filename=");
+			if (n > -1) {
+				tmpFilename = s.substring(n);
+				tmpFilename = tmpFilename.replaceFirst("filename=", "");
+
+				int n1 = tmpFilename.indexOf(",");
+				if (n1 > -1) {
+					s = s.substring(0, n1 - 1);
 				}
-				else
-				{
-					/* Try just using file separator */
-					int pos = s.lastIndexOf(File.separator);
-					if (pos >= 0)
-						tmpFilename = s.substring(pos + 1);
+				tmpFilename = tmpFilename.replaceAll("\"", "");
+				s = s.trim();
+			} else {
+				/* Try just using file separator */
+				int pos = s.lastIndexOf(File.separator);
+				if (pos >= 0) {
+					tmpFilename = s.substring(pos + 1);
 				}
 			}
-			return tmpFilename;
+		}
+		return tmpFilename;
 	}
 }

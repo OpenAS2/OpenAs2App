@@ -24,82 +24,81 @@ import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.DispositionType;
 
 public class MessageFileModule extends BaseStorageModule {
-    public static final String PARAM_HEADER = "header";
-    
+
+	public static final String PARAM_HEADER = "header";
+
 	private Log logger = LogFactory.getLog(MessageFileModule.class.getSimpleName());
 
+	public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+		// store message content
+		try {
+			File msgFile = getFile(msg, getParameter(PARAM_FILENAME, true), action);
+			InputStream in = msg.getData().getInputStream();
+			store(msgFile, in);
+			logger.info(msg.getLogMsgID() + " stored message to " + msgFile.getAbsolutePath());
+		} catch (Exception e) {
+			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
+					"processed", "Error", "Error storing transaction"), AS2ReceiverModule.DISP_STORAGE_FAILED, e);
+		}
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
-        // store message content
-        try {
-            File msgFile = getFile(msg, getParameter(PARAM_FILENAME, true), action);
-            InputStream in = msg.getData().getInputStream();
-            store(msgFile, in);
-            logger.info(msg.getLogMsgID() + " stored message to " + msgFile.getAbsolutePath());
-        } catch (Exception e) {
-            throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
-                    "processed", "Error", "Error storing transaction"), AS2ReceiverModule.DISP_STORAGE_FAILED, e);
-        }
+		String headerFilename = getParameter(PARAM_HEADER, false);
 
-        String headerFilename = getParameter(PARAM_HEADER, false);
+		if (headerFilename != null) {
+			try {
+				File headerFile = getFile(msg, headerFilename, action);
+				InputStream in = getHeaderStream(msg);
+				store(headerFile, in);
+				logger.info(msg.getLogMsgID() + " stored headers to " + headerFile.getAbsolutePath());
+			} catch (IOException ioe) {
+				throw new WrappedException(ioe);
+			}
+		}
+	}
 
-        if (headerFilename != null) {
-            try {
-                File headerFile = getFile(msg, headerFilename, action);
-                InputStream in = getHeaderStream(msg);
-                store(headerFile, in);
-                logger.info(msg.getLogMsgID() + " stored headers to " + headerFile.getAbsolutePath());
-            } catch (IOException ioe) {
-                throw new WrappedException(ioe);
-            }
-        }
-    }
+	protected String getModuleAction() {
+		return DO_STORE;
+	}
 
-    protected String getModuleAction() {
-        return DO_STORE;
-    }
+	/**
+	 * @since 2007-06-01
+	 */
+	protected String getFilename(Message msg, String fileParam, String action) throws InvalidParameterException {
+		CompositeParameters compParams = new CompositeParameters(false)
+				.add("date", new DateParameters())
+				.add("msg", new MessageParameters(msg))
+				.add("rand", new RandomParameters());
 
+		return ParameterParser.parse(fileParam, compParams);
+	}
 
-    /**
-     * @since 2007-06-01
-     */
-    protected String getFilename(Message msg, String fileParam, String action) throws InvalidParameterException {
-        CompositeParameters compParams = new CompositeParameters(false)
-            .add("date", new DateParameters())
-        	.add("msg", new MessageParameters(msg))
-    	    .add("rand", new RandomParameters());
+	protected InputStream getHeaderStream(Message msg) throws IOException {
+		StringBuffer headerBuf = new StringBuffer();
 
-        return ParameterParser.parse(fileParam, compParams);
-    }
+		// write headers to the string buffer
+		headerBuf.append("Headers:" + System.getProperty("line.separator"));
 
-    protected InputStream getHeaderStream(Message msg) throws IOException {
-        StringBuffer headerBuf = new StringBuffer();
+		Enumeration<String> headers = msg.getHeaders().getAllHeaderLines();
+		String header;
 
-        // write headers to the string buffer
-        headerBuf.append("Headers:" + System.getProperty("line.separator"));
+		while (headers.hasMoreElements()) {
+			header = (String) headers.nextElement();
+			headerBuf.append(header).append(System.getProperty("line.separator"));
+		}
 
-        Enumeration<String> headers = msg.getHeaders().getAllHeaderLines();
-        String header;
+		headerBuf.append(System.getProperty("line.separator"));
 
-        while (headers.hasMoreElements()) {
-            header = (String) headers.nextElement();
-            headerBuf.append(header).append(System.getProperty("line.separator"));
-        }
+		// write attributes to the string buffer
+		headerBuf.append("Attributes:" + System.getProperty("line.separator"));
 
-        headerBuf.append(System.getProperty("line.separator"));
+		Iterator<Map.Entry<String, String>> attrIt = msg.getAttributes().entrySet().iterator();
+		Map.Entry<String, String> attrEntry;
 
-        // write attributes to the string buffer
-        headerBuf.append("Attributes:" + System.getProperty("line.separator"));
+		while (attrIt.hasNext()) {
+			attrEntry = attrIt.next();
+			headerBuf.append(attrEntry.getKey()).append(": ");
+			headerBuf.append(attrEntry.getValue()).append(System.getProperty("line.separator"));
+		}
 
-        Iterator<Map.Entry<String,String>> attrIt = msg.getAttributes().entrySet().iterator();
-        Map.Entry<String,String> attrEntry;
-
-        while (attrIt.hasNext()) {
-            attrEntry = attrIt.next();
-            headerBuf.append(attrEntry.getKey()).append(": ");
-            headerBuf.append(attrEntry.getValue()).append(System.getProperty("line.separator"));
-        }
-
-        return new ByteArrayInputStream(headerBuf.toString().getBytes());
-    }
+		return new ByteArrayInputStream(headerBuf.toString().getBytes());
+	}
 }

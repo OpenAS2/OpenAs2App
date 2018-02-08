@@ -5,8 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
-
 public class MessageID {
+
 	private static Random rndGen;
 	private Date timeStamp;
 	private String receiverID;
@@ -19,7 +19,7 @@ public class MessageID {
 		}
 		return rndGen;
 	}
-	
+
 	public MessageID(String senderID, String receiverID) {
 		super();
 		this.senderID = senderID;
@@ -61,7 +61,7 @@ public class MessageID {
 	public String getUniqueStamp() {
 		if (uniqueStamp == null) {
 			DecimalFormat randomFormatter = new DecimalFormat("0000");
-			
+
 			uniqueStamp = randomFormatter.format(getRandomGenerator().nextInt(10000));
 		}
 

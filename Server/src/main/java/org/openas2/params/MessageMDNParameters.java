@@ -4,8 +4,8 @@ import java.util.StringTokenizer;
 
 import org.openas2.message.MessageMDN;
 
-
 public class MessageMDNParameters extends ParameterParser {
+
 	public static final String KEY_MESSAGE = "msg";
 	public static final String KEY_SENDER = "sender";
 	public static final String KEY_RECEIVER = "receiver";
@@ -20,7 +20,7 @@ public class MessageMDNParameters extends ParameterParser {
 	}
 
 	public void setParameter(String key, String value)
-		throws InvalidParameterException {
+			throws InvalidParameterException {
 		MessageMDN target = getTarget();
 		StringTokenizer keyParts = new StringTokenizer(key, ".", false);
 

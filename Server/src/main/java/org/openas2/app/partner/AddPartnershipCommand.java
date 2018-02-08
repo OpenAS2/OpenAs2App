@@ -12,12 +12,14 @@ import org.openas2.partner.XMLPartnershipFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/** adds a new partnership entry in partneship store
- * 
+/**
+ * adds a new partnership entry in partneship store
+ *
  * @author joseph mcverry
  *
  */
 public class AddPartnershipCommand extends AliasedPartnershipsCommand {
+
 	public String getDefaultDescription() {
 		return "Add a new partnership definition to partnership store.";
 	}
@@ -75,9 +77,10 @@ public class AddPartnershipCommand extends AliasedPartnershipsCommand {
 					elem.setAttribute("value", param.substring(pos + 1));
 					root.appendChild(elem);
 
-				} else
+				} else {
 					return new CommandResult(CommandResult.TYPE_ERROR,
 							"incoming parameter missing value");
+				}
 
 			}
 

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class CommandResult {
+
 	public static final String TYPE_OK = "OK";
 	public static final String TYPE_ERROR = "ERROR";
 	public static final String TYPE_WARNING = "WARNING";
@@ -13,30 +14,31 @@ public class CommandResult {
 	public static final String TYPE_EXCEPTION = "EXCEPTION";
 	private String type;
 	private List<Object> results;
-	
+
 	public CommandResult(String type, String msg) {
 		super();
 		this.type = type;
-		getResults().add(msg);	
+		getResults().add(msg);
 	}
-	
+
 	public CommandResult(String type) {
 		super();
 		this.type = type;
 	}
+
 	public CommandResult(Exception e) {
 		super();
 		this.type = TYPE_EXCEPTION;
-		getResults().add(e);	
+		getResults().add(e);
 	}
-	
+
 	public List<Object> getResults() {
 		if (results == null) {
 			results = new ArrayList<Object>();
 		}
 		return results;
 	}
-	
+
 	public String getResult() {
 		Iterator<Object> resultIt = getResults().iterator();
 		StringBuffer results = new StringBuffer();
@@ -45,11 +47,10 @@ public class CommandResult {
 		}
 		return results.toString();
 	}
-	
+
 	public void setResults(List<Object> list) {
 		results = list;
 	}
-
 
 	public String getType() {
 		return type;
@@ -60,22 +61,22 @@ public class CommandResult {
 		buf.append(getType()).append(":\r\n");
 		Iterator<Object> resultIt = getResults().iterator();
 		while (resultIt.hasNext()) {
-			buf.append(resultIt.next().toString()).append("\r\n");			
+			buf.append(resultIt.next().toString()).append("\r\n");
 		}
 		return buf.toString();
 	}
-	
+
 	public String toXML() {
 		StringBuffer buf = new StringBuffer();
 		Iterator<Object> resultIt = getResults().iterator();
 		while (resultIt.hasNext()) {
 			buf.append("<result>");
-			buf.append(resultIt.next().toString());			
+			buf.append(resultIt.next().toString());
 			buf.append("</result>");
 		}
 		return buf.toString();
 	}
-	
+
 	public void setType(String string) {
 		type = string;
 	}

@@ -51,8 +51,12 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 	public void handle(String action, Message msg, Map<Object, Object> options)
 			throws OpenAS2Exception {
 
-		if (logger.isDebugEnabled()) logger.debug("ASYNC MDN send started...");
-		if (options == null) options = new HashMap<Object, Object>();
+		if (logger.isDebugEnabled()) {
+			logger.debug("ASYNC MDN send started...");
+		}
+		if (options == null) {
+			options = new HashMap<Object, Object>();
+		}
 		options.put("DIRECTION", "RECEIVE");
 		sendAsyncMDN((AS2Message) msg, options);
 	}
@@ -64,14 +68,13 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 		conn.setRequestProperty("User-Agent", msg.getAppTitle() + " (AsynchMDNSender)");
 
 		// Ensure date is formatted in english so there are only USASCII chars to avoid error
-        conn.setRequestProperty("Date",
-        		DateUtil.formatDate(
-        				Properties.getProperty("HTTP_HEADER_DATE_FORMAT", "EEE, dd MMM yyyy HH:mm:ss Z")
-        				, Locale.ENGLISH));
+		conn.setRequestProperty("Date",
+				DateUtil.formatDate(
+						Properties.getProperty("HTTP_HEADER_DATE_FORMAT", "EEE, dd MMM yyyy HH:mm:ss Z"), Locale.ENGLISH));
 		conn.setRequestProperty("Message-ID", msg.getMessageID());
 		conn.setRequestProperty("Mime-Version", "1.0"); // make sure this is the
-														// encoding used in the
-														// msg, run TBF1
+		// encoding used in the
+		// msg, run TBF1
 		conn.setRequestProperty("Content-type", msg.getHeader("Content-type"));
 		conn.setRequestProperty("AS2-Version", "1.1");
 		conn.setRequestProperty("Recipient-Address",
@@ -95,13 +98,17 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			MessageMDN mdn = msg.getMDN();
 
 			// Create a HTTP connection
-			if (logger.isDebugEnabled()) logger.debug(msg.getLogMsgID() + " ASYNC MDN attempting connection to: " + url);
+			if (logger.isDebugEnabled()) {
+				logger.debug(msg.getLogMsgID() + " ASYNC MDN attempting connection to: " + url);
+			}
 			HttpURLConnection conn = getConnection(url, true, true, false,
 					"POST");
 
 			try {
 
-				if (logger.isInfoEnabled()) logger.info(msg.getLogMsgID() + " connected to " + url);
+				if (logger.isInfoEnabled()) {
+					logger.info(msg.getLogMsgID() + " connected to " + url);
+				}
 
 				conn.setRequestProperty("Connection", "close, TE");
 				conn.setRequestProperty("User-Agent", msg.getAppTitle() + " (AsyncMDNSenderModule)");
@@ -116,8 +123,9 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 					headerValue.replace('\n', ' ');
 					headerValue.replace('\r', ' ');
 					conn.setRequestProperty(header.getName(), headerValue);
-					if (logger.isTraceEnabled())
+					if (logger.isTraceEnabled()) {
 						logger.trace(msg.getLogMsgID() + " Set HTTP response request property: " + header.getName() + " -> " + headerValue);
+					}
 				}
 
 				// Note: closing this stream causes connection abort errors on
@@ -129,10 +137,12 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 				try {
 					ProfilerStub transferStub = Profiler.startProfile();
 
-                    int bytes = IOUtils.copy(messageIn, messageOut);
-                    Profiler.endProfile(transferStub);
-					if (logger.isInfoEnabled()) logger.info(msg.getLogMsgID() + " transferred "
-							+ IOUtilOld.getTransferRate(bytes, transferStub));
+					int bytes = IOUtils.copy(messageIn, messageOut);
+					Profiler.endProfile(transferStub);
+					if (logger.isInfoEnabled()) {
+						logger.info(msg.getLogMsgID() + " transferred "
+								+ IOUtilOld.getTransferRate(bytes, transferStub));
+					}
 				} finally {
 					messageIn.close();
 				}
@@ -144,18 +154,19 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 						&& (respCode != HttpURLConnection.HTTP_ACCEPTED)
 						&& (respCode != HttpURLConnection.HTTP_PARTIAL)
 						&& (respCode != HttpURLConnection.HTTP_NO_CONTENT)) {
-					if (logger.isErrorEnabled())
-					{
+					if (logger.isErrorEnabled()) {
 						msg.setLogMsg("Error sending AsyncMDN [" + disposition.toString()
-							+ "] HTTP response code: " + respCode);
+								+ "] HTTP response code: " + respCode);
 						logger.error(msg);
 					}
 					throw new HttpResponseException(url.toString(),
 							respCode, conn.getResponseMessage());
 				}
 
-				if (logger.isInfoEnabled()) logger.info(msg.getLogMsgID() + " sent AsyncMDN [" + disposition.toString()
-						+ "] OK ");
+				if (logger.isInfoEnabled()) {
+					logger.info(msg.getLogMsgID() + " sent AsyncMDN [" + disposition.toString()
+							+ "] OK ");
+				}
 
 				// log & store mdn into backup folder.
 				getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
@@ -167,8 +178,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			} finally {
 				conn.disconnect();
 			}
-		} catch (HttpResponseException hre)
-		{
+		} catch (HttpResponseException hre) {
 			// Resend if the HTTP Response has an error code
 			logger.warn(msg.getLogMsgID() + " HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre), hre);
 			hre.terminate();
@@ -176,8 +186,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			// Log significant msg state
 			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
 			msg.trackMsgState(getSession());
-		} catch (IOException ioe)
-		{
+		} catch (IOException ioe) {
 			logger.warn(msg.getLogMsgID() + " IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe), ioe);
 			// Resend if a network error occurs during transmission
 			WrappedException wioe = new WrappedException(ioe);
@@ -202,37 +211,42 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
 	protected void resend(Message msg, OpenAS2Exception cause)
 			throws OpenAS2Exception {
-        // Get the resend retry count
+		// Get the resend retry count
 		Map<Object, Object> msgOptions = msg.getOptions();
-        String tries = AS2Util.retries(msgOptions, getParameter(SenderModule.SOPT_RETRIES, false));
-        if (logger.isDebugEnabled())
-        	logger.debug("MDN resend retries: MSG - " + msgOptions.get(SenderModule.SOPT_RETRIES) + "   ::: RETRIES - " + tries);
+		String tries = AS2Util.retries(msgOptions, getParameter(SenderModule.SOPT_RETRIES, false));
+		if (logger.isDebugEnabled()) {
+			logger.debug("MDN resend retries: MSG - " + msgOptions.get(SenderModule.SOPT_RETRIES) + "   ::: RETRIES - " + tries);
+		}
 		int retries = -1;
-		if (tries == null) tries = SenderModule.DEFAULT_RETRIES;
+		if (tries == null) {
+			tries = SenderModule.DEFAULT_RETRIES;
+		}
 		try {
 			retries = Integer.parseInt(tries);
 		} catch (Exception e) {
 			msg.setLogMsg("The retry count is not a valid integer value: " + tries);
 			logger.error(msg);
 		}
-		if (msgOptions.get(SenderModule.SOPT_RETRIES) == null)
+		if (msgOptions.get(SenderModule.SOPT_RETRIES) == null) {
 			msgOptions.put(SenderModule.SOPT_RETRIES, retries);
-		if (logger.isTraceEnabled()) logger.trace("Send MDN retry count: " + retries);
-    	if (retries >= 0 && retries -- <= 0)
-    	{
-    		msg.setLogMsg("MDN response abandoned after retry limit reached.");
-        	logger.error(msg);
-        	// Log significant msg state
-            msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
-            msg.trackMsgState(getSession());
-            AS2Util.cleanupFiles(msg, false);
-    		throw new OpenAS2Exception(msg.getLogMsgID() + " MDN response abandoned after retry limit reached.");
-    	}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("Send MDN retry count: " + retries);
+		}
+		if (retries >= 0 && retries-- <= 0) {
+			msg.setLogMsg("MDN response abandoned after retry limit reached.");
+			logger.error(msg);
+			// Log significant msg state
+			msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
+			msg.trackMsgState(getSession());
+			AS2Util.cleanupFiles(msg, false);
+			throw new OpenAS2Exception(msg.getLogMsgID() + " MDN response abandoned after retry limit reached.");
+		}
 		Map<Object, Object> options = new HashMap<Object, Object>();
 		options.put(ResenderModule.OPTION_CAUSE, cause);
 		options.put(ResenderModule.OPTION_INITIAL_SENDER, this);
-        options.put(ResenderModule.OPTION_RESEND_METHOD, SenderModule.DO_SENDMDN);
-        options.put(ResenderModule.OPTION_RETRIES, "" + retries);
+		options.put(ResenderModule.OPTION_RESEND_METHOD, SenderModule.DO_SENDMDN);
+		options.put(ResenderModule.OPTION_RETRIES, "" + retries);
 		getSession().getProcessor().handle(ResenderModule.DO_RESEND, msg, options);
 	}
 

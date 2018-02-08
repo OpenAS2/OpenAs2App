@@ -17,8 +17,8 @@ import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.util.IOUtilOld;
 
-public abstract class DirectoryPollingModule extends PollingModule
-{
+public abstract class DirectoryPollingModule extends PollingModule {
+
 	public static final String PARAM_OUTBOX_DIRECTORY = "outboxdir";
 	public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
 	private Map<String, Long> trackedFiles;
@@ -28,84 +28,70 @@ public abstract class DirectoryPollingModule extends PollingModule
 
 	private Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
 
-	public void init(Session session, Map<String, String> options) throws OpenAS2Exception
-	{
+	public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
 		super.init(session, options);
 		// Check all the directories are configured and actually exist on the file system
-		try
-		{
+		try {
 			outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
 			IOUtilOld.getDirectoryFile(outboxDir);
 			errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
 			IOUtilOld.getDirectoryFile(errorDir);
 			sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
-			if (sentDir != null)
+			if (sentDir != null) {
 				IOUtilOld.getDirectoryFile(sentDir);
-            String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
-            IOUtilOld.getDirectoryFile(pendingInfoFolder);
-            String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
-            IOUtilOld.getDirectoryFile(pendingFolder);
+			}
+			String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
+			IOUtilOld.getDirectoryFile(pendingInfoFolder);
+			String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
+			IOUtilOld.getDirectoryFile(pendingFolder);
 
-		} catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw new OpenAS2Exception("Failed to initialise directory poller.", e);
 		}
 	}
 
-    @Override
-	public boolean healthcheck(List<String> failures)
-	{
-    	try
-		{
+	@Override
+	public boolean healthcheck(List<String> failures) {
+		try {
 			IOUtilOld.getDirectoryFile(outboxDir);
-		} catch (IOException e)
-		{
+		} catch (IOException e) {
 			failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
 			return false;
 		}
-    	return true;
+		return true;
 	}
 
-	public void poll()
-	{
-		try
-		{
+	public void poll() {
+		try {
 			// update tracking info. if a file is ready, process it
 			updateTracking();
 
 			// scan the directory for new files
 			scanDirectory(outboxDir);
-		} catch (OpenAS2Exception oae)
-		{
+		} catch (OpenAS2Exception oae) {
 			oae.terminate();
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
 		}
 	}
 
-	protected void scanDirectory(String directory) throws IOException, InvalidParameterException
-	{
+	protected void scanDirectory(String directory) throws IOException, InvalidParameterException {
 		File dir = IOUtilOld.getDirectoryFile(directory);
 		String extensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
 
 		// get a list of entries in the directory
 		File[] files = extensionFilter.length() > 0 ? IOUtilOld.getFiles(dir, extensionFilter) : dir.listFiles();
-		if (files == null)
-		{
+		if (files == null) {
 			throw new InvalidParameterException("Error getting list of files in directory", this,
 					PARAM_OUTBOX_DIRECTORY, dir.getAbsolutePath());
 		}
 
 		// iterator through each entry, and start tracking new files
-		if (files.length > 0)
-		{
-			for (int i = 0; i < files.length; i++)
-			{
+		if (files.length > 0) {
+			for (int i = 0; i < files.length; i++) {
 				File currentFile = files[i];
 
-				if (checkFile(currentFile))
-				{
+				if (checkFile(currentFile)) {
 					// start watching the file's size if it's not already being
 					// watched
 					trackFile(currentFile);
@@ -114,27 +100,20 @@ public abstract class DirectoryPollingModule extends PollingModule
 		}
 	}
 
-	protected boolean checkFile(File file)
-	{
-		if (file.exists() && file.isFile())
-		{
-			try
-			{
+	protected boolean checkFile(File file) {
+		if (file.exists() && file.isFile()) {
+			try {
 				// check for a write-lock on file, will skip file if it's write
 				// locked
 				FileOutputStream fOut = new FileOutputStream(file, true);
 				fOut.close();
 				return true;
-			} catch (IOException ioe)
-			{
+			} catch (IOException ioe) {
 				// a sharing violation occurred, ignore the file for now
-				if (logger.isDebugEnabled())
-				{
-					try
-					{
+				if (logger.isDebugEnabled()) {
+					try {
 						logger.debug("Directory poller detected a non-writable file and will be ignored: " + file.getCanonicalPath());
-					} catch (IOException e)
-					{
+					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
@@ -143,97 +122,78 @@ public abstract class DirectoryPollingModule extends PollingModule
 		return false;
 	}
 
-    private void trackFile(File file)
-    {
+	private void trackFile(File file) {
 		Map<String, Long> trackedFiles = getTrackedFiles();
 		String filePath = file.getAbsolutePath();
-		if (trackedFiles.get(filePath) == null)
-		{
-            trackedFiles.put(filePath, file.length());
-        }
+		if (trackedFiles.get(filePath) == null) {
+			trackedFiles.put(filePath, file.length());
+		}
 	}
 
-    private void updateTracking()
-    {
+	private void updateTracking() {
 		// clone the trackedFiles map, iterator through the clone and modify the
 		// original to avoid iterator exceptions
 		// is there a better way to do this?
 		Map<String, Long> trackedFiles = getTrackedFiles();
 		Map<String, Long> trackedFilesClone = new HashMap<String, Long>(trackedFiles);
 
-        for (Map.Entry<String, Long> fileEntry : trackedFilesClone.entrySet())
-        {
-            // get the file and it's stored length
-            File file = new File(fileEntry.getKey());
-            long fileLength = fileEntry.getValue().longValue();
+		for (Map.Entry<String, Long> fileEntry : trackedFilesClone.entrySet()) {
+			// get the file and it's stored length
+			File file = new File(fileEntry.getKey());
+			long fileLength = fileEntry.getValue().longValue();
 
 			// if the file no longer exists, remove it from the tracker
-            if (!checkFile(file))
-            {
-                trackedFiles.remove(fileEntry.getKey());
-            } else
-            {
-                // if the file length has changed, update the tracker
+			if (!checkFile(file)) {
+				trackedFiles.remove(fileEntry.getKey());
+			} else {
+				// if the file length has changed, update the tracker
 				long newLength = file.length();
-                if (newLength != fileLength)
-                {
-                    trackedFiles.put(fileEntry.getKey(), new Long(newLength));
-                } else
-                {
-                    // if the file length has stayed the same, process the file
+				if (newLength != fileLength) {
+					trackedFiles.put(fileEntry.getKey(), new Long(newLength));
+				} else {
+					// if the file length has stayed the same, process the file
 					// and stop tracking it
-                    try
-                    {
-                        processFile(file);
-                    } catch (OpenAS2Exception e)
-                    {
-                        e.terminate();
-                        try
-                        {
-                            IOUtilOld.handleError(file, errorDir);
-                        } catch (OpenAS2Exception e1)
-                        {
-                            logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
+					try {
+						processFile(file);
+					} catch (OpenAS2Exception e) {
+						e.terminate();
+						try {
+							IOUtilOld.handleError(file, errorDir);
+						} catch (OpenAS2Exception e1) {
+							logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
 							forceStop(e1);
 							return;
 						}
-                    } finally
-                    {
-                        trackedFiles.remove(fileEntry.getKey());
+					} finally {
+						trackedFiles.remove(fileEntry.getKey());
 					}
 				}
 			}
 		}
 	}
 
-	protected void processFile(File file) throws OpenAS2Exception
-	{
+	protected void processFile(File file) throws OpenAS2Exception {
 
-		if (logger.isInfoEnabled())
+		if (logger.isInfoEnabled()) {
 			logger.info("processing " + file.getAbsolutePath());
+		}
 
-		try
-		{
+		try {
 			processDocument(new FileInputStream(file), file.getName());
-			try
-			{
+			try {
 				IOUtilOld.deleteFile(file);
-			} catch (IOException e)
-			{
+			} catch (IOException e) {
 				throw new OpenAS2Exception("Failed to delete file handed off for processing:" + file.getAbsolutePath(), e);
 			}
-		} catch (FileNotFoundException e)
-		{
+		} catch (FileNotFoundException e) {
 			throw new OpenAS2Exception("Failed to process file:" + file.getAbsolutePath(), e);
 		}
 	}
 
 	protected abstract Message createMessage();
 
-    private Map<String, Long> getTrackedFiles()
-    {
-		if (trackedFiles == null)
-		{
+	private Map<String, Long> getTrackedFiles() {
+		if (trackedFiles == null) {
 			trackedFiles = new HashMap<String, Long>();
 		}
 		return trackedFiles;

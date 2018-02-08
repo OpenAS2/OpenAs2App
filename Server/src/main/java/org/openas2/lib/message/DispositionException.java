@@ -5,7 +5,7 @@ import org.openas2.lib.OpenAS2Exception;
 public class DispositionException extends OpenAS2Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 

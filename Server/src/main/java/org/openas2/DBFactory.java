@@ -17,10 +17,11 @@ import org.apache.commons.logging.LogFactory;
  * @author Luc Guinchard
  */
 public class DBFactory {
+
 	private static final Log logger = LogFactory.getLog(DBFactory.class.getSimpleName());
 	public static final String PARAM_JDBC = "jdbc:";
 	public static final int COMMENT_MAX_LENTGH = 2000;
-	
+
 	public static final String CONFIG_NAMED_NODE_NAME = "name";
 	public static final String CONFIG_NAMED_NODE_URL = "url";
 	public static final String CONFIG_NAMED_NODE_USER = "user";
@@ -47,35 +48,65 @@ public class DBFactory {
 	}
 
 	public static enum MSG_STATUS {
+
 		//Envoi:
-		/** Fichier soumis dans répertoire d'envoi */
+
+		/**
+		 * Fichier soumis dans répertoire d'envoi
+		 */
 		FILE_SUBMITTED,
-		/** Message en attente d'un MDN */
+		/**
+		 * Message en attente d'un MDN
+		 */
 		MDN_WAITING,
-		/** Message envoyé sans demande de MDN [statut final] */
+		/**
+		 * Message envoyé sans demande de MDN [statut final]
+		 */
 		MSG_SENT,
-		/** Impossibilité d'envoyer le message [statut final] */
+		/**
+		 * Impossibilité d'envoyer le message [statut final]
+		 */
 		MSG_NOTSENT,
-		/** Impossibilité d'envoyer le message, le message sera à nouveau envoyé */
+		/**
+		 * Impossibilité d'envoyer le message, le message sera à nouveau envoyé
+		 */
 		MSG_RETRY,
-		/** MDN reçu [statut final] */
+		/**
+		 * MDN reçu [statut final]
+		 */
 		MDN_RECEIVED,
-		/** Message envoyé mais MDN non reçu [statut final] */
+		/**
+		 * Message envoyé mais MDN non reçu [statut final]
+		 */
 		MDN_NOT_RECEIVED,
-		/** Réception d'un MDN du message en erreur [statut final] */
+		/**
+		 * Réception d'un MDN du message en erreur [statut final]
+		 */
 		MSG_ERROR,
-		/** MDN en erreur */
+		/**
+		 * MDN en erreur
+		 */
 		MDN_ERROR,
 		//Réception
-		/**  message AS2 reçu sans demande de MDN [statut final */
+		/**
+		 * message AS2 reçu sans demande de MDN [statut final
+		 */
 		MSG_RECEIVED,
-		/** message AS2 reçu, MDN en cours d'envoi */
+		/**
+		 * message AS2 reçu, MDN en cours d'envoi
+		 */
 		MDN_SENDING,
-		/** MDN envoyé [statut final] */
+		/**
+		 * MDN envoyé [statut final]
+		 */
 		MDN_SENT,
-		/** Impossibilité d'envoyer le MDN [statut final] */
+		/**
+		 * Impossibilité d'envoyer le MDN [statut final]
+		 */
 		MDN_NOTSENT,
-		/** Impossibilité d'envoyer le MDN, Le MDN sera à nouveau envoyé */
+		/**
+		 * Impossibilité d'envoyer le MDN, Le MDN sera à nouveau envoyé
+		 */
 		MDN_RETRY
 	};
 	public static HashMap<String, DBFactory> DBFactoryList = new HashMap();
@@ -86,9 +117,9 @@ public class DBFactory {
 	private String tableMessage = TABLE_MESSAGE;
 
 	public DBFactory(String url, String user, String password) {
-		if(!url.startsWith(PARAM_JDBC)){
+		if (!url.startsWith(PARAM_JDBC)) {
 			this.url = PARAM_JDBC + url;
-		}else{
+		} else {
 			this.url = url;
 		}
 		this.user = user;
@@ -97,26 +128,26 @@ public class DBFactory {
 
 	DBFactory(String url, String user, String password, String tableMessage) {
 		this(url, user, password);
-		if(tableMessage != null) {
+		if (tableMessage != null) {
 			this.tableMessage = tableMessage;
 		}
 	}
 
-	public static DBFactory getDBFactory(String dbConfig) throws OpenAS2Exception{
+	public static DBFactory getDBFactory(String dbConfig) throws OpenAS2Exception {
 		DBFactory dBFactory = null;
-		if(dbConfig != null){
+		if (dbConfig != null) {
 			logger.debug(XMLSession.EL_DATABASECONFIG + ":" + dbConfig);
 			dBFactory = DBFactoryList.get(dbConfig);
-			if(dBFactory == null){
-				if(DBFactoryList.size()!=1) {
+			if (dBFactory == null) {
+				if (DBFactoryList.size() != 1) {
 					throw new OpenAS2Exception("A " + XMLSession.EL_DATABASECONFIG + " '" + dbConfig + "' is missing!");
 				}
 				dBFactory = DBFactoryList.values().iterator().next();
 				logger.info("Connection to default DBFactory: " + DBFactoryList.keySet().iterator().next());
 			}
 			logger.debug("Connection to URL: " + dBFactory.getUrl());
-		}else{
-			if(DBFactoryList.size() == 1) {
+		} else {
+			if (DBFactoryList.size() == 1) {
 				dBFactory = DBFactoryList.values().iterator().next();
 				logger.info("Connection to default DBFactory: " + DBFactoryList.keySet().iterator().next());
 			} else {
@@ -126,24 +157,24 @@ public class DBFactory {
 		return dBFactory;
 	}
 
-	public Connection getConnection() throws SQLException{
-		if(connection == null || connection.isClosed()) {
+	public Connection getConnection() throws SQLException {
+		if (connection == null || connection.isClosed()) {
 			connection = DriverManager.getConnection(url, user, password);
 			connection.setAutoCommit(true);
 		}
 		return connection;
-		
+
 	}
-	
-	public static void addMessageZ(String dbConfig, String messageId, String partnershipName, String payload, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
+
+	public static void addMessageZ(String dbConfig, String messageId, String partnershipName, String payload, MSG_STATUS status, String statusComment) throws OpenAS2Exception {
 		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
-		if(dBFactory != null){
+		if (dBFactory != null) {
 			Connection connection = null;
 			String requete = null;
 			try {
 				List<Object> vars = new ArrayList();
 				connection = dBFactory.getConnection();
-				requete = "INSERT INTO "+ MessageFormat.format(TABLE_FORMAT, dBFactory.getTableMessage()) + " ("
+				requete = "INSERT INTO " + MessageFormat.format(TABLE_FORMAT, dBFactory.getTableMessage()) + " ("
 						+ FIELD_MESSAGE_PARTNERSHIP + ", "
 						+ FIELD_MESSAGE_ID + ", "
 						+ FIELD_MESSAGE_FILENAME + ", "
@@ -154,8 +185,9 @@ public class DBFactory {
 				vars.add(messageId);
 				vars.add(payload);
 				vars.add(status.name());
-				if(statusComment != null && statusComment.length() > COMMENT_MAX_LENTGH)
+				if (statusComment != null && statusComment.length() > COMMENT_MAX_LENTGH) {
 					statusComment = statusComment.substring(0, COMMENT_MAX_LENTGH);
+				}
 				vars.add(statusComment);
 
 				PreparedStatement statement = connection.prepareStatement(requete);
@@ -165,7 +197,7 @@ public class DBFactory {
 				logger.debug("requete: " + requete);
 				logger.debug("status: " + status + " -> " + statusComment);
 				statement.executeUpdate();
-			}catch(SQLException e){
+			} catch (SQLException e) {
 				logger.error("requete: " + requete);
 				logger.error(e.getMessage());
 				logger.error(e.getSQLState());
@@ -173,18 +205,18 @@ public class DBFactory {
 		}
 	}
 
-	public static void updateMessageZ(String dbConfig, String messageId, String fileName) throws OpenAS2Exception{
+	public static void updateMessageZ(String dbConfig, String messageId, String fileName) throws OpenAS2Exception {
 		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
-		if(dBFactory != null){
+		if (dBFactory != null) {
 			Connection connection = null;
 			String requete = null;
 			try {
 				List<Object> vars = new ArrayList();
 				connection = dBFactory.getConnection();
-				requete = "UPDATE `"+ dBFactory.getTableMessage() + "` SET "
-					+ FIELD_MESSAGE_FILENAME + " = ?";
+				requete = "UPDATE `" + dBFactory.getTableMessage() + "` SET "
+						+ FIELD_MESSAGE_FILENAME + " = ?";
 				vars.add(fileName);
-				requete += " WHERE "+ FIELD_MESSAGE_ID + " = ?;";
+				requete += " WHERE " + FIELD_MESSAGE_ID + " = ?;";
 				vars.add(messageId);
 				PreparedStatement statement = connection.prepareStatement(requete);
 				for (int i = 0; i < vars.size(); i++) {
@@ -193,7 +225,7 @@ public class DBFactory {
 				logger.debug("requete: " + requete);
 
 				statement.executeUpdate();
-			}catch(SQLException e){
+			} catch (SQLException e) {
 				logger.error("requete: " + requete);
 				logger.error(e.getMessage());
 				logger.error(e.getSQLState());
@@ -201,46 +233,47 @@ public class DBFactory {
 		}
 	}
 
-	public static void updateMessageZ(String dbConfig, String messageId, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
+	public static void updateMessageZ(String dbConfig, String messageId, MSG_STATUS status, String statusComment) throws OpenAS2Exception {
 		updateMessageZ(dbConfig, messageId, null, status, statusComment);
 	}
 
-	public static void updateMessageZ(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment) throws OpenAS2Exception{
+	public static void updateMessageZ(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment) throws OpenAS2Exception {
 		updateMessageZ(dbConfig, messageId, filename, status, statusComment, null, null);
 	}
 
-	public static void updateMessageZ(String dbConfig, String messageId, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception{
+	public static void updateMessageZ(String dbConfig, String messageId, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception {
 		updateMessageZ(dbConfig, messageId, null, status, statusComment, mdn, mdnDate);
 	}
 
-	public static void updateMessageZ(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception{
+	public static void updateMessageZ(String dbConfig, String messageId, String filename, MSG_STATUS status, String statusComment, String mdn, Date mdnDate) throws OpenAS2Exception {
 		DBFactory dBFactory = DBFactory.getDBFactory(dbConfig);
-		if(dBFactory != null){
+		if (dBFactory != null) {
 			Connection connection = null;
 			String requete = null;
 			try {
 				List<Object> vars = new ArrayList();
 				connection = dBFactory.getConnection();
-				requete = "UPDATE `"+ dBFactory.getTableMessage() + "` SET "
-					+ FIELD_MESSAGE_STATUS + " = ?,"
-					+ FIELD_MESSAGE_COMMENT + " = ?";
+				requete = "UPDATE `" + dBFactory.getTableMessage() + "` SET "
+						+ FIELD_MESSAGE_STATUS + " = ?,"
+						+ FIELD_MESSAGE_COMMENT + " = ?";
 				vars.add(status.name());
-				if(statusComment != null && statusComment.length() > COMMENT_MAX_LENTGH)
+				if (statusComment != null && statusComment.length() > COMMENT_MAX_LENTGH) {
 					statusComment = statusComment.substring(0, COMMENT_MAX_LENTGH);
+				}
 				vars.add(statusComment);
-				if (filename != null){
+				if (filename != null) {
 					requete += " ," + FIELD_MESSAGE_FILENAME + " = ?";
 					vars.add(filename);
 				}
-				if (mdn != null){
+				if (mdn != null) {
 					requete += " ," + FIELD_MESSAGE_MDN_ID + " = ?";
 					vars.add(mdn);
 				}
-				if (mdnDate != null){
+				if (mdnDate != null) {
 					requete += " ," + FIELD_MESSAGE_MDN_DATE + " = ?";
 					vars.add(new java.sql.Timestamp(mdnDate.getTime()));
 				}
-				requete += " WHERE "+ FIELD_MESSAGE_ID + " = ?;";
+				requete += " WHERE " + FIELD_MESSAGE_ID + " = ?;";
 				vars.add(messageId);
 				PreparedStatement statement = connection.prepareStatement(requete);
 				for (int i = 0; i < vars.size(); i++) {
@@ -249,7 +282,7 @@ public class DBFactory {
 				logger.debug("requete: " + statement.toString());
 				statement.executeUpdate();
 				logger.debug("status: " + status + " -> " + statusComment);
-			}catch(SQLException e){
+			} catch (SQLException e) {
 				logger.error("requete: " + requete);
 				logger.error(e.getMessage());
 				logger.error(e.getSQLState());

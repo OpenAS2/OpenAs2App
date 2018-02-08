@@ -3,21 +3,21 @@ package org.openas2.cmd;
 import org.openas2.Component;
 import org.openas2.Session;
 
-
 public interface Command extends Component {
-    public void setDescription(String desc);
 
-    public String getDescription();
+	public void setDescription(String desc);
 
-    public void setName(String name);
+	public String getDescription();
 
-    public String getName();
+	public void setName(String name);
 
-    public Session getSession();
+	public String getName();
 
-    public void setUsage(String usage);
+	public Session getSession();
 
-    public String getUsage();
+	public void setUsage(String usage);
 
-    public CommandResult execute(Object[] params);
+	public String getUsage();
+
+	public CommandResult execute(Object[] params);
 }

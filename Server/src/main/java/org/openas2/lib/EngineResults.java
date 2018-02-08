@@ -4,113 +4,114 @@ import org.openas2.lib.message.Disposition;
 import org.openas2.lib.partner.IPartnership;
 
 public class EngineResults {
-    public static final int STATUS_NONE = 0;
-    public static final int STATUS_OK = 1;
-    public static final int STATUS_ERROR = 2;
-    private OpenAS2Exception exception;
-    private IPartnership partnership;
-    private int encryption;
-    private int signature;
 
-    public IPartnership getPartnership() {
-        return partnership;
-    }
+	public static final int STATUS_NONE = 0;
+	public static final int STATUS_OK = 1;
+	public static final int STATUS_ERROR = 2;
+	private OpenAS2Exception exception;
+	private IPartnership partnership;
+	private int encryption;
+	private int signature;
 
-    public void setPartnership(IPartnership partnership) {
-        this.partnership = partnership;
-    }
+	public IPartnership getPartnership() {
+		return partnership;
+	}
 
-    public int getEncryption() {
-        return encryption;
-    }
+	public void setPartnership(IPartnership partnership) {
+		this.partnership = partnership;
+	}
 
-    public void setEncryption(int encryption) {
-        this.encryption = encryption;
-    }
+	public int getEncryption() {
+		return encryption;
+	}
 
-    public OpenAS2Exception getException() {
-        return exception;
-    }
+	public void setEncryption(int encryption) {
+		this.encryption = encryption;
+	}
 
-    public void setException(OpenAS2Exception exception) {
-        this.exception = exception;
-    }
+	public OpenAS2Exception getException() {
+		return exception;
+	}
 
-    public int getSignature() {
-        return signature;
-    }
+	public void setException(OpenAS2Exception exception) {
+		this.exception = exception;
+	}
 
-    public void setSignature(int signature) {
-        this.signature = signature;
-    }
+	public int getSignature() {
+		return signature;
+	}
 
-    public boolean errorOccurred() {
-        if (getException() != null) {
-            return true;
-        }
-        if (getPartnership() == null) {
-            return true;
-        }
-        if (getEncryption() == STATUS_ERROR) {
-            return true;
-        }
-        if (getSignature() == STATUS_ERROR) {
-            return true;
-        }
-        return false;
-    }
+	public void setSignature(int signature) {
+		this.signature = signature;
+	}
 
-    public String getStatusDescription(int status) {
-        switch (status) {
-        case STATUS_NONE:
-            return "None";
+	public boolean errorOccurred() {
+		if (getException() != null) {
+			return true;
+		}
+		if (getPartnership() == null) {
+			return true;
+		}
+		if (getEncryption() == STATUS_ERROR) {
+			return true;
+		}
+		if (getSignature() == STATUS_ERROR) {
+			return true;
+		}
+		return false;
+	}
 
-        case STATUS_OK:
-            return "Ok";
+	public String getStatusDescription(int status) {
+		switch (status) {
+			case STATUS_NONE:
+				return "None";
 
-        case STATUS_ERROR:
-            return "Error";
-        }
+			case STATUS_OK:
+				return "Ok";
 
-        return "Unknown";
-    }
+			case STATUS_ERROR:
+				return "Error";
+		}
 
-    public String getDisposition() {
-        // if no error occured, return the processed disposition
-        if (!errorOccurred()) {
-            return Disposition.DISP_PROCESSED;
-        }
+		return "Unknown";
+	}
 
-        // an error occurred finding the partnership
-        if (getPartnership() == null) {
-            return Disposition.DISP_AUTHENTICATION_FAILED;
-        }
+	public String getDisposition() {
+		// if no error occured, return the processed disposition
+		if (!errorOccurred()) {
+			return Disposition.DISP_PROCESSED;
+		}
 
-        // an error occurred during decryption
-        if (getEncryption() == STATUS_ERROR) {
-            return Disposition.DISP_DECRYPTION_FAILED;
-        }
+		// an error occurred finding the partnership
+		if (getPartnership() == null) {
+			return Disposition.DISP_AUTHENTICATION_FAILED;
+		}
 
-        // an error occurred during signature verification
-        if (getSignature() == STATUS_ERROR) {
-            return Disposition.DISP_SIGNATURE_FAILED;
-        }
+		// an error occurred during decryption
+		if (getEncryption() == STATUS_ERROR) {
+			return Disposition.DISP_DECRYPTION_FAILED;
+		}
 
-        // an unexpected error occured if a result hasn't been returned yet
-        return Disposition.DISP_UNEXPECTED_ERROR;
-    }
+		// an error occurred during signature verification
+		if (getSignature() == STATUS_ERROR) {
+			return Disposition.DISP_SIGNATURE_FAILED;
+		}
 
-    public String toString() {
-        StringBuffer strBuf = new StringBuffer();
-        strBuf.append("Partnership: ").append(getPartnership());
-        strBuf.append("  Encryption: ").append(getStatusDescription(getEncryption()));
-        strBuf.append("  Signature: ").append(getStatusDescription(getSignature()));
+		// an unexpected error occured if a result hasn't been returned yet
+		return Disposition.DISP_UNEXPECTED_ERROR;
+	}
 
-        if (getException() != null) {
-            strBuf.append("  Exception: ").append(getException().toString());
-        }
+	public String toString() {
+		StringBuffer strBuf = new StringBuffer();
+		strBuf.append("Partnership: ").append(getPartnership());
+		strBuf.append("  Encryption: ").append(getStatusDescription(getEncryption()));
+		strBuf.append("  Signature: ").append(getStatusDescription(getSignature()));
 
-        return strBuf.toString();
-    }
+		if (getException() != null) {
+			strBuf.append("  Exception: ").append(getException().toString());
+		}
+
+		return strBuf.toString();
+	}
 
 }

@@ -9,53 +9,53 @@ import javax.mail.internet.MimeBodyPart;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
-
 public interface MessageMDN extends Serializable {
-    public void setAttribute(String key, String value);
 
-    public String getAttribute(String key);
+	public void setAttribute(String key, String value);
 
-    public void setAttributes(Map<String, String> attributes);
+	public String getAttribute(String key);
 
-    public Map<String, String> getAttributes();
+	public void setAttributes(Map<String, String> attributes);
 
-    public void setData(MimeBodyPart data);
+	public Map<String, String> getAttributes();
 
-    public MimeBodyPart getData();
+	public void setData(MimeBodyPart data);
 
-    public void setHeader(String key, String value);
+	public MimeBodyPart getData();
 
-    public String getHeader(String key);
+	public void setHeader(String key, String value);
 
-    public String getHeader(String key, String delimiter);
+	public String getHeader(String key);
 
-    public void setHeaders(InternetHeaders headers);
+	public String getHeader(String key, String delimiter);
 
-    public InternetHeaders getHeaders();
+	public void setHeaders(InternetHeaders headers);
 
-    public void setHistory(DataHistory history);
+	public InternetHeaders getHeaders();
 
-    public DataHistory getHistory();
+	public void setHistory(DataHistory history);
 
-    public void setMessage(Message message);
+	public DataHistory getHistory();
 
-    public Message getMessage();
-    
-    public void setMessageID(String messageID);
+	public void setMessage(Message message);
 
-    public String getMessageID();
-    
-    public void setPartnership(Partnership partnership);
+	public Message getMessage();
 
-    public Partnership getPartnership();
+	public void setMessageID(String messageID);
 
-    public void setText(String text);
+	public String getMessageID();
 
-    public String getText();
-    
-    public void addHeader(String key, String value);
+	public void setPartnership(Partnership partnership);
 
-    public String generateMessageID() throws InvalidParameterException;
+	public Partnership getPartnership();
 
-    public void updateMessageID() throws InvalidParameterException;
+	public void setText(String text);
+
+	public String getText();
+
+	public void addHeader(String key, String value);
+
+	public String generateMessageID() throws InvalidParameterException;
+
+	public void updateMessageID() throws InvalidParameterException;
 }

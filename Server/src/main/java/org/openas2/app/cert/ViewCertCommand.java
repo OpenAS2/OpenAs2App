@@ -12,6 +12,7 @@ import org.openas2.cmd.CommandResult;
  * @author Don Hillsberry
  */
 public class ViewCertCommand extends AliasedCertCommand {
+
 	public String getDefaultDescription() {
 		return "View the certificate associated with an alias.";
 	}

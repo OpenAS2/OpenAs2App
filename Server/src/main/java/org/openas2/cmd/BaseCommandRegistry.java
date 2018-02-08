@@ -6,16 +6,15 @@ import java.util.List;
 import org.openas2.BaseComponent;
 
 public class BaseCommandRegistry extends BaseComponent implements CommandRegistry {
-    private List<Command> commands = new LinkedList<Command>();
 
-    public List<Command> getCommands()
-    {
-        return commands;
-    }
+	private List<Command> commands = new LinkedList<Command>();
 
-    public void setCommands(List<Command> commands)
-    {
-        this.commands = commands;
-    }
+	public List<Command> getCommands() {
+		return commands;
+	}
+
+	public void setCommands(List<Command> commands) {
+		this.commands = commands;
+	}
 
 }

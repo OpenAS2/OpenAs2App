@@ -3,53 +3,54 @@ package org.openas2.lib.partner;
 import java.util.Map;
 
 public interface IPartnership {
-    public static final String ATTRIBUTE_ENCRYPTION_ALGORITHM = "encrypt";
-    public static final String ATTRIBUTE_SIGNATURE_ALGORITHM = "sign";
-    public static final String ATTRIBUTE_SUBJECT = "subject";
-    public static final String ATTRIBUTE_SOURCE = "source";
-    public static final String ATTRIBUTE_DESTINATION = "destination";
-    public static final String ATTRIBUTE_MDN_OPTIONS = "mdnoptions";
-    public static final String ATTRIBUTE_COMPRESSION_TYPE = "compression_type";
 
-    Map<String, String> getAttributes();
+	public static final String ATTRIBUTE_ENCRYPTION_ALGORITHM = "encrypt";
+	public static final String ATTRIBUTE_SIGNATURE_ALGORITHM = "sign";
+	public static final String ATTRIBUTE_SUBJECT = "subject";
+	public static final String ATTRIBUTE_SOURCE = "source";
+	public static final String ATTRIBUTE_DESTINATION = "destination";
+	public static final String ATTRIBUTE_MDN_OPTIONS = "mdnoptions";
+	public static final String ATTRIBUTE_COMPRESSION_TYPE = "compression_type";
 
-    String getAttribute(String name);
+	Map<String, String> getAttributes();
 
-    void setAttribute(String name, String value);
+	String getAttribute(String name);
 
-    IPartner getSender();
+	void setAttribute(String name, String value);
 
-    void setSender(IPartner sender);
+	IPartner getSender();
 
-    IPartner getReceiver();
+	void setSender(IPartner sender);
 
-    void setReceiver(IPartner receiver);
+	IPartner getReceiver();
 
-    String getEncryptionAlgorithm();
+	void setReceiver(IPartner receiver);
 
-    void setEncryptionAlgorithm(String algorithm);
-    
-    String getCompressionType();
+	String getEncryptionAlgorithm();
 
-    void setCompressionType(String compressionType);
+	void setEncryptionAlgorithm(String algorithm);
 
-    String getSignatureAlgorithm();
+	String getCompressionType();
 
-    void setSignatureAlgorithm(String algorithm);
+	void setCompressionType(String compressionType);
 
-    String getSource();
+	String getSignatureAlgorithm();
 
-    void setSource(String url);
+	void setSignatureAlgorithm(String algorithm);
 
-    String getDestination();
+	String getSource();
 
-    void setDestination(String url);
+	void setSource(String url);
 
-    String getSubject();
+	String getDestination();
 
-    void setSubject(String subject);
+	void setDestination(String url);
 
-    String getMdnOptions();
+	String getSubject();
 
-    void setMdnOptions(String options);
+	void setSubject(String subject);
+
+	String getMdnOptions();
+
+	void setMdnOptions(String options);
 }

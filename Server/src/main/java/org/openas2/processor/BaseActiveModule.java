@@ -6,8 +6,8 @@ import java.util.Map;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 
-
 public abstract class BaseActiveModule extends BaseProcessorModule implements ActiveModule {
+
 	private boolean running;
 
 	public boolean isRunning() {
@@ -39,7 +39,7 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
 	}
 
 	public void handle(String action, Message msg, Map<Object, Object> options)
-		throws OpenAS2Exception {
+			throws OpenAS2Exception {
 		throw new UnsupportedException("Active modules don't handle anything by default");
 	}
 

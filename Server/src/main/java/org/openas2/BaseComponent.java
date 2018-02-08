@@ -6,104 +6,90 @@ import java.util.StringTokenizer;
 
 import org.openas2.params.InvalidParameterException;
 
-
 public class BaseComponent implements Component {
-    private Map<String, String> parameters;
-    private Session session;
 
-    public String getName()
-    {
-        String clippedName = this.getClass().getName();
+	private Map<String, String> parameters;
+	private Session session;
 
-        // this clips off the package information
-        StringTokenizer classParts = new StringTokenizer(clippedName, ".", false);
+	public String getName() {
+		String clippedName = this.getClass().getName();
 
-        while (classParts.hasMoreTokens())
-        {
-            clippedName = classParts.nextToken();
-        }
+		// this clips off the package information
+		StringTokenizer classParts = new StringTokenizer(clippedName, ".", false);
 
-        return clippedName;
-    }
+		while (classParts.hasMoreTokens()) {
+			clippedName = classParts.nextToken();
+		}
 
-    public void setParameter(String key, String value)
-    {
-        getParameters().put(key, value);
-    }
+		return clippedName;
+	}
 
-    public void setParameter(String key, int value)
-    {
-        setParameter(key, Integer.toString(value));
-    }
+	public void setParameter(String key, String value) {
+		getParameters().put(key, value);
+	}
 
-    public String getParameter(String key, boolean required)
-            throws InvalidParameterException
-    {
-        String parameter = getParameter(key);
+	public void setParameter(String key, int value) {
+		setParameter(key, Integer.toString(value));
+	}
 
-        if (required && (parameter == null))
-        {
-            throw new InvalidParameterException("Missing required parameter.", this, key, null);
-        }
+	public String getParameter(String key, boolean required)
+			throws InvalidParameterException {
+		String parameter = getParameter(key);
 
-        return parameter;
-    }
+		if (required && (parameter == null)) {
+			throw new InvalidParameterException("Missing required parameter.", this, key, null);
+		}
 
-    public String getParameter(String key, String defaultValue) throws InvalidParameterException
-    {
-        String value = getParameter(key, false);
+		return parameter;
+	}
 
-        if (value == null)
-        {
-            return defaultValue;
-        }
+	public String getParameter(String key, String defaultValue) throws InvalidParameterException {
+		String value = getParameter(key, false);
 
-        return value;
-    }
+		if (value == null) {
+			return defaultValue;
+		}
 
-    public String getParameter(String key)
-    {
-        if (parameters == null) return null;
-        return parameters.get(key);
-    }
+		return value;
+	}
 
-    public int getParameterInt(String key, boolean required)
-            throws InvalidParameterException
-    {
-        String value = getParameter(key, required);
+	public String getParameter(String key) {
+		if (parameters == null) {
+			return null;
+		}
+		return parameters.get(key);
+	}
 
-        if (value != null)
-        {
-            return Integer.parseInt(value);
-        }
+	public int getParameterInt(String key, boolean required)
+			throws InvalidParameterException {
+		String value = getParameter(key, required);
 
-        return 0;
-    }
+		if (value != null) {
+			return Integer.parseInt(value);
+		}
 
-    public Map<String, String> getParameters()
-    {
-        if (parameters == null)
-        {
-            parameters = new HashMap<String, String>();
-        }
+		return 0;
+	}
 
-        return parameters;
-    }
+	public Map<String, String> getParameters() {
+		if (parameters == null) {
+			parameters = new HashMap<String, String>();
+		}
 
-    public Session getSession()
-    {
-        return session;
-    }
+		return parameters;
+	}
 
-    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception
-    {
-        this.session = session;
-        this.parameters = parameters;
-    }
+	public Session getSession() {
+		return session;
+	}
 
-    @Override
-    public void destroy() throws Exception
-    {
-        // override if needed
-    }
+	public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
+		this.session = session;
+		this.parameters = parameters;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		// override if needed
+	}
 }

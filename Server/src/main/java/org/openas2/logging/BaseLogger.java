@@ -9,8 +9,8 @@ import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 
-
 public abstract class BaseLogger extends BaseComponent implements Logger {
+
 	public static final String PARAM_EXCEPTIONS = "exceptions";
 	public static final String PARAM_SHOW = "show";
 	public static final String VALUE_SHOW_ALL = "all"; // all exceptions (terminated or not) and info
@@ -32,9 +32,8 @@ public abstract class BaseLogger extends BaseComponent implements Logger {
 	}
 
 	public void log(Throwable t, Level level, boolean terminated) {
-		
-		if (t instanceof OpenAS2Exception)
-		{
+
+		if (t instanceof OpenAS2Exception) {
 			OpenAS2Exception e = (OpenAS2Exception) t;
 			if (isLogging(e)) {
 				if (terminated && isShowing(VALUE_SHOW_TERMINATED)) {
@@ -43,31 +42,28 @@ public abstract class BaseLogger extends BaseComponent implements Logger {
 					doLog(e, terminated);
 				}
 			}
-		}
-		else if (t != null) doLog(t, false);
-		else
-		{
+		} else if (t != null) {
+			doLog(t, false);
+		} else {
 			// Print the exception to a stacktrace as it is probably something unknown and needs decent logging
-	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	        PrintStream ps = new PrintStream(baos);
-	        t.printStackTrace(ps);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			t.printStackTrace(ps);
 
-	        doLog(level, new String(baos.toByteArray()), null);
+			doLog(level, new String(baos.toByteArray()), null);
 
-	        try {
-	            ps.close();
-	            baos.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
+			try {
+				ps.close();
+				baos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 		}
 	}
 
 	/**
-	 * level
-	 * msgText
-	 * message
+	 * level msgText message
 	 */
 	public void log(Level level, String msgText, Message message) {
 		if (isShowing(VALUE_SHOW_INFO)) {
@@ -79,18 +75,18 @@ public abstract class BaseLogger extends BaseComponent implements Logger {
 		try {
 			String exceptionName = exception.getClass().getName();
 			String exceptions = getParameter(PARAM_EXCEPTIONS, false);
-            if (exceptions != null) {
-            
-			StringTokenizer exceptionTokens = new StringTokenizer(exceptions, ",", false);			
+			if (exceptions != null) {
 
-			while (exceptionTokens.hasMoreTokens()) {
-				if (exceptionTokens.nextToken().equals(exceptionName)) {
-					return true;
+				StringTokenizer exceptionTokens = new StringTokenizer(exceptions, ",", false);
+
+				while (exceptionTokens.hasMoreTokens()) {
+					if (exceptionTokens.nextToken().equals(exceptionName)) {
+						return true;
+					}
 				}
+			} else {
+				return true;
 			}
-            } else {
-                return true;
-            }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

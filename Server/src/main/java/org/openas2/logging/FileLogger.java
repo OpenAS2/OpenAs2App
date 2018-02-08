@@ -13,74 +13,75 @@ import org.openas2.params.DateParameters;
 import org.openas2.params.ParameterParser;
 
 public class FileLogger extends BaseLogger {
-    public static final String PARAM_FILENAME = "filename";
 
-    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
-        super.init(session, parameters);
-        // check if log file can be created
-        getLogFile();
-    }
+	public static final String PARAM_FILENAME = "filename";
 
-    public void doLog(Level level, String msgText, Message as2Msg) {
-        appendToFile(getFormatter().format(level, (as2Msg == null?"":as2Msg.getLogMsgID()) + " " + msgText));
-    }
+	public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
+		super.init(session, parameters);
+		// check if log file can be created
+		getLogFile();
+	}
 
-    protected String getShowDefaults() {
-        return VALUE_SHOW_ALL;
-    }
+	public void doLog(Level level, String msgText, Message as2Msg) {
+		appendToFile(getFormatter().format(level, (as2Msg == null ? "" : as2Msg.getLogMsgID()) + " " + msgText));
+	}
 
-    protected void appendToFile(String text) {
-        try {
-            File logFile = getLogFile();
-            FileWriter writer = new FileWriter(logFile, true);
-            writer.write(text);
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	protected String getShowDefaults() {
+		return VALUE_SHOW_ALL;
+	}
 
-    protected File getLogFile() throws OpenAS2Exception {
-        String filename = getParameter(PARAM_FILENAME, true);
+	protected void appendToFile(String text) {
+		try {
+			File logFile = getLogFile();
+			FileWriter writer = new FileWriter(logFile, true);
+			writer.write(text);
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-        ParameterParser parser = createParser();
-        filename = ParameterParser.parse(filename, parser);
+	protected File getLogFile() throws OpenAS2Exception {
+		String filename = getParameter(PARAM_FILENAME, true);
 
-        File logFile = new File(filename);
+		ParameterParser parser = createParser();
+		filename = ParameterParser.parse(filename, parser);
 
-        if (!logFile.exists()) {
-            File parentDir = logFile.getParentFile();
-            if (!parentDir.exists()) {
-                if (!parentDir.mkdirs()) {
-                    String msg = "Could not create log directories for file \"" + logFile.getAbsolutePath()
-                            + "\" for log file parameter \"" + filename + "\"";
-                    throw new OpenAS2Exception(msg);
-                }
-            }
-            try {
-                if (!logFile.createNewFile()) {
-                    String msg = "Could not create log file \"" + logFile.getAbsolutePath()
-                            + "\" for log file parameter \"" + filename + "\"";
-                    throw new OpenAS2Exception(msg);
-                }
-            } catch (IOException ioe) {
-                String msg = "Could not create log file \"" + logFile.getAbsolutePath()
-                        + "\" for log file parameter \"" + filename + "\": " + ioe.getMessage();
-                throw new OpenAS2Exception(msg, ioe);
-            }
-        }
+		File logFile = new File(filename);
 
-        return logFile;
-    }
+		if (!logFile.exists()) {
+			File parentDir = logFile.getParentFile();
+			if (!parentDir.exists()) {
+				if (!parentDir.mkdirs()) {
+					String msg = "Could not create log directories for file \"" + logFile.getAbsolutePath()
+							+ "\" for log file parameter \"" + filename + "\"";
+					throw new OpenAS2Exception(msg);
+				}
+			}
+			try {
+				if (!logFile.createNewFile()) {
+					String msg = "Could not create log file \"" + logFile.getAbsolutePath()
+							+ "\" for log file parameter \"" + filename + "\"";
+					throw new OpenAS2Exception(msg);
+				}
+			} catch (IOException ioe) {
+				String msg = "Could not create log file \"" + logFile.getAbsolutePath()
+						+ "\" for log file parameter \"" + filename + "\": " + ioe.getMessage();
+				throw new OpenAS2Exception(msg, ioe);
+			}
+		}
 
-    protected ParameterParser createParser() {
-        CompositeParameters compParams = new CompositeParameters(false);
-        compParams.add("date", new DateParameters());
+		return logFile;
+	}
 
-        return compParams;
-    }
+	protected ParameterParser createParser() {
+		CompositeParameters compParams = new CompositeParameters(false);
+		compParams.add("date", new DateParameters());
 
-    protected void doLog(Throwable t, boolean terminated) {
-        appendToFile(getFormatter().format(t, terminated));
-    }
+		return compParams;
+	}
+
+	protected void doLog(Throwable t, boolean terminated) {
+		appendToFile(getFormatter().format(t, terminated));
+	}
 }

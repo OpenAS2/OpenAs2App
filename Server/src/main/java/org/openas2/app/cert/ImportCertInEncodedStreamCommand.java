@@ -13,6 +13,7 @@ import org.openas2.cmd.CommandResult;
 import org.openas2.util.ByteCoder;
 
 public class ImportCertInEncodedStreamCommand extends AliasedCertCommand {
+
 	public String getDefaultDescription() {
 		return "Import a certificate into the current certificate store using an encoded byte stream";
 	}
@@ -44,9 +45,9 @@ public class ImportCertInEncodedStreamCommand extends AliasedCertCommand {
 	protected CommandResult importCert(AliasedCertificateFactory certFx,
 			String alias, String encodedCert) throws IOException,
 			CertificateException, OpenAS2Exception {
-		
+
 		ByteArrayInputStream bais = new ByteArrayInputStream(ByteCoder.decode(encodedCert).getBytes());
-		
+
 		java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory
 				.getInstance("X.509");
 
@@ -68,6 +69,5 @@ public class ImportCertInEncodedStreamCommand extends AliasedCertCommand {
 		return new CommandResult(CommandResult.TYPE_ERROR,
 				"No valid X509 certificates found");
 	}
-
 
 }

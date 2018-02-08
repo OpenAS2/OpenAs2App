@@ -16,136 +16,114 @@ import org.openas2.util.CommandTokenizer;
 /**
  * original author unknown
  * <p>
- * in this release made the process a thread so it can be shared with other command processors like
- * the SocketCommandProcessor
- * created innerclass CommandTokenizer so it could handle quotes and spaces within quotes
+ * in this release made the process a thread so it can be shared with other
+ * command processors like the SocketCommandProcessor created innerclass
+ * CommandTokenizer so it could handle quotes and spaces within quotes
  *
  * @author joseph mcverry
  */
 public class StreamCommandProcessor extends BaseCommandProcessor {
-    public static final String COMMAND_NOT_FOUND = "Error: command not found";
-    public static final String COMMAND_ERROR = "Error executing command";
-    public static final String EXIT_COMMAND = "exit";
-    public static final String PROMPT = "#>";
-    private BufferedReader reader = null;
-    private BufferedWriter writer = null;
 
-    public StreamCommandProcessor()
-    {
-        reader = new BufferedReader(new InputStreamReader(System.in));
-        writer = new BufferedWriter(new OutputStreamWriter(System.out));
-    }
+	public static final String COMMAND_NOT_FOUND = "Error: command not found";
+	public static final String COMMAND_ERROR = "Error executing command";
+	public static final String EXIT_COMMAND = "exit";
+	public static final String PROMPT = "#>";
+	private BufferedReader reader = null;
+	private BufferedWriter writer = null;
 
-    public BufferedReader getReader()
-    {
-        return reader;
-    }
+	public StreamCommandProcessor() {
+		reader = new BufferedReader(new InputStreamReader(System.in));
+		writer = new BufferedWriter(new OutputStreamWriter(System.out));
+	}
 
-    public BufferedWriter getWriter()
-    {
-        return writer;
-    }
+	public BufferedReader getReader() {
+		return reader;
+	}
 
-    public void processCommand() throws Exception
-    {
-        try
-        {
+	public BufferedWriter getWriter() {
+		return writer;
+	}
 
-            String str = readLine();
+	public void processCommand() throws Exception {
+		try {
 
-            if (str != null)
-            {
-                CommandTokenizer strTkn = new CommandTokenizer(str);
+			String str = readLine();
 
-                if (strTkn.hasMoreTokens())
-                {
-                    String commandName = strTkn.nextToken().toLowerCase();
+			if (str != null) {
+				CommandTokenizer strTkn = new CommandTokenizer(str);
 
-                    if (commandName.equals(EXIT_COMMAND))
-                    {
-                        terminate();
-                    } else
-                    {
-                        List<String> params = new ArrayList<String>();
+				if (strTkn.hasMoreTokens()) {
+					String commandName = strTkn.nextToken().toLowerCase();
 
-                        while (strTkn.hasMoreTokens())
-                        {
+					if (commandName.equals(EXIT_COMMAND)) {
+						terminate();
+					} else {
+						List<String> params = new ArrayList<String>();
 
-                            params.add(strTkn.nextToken());
-                        }
+						while (strTkn.hasMoreTokens()) {
 
-                        Command cmd = getCommand(commandName);
+							params.add(strTkn.nextToken());
+						}
 
-                        if (cmd != null)
-                        {
-                            CommandResult result = cmd
-                                    .execute(params.toArray());
+						Command cmd = getCommand(commandName);
 
-                            if (result.getType() == CommandResult.TYPE_OK)
-                            {
-                                writeLine(result.toString());
-                            } else
-                            {
-                                writeLine(COMMAND_ERROR);
-                                writeLine(result.getResult());
-                            }
-                        } else
-                        {
-                            writeLine(COMMAND_NOT_FOUND + "> " + commandName);
-                            List<Command> l = getCommands();
-                            writeLine("List of commands:");
-                            writeLine(EXIT_COMMAND);
-                            for (int i = 0; i < l.size(); i++)
-                            {
-                                cmd = l.get(i);
-                                writeLine(cmd.getName());
-                            }
-                        }
-                    }
-                }
+						if (cmd != null) {
+							CommandResult result = cmd
+									.execute(params.toArray());
 
-                write(PROMPT);
-            } else
-            {
-                try
-                {
-                    Thread.sleep(100);
-                } catch (InterruptedException e)
-                {
-                }
-            }
+							if (result.getType() == CommandResult.TYPE_OK) {
+								writeLine(result.toString());
+							} else {
+								writeLine(COMMAND_ERROR);
+								writeLine(result.getResult());
+							}
+						} else {
+							writeLine(COMMAND_NOT_FOUND + "> " + commandName);
+							List<Command> l = getCommands();
+							writeLine("List of commands:");
+							writeLine(EXIT_COMMAND);
+							for (int i = 0; i < l.size(); i++) {
+								cmd = l.get(i);
+								writeLine(cmd.getName());
+							}
+						}
+					}
+				}
 
-        } catch (IOException ioe)
-        {
-            throw new WrappedException(ioe);
-        }
-    }
+				write(PROMPT);
+			} else {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+				}
+			}
 
-    public String readLine() throws java.io.IOException
-    {
-        BufferedReader rd = getReader();
+		} catch (IOException ioe) {
+			throw new WrappedException(ioe);
+		}
+	}
 
-        return rd.readLine().trim();
-    }
+	public String readLine() throws java.io.IOException {
+		BufferedReader rd = getReader();
 
-    public void write(String text) throws java.io.IOException
-    {
-        BufferedWriter wr = getWriter();
-        wr.write(text);
-        wr.flush();
-    }
+		return rd.readLine().trim();
+	}
 
-    public void writeLine(String line) throws java.io.IOException
-    {
-        BufferedWriter wr = getWriter();
-        wr.write(line + "\r\n");
-        wr.flush();
-    }
+	public void write(String text) throws java.io.IOException {
+		BufferedWriter wr = getWriter();
+		wr.write(text);
+		wr.flush();
+	}
 
-    @Override
-    public void destroy() throws Exception
-    {
-        reader = null; // Cannot close System.in
-        super.destroy();
-    }
+	public void writeLine(String line) throws java.io.IOException {
+		BufferedWriter wr = getWriter();
+		wr.write(line + "\r\n");
+		wr.flush();
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		reader = null; // Cannot close System.in
+		super.destroy();
+	}
 }

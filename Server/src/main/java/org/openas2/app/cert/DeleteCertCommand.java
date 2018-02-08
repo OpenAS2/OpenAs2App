@@ -5,6 +5,7 @@ import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 
 public class DeleteCertCommand extends AliasedCertCommand {
+
 	public String getDefaultDescription() {
 		return "Delete the certificate and private key associated with an alias.";
 	}

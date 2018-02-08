@@ -7,12 +7,14 @@ import org.openas2.cmd.CommandResult;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 
-/** removes a partner entry in partnership store
- * 
+/**
+ * removes a partner entry in partnership store
+ *
  * @author joseph mcverry
  *
  */
 public class DeletePartnerCommand extends AliasedPartnershipsCommand {
+
 	public String getDefaultDescription() {
 		return "Delete the partnership associated with an name.";
 	}
@@ -46,9 +48,10 @@ public class DeletePartnerCommand extends AliasedPartnershipsCommand {
 				}
 			}
 
-			if (found == false)
+			if (found == false) {
 				return new CommandResult(CommandResult.TYPE_ERROR,
 						"Unknown partner name");
+			}
 
 			Iterator<Partnership> partnerships = partFx.getPartnerships().iterator();
 			boolean partnershipFound = false;

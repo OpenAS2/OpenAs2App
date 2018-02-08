@@ -8,10 +8,11 @@ import org.openas2.partner.RefreshablePartnershipFactory;
 
 /**
  * reloads the partnership store
- * 
+ *
  *
  */
 public class RefreshPartnershipsCommand extends BaseCommand {
+
 	public String getDefaultDescription() {
 		return "Refresh the current partnerships from storage";
 	}

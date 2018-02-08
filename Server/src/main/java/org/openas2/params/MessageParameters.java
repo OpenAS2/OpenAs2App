@@ -8,8 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.message.Message;
 
-
 public class MessageParameters extends ParameterParser {
+
 	public static final String KEY_SENDER = "sender";
 	public static final String KEY_RECEIVER = "receiver";
 	public static final String KEY_ATTRIBUTES = "attributes";
@@ -25,7 +25,7 @@ public class MessageParameters extends ParameterParser {
 	}
 
 	public void setParameter(String key, String value)
-		throws InvalidParameterException {
+			throws InvalidParameterException {
 		StringTokenizer keyParts = new StringTokenizer(key, ".", false);
 
 		if (keyParts.countTokens() != 2) {
@@ -69,17 +69,17 @@ public class MessageParameters extends ParameterParser {
 		} else if (area.equals(KEY_CONTENT_FILENAME) && areaID.equals("filename")) {
 			String filename = "noContentDispositionFilename";
 			String s = null;
-			try
-			{
+			try {
 				s = getTarget().extractPayloadFilename();
-			} catch (ParseException e)
-			{
+			} catch (ParseException e) {
 				logger.warn("Failed to extract filename from content-disposition: " + org.openas2.logging.Log.getExceptionMsg(e), e);
 			}
-			if (s == null || s.length() < 1)
+			if (s == null || s.length() < 1) {
 				s = getTarget().getPayloadFilename();
-			if (s != null && s.length() > 0)
+			}
+			if (s != null && s.length() > 0) {
 				return s;
+			}
 			return filename;
 		} else {
 			throw new InvalidParameterException("Invalid area in key", this, key, null);

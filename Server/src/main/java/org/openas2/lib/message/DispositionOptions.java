@@ -10,90 +10,90 @@ import org.openas2.lib.OpenAS2Exception;
  * Example: signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1 
  */
 public class DispositionOptions {
-    private String micAlgorithm;
-    private String micAlgorithmImportance;
-    private String protocol;
-    private String protocolImportance;
 
-    public DispositionOptions(String options) throws OpenAS2Exception {
-        parseOptions(options);
-    }
+	private String micAlgorithm;
+	private String micAlgorithmImportance;
+	private String protocol;
+	private String protocolImportance;
 
-    public void setMicAlgorithm(String micalg) {
-        this.micAlgorithm = micalg;
-    }
-    
-    public String getMicAlgorithm() {
-        return micAlgorithm;
-    }
+	public DispositionOptions(String options) throws OpenAS2Exception {
+		parseOptions(options);
+	}
 
-    public void setMicAlgorithmImportance(String micalgImportance) {
-        this.micAlgorithmImportance = micalgImportance;
-    }
+	public void setMicAlgorithm(String micalg) {
+		this.micAlgorithm = micalg;
+	}
 
-    public String getMicAlgorithmImportance() {
-        return micAlgorithmImportance;
-    }
+	public String getMicAlgorithm() {
+		return micAlgorithm;
+	}
 
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
+	public void setMicAlgorithmImportance(String micalgImportance) {
+		this.micAlgorithmImportance = micalgImportance;
+	}
 
-    public String getProtocol() {
-        return protocol;
-    }
+	public String getMicAlgorithmImportance() {
+		return micAlgorithmImportance;
+	}
 
-    public void setProtocolImportance(String protocolImportance) {
-        this.protocolImportance = protocolImportance;
-    }
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
+	}
 
-    public String getProtocolImportance() {
-        return protocolImportance;
-    }
+	public String getProtocol() {
+		return protocol;
+	}
 
-    public String makeOptions() {
-        StringBuffer options = new StringBuffer();
+	public void setProtocolImportance(String protocolImportance) {
+		this.protocolImportance = protocolImportance;
+	}
 
-        if ((getProtocolImportance() == null) && (getProtocol() == null) &&
-                (getMicAlgorithmImportance() == null) && (getMicAlgorithm() == null)) {
-            return new String("");
-        }
+	public String getProtocolImportance() {
+		return protocolImportance;
+	}
 
-        options.append("signed-receipt-protocol=").append(getProtocolImportance());
-        options.append(", ").append(getProtocol());
-        options.append("; signed-receipt-micalg=").append(getMicAlgorithmImportance());
-        options.append(", ").append(getMicAlgorithm());
+	public String makeOptions() {
+		StringBuffer options = new StringBuffer();
 
-        return options.toString();
-    }
-
-    public void parseOptions(String options) throws OpenAS2Exception {
-        setProtocolImportance(null);
-        setProtocol(null);
-        setMicAlgorithmImportance(null);
-        setMicAlgorithm(null);
-		if (options != null) {
-		
-        try {
-            StringTokenizer optionTokens = new StringTokenizer(options, "=,;", false);
-            if (optionTokens.countTokens() > 5) {
-            
-            optionTokens.nextToken();
-            setProtocolImportance(optionTokens.nextToken().trim());       
-                setProtocol(optionTokens.nextToken().trim());
-            optionTokens.nextToken();
-            setMicAlgorithmImportance(optionTokens.nextToken().trim()); 
-            setMicAlgorithm(optionTokens.nextToken().trim());
-               
-            
-            }
-        } catch (NoSuchElementException nsee) {
-            throw new OpenAS2Exception("Invalid disposition options format: " + options);
-        }
+		if ((getProtocolImportance() == null) && (getProtocol() == null)
+				&& (getMicAlgorithmImportance() == null) && (getMicAlgorithm() == null)) {
+			return new String("");
 		}
-    }
 
-    public String toString() {
-        return makeOptions();
-    }
+		options.append("signed-receipt-protocol=").append(getProtocolImportance());
+		options.append(", ").append(getProtocol());
+		options.append("; signed-receipt-micalg=").append(getMicAlgorithmImportance());
+		options.append(", ").append(getMicAlgorithm());
+
+		return options.toString();
+	}
+
+	public void parseOptions(String options) throws OpenAS2Exception {
+		setProtocolImportance(null);
+		setProtocol(null);
+		setMicAlgorithmImportance(null);
+		setMicAlgorithm(null);
+		if (options != null) {
+
+			try {
+				StringTokenizer optionTokens = new StringTokenizer(options, "=,;", false);
+				if (optionTokens.countTokens() > 5) {
+
+					optionTokens.nextToken();
+					setProtocolImportance(optionTokens.nextToken().trim());
+					setProtocol(optionTokens.nextToken().trim());
+					optionTokens.nextToken();
+					setMicAlgorithmImportance(optionTokens.nextToken().trim());
+					setMicAlgorithm(optionTokens.nextToken().trim());
+
+				}
+			} catch (NoSuchElementException nsee) {
+				throw new OpenAS2Exception("Invalid disposition options format: " + options);
+			}
+		}
+	}
+
+	public String toString() {
+		return makeOptions();
+	}
 }

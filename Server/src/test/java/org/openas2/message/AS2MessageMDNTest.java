@@ -16,25 +16,23 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class AS2MessageMDNTest {
 
-    @Mock
-    private AS2Message message;
-    @Mock
-    private Partnership partnership;
+	@Mock
+	private AS2Message message;
+	@Mock
+	private Partnership partnership;
 
-    @Before
-    public void setUp() throws Exception
-    {
-        when(message.getPartnership()).thenReturn(partnership);
-        when(partnership.getReceiverID(eq(AS2Partnership.PID_AS2))).thenReturn("receiverId");
-        when(partnership.getSenderID(eq(AS2Partnership.PID_AS2))).thenReturn("senderId");
-        when(message.getPartnership().getAttribute(eq(AS2Partnership.PA_MESSAGEID)))
-        .thenReturn("OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.1234$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
-    }
+	@Before
+	public void setUp() throws Exception {
+		when(message.getPartnership()).thenReturn(partnership);
+		when(partnership.getReceiverID(eq(AS2Partnership.PID_AS2))).thenReturn("receiverId");
+		when(partnership.getSenderID(eq(AS2Partnership.PID_AS2))).thenReturn("senderId");
+		when(message.getPartnership().getAttribute(eq(AS2Partnership.PA_MESSAGEID)))
+				.thenReturn("OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.1234$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
+	}
 
-    @Test
-    public void shouldGenerateMessageId() throws Exception
-    {
-        String messageId = new AS2MessageMDN(message, false).generateMessageID();
-        assertThat("Check " + messageId, messageId.matches("^OPENAS2-[0-9]{14}\\+[0-9]{4}-[0-9]{4}@senderId_receiverId"), is(true));
-    }
+	@Test
+	public void shouldGenerateMessageId() throws Exception {
+		String messageId = new AS2MessageMDN(message, false).generateMessageID();
+		assertThat("Check " + messageId, messageId.matches("^OPENAS2-[0-9]{14}\\+[0-9]{4}-[0-9]{4}@senderId_receiverId"), is(true));
+	}
 }

@@ -27,31 +27,30 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 @RunWith(MockitoJUnitRunner.class)
 public class FileMonitorTest {
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
-    @Mock
-    private FileMonitorListener listener;
+	@Rule
+	public TemporaryFolder temp = new TemporaryFolder();
+	@Mock
+	private FileMonitorListener listener;
 
-    @Test
-    public void shouldTriggerListenersWhenFileChanged() throws Exception
-    {
-        File fileToObserve = Mockito.spy(temp.newFile());
+	@Test
+	public void shouldTriggerListenersWhenFileChanged() throws Exception {
+		File fileToObserve = Mockito.spy(temp.newFile());
 
-        FileMonitor fileMonitor = new FileMonitor(fileToObserve, listener);
-        verifyZeroInteractions(listener);
+		FileMonitor fileMonitor = new FileMonitor(fileToObserve, listener);
+		verifyZeroInteractions(listener);
 
-        fileMonitor.run();
-        verifyZeroInteractions(listener);
+		fileMonitor.run();
+		verifyZeroInteractions(listener);
 
-        FileUtils.write(fileToObserve, RandomStringUtils.randomAlphanumeric(1024), "UTF-8");
-        doReturn(new Date().getTime() + 3).when(fileToObserve).lastModified();
-        fileMonitor.run();
+		FileUtils.write(fileToObserve, RandomStringUtils.randomAlphanumeric(1024), "UTF-8");
+		doReturn(new Date().getTime() + 3).when(fileToObserve).lastModified();
+		fileMonitor.run();
 
-        verify(listener).onFileEvent(eq(fileToObserve), eq(FileMonitorListener.EVENT_MODIFIED));
-        reset(listener);
+		verify(listener).onFileEvent(eq(fileToObserve), eq(FileMonitorListener.EVENT_MODIFIED));
+		reset(listener);
 
-        fileMonitor.run();
-        verifyZeroInteractions(listener);
+		fileMonitor.run();
+		verifyZeroInteractions(listener);
 
-    }
+	}
 }

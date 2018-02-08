@@ -32,13 +32,13 @@ import org.openas2.support.FileMonitorListener;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Node;
 
-
-/** 
+/**
  * @author Luc Guinchard
  *
  */
-public class DBPartnershipFactory extends BasePartnershipFactory 
-	implements RefreshablePartnershipFactory {
+public class DBPartnershipFactory extends BasePartnershipFactory
+		implements RefreshablePartnershipFactory {
+
 	private static final Log LOGGER = LogFactory.getLog(DBPartnershipFactory.class.getSimpleName());
 	public static final String PARAM_INTERVAL = "interval";
 	public static final String PARAM_TABLE_PARTNER = "table_partner";
@@ -68,7 +68,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 	public static final String PARAM_PARTNERSHIP_FIELD_NO_SET_TRANSFER_ENCODING_FOR_ENCRYPTION = "partnerfield_no_set_transfer_encoding_for_encryption";
 	public static final String PARAM_PARTNERSHIP_FIELD_RENAME_DIGEST_TO_OLD_NAME = "partnerfield_rename_digest_to_old_name";
 	public static final String PARAM_PARTNERSHIP_FIELD_REMOVE_CMS_ALGORITHM_PROTECTION_ATTRIB = "partnerfield_remove_cms_algorithm_protection_attrib";
-	
+
 	private FileMonitor fileMonitor;
 
 	public void setFileMonitor(FileMonitor fileMonitor) {
@@ -172,7 +172,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 	public String getPaternshipFieldResendMaxRetries() throws InvalidParameterException {
 		return getParameter(PARAM_PARTNERSHIP_FIELD_RESEND_MAX_RETRIES, AS2Partnership.PA_RESEND_MAX_RETRIES);
 	}
-	
+
 	public String getPaternshipFieldPrecentCanonicalizationForMic() throws InvalidParameterException {
 		return getParameter(PARAM_PARTNERSHIP_FIELD_PREVENT_CANONICALIZATION_FOR_MIC, AS2Partnership.PA_PREVENT_CANONICALIZATION_FOR_MIC);
 	}
@@ -237,7 +237,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 	}
 
 	protected void load()
-		throws IOException, OpenAS2Exception, SQLException {
+			throws IOException, OpenAS2Exception, SQLException {
 		Map newPartners = new HashMap();
 		List newPartnerships = new ArrayList();
 
@@ -248,18 +248,19 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 			connexion = dBFactory.getConnection();
 			Statement statement = connexion.createStatement();
 			LOGGER.debug("Table: " + getTablePartner());
-			try{
-				ResultSet resultat = statement.executeQuery( "SELECT " + getPaternFieldName() + ", " + getPaternFieldAs2Id() + ", " + getPaternFieldEmail() + ", " + getPaternFieldX509Alias() + " FROM " + getTablePartner() + ";" );
+			try {
+				ResultSet resultat = statement.executeQuery("SELECT " + getPaternFieldName() + ", " + getPaternFieldAs2Id() + ", " + getPaternFieldEmail() + ", " + getPaternFieldX509Alias() + " FROM " + getTablePartner() + ";");
 				while (resultat.next()) {
 					Properties properties = new Properties();
 					properties.put(AS2Partnership.PID_AS2, resultat.getString(getPaternFieldAs2Id()));
 					String email = resultat.getString(getPaternFieldEmail());
-					if(email != null)
+					if (email != null) {
 						properties.put(Partnership.PID_EMAIL, email);
+					}
 					properties.put(SecurePartnership.PID_X509_ALIAS, resultat.getString(getPaternFieldX509Alias()));
 					newPartners.put(resultat.getString(getPaternFieldName()), properties);
 				}
-			} catch ( SQLException e ) {
+			} catch (SQLException e) {
 				LOGGER.error("Error in module " + getClass().getName());
 				LOGGER.error(e.getMessage());
 				StringBuilder builder = new StringBuilder("\n------ CREATE TABLE ------").append("\n");
@@ -294,7 +295,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 						+ getPaternshipFieldMDNSubject() + ", "
 						+ getPaternshipFieldAs2Url() + ", "
 						+ getPaternshipFieldAs2MdnTo() + ", "
-						+ getPaternshipFieldAs2ReceiptOption()+ ", "
+						+ getPaternshipFieldAs2ReceiptOption() + ", "
 						+ getPaternshipFieldAs2MdnOption() + ", "
 						+ getPaternshipFieldEncrypt() + ", "
 						+ getPaternshipFieldSign() + ", "
@@ -304,7 +305,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 						+ getPaternshipFieldNoSetTransfertEncodingForEncryption() + ", "
 						+ getPaternshipFieldRenameDigestToOldName() + ", "
 						+ getPaternshipFieldRemoveProtectionAttrib()
-						+ " FROM " + getTablePartnership()+ ";" );
+						+ " FROM " + getTablePartnership() + ";");
 				while (resultat.next()) {
 					Partnership partnership = new Partnership();
 					String sender = resultat.getString(getPaternshipFieldSender());
@@ -349,20 +350,19 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 				builder.append("  `").append(getPaternshipFieldReceiver()).append("` VARCHAR(60) NOT NULL,").append("\n");
 
 				builder.append("  `").append(getPaternshipFieldProtocol()).append("` ENUM('" + IPartner.ATTRIBUTE_AS1ID + "', '" + IPartner.ATTRIBUTE_AS2ID + "') NOT NULL  DEFAULT '" + IPartner.ATTRIBUTE_AS2ID + "',").append("\n");
-				
+
 				builder.append("  `").append(getPaternshipContentTransferEncoding()).append("` VARCHAR(30) NOT NULL DEFAULT '").append(ICryptoHelper.CONTENT_TRANSFER_ENCODING_8BIT).append("',").append("\n");
-				
+
 				builder.append("  `").append(getPaternshipFieldCompressionType()).append("` ENUM('" + ICryptoHelper.COMPRESSION_ZLIB + "') DEFAULT NULL,").append("\n");
 				builder.append("  `").append(getPaternshipFieldCompressionMode()).append("` ENUM('" + ICryptoHelper.COMPRESSION_BEFORE_SIGNING + "', '" + ICryptoHelper.COMPRESSION_AFTER_SIGNING + "') NOT NULL DEFAULT '" + ICryptoHelper.COMPRESSION_BEFORE_SIGNING + "',").append("\n");
 				builder.append("  `").append(getPaternshipFieldSubject()).append("` VARCHAR(255) NULL,").append("\n");
 				builder.append("  `").append(getPaternshipFieldMDNSubject()).append("` VARCHAR(255) NULL,").append("\n");
-				
-				
+
 				builder.append("  `").append(getPaternshipFieldAs2Url()).append("` VARCHAR(255) NULL,").append("\n");
 				builder.append("  `").append(getPaternshipFieldAs2MdnTo()).append("` VARCHAR(255) NULL,").append("\n");
 				builder.append("  `").append(getPaternshipFieldAs2ReceiptOption()).append("` VARCHAR(255) NULL,").append("\n");
 				builder.append("  `").append(getPaternshipFieldAs2MdnOption()).append("` VARCHAR(255) NULL,").append("\n");
-				
+
 				builder.append("  `").append(getPaternshipFieldEncrypt()).append("` ENUM("
 						+ "'" + ICryptoHelper.CRYPT_3DES + "'"
 						+ ", '" + ICryptoHelper.CRYPT_CAST5 + "'"
@@ -383,7 +383,6 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 						+ ", '" + ICryptoHelper.DIGEST_SHA384 + "'"
 						+ ", '" + ICryptoHelper.DIGEST_SHA512 + "'"
 						+ ") NOT NULL  DEFAULT '" + ICryptoHelper.DIGEST_SHA256 + "',").append("\n");
-
 
 				builder.append("  `").append(getPaternshipFieldResendMaxRetries()).append("` SMALLINT UNSIGNED NOT NULL,").append("\n");
 				builder.append("  `").append(getPaternshipFieldPrecentCanonicalizationForMic()).append("` BOOLEAN NOT NULL,").append("\n");
@@ -422,10 +421,10 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 				LOGGER.info(builder);
 				throw e;
 			}
-		} catch(SQLException e) {
+		} catch (SQLException e) {
 			LOGGER.error("Error in module " + getClass().getName());
 			throw e;
-			
+
 		} finally {
 //			if ( connexion != null )
 //				try {
@@ -442,14 +441,14 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 	}
 
 	protected void loadAttributes(Node node, Partnership partnership)
-		throws OpenAS2Exception {
+			throws OpenAS2Exception {
 		Map nodes = XMLUtil.mapAttributeNodes(node.getChildNodes(), "attribute", "name", "value");
 
 		partnership.getAttributes().putAll(nodes);
 	}
 
 	public void loadPartner(Map partners, Node node)
-		throws OpenAS2Exception {
+			throws OpenAS2Exception {
 		String[] requiredAttributes = {"name"};
 
 		Map newPartner = XMLUtil.mapAttributes(node, requiredAttributes);
@@ -462,10 +461,8 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 		partners.put(name, newPartner);
 	}
 
-
-
 	protected void loadPartnerIDs(Map partners, String partnershipName, Node partnershipNode,
-		String partnerType, Map idMap) throws OpenAS2Exception {
+			String partnerType, Map idMap) throws OpenAS2Exception {
 		Node partnerNode = XMLUtil.findChildNode(partnershipNode, partnerType);
 
 		if (partnerNode == null) {
@@ -481,8 +478,8 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 			Map partner = (Map) partners.get(partnerName);
 
 			if (partner == null) {
-				throw new OpenAS2Exception("Partnership " + partnershipName + " has an undefined " +
-					partnerType + ": " + partnerName);
+				throw new OpenAS2Exception("Partnership " + partnershipName + " has an undefined "
+						+ partnerType + ": " + partnerName);
 			}
 
 			idMap.putAll(partner);
@@ -493,7 +490,7 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 	}
 
 	public void loadPartnership(Map partners, List partnerships, Node node)
-		throws OpenAS2Exception {
+			throws OpenAS2Exception {
 		Partnership partnership = new Partnership();
 		String[] requiredAttributes = {"name"};
 
@@ -518,21 +515,21 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 	}
 
 	public void storePartnership()
-	throws OpenAS2Exception {
+			throws OpenAS2Exception {
 		String fn = "host";
-
 
 		DecimalFormat df = new DecimalFormat("0000000");
 		long l = 0;
 		File f = null;
 		while (true) {
-			f = new File(fn+'.'+df.format(l));
-			if (f.exists() == false)
+			f = new File(fn + '.' + df.format(l));
+			if (f.exists() == false) {
 				break;
+			}
 			l++;
 		}
 
-		LOGGER.info("backing up "+ fn +" to "+ f.getName());
+		LOGGER.info("backing up " + fn + " to " + f.getName());
 
 		File fr = new File(fn);
 		fr.renameTo(f);
@@ -548,32 +545,33 @@ public class DBPartnershipFactory extends BasePartnershipFactory
 				Iterator attrIt = partnerMap.entrySet().iterator();
 				while (attrIt.hasNext()) {
 					Map.Entry attribute = (Map.Entry) attrIt.next();
-					pw.print(attribute.getKey()+"=\""+attribute.getValue()+"\"");
-					if (attrIt.hasNext())
+					pw.print(attribute.getKey() + "=\"" + attribute.getValue() + "\"");
+					if (attrIt.hasNext()) {
 						pw.print("\n           ");
+					}
 				}
 				pw.println("/>");
-		}
-		List partnerShips = getPartnerships();
-		ListIterator partnerLIt = (ListIterator) partnerShips.listIterator();
-		while (partnerLIt.hasNext()) {
-			Partnership partnership = (Partnership) partnerLIt.next();
-			pw.println("  <partnership name=\""+partnership.getName()+"\">");
-			pw.println("    <sender name=\""+ partnership.getSenderIDs().get("name")+"\"/>");
-			pw.println("    <receiver name=\""+ partnership.getReceiverIDs().get("name")+"\"/>");
-			Map partnershipMap = partnership.getAttributes();
-
-			Iterator partnershipIt = partnershipMap.entrySet().iterator();
-			while (partnershipIt.hasNext()) {
-				Map.Entry partnershipData = (Map.Entry) partnershipIt.next();
-					pw.println("    <attribute name=\""+partnershipData.getKey()+"\" value=\""+partnershipData.getValue()+"\"/>" );
-
 			}
-			pw.println("  </partnership>");
-		}
-		pw.println("</partnerships>");
-		pw.flush();
-		pw.close();
+			List partnerShips = getPartnerships();
+			ListIterator partnerLIt = (ListIterator) partnerShips.listIterator();
+			while (partnerLIt.hasNext()) {
+				Partnership partnership = (Partnership) partnerLIt.next();
+				pw.println("  <partnership name=\"" + partnership.getName() + "\">");
+				pw.println("    <sender name=\"" + partnership.getSenderIDs().get("name") + "\"/>");
+				pw.println("    <receiver name=\"" + partnership.getReceiverIDs().get("name") + "\"/>");
+				Map partnershipMap = partnership.getAttributes();
+
+				Iterator partnershipIt = partnershipMap.entrySet().iterator();
+				while (partnershipIt.hasNext()) {
+					Map.Entry partnershipData = (Map.Entry) partnershipIt.next();
+					pw.println("    <attribute name=\"" + partnershipData.getKey() + "\" value=\"" + partnershipData.getValue() + "\"/>");
+
+				}
+				pw.println("  </partnership>");
+			}
+			pw.println("</partnerships>");
+			pw.flush();
+			pw.close();
 		} catch (FileNotFoundException e) {
 			throw new WrappedException(e);
 		}

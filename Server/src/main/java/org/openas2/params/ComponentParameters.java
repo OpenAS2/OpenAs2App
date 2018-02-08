@@ -2,8 +2,8 @@ package org.openas2.params;
 
 import org.openas2.Component;
 
-public class ComponentParameters extends ParameterParser
-{
+public class ComponentParameters extends ParameterParser {
+
 	public static final String KEY_COMPONENT_PARAMETER = "component";
 	private Component target;
 
@@ -12,9 +12,9 @@ public class ComponentParameters extends ParameterParser
 		this.target = target;
 	}
 
-    public void setParameter(String key, String value) throws InvalidParameterException {
-        throw new InvalidParameterException("Set not supported", this, key, value);
-    }
+	public void setParameter(String key, String value) throws InvalidParameterException {
+		throw new InvalidParameterException("Set not supported", this, key, value);
+	}
 
 	public String getParameter(String key) throws InvalidParameterException {
 		if (key != null) {

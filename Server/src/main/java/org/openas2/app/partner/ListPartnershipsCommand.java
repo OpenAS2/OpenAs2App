@@ -10,11 +10,12 @@ import org.openas2.partner.PartnershipFactory;
 
 /**
  * list partnerships in partnership store by names
- * 
+ *
  * @author joseph mcverry
- * 
+ *
  */
 public class ListPartnershipsCommand extends AliasedPartnershipsCommand {
+
 	public String getDefaultDescription() {
 		return "List all partnerships in the current partnership store";
 	}

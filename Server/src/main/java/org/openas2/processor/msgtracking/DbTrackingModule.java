@@ -22,8 +22,8 @@ import org.openas2.params.ParameterParser;
 import org.openas2.util.DateUtil;
 import org.openas2.util.Properties;
 
-public class DbTrackingModule extends BaseMsgTrackingModule
-{
+public class DbTrackingModule extends BaseMsgTrackingModule {
+
 	public static final String PARAM_TCP_SERVER_START = "tcp_server_start";
 	public static final String PARAM_TCP_SERVER_PORT = "tcp_server_port";
 	public static final String PARAM_TCP_SERVER_PWD = "tcp_server_password";
@@ -56,8 +56,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 
 	private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
 
-	public void init(Session session, Map<String, String> options) throws OpenAS2Exception
-	{
+	public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
 		super.init(session, options);
 		CompositeParameters paramParser = createParser();
 		dbUser = getParameter(PARAM_DB_USER, true);
@@ -74,15 +73,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		sqlEscapeChar = Properties.getProperty("sql_escape_character", "'");
 		useEmbeddedDB = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "true"));
 		forceLoadJdbcDriver = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "false"));
-		if (!useEmbeddedDB && forceLoadJdbcDriver)
-		{
-			try
-			{
+		if (!useEmbeddedDB && forceLoadJdbcDriver) {
+			try {
 
 				Class.forName(jdbcDriver);
 
-			} catch (ClassNotFoundException e)
-			{
+			} catch (ClassNotFoundException e) {
 
 				logger.error("Failed to load JDBC driver: " + jdbcDriver, e);
 				e.printStackTrace();
@@ -91,76 +87,69 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			}
 		}
 		Connection conn = null;
-		try
-		{
-			if (useEmbeddedDB)
+		try {
+			if (useEmbeddedDB) {
 				conn = dbHandler.getConnection();
-			else
-			{
+			} else {
 				conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
 			}
 			Statement statement = conn.createStatement();
-			ResultSet resultat = statement.executeQuery( "SELECT 1 FROM `" + dbTable + "` LIMIT 1;" );
+			ResultSet resultat = statement.executeQuery("SELECT 1 FROM `" + dbTable + "` LIMIT 1;");
 			while (resultat.next()) {
 			}
-			
-		} catch ( SQLException e ) {
-				logger.error("Error in module " + getClass().getName());
-				logger.error(e.getMessage());
-				StringBuilder builder = new StringBuilder("\n------ CREATE TABLE ------").append("\n");
-				builder.append("CREATE TABLE `").append(dbTable).append("` (").append("\n")
-				.append("`ID` int(11) NOT NULL AUTO_INCREMENT,\n")
-				.append("`MSG_ID` longtext NOT NULL,\n")
-				.append("`MDN_ID` longtext,\n")
-				.append("`DIRECTION` varchar(25) DEFAULT NULL,\n")
-				.append("`IS_RESEND` varchar(1) DEFAULT 'N',\n")
-				.append("`RESEND_COUNT` int(11) DEFAULT '0',\n")
-				.append("`SENDER_ID` varchar(255) NOT NULL,\n")
-				.append("`RECEIVER_ID` varchar(255) NOT NULL,\n")
-				.append("`STATUS` varchar(255) DEFAULT NULL,\n")
-				.append("`STATE` varchar(255) DEFAULT NULL,\n")
-				.append("`SIGNATURE_ALGORITHM` varchar(255) DEFAULT NULL,\n")
-				.append("`ENCRYPTION_ALGORITHM` varchar(255) DEFAULT NULL,\n")
-				.append("`COMPRESSION` varchar(255) DEFAULT NULL,\n")
-				.append("`FILE_NAME` varchar(255) DEFAULT NULL,\n")
-				.append("`CONTENT_TYPE` varchar(255) DEFAULT NULL,\n")
-				.append("`CONTENT_TRANSFER_ENCODING` varchar(255) DEFAULT NULL,\n")
-				.append("`MDN_MODE` varchar(255) DEFAULT NULL,\n")
-				.append("`MDN_RESPONSE` longtext,\n")
-				.append("`STATE_MSG` longtext,\n")
-				.append("`CREATE_DT` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n")
-				.append("`UPDATE_DT` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',\n")
-				.append("PRIMARY KEY (`ID`)\n")
-				.append(") ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1\n");
 
-				builder.append("------------").append("\n");
-				logger.info(builder);
-				throw new OpenAS2Exception(e.getMessage());
-			}
+		} catch (SQLException e) {
+			logger.error("Error in module " + getClass().getName());
+			logger.error(e.getMessage());
+			StringBuilder builder = new StringBuilder("\n------ CREATE TABLE ------").append("\n");
+			builder.append("CREATE TABLE `").append(dbTable).append("` (").append("\n")
+					.append("`ID` int(11) NOT NULL AUTO_INCREMENT,\n")
+					.append("`MSG_ID` longtext NOT NULL,\n")
+					.append("`MDN_ID` longtext,\n")
+					.append("`DIRECTION` varchar(25) DEFAULT NULL,\n")
+					.append("`IS_RESEND` varchar(1) DEFAULT 'N',\n")
+					.append("`RESEND_COUNT` int(11) DEFAULT '0',\n")
+					.append("`SENDER_ID` varchar(255) NOT NULL,\n")
+					.append("`RECEIVER_ID` varchar(255) NOT NULL,\n")
+					.append("`STATUS` varchar(255) DEFAULT NULL,\n")
+					.append("`STATE` varchar(255) DEFAULT NULL,\n")
+					.append("`SIGNATURE_ALGORITHM` varchar(255) DEFAULT NULL,\n")
+					.append("`ENCRYPTION_ALGORITHM` varchar(255) DEFAULT NULL,\n")
+					.append("`COMPRESSION` varchar(255) DEFAULT NULL,\n")
+					.append("`FILE_NAME` varchar(255) DEFAULT NULL,\n")
+					.append("`CONTENT_TYPE` varchar(255) DEFAULT NULL,\n")
+					.append("`CONTENT_TRANSFER_ENCODING` varchar(255) DEFAULT NULL,\n")
+					.append("`MDN_MODE` varchar(255) DEFAULT NULL,\n")
+					.append("`MDN_RESPONSE` longtext,\n")
+					.append("`STATE_MSG` longtext,\n")
+					.append("`CREATE_DT` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n")
+					.append("`UPDATE_DT` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',\n")
+					.append("PRIMARY KEY (`ID`)\n")
+					.append(") ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1\n");
+
+			builder.append("------------").append("\n");
+			logger.info(builder);
+			throw new OpenAS2Exception(e.getMessage());
+		}
 	}
 
-	protected String getModuleAction()
-	{
+	protected String getModuleAction() {
 		return DO_TRACK_MSG;
 	}
 
-	protected CompositeParameters createParser()
-	{
+	protected CompositeParameters createParser() {
 		CompositeParameters params = new CompositeParameters(true);
 
 		params.add("component", new ComponentParameters(this));
 		return params;
 	}
 
-	protected void persist(Message msg, Map<String, String> map)
-	{
+	protected void persist(Message msg, Map<String, String> map) {
 		Connection conn = null;
-		try
-		{
-			if (useEmbeddedDB)
+		try {
+			if (useEmbeddedDB) {
 				conn = dbHandler.getConnection();
-			else
-			{
+			} else {
 				conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
 			}
 			Statement s = conn.createStatement();
@@ -171,80 +160,67 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			boolean isUpdate = rs.next(); // Record already exists so update
 			StringBuffer fieldStmt = new StringBuffer();
 			StringBuffer valuesStmt = new StringBuffer();
-			for (int i = 0; i < meta.getColumnCount(); i++)
-			{
+			for (int i = 0; i < meta.getColumnCount(); i++) {
 				String colName = meta.getColumnLabel(i + 1);
-				if (colName.equalsIgnoreCase("ID"))
+				if (colName.equalsIgnoreCase("ID")) {
 					continue;
-				else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT))
-				{
+				} else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT)) {
 					// Ignore if not update mode
-					if (isUpdate)
+					if (isUpdate) {
 						appendFieldForUpdate(colName, DateUtil.getSqlTimestamp(), fieldStmt, meta.getColumnType(i + 1));
-				} else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT))
+					}
+				} else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT)) {
 					map.remove(FIELDS.CREATE_DT);
-				else if (isUpdate)
-				{
+				} else if (isUpdate) {
 					// Only write unchanged field values
 					String mapVal = map.get(colName.toUpperCase());
-					if (mapVal == null)
-					{
+					if (mapVal == null) {
 						continue;
 					}
 					String dbVal = rs.getString(colName);
-					if (dbVal != null && mapVal.equals(dbVal))
-					{
+					if (dbVal != null && mapVal.equals(dbVal)) {
 						// Unchanged value so remove from map
 						continue;
 					}
 					appendFieldForUpdate(colName, mapVal, fieldStmt, meta.getColumnType(i + 1));
-				} else
-				{
+				} else {
 					// For new record add every field that is not NULL
 					String mapVal = map.get(colName.toUpperCase());
-					if (mapVal == null)
-					{
+					if (mapVal == null) {
 						continue;
 					}
 					appendFieldForInsert(colName, mapVal, fieldStmt, valuesStmt, meta.getColumnType(i + 1));
 				}
 			}
-			if (fieldStmt.length() > 0)
-			{
+			if (fieldStmt.length() > 0) {
 				String stmt = "";
-				if (isUpdate)
-				{
+				if (isUpdate) {
 					stmt = "update " + dbTable + " set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
 							+ map.get(msgIdField) + "'";
-				} else
+				} else {
 					stmt = "insert into " + dbTable + " (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
-				if (s.executeUpdate(stmt) > 0)
-				{
-					if (logger.isDebugEnabled())
+				}
+				if (s.executeUpdate(stmt) > 0) {
+					if (logger.isDebugEnabled()) {
 						logger.debug("Tracking record successfully persisted to database: " + map);
-				} else
-				{
+					}
+				} else {
 					throw new OpenAS2Exception("Failed to persist tracking record to DB: " + map);
 				}
-			} else
-			{
-				if (logger.isInfoEnabled())
+			} else {
+				if (logger.isInfoEnabled()) {
 					logger.info("No change from existing record in DB. Tracking record not updated: " + map);
+				}
 			}
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.logging.Log.getExceptionMsg(e)
 					+ " ::: Data map: " + map);
 			logger.error(msg, e);
-		} finally
-		{
-			if (conn != null)
-			{
-				try
-				{
+		} finally {
+			if (conn != null) {
+				try {
 					conn.close();
-				} catch (SQLException e)
-				{
+				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -253,39 +229,39 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 
 	}
 
-	private String formatField(String value, int dataType)
-	{
-		if (value == null)
+	private String formatField(String value, int dataType) {
+		if (value == null) {
 			return "NULL";
-		switch (dataType)
-		{
-		case Types.BIGINT:
-		case Types.DECIMAL:
-		case Types.DOUBLE:
-		case Types.FLOAT:
-		case Types.INTEGER:
-		case Types.NUMERIC:
-		case Types.REAL:
-		case Types.SMALLINT:
-		case Types.BINARY:
-		case Types.TINYINT:
-		//case Types.ROWID:
-			return value;
-		case Types.TIME_WITH_TIMEZONE:
-		case Types.TIMESTAMP_WITH_TIMEZONE:
-		case Types.DATE:
-		case Types.TIME:
-		case Types.TIMESTAMP:
-			if ("oracle".equalsIgnoreCase(dbPlatform))
-			{
-				if (value.length() > 19)
-					return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
-				else
-					return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
-			} else if ("mssql".equalsIgnoreCase(dbPlatform))
-				return ("CAST('" + value + "' AS DATETIME)");
-			else
-				return "'" + value + "'";
+		}
+		switch (dataType) {
+			case Types.BIGINT:
+			case Types.DECIMAL:
+			case Types.DOUBLE:
+			case Types.FLOAT:
+			case Types.INTEGER:
+			case Types.NUMERIC:
+			case Types.REAL:
+			case Types.SMALLINT:
+			case Types.BINARY:
+			case Types.TINYINT:
+				//case Types.ROWID:
+				return value;
+			case Types.TIME_WITH_TIMEZONE:
+			case Types.TIMESTAMP_WITH_TIMEZONE:
+			case Types.DATE:
+			case Types.TIME:
+			case Types.TIMESTAMP:
+				if ("oracle".equalsIgnoreCase(dbPlatform)) {
+					if (value.length() > 19) {
+						return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
+					} else {
+						return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
+					}
+				} else if ("mssql".equalsIgnoreCase(dbPlatform)) {
+					return ("CAST('" + value + "' AS DATETIME)");
+				} else {
+					return "'" + value + "'";
+				}
 
 		}
 		// Must be some kind of string value if it gets here
@@ -293,19 +269,17 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 
 	}
 
-	private void appendFieldForUpdate(String name, String value, StringBuffer sb, int dataType)
-	{
-		if (sb.length() > 0)
+	private void appendFieldForUpdate(String name, String value, StringBuffer sb, int dataType) {
+		if (sb.length() > 0) {
 			sb.append(",");
+		}
 
 		sb.append(name).append("=").append(formatField(value, dataType));
 
 	}
 
-	private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values, int dataType)
-	{
-		if (names.length() > 0)
-		{
+	private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values, int dataType) {
+		if (names.length() > 0) {
 			names.append(",");
 			values.append(",");
 		}
@@ -315,62 +289,54 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 
 	}
 
-	public boolean isRunning()
-	{
-		if (useEmbeddedDB)
+	public boolean isRunning() {
+		if (useEmbeddedDB) {
 			return isRunning;
-		else
+		} else {
 			return true;
+		}
 	}
 
-	public void start() throws OpenAS2Exception
-	{
-		if (!useEmbeddedDB)
+	public void start() throws OpenAS2Exception {
+		if (!useEmbeddedDB) {
 			return;
+		}
 
 		dbHandler = new EmbeddedDBHandler();
 		dbHandler.start(jdbcConnectString, dbUser, dbPwd, getParameters());
 		isRunning = true;
 	}
 
-	public void stop()
-	{
-		if (!useEmbeddedDB)
+	public void stop() {
+		if (!useEmbeddedDB) {
 			return;
+		}
 
 		dbHandler.stop();
 	}
 
 	@Override
-	public boolean healthcheck(List<String> failures)
-	{
+	public boolean healthcheck(List<String> failures) {
 		Connection conn = null;
-		try
-		{
-			if (useEmbeddedDB)
+		try {
+			if (useEmbeddedDB) {
 				conn = dbHandler.getConnection();
-			else
-			{
+			} else {
 				conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
 			}
 			Statement s = conn.createStatement();
 			ResultSet rs = s.executeQuery(
 					"select count(*) from " + dbTable);
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			failures.add(this.getClass().getSimpleName()
 					+ " - Failed to check DB tracking module connection to DB: " + e.getMessage()
 					+ " :: Connect String: " + jdbcConnectString);
 			return false;
-		} finally
-		{
-			if (conn != null)
-			{
-				try
-				{
+		} finally {
+			if (conn != null) {
+				try {
 					conn.close();
-				} catch (Exception e)
-				{
+				} catch (Exception e) {
 				}
 			}
 		}

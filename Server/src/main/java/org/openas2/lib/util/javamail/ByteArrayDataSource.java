@@ -8,72 +8,73 @@ import java.io.OutputStream;
 
 import javax.activation.DataSource;
 
-
 public class ByteArrayDataSource implements DataSource {
-    String contentType;
-    String name;
-    byte[] bytes;
 
-    public ByteArrayDataSource(byte[] bytes, String contentType, String name) {
-        this.bytes = bytes;
+	String contentType;
+	String name;
+	byte[] bytes;
 
-        if (contentType == null) {
-            this.contentType = "application/octet-stream";
-        } else {
-            this.contentType = contentType;
-        }
+	public ByteArrayDataSource(byte[] bytes, String contentType, String name) {
+		this.bytes = bytes;
 
-        this.name = name;
-    }
+		if (contentType == null) {
+			this.contentType = "application/octet-stream";
+		} else {
+			this.contentType = contentType;
+		}
 
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
-    }
+		this.name = name;
+	}
 
-    public byte[] getBytes() {
-        return bytes;
-    }
+	public void setBytes(byte[] bytes) {
+		this.bytes = bytes;
+	}
 
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
+	public byte[] getBytes() {
+		return bytes;
+	}
 
-    public String getContentType() {
-        return contentType;
-    }
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
 
-    public InputStream getInputStream() {
-        return new ByteArrayInputStream(bytes, 0, bytes.length);
-    }
+	public String getContentType() {
+		return contentType;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public InputStream getInputStream() {
+		return new ByteArrayInputStream(bytes, 0, bytes.length);
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public OutputStream getOutputStream() throws IOException {
-        return new WrappedOutputStream(this);
-    }
-    
-    private class WrappedOutputStream extends ByteArrayOutputStream {
-        private ByteArrayDataSource owner;
+	public String getName() {
+		return name;
+	}
 
-        public WrappedOutputStream(ByteArrayDataSource owner) {
-            super();
-            this.owner = owner;
-        }
+	public OutputStream getOutputStream() throws IOException {
+		return new WrappedOutputStream(this);
+	}
 
-        public void close() {
-            if (getOwner() != null) {
-                getOwner().setBytes(toByteArray());
-            }
-        }
+	private class WrappedOutputStream extends ByteArrayOutputStream {
 
-        public ByteArrayDataSource getOwner() {
-            return owner;
-        }
-    }
+		private ByteArrayDataSource owner;
+
+		public WrappedOutputStream(ByteArrayDataSource owner) {
+			super();
+			this.owner = owner;
+		}
+
+		public void close() {
+			if (getOwner() != null) {
+				getOwner().setBytes(toByteArray());
+			}
+		}
+
+		public ByteArrayDataSource getOwner() {
+			return owner;
+		}
+	}
 }

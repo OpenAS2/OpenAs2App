@@ -12,38 +12,37 @@ import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
-
 public interface Message extends Serializable {
 
-    String MSG_STATUS_MSG_INIT = "initializing_msg";
-    String MSG_STATUS_MSG_SEND = "sending_msg";
-    String MSG_STATUS_MSG_RESEND = "resending_msg";
-    String MSG_STATUS_MDN_SEND = "sending_mdn";
-    String MSG_STATUS_MDN_WAIT = "awaiting_mdn";
-    String MSG_STATUS_MDN_PARSE = "parsing_mdn";
-    String MSG_STATUS_MDN_VERIFY = "verifying_mdn";
-    String MSG_STATUS_MDN_PROCESS_INIT = "init_processing_mdn";
-    String MSG_STATUS_MSG_CLEANUP = "cleanup";
+	String MSG_STATUS_MSG_INIT = "initializing_msg";
+	String MSG_STATUS_MSG_SEND = "sending_msg";
+	String MSG_STATUS_MSG_RESEND = "resending_msg";
+	String MSG_STATUS_MDN_SEND = "sending_mdn";
+	String MSG_STATUS_MDN_WAIT = "awaiting_mdn";
+	String MSG_STATUS_MDN_PARSE = "parsing_mdn";
+	String MSG_STATUS_MDN_VERIFY = "verifying_mdn";
+	String MSG_STATUS_MDN_PROCESS_INIT = "init_processing_mdn";
+	String MSG_STATUS_MSG_CLEANUP = "cleanup";
 
-    String MSG_STATE_SEND_START = "msg_send_start";
-    String MSG_STATE_SEND_EXCEPTION = "msg_send_exception";
-    String MSG_STATE_SEND_FAIL = "msg_send_fail";
-    String MSG_STATE_SEND_FAIL_RESEND_QUEUED = "msg_send_fail_resend_queued";
-    String MSG_STATE_RECEIVE_START = "msg_receive_start";
-    String MSG_STATE_RECEIVE_EXCEPTION = "msg_receive_exception";
-    String MSG_STATE_RECEIVE_FAIL = "msg_receive_fail";
-    String MSG_STATE_MDN_ERROR_RESPONSE_START = "msg_receive_error_sending_mdn_error";
-    String MSG_STATE_MDN_SENDING_EXCEPTION = "mdn_sending_exception";
-    String MSG_STATE_MDN_RECEIVING_EXCEPTION = "mdn_receiving_exception";
-    String MSG_STATE_MDN_SEND_START = "mdn_send_start";
-    String MSG_STATE_MDN_RECEIVE_START = "mdn_receive_start";
-    String MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR = "msg_sent_mdn_received_error";
-    String MSG_STATE_MSG_SENT_MDN_RECEIVED_OK = "msg_sent_mdn_received_ok";
-    String MSG_STATE_MSG_RXD_MDN_SENDING_FAIL = "msg_rxd_mdn_sending_fail";
-    String MSG_STATE_MSG_RXD_MDN_SENT_OK = "msg_rxd_mdn_sent_ok";
-    String MSG_STATE_MIC_MISMATCH = "msg_sent_mdn_received_mic_mismatch";
+	String MSG_STATE_SEND_START = "msg_send_start";
+	String MSG_STATE_SEND_EXCEPTION = "msg_send_exception";
+	String MSG_STATE_SEND_FAIL = "msg_send_fail";
+	String MSG_STATE_SEND_FAIL_RESEND_QUEUED = "msg_send_fail_resend_queued";
+	String MSG_STATE_RECEIVE_START = "msg_receive_start";
+	String MSG_STATE_RECEIVE_EXCEPTION = "msg_receive_exception";
+	String MSG_STATE_RECEIVE_FAIL = "msg_receive_fail";
+	String MSG_STATE_MDN_ERROR_RESPONSE_START = "msg_receive_error_sending_mdn_error";
+	String MSG_STATE_MDN_SENDING_EXCEPTION = "mdn_sending_exception";
+	String MSG_STATE_MDN_RECEIVING_EXCEPTION = "mdn_receiving_exception";
+	String MSG_STATE_MDN_SEND_START = "mdn_send_start";
+	String MSG_STATE_MDN_RECEIVE_START = "mdn_receive_start";
+	String MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR = "msg_sent_mdn_received_error";
+	String MSG_STATE_MSG_SENT_MDN_RECEIVED_OK = "msg_sent_mdn_received_ok";
+	String MSG_STATE_MSG_RXD_MDN_SENDING_FAIL = "msg_rxd_mdn_sending_fail";
+	String MSG_STATE_MSG_RXD_MDN_SENT_OK = "msg_rxd_mdn_sent_ok";
+	String MSG_STATE_MIC_MISMATCH = "msg_sent_mdn_received_mic_mismatch";
 
-    Map<String, String> STATE_MSGS = new HashMap<String, String>() {
+	Map<String, String> STATE_MSGS = new HashMap<String, String>() {
 		private static final long serialVersionUID = 5L;
 
 		{
@@ -69,114 +68,114 @@ public interface Message extends Serializable {
 		}
 	};
 
-    String SMIME_TYPE_COMPRESSED_DATA = "smime-type=compressed-data";
+	String SMIME_TYPE_COMPRESSED_DATA = "smime-type=compressed-data";
 
-    String getPayloadFilename();
+	String getPayloadFilename();
 
-    void setPayloadFilename(String filename);
+	void setPayloadFilename(String filename);
 
-    String extractPayloadFilename() throws ParseException;
+	String extractPayloadFilename() throws ParseException;
 
-    String getStatus();
+	String getStatus();
 
-    void setStatus(String status);
+	void setStatus(String status);
 
-    Map<String, String> getCustomOuterMimeHeaders();
+	Map<String, String> getCustomOuterMimeHeaders();
 
-    void setCustomOuterMimeHeaders(Map<String, String> customOuterMimeHeaders);
+	void setCustomOuterMimeHeaders(Map<String, String> customOuterMimeHeaders);
 
-    void addCustomOuterMimeHeader(String key, String value);
+	void addCustomOuterMimeHeader(String key, String value);
 
-    Map<Object, Object> getOptions();
+	Map<Object, Object> getOptions();
 
-    void setOption(Object key, Object value);
+	void setOption(Object key, Object value);
 
-    Object getOption(Object key);
+	Object getOption(Object key);
 
-    void setAttribute(String key, String value);
+	void setAttribute(String key, String value);
 
-    String getAttribute(String key);
+	String getAttribute(String key);
 
-    Map<String, String> getAttributes();
+	Map<String, String> getAttributes();
 
-    void setAttributes(Map<String, String> attributes);
+	void setAttributes(Map<String, String> attributes);
 
-    String getContentType();
+	String getContentType();
 
-    void setContentType(String contentType);
+	void setContentType(String contentType);
 
-    String getCompressionType();
+	String getCompressionType();
 
-    void setCompressionType(String compressionType);
+	void setCompressionType(String compressionType);
 
-    String getContentDisposition();
+	String getContentDisposition();
 
-    void setContentDisposition(String contentDisposition);
+	void setContentDisposition(String contentDisposition);
 
-    void setData(MimeBodyPart data, DataHistoryItem historyItem) throws OpenAS2Exception;
+	void setData(MimeBodyPart data, DataHistoryItem historyItem) throws OpenAS2Exception;
 
-    DataHistoryItem setData(MimeBodyPart data) throws OpenAS2Exception;
+	DataHistoryItem setData(MimeBodyPart data) throws OpenAS2Exception;
 
-    MimeBodyPart getData();
+	MimeBodyPart getData();
 
-    void setHeader(String key, String value);
+	void setHeader(String key, String value);
 
-    String getHeader(String key);
+	String getHeader(String key);
 
-    String getHeader(String key, String delimiter);
+	String getHeader(String key, String delimiter);
 
-    InternetHeaders getHeaders();
+	InternetHeaders getHeaders();
 
-    void setHeaders(InternetHeaders headers);
+	void setHeaders(InternetHeaders headers);
 
-    DataHistory getHistory();
+	DataHistory getHistory();
 
-    void setHistory(DataHistory history);
+	void setHistory(DataHistory history);
 
-    MessageMDN getMDN();
+	MessageMDN getMDN();
 
-    void setMDN(MessageMDN mdn);
+	void setMDN(MessageMDN mdn);
 
-    String getMessageID();
+	String getMessageID();
 
-    void setMessageID(String messageID);
+	void setMessageID(String messageID);
 
-    Partnership getPartnership();
+	Partnership getPartnership();
 
-    void setPartnership(Partnership partnership);
+	void setPartnership(Partnership partnership);
 
-    String getProtocol();
+	String getProtocol();
 
-    boolean isRequestingMDN();
+	boolean isRequestingMDN();
 
-    boolean isConfiguredForMDN();
+	boolean isConfiguredForMDN();
 
-    boolean isRequestingAsynchMDN();
+	boolean isRequestingAsynchMDN();
 
-    boolean isConfiguredForAsynchMDN();
+	boolean isConfiguredForAsynchMDN();
 
-    String getSubject();
+	String getSubject();
 
-    void setSubject(String subject);
+	void setSubject(String subject);
 
-    void addHeader(String key, String value);
+	void addHeader(String key, String value);
 
-    String generateMessageID() throws InvalidParameterException;
+	String generateMessageID() throws InvalidParameterException;
 
-    void updateMessageID() throws InvalidParameterException;
+	void updateMessageID() throws InvalidParameterException;
 
-    String getLogMsgID();
+	String getLogMsgID();
 
-    String getLogMsg();
+	String getLogMsg();
 
-    void setLogMsg(String msg);
+	void setLogMsg(String msg);
 
-    void trackMsgState(Session session);
+	void trackMsgState(Session session);
 
-    String getCalculatedMIC();
+	String getCalculatedMIC();
 
-    void setCalculatedMIC(String calculatedMIC);
+	void setCalculatedMIC(String calculatedMIC);
 
-    String getAppTitle();
+	String getAppTitle();
 
 }

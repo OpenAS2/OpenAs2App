@@ -9,10 +9,11 @@ import org.openas2.partner.PartnershipFactory;
 
 /**
  * view the partner entries in the partnership store
- * 
+ *
  * @author Joe McVerry
  */
 public class ViewPartnerCommand extends AliasedPartnershipsCommand {
+
 	public String getDefaultDescription() {
 		return "View the partner entry in the partnership store.";
 	}

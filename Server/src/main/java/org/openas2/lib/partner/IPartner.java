@@ -3,35 +3,36 @@ package org.openas2.lib.partner;
 import java.util.Map;
 
 public interface IPartner {
-    public static final String ATTRIBUTE_AS1ID = "as1";
-    public static final String ATTRIBUTE_AS2ID = "as2";
-    public static final String ATTRIBUTE_EDIID = "edi";
-    public static final String ATTRIBUTE_CERTIFICATE_ALIAS = "certificate";
-    public static final String ATTRIBUTE_CONTACT_EMAIL = "contact";
 
-    Map<String, String> getAttributes();
+	public static final String ATTRIBUTE_AS1ID = "as1";
+	public static final String ATTRIBUTE_AS2ID = "as2";
+	public static final String ATTRIBUTE_EDIID = "edi";
+	public static final String ATTRIBUTE_CERTIFICATE_ALIAS = "certificate";
+	public static final String ATTRIBUTE_CONTACT_EMAIL = "contact";
 
-    String getAttribute(String name);
+	Map<String, String> getAttributes();
 
-    void setAttribute(String name, String value);
+	String getAttribute(String name);
 
-    String getAs1Id();
+	void setAttribute(String name, String value);
 
-    void setAs1Id(String id);
+	String getAs1Id();
 
-    String getAs2Id();
+	void setAs1Id(String id);
 
-    void setAs2Id(String id);
+	String getAs2Id();
 
-    String getEdiId();
+	void setAs2Id(String id);
 
-    void setEdiId(String id);
+	String getEdiId();
 
-    String getCertificateAlias();
+	void setEdiId(String id);
 
-    void setCertificateAlias(String alias);
+	String getCertificateAlias();
 
-    String getContactEmail();
+	void setCertificateAlias(String alias);
 
-    void setContactEmail(String email);
+	String getContactEmail();
+
+	void setContactEmail(String email);
 }

@@ -21,55 +21,48 @@ import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.HTTPUtil;
 
 public class AS2MDNReceiverHandler implements NetModuleHandler {
-    private AS2MDNReceiverModule module;
 
-    private Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
+	private AS2MDNReceiverModule module;
 
-    
-    public AS2MDNReceiverHandler(AS2MDNReceiverModule module) {
-        super();
-        this.module = module;
-    }
+	private Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
 
-    public String getClientInfo(Socket s) {
-        return " " + s.getInetAddress().getHostAddress() + " " + Integer.toString(s.getPort());
-    }
+	public AS2MDNReceiverHandler(AS2MDNReceiverModule module) {
+		super();
+		this.module = module;
+	}
 
-    public AS2MDNReceiverModule getModule() {
-        return module;
-    }
+	public String getClientInfo(Socket s) {
+		return " " + s.getInetAddress().getHostAddress() + " " + Integer.toString(s.getPort());
+	}
 
-	public void handle(NetModule owner, Socket s)
-	{
-		if (logger.isInfoEnabled())
+	public AS2MDNReceiverModule getModule() {
+		return module;
+	}
+
+	public void handle(NetModule owner, Socket s) {
+		if (logger.isInfoEnabled()) {
 			logger.info("incoming connection" + " [" + getClientInfo(s) + "]");
+		}
 
 		AS2Message msg = new AS2Message();
-
 
 		msg.setOption("DIRECTION", "SEND");
 
 		byte[] data = null;
 
 		// Read in the message request, headers, and data
-		try
-		{
+		try {
 			data = HTTPUtil.readData(s.getInputStream(), s.getOutputStream(), msg);
-			if (data == null)
-			{
-				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck")))
-				{
-					if (logger.isInfoEnabled())
+			if (data == null) {
+				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck"))) {
+					if (logger.isInfoEnabled()) {
 						logger.info(msg.getLogMsgID() + " Healthcheck ping detected" + " [" + getClientInfo(s) + "]");
+					}
 					return;
-				}
-				else
-				{
-					try
-					{
+				} else {
+					try {
 						HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
-					} catch (IOException e1)
-					{
+					} catch (IOException e1) {
 					}
 					OpenAS2Exception oe = new OpenAS2Exception("Missing data in MDN response message");
 					msg.setLogMsg("Error receiving asynchronous MDN. There is no data.");
@@ -79,10 +72,12 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			}
 			// check if the requested URL is defined in attribute "as2_receipt_option"
 			// in one of partnerships, if yes, then process incoming AsyncMDN
-			if (logger.isInfoEnabled())
+			if (logger.isInfoEnabled()) {
 				logger.info(msg.getLogMsgID() + " incoming connection for receiving AsyncMDN" + " [" + getClientInfo(s) + "]");
-			if (logger.isTraceEnabled())
+			}
+			if (logger.isTraceEnabled()) {
 				logger.trace("Incoming ASYNC MDN message - Message struct: " + msg.toString());
+			}
 			ContentType receivedContentType;
 
 			MimeBodyPart receivedPart = new MimeBodyPart(msg.getHeaders(), data);
@@ -102,55 +97,47 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
 			msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
 			getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
-			
+
 			// Create a MessageMDN
 			MessageMDN mdn = new AS2MessageMDN(msg, true);
-			
-			if (logger.isTraceEnabled())
+
+			if (logger.isTraceEnabled()) {
 				logger.trace("Incoming ASYNC MDN message - MDN struct: " + mdn.toString());
+			}
 			/*
-			// Log significant msg state
-			options.put("STATE", Message.MSG_STATE_MDN_RECEIVE_START);
-			options.put("STATE_MSG", "MDN response received. Message processing started.");
-			msg.trackMsgState(getModule().getSession(), options);
-			*/
+			 // Log significant msg state
+			 options.put("STATE", Message.MSG_STATE_MDN_RECEIVE_START);
+			 options.put("STATE_MSG", "MDN response received. Message processing started.");
+			 msg.trackMsgState(getModule().getSession(), options);
+			 */
 			AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this);
 			// Log significant msg state
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
 			msg.trackMsgState(getModule().getSession());
 
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus())
 					|| Message.MSG_STATUS_MDN_PARSE.equals(msg.getStatus())
-					|| !(e instanceof OpenAS2Exception))
-			{
+					|| !(e instanceof OpenAS2Exception)) {
 				/*
 				 * Cannot identify the target if in init or parse state so not sure what the
 				 * best course of action is apart from do nothing
 				 */
-				try
-				{
+				try {
 					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
-				} catch (IOException e1)
-				{
+				} catch (IOException e1) {
 				}
 				msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
 				logger.error(msg, e);
-			}
-			/*
+			} /*
 			 * Most likely a resend abort of max resend reached if
 			 * OpenAS2Exception so do not log as should have been logged
 			 * upstream ... just clean up the mess
-			 */
-			else
-			{
+			 */ else {
 				// Must have received MDN successfully so must respond with OK
-				try
-				{
+				try {
 					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, false);
-				} catch (IOException e1)
-				{ // What to do .... 
+				} catch (IOException e1) { // What to do .... 
 				}
 				msg.setLogMsg("Exception receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
 				logger.error(msg, e);

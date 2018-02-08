@@ -6,68 +6,69 @@ import java.util.Map;
 import org.openas2.lib.util.GeneralUtil;
 
 public class BasicPartner implements IPartner {
-    private Map<String,String> attributes;
 
-    public BasicPartner() {
-        super();
-    }
+	private Map<String, String> attributes;
 
-    public Map<String,String> getAttributes() {
-        if (attributes == null) {
-            attributes = new HashMap<String,String>();
-        }
-        return attributes;
-    }
+	public BasicPartner() {
+		super();
+	}
 
-    public String getAttribute(String name) {
-        return (String) getAttributes().get(name);
-    }
+	public Map<String, String> getAttributes() {
+		if (attributes == null) {
+			attributes = new HashMap<String, String>();
+		}
+		return attributes;
+	}
 
-    public void setAttribute(String name, String value) {
-        getAttributes().put(name, value);
-    }
+	public String getAttribute(String name) {
+		return (String) getAttributes().get(name);
+	}
 
-    public String getAs1Id() {
-        return getAttribute(IPartner.ATTRIBUTE_AS1ID);
-    }
+	public void setAttribute(String name, String value) {
+		getAttributes().put(name, value);
+	}
 
-    public void setAs1Id(String as1Id) {
-        setAttribute(IPartner.ATTRIBUTE_AS1ID, as1Id);
-    }
+	public String getAs1Id() {
+		return getAttribute(IPartner.ATTRIBUTE_AS1ID);
+	}
 
-    public String getAs2Id() {
-        return getAttribute(IPartner.ATTRIBUTE_AS2ID);
-    }
+	public void setAs1Id(String as1Id) {
+		setAttribute(IPartner.ATTRIBUTE_AS1ID, as1Id);
+	}
 
-    public void setAs2Id(String as2Id) {
-        setAttribute(IPartner.ATTRIBUTE_AS2ID, as2Id);
-    }
+	public String getAs2Id() {
+		return getAttribute(IPartner.ATTRIBUTE_AS2ID);
+	}
 
-    public String getCertificateAlias() {
-        return getAttribute(IPartner.ATTRIBUTE_CERTIFICATE_ALIAS);
-    }
+	public void setAs2Id(String as2Id) {
+		setAttribute(IPartner.ATTRIBUTE_AS2ID, as2Id);
+	}
 
-    public void setCertificateAlias(String certificateAlias) {
-        setAttribute(IPartner.ATTRIBUTE_CERTIFICATE_ALIAS, certificateAlias);
-    }
+	public String getCertificateAlias() {
+		return getAttribute(IPartner.ATTRIBUTE_CERTIFICATE_ALIAS);
+	}
 
-    public String getContactEmail() {
-        return getAttribute(IPartner.ATTRIBUTE_CONTACT_EMAIL);
-    }
+	public void setCertificateAlias(String certificateAlias) {
+		setAttribute(IPartner.ATTRIBUTE_CERTIFICATE_ALIAS, certificateAlias);
+	}
 
-    public void setContactEmail(String contactEmail) {
-        setAttribute(IPartner.ATTRIBUTE_CONTACT_EMAIL, contactEmail);
-    }
+	public String getContactEmail() {
+		return getAttribute(IPartner.ATTRIBUTE_CONTACT_EMAIL);
+	}
 
-    public String getEdiId() {
-        return getAttribute(IPartner.ATTRIBUTE_EDIID);
-    }
+	public void setContactEmail(String contactEmail) {
+		setAttribute(IPartner.ATTRIBUTE_CONTACT_EMAIL, contactEmail);
+	}
 
-    public void setEdiId(String ediId) {
-        setAttribute(IPartner.ATTRIBUTE_EDIID, ediId);
-    }
+	public String getEdiId() {
+		return getAttribute(IPartner.ATTRIBUTE_EDIID);
+	}
 
-    public String toString() {
-        return GeneralUtil.convert(getAttributes(), "=", ", ");
-    }
+	public void setEdiId(String ediId) {
+		setAttribute(IPartner.ATTRIBUTE_EDIID, ediId);
+	}
+
+	public String toString() {
+		return GeneralUtil.convert(getAttributes(), "=", ", ");
+	}
 }

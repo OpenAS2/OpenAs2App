@@ -7,12 +7,14 @@ import org.openas2.cmd.CommandResult;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 
-/** removes a partnership entry in partnership store
- * 
+/**
+ * removes a partnership entry in partnership store
+ *
  * @author joseph mcverry
  *
  */
 public class DeletePartnershipCommand extends AliasedPartnershipsCommand {
+
 	public String getDefaultDescription() {
 		return "Delete the partnership associated with an name.";
 	}

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openas2.cmd.processor;
 
@@ -18,31 +18,33 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * used to parse  commands from the socket command processor
- * message format 
- *   &lt;command userid="abc" pasword="xyz"&gt; the actual command &lt;/command&gt;
- * 
+ * used to parse commands from the socket command processor message format
+ * &lt;command userid="abc" pasword="xyz"&gt; the actual command
+ * &lt;/command&gt;
+ *
  * @author joseph mcverry
  *
  */
-
 public class SocketCommandParser extends DefaultHandler
 		implements
-			EntityResolver,
-			ContentHandler {
+		EntityResolver,
+		ContentHandler {
 
 	SAXParser parser;
 	private String userid;
 	private String password;
 	private String commandText;
 
-	/**     simple string processor    */
+	/**
+	 * simple string processor
+	 */
 	protected CharArrayWriter contents = new CharArrayWriter();
 
-	/** construct the factory with a xml parser
-	 * @throws Exception an xml parser exception 
+	/**
+	 * construct the factory with a xml parser
+	 *
+	 * @throws Exception an xml parser exception
 	 */
-
 	public SocketCommandParser() throws Exception {
 		SAXParserFactory spf = SAXParserFactory.newInstance();
 		parser = spf.newSAXParser();
@@ -61,6 +63,7 @@ public class SocketCommandParser extends DefaultHandler
 
 	/**
 	 * Method handles #PCDATA
+	 *
 	 * @param ch array
 	 * @param start position in array where next has been placed
 	 * @param length int
@@ -97,8 +100,9 @@ public class SocketCommandParser extends DefaultHandler
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		if (qName.equals("command")) {
 			this.commandText = contents.toString();
+		} else {
+			contents.flush();
 		}
-		else contents.flush();
 	}
 
 }

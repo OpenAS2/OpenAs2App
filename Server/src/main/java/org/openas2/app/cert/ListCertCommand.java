@@ -9,6 +9,7 @@ import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 
 public class ListCertCommand extends AliasedCertCommand {
+
 	public String getDefaultDescription() {
 		return "List all certificate aliases in the current certificate store";
 	}
@@ -25,8 +26,8 @@ public class ListCertCommand extends AliasedCertCommand {
 			Object[] params) throws OpenAS2Exception {
 		synchronized (certFx) {
 			Map<String, X509Certificate> certs = certFx.getCertificates();
-			Iterator<Map.Entry<String,X509Certificate>> certIt = certs.entrySet().iterator();
-			Map.Entry<String,X509Certificate> currentCert;
+			Iterator<Map.Entry<String, X509Certificate>> certIt = certs.entrySet().iterator();
+			Map.Entry<String, X509Certificate> currentCert;
 			CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK);
 
 			while (certIt.hasNext()) {

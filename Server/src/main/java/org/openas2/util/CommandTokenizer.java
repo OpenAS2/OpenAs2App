@@ -2,8 +2,9 @@ package org.openas2.util;
 
 import org.openas2.WrappedException;
 
-/** emulates StringTokenizer 
- * 
+/**
+ * emulates StringTokenizer
+ *
  * @author joseph mcverry
  *
  */
@@ -12,8 +13,10 @@ public class CommandTokenizer {
 	String workString;
 	int pos = 0;
 	int len = -1;
+
 	/**
 	 * constructor
+	 *
 	 * @param inString the string to parse
 	 */
 	public CommandTokenizer(String inString) {
@@ -23,16 +26,19 @@ public class CommandTokenizer {
 
 	/**
 	 * any more tokens in String
-	 * @return true if there are any more tokens 
+	 *
+	 * @return true if there are any more tokens
 	 * @throws WrappedException - internally handled error
 	 */
 	public boolean hasMoreTokens() throws WrappedException {
 		try {
-			while (pos < len - 1 && workString.charAt(pos) == ' ')
+			while (pos < len - 1 && workString.charAt(pos) == ' ') {
 				pos++;
+			}
 
-			if (pos < len)
+			if (pos < len) {
 				return true;
+			}
 
 			return false;
 		} catch (Exception e) {
@@ -42,15 +48,17 @@ public class CommandTokenizer {
 
 	/**
 	 * returns the next token, this handles spaces and quotes
+	 *
 	 * @return a string
-	 * @throws WrappedException  - internally handled error
-	 * 
+	 * @throws WrappedException - internally handled error
+	 *
 	 */
 	public String nextToken() throws WrappedException {
 
 		try {
-			while (pos < len - 1 && workString.charAt(pos) == ' ')
+			while (pos < len - 1 && workString.charAt(pos) == ' ') {
 				pos++;
+			}
 
 			StringBuffer sb = new StringBuffer();
 

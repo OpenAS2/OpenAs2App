@@ -17,6 +17,7 @@ import org.openas2.cmd.CommandResult;
 import org.openas2.util.AS2Util;
 
 public class ImportCertCommand extends AliasedCertCommand {
+
 	public String getDefaultDescription() {
 		return "Import a certificate into the current certificate store";
 	}
@@ -51,7 +52,7 @@ public class ImportCertCommand extends AliasedCertCommand {
 						return new CommandResult(
 								CommandResult.TYPE_INVALID_PARAM_COUNT,
 								getUsage()
-										+ " (Password is required for p12 files)");
+								+ " (Password is required for p12 files)");
 					}
 
 					return importPrivateKey(certFx, alias, filename, password);

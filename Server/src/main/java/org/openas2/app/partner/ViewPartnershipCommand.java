@@ -9,10 +9,11 @@ import org.openas2.partner.PartnershipFactory;
 
 /**
  * view the partnership in the partnership stores
- * 
+ *
  * @author Don Hillsberry
  */
 public class ViewPartnershipCommand extends AliasedPartnershipsCommand {
+
 	public String getDefaultDescription() {
 		return "View the partnership entry in partnership store.";
 	}
@@ -40,9 +41,10 @@ public class ViewPartnershipCommand extends AliasedPartnershipsCommand {
 
 			while (parts.hasNext()) {
 				Partnership part = (Partnership) parts.next();
-				if (part.getName().equals(name))
+				if (part.getName().equals(name)) {
 					return new CommandResult(CommandResult.TYPE_OK, part
 							.toString());
+				}
 			}
 
 			return new CommandResult(CommandResult.TYPE_ERROR,

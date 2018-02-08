@@ -30,51 +30,47 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 @RunWith(MockitoJUnitRunner.class)
 public class FileMonitorAdapterTest {
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
-    @Captor
-    ArgumentCaptor<Runnable> monitorJob;
-    @Mock
-    private ScheduledExecutorService executorService;
-    private File configFile;
+	@Rule
+	public TemporaryFolder tmp = new TemporaryFolder();
+	@Captor
+	ArgumentCaptor<Runnable> monitorJob;
+	@Mock
+	private ScheduledExecutorService executorService;
+	private File configFile;
 
-    private FileMonitorAdapter adapter;
+	private FileMonitorAdapter adapter;
 
-    @Before
-    public void setUp() throws Exception
-    {
-        configFile = spy(tmp.newFile());
-        adapter = spy(new FileMonitorAdapter() {
-            @Override
-            public void onConfigFileChanged() throws OpenAS2Exception
-            {
+	@Before
+	public void setUp() throws Exception {
+		configFile = spy(tmp.newFile());
+		adapter = spy(new FileMonitorAdapter() {
+			@Override
+			public void onConfigFileChanged() throws OpenAS2Exception {
 
-            }
-        });
+			}
+		});
 
-    }
+	}
 
-    @Test
-    public void shouldNotScheduleRefreshWhenIntervalNotConfigured() throws Exception
-    {
-        adapter.scheduleIfNeed(executorService, configFile, 0, TimeUnit.SECONDS);
+	@Test
+	public void shouldNotScheduleRefreshWhenIntervalNotConfigured() throws Exception {
+		adapter.scheduleIfNeed(executorService, configFile, 0, TimeUnit.SECONDS);
 
-        verifyZeroInteractions(executorService);
-    }
+		verifyZeroInteractions(executorService);
+	}
 
-    @Test
-    public void shouldScheduleConfigRefresh() throws Exception
-    {
+	@Test
+	public void shouldScheduleConfigRefresh() throws Exception {
 
-        int refreshInterval = RandomUtils.nextInt(1, 10);
+		int refreshInterval = RandomUtils.nextInt(1, 10);
 
-        adapter.scheduleIfNeed(executorService, configFile, refreshInterval, TimeUnit.SECONDS);
+		adapter.scheduleIfNeed(executorService, configFile, refreshInterval, TimeUnit.SECONDS);
 
-        doReturn(new Date().getTime() + 10).when(configFile).lastModified();
-        verify(executorService).scheduleAtFixedRate(monitorJob.capture(), eq((long) refreshInterval), eq((long) refreshInterval), eq(TimeUnit.SECONDS));
+		doReturn(new Date().getTime() + 10).when(configFile).lastModified();
+		verify(executorService).scheduleAtFixedRate(monitorJob.capture(), eq((long) refreshInterval), eq((long) refreshInterval), eq(TimeUnit.SECONDS));
 
-        monitorJob.getValue().run();
+		monitorJob.getValue().run();
 
-        verify(adapter).onConfigFileChanged();
-    }
+		verify(adapter).onConfigFileChanged();
+	}
 }

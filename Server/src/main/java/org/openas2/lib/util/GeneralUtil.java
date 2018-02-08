@@ -9,51 +9,49 @@ import java.util.Map.Entry;
 
 public class GeneralUtil {
 
+	public static String[] convert(Enumeration<String> en) {
+		List<String> list = Collections.list(en);
+		return convert(list);
+	}
 
-    public static String[] convert(Enumeration<String> en) {
-        List<String> list = Collections.list(en);        
-        return convert(list);
-    }
+	static String[] convert(List<String> list) {
+		String[] values = new String[0];
+		return list.toArray(values);
+	}
 
-    static String[] convert(List<String> list)
-    {
-        String[] values = new String[0];
-        return list.toArray(values);
-    }
-    
-    public static String[] convertKeys(Map<?, Object> map) {
-        String[] keys = new String[0];
-        return map.keySet().toArray(keys);
-    }
-    
-    public static String convert(Map<?, ?> map, String valueDelimiter, String pairDelimiter) {
+	public static String[] convertKeys(Map<?, Object> map) {
+		String[] keys = new String[0];
+		return map.keySet().toArray(keys);
+	}
+
+	public static String convert(Map<?, ?> map, String valueDelimiter, String pairDelimiter) {
 		StringBuffer strBuf = new StringBuffer();
 		Iterator<?> it = map.entrySet().iterator();
-		Map.Entry<Object,Object> entry;
+		Map.Entry<Object, Object> entry;
 		while (it.hasNext()) {
 			entry = (Entry<Object, Object>) it.next();
 			strBuf.append(entry.getKey().toString()).append(valueDelimiter);
 			strBuf.append(entry.getValue().toString());
 			if (it.hasNext()) {
-			    strBuf.append(pairDelimiter);
+				strBuf.append(pairDelimiter);
 			}
 		}
 		return strBuf.toString();
 	}
 
-    public static Object getKey(Map<?,Object> map, Object value) {
-        Iterator<?> it = map.entrySet().iterator();
-        Map.Entry<Object,Object> entry;
-        Object currentValue;
-        while (it.hasNext()) {
-            entry = (Entry<Object, Object>) it.next();
-            currentValue = entry.getValue();
-            if (currentValue == null && value == null) {
-                return entry.getKey();
-            } else if (currentValue != null && currentValue.equals(value)) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
+	public static Object getKey(Map<?, Object> map, Object value) {
+		Iterator<?> it = map.entrySet().iterator();
+		Map.Entry<Object, Object> entry;
+		Object currentValue;
+		while (it.hasNext()) {
+			entry = (Entry<Object, Object>) it.next();
+			currentValue = entry.getValue();
+			if (currentValue == null && value == null) {
+				return entry.getKey();
+			} else if (currentValue != null && currentValue.equals(value)) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
 }

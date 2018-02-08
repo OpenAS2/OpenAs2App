@@ -17,166 +17,162 @@ import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 
 public abstract class BasePartnershipFactory extends BaseComponent implements PartnershipFactory {
-    private List<Partnership> partnerships;
-    protected Map<String, Object> partners;
 
-    public Partnership getPartnership(Partnership p, boolean reverseLookup) throws OpenAS2Exception {
-        Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());
+	private List<Partnership> partnerships;
+	protected Map<String, Object> partners;
 
-        if (ps == null) {
-        	if (reverseLookup)
-            	ps = getPartnership(p.getReceiverIDs(), p.getSenderIDs());
-            else
-            	ps = getPartnership(p.getSenderIDs(), p.getReceiverIDs());
-        }
+	public Partnership getPartnership(Partnership p, boolean reverseLookup) throws OpenAS2Exception {
+		Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());
 
-        if (ps == null) {
-            throw new PartnershipNotFoundException(p);
-        }
+		if (ps == null) {
+			if (reverseLookup) {
+				ps = getPartnership(p.getReceiverIDs(), p.getSenderIDs());
+			} else {
+				ps = getPartnership(p.getSenderIDs(), p.getReceiverIDs());
+			}
+		}
 
-        return ps;
-    }
+		if (ps == null) {
+			throw new PartnershipNotFoundException(p);
+		}
 
-    public void setPartnerships(List<Partnership> list) {
-        partnerships = list;
-    }
+		return ps;
+	}
 
-    public List<Partnership> getPartnerships() {
-        if (partnerships == null) {
-            partnerships = new ArrayList<Partnership>();
-        }
+	public void setPartnerships(List<Partnership> list) {
+		partnerships = list;
+	}
 
-        return partnerships;
-    }
+	public List<Partnership> getPartnerships() {
+		if (partnerships == null) {
+			partnerships = new ArrayList<Partnership>();
+		}
 
-    public void setPartners(Map map) {
-        getPartners().putAll(map);
-    }
+		return partnerships;
+	}
 
-    @Override
-    public Map getPartners() {
-        if (partners == null) {
-            partners = new HashMap();
-        }
+	public void setPartners(Map map) {
+		getPartners().putAll(map);
+	}
 
-        return partners;
-    }
+	@Override
+	public Map getPartners() {
+		if (partners == null) {
+			partners = new HashMap();
+		}
 
-    public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception
-    {
-        // Fill in any available partnership information
-        Partnership partnership = getPartnership(msg.getPartnership(), false);
-        msg.getPartnership().copy(partnership);
+		return partners;
+	}
+
+	public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception {
+		// Fill in any available partnership information
+		Partnership partnership = getPartnership(msg.getPartnership(), false);
+		msg.getPartnership().copy(partnership);
 		//  Now set dynamic parms based on file name if configured to
-        String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
+		String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
 		String filenameToParmsList = msg.getPartnership().getAttribute(AS2Partnership.PA_ATTRIB_NAMES_FROM_FILENAME);
-		if (filename != null && filenameToParmsList != null && filenameToParmsList.length() > 0)
-		{
+		if (filename != null && filenameToParmsList != null && filenameToParmsList.length() > 0) {
 			String[] headerNames = filenameToParmsList.split("\\s*,\\s*");
 
 			String regex = msg.getPartnership().getAttribute(AS2Partnership.PA_ATTRIB_VALUES_REGEX_ON_FILENAME);
-			if (regex != null)
-			{
+			if (regex != null) {
 				Pattern p = Pattern.compile(regex);
 				Matcher m = p.matcher(filename);
-				if (!m.find() || m.groupCount() != headerNames.length)
-				{
+				if (!m.find() || m.groupCount() != headerNames.length) {
 					throw new OpenAS2Exception("Could not match filename (" + filename + ") to parameters required using the regex provided (" + regex + "): "
 							+ (m.find() ? ("Mismatch in parameter count to extracted group count: " + headerNames.length
 									+ "::" + m.groupCount()) : "No match found in filename"));
 				}
-				for (int i = 0; i < headerNames.length; i++)
-				{
+				for (int i = 0; i < headerNames.length; i++) {
 					msg.setAttribute(headerNames[i], m.group(i + 1));
 				}
 			}
 		}
 
+		// Set attributes
+		if (overwrite) {
+			String subject = partnership.getAttribute(Partnership.PA_SUBJECT);
+			if (subject != null) {
+				msg.setSubject(ParameterParser.parse(subject, new MessageParameters(msg)));
+			}
+		}
+	}
 
-        // Set attributes
-        if (overwrite) {
-            String subject = partnership.getAttribute(Partnership.PA_SUBJECT);
-            if (subject != null) {
-                msg.setSubject(ParameterParser.parse(subject, new MessageParameters(msg)));
-            }
-        }
-    }
-
-    public void updatePartnership(MessageMDN mdn, boolean overwrite) throws OpenAS2Exception {
+	public void updatePartnership(MessageMDN mdn, boolean overwrite) throws OpenAS2Exception {
         // Fill in any available partnership information
-        // the MDN partnership should be the one used to send original message hence reverse lookup
-        Partnership partnership = getPartnership(mdn.getPartnership(), true);
-        mdn.getPartnership().copy(partnership);
-    }
+		// the MDN partnership should be the one used to send original message hence reverse lookup
+		Partnership partnership = getPartnership(mdn.getPartnership(), true);
+		mdn.getPartnership().copy(partnership);
+	}
 
-    protected Partnership getPartnership(Map<String, Object> senderIDs, Map<String, Object> receiverIDs) {
-        Iterator<Partnership> psIt = getPartnerships().iterator();
-        Partnership currentPs;
-        Map<String, Object> currentSids;
-        Map<String, Object> currentRids;
+	protected Partnership getPartnership(Map<String, Object> senderIDs, Map<String, Object> receiverIDs) {
+		Iterator<Partnership> psIt = getPartnerships().iterator();
+		Partnership currentPs;
+		Map<String, Object> currentSids;
+		Map<String, Object> currentRids;
 
-        while (psIt.hasNext()) {
-            currentPs = (Partnership) psIt.next();
-            currentSids = currentPs.getSenderIDs();
-            currentRids = currentPs.getReceiverIDs();
+		while (psIt.hasNext()) {
+			currentPs = (Partnership) psIt.next();
+			currentSids = currentPs.getSenderIDs();
+			currentRids = currentPs.getReceiverIDs();
 
-            if (compareMap(senderIDs, currentSids) && compareMap(receiverIDs, currentRids)) {
-                return currentPs;
-            }
-        }
+			if (compareMap(senderIDs, currentSids) && compareMap(receiverIDs, currentRids)) {
+				return currentPs;
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    protected Partnership getPartnership(List<?> partnerships, String name) {
-        Iterator<?> psIt = partnerships.iterator();
-        Partnership currentPs;
-        String currentName;
+	protected Partnership getPartnership(List<?> partnerships, String name) {
+		Iterator<?> psIt = partnerships.iterator();
+		Partnership currentPs;
+		String currentName;
 
-        while (psIt.hasNext()) {
-            currentPs = (Partnership) psIt.next();
-            currentName = currentPs.getName();
+		while (psIt.hasNext()) {
+			currentPs = (Partnership) psIt.next();
+			currentName = currentPs.getName();
 
-            if ((currentName != null) && currentName.equals(name)) {
-                return currentPs;
-            }
-        }
+			if ((currentName != null) && currentName.equals(name)) {
+				return currentPs;
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    protected Partnership getPartnership(String name) throws OpenAS2Exception {
-        return getPartnership(getPartnerships(), name);
-    }
+	protected Partnership getPartnership(String name) throws OpenAS2Exception {
+		return getPartnership(getPartnerships(), name);
+	}
 
-    // returns true if all values in searchIds match values in partnerIds
-    protected boolean compareMap(Map<String, Object> searchIds, Map<String, Object> partnerIds) {
-        Iterator<Map.Entry<String, Object>> searchIt = searchIds.entrySet().iterator();
+	// returns true if all values in searchIds match values in partnerIds
+	protected boolean compareMap(Map<String, Object> searchIds, Map<String, Object> partnerIds) {
+		Iterator<Map.Entry<String, Object>> searchIt = searchIds.entrySet().iterator();
 
-        if (!searchIt.hasNext()) {
-            return false;
-        }
+		if (!searchIt.hasNext()) {
+			return false;
+		}
 
-        Map.Entry<String,Object> searchEntry;
-        String searchKey;
-        Object searchValue;
-        Object partnerValue;
+		Map.Entry<String, Object> searchEntry;
+		String searchKey;
+		Object searchValue;
+		Object partnerValue;
 
-        while (searchIt.hasNext()) {
-            searchEntry = (Map.Entry<String, Object>) searchIt.next();
-            searchKey = (String) searchEntry.getKey();
-            searchValue = searchEntry.getValue();
-            partnerValue = partnerIds.get(searchKey);
+		while (searchIt.hasNext()) {
+			searchEntry = (Map.Entry<String, Object>) searchIt.next();
+			searchKey = (String) searchEntry.getKey();
+			searchValue = searchEntry.getValue();
+			partnerValue = partnerIds.get(searchKey);
 
-            if ((searchValue == null) && (partnerValue != null)) {
-                return false;
-            } else if ((searchValue != null) && (partnerValue == null)) {
-                return false;
-            } else if (!searchValue.equals(partnerValue)) {
-                return false;
-            }
-        }
+			if ((searchValue == null) && (partnerValue != null)) {
+				return false;
+			} else if ((searchValue != null) && (partnerValue == null)) {
+				return false;
+			} else if (!searchValue.equals(partnerValue)) {
+				return false;
+			}
+		}
 
-        return true;
-    }
+		return true;
+	}
 }

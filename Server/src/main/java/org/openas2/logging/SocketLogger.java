@@ -12,10 +12,10 @@ import org.openas2.message.Message;
 
 /**
  * class to write log meesage to a socket
- * 
+ *
  * @since october 2007.
  * @author joseph mcverry
- * 
+ *
  */
 public class SocketLogger extends BaseLogger {
 
@@ -34,18 +34,16 @@ public class SocketLogger extends BaseLogger {
 			port = Integer.parseInt(portID);
 		} catch (NumberFormatException nfe) {
 			throw new OpenAS2Exception(PARAM_PORTID
-					+ " is not a valid integer value, see \"" + portID+ "\"", nfe);
+					+ " is not a valid integer value, see \"" + portID + "\"", nfe);
 		}
 
 	}
 
 	public void doLog(Level level, String msgText, Message as2Msg) {
-		sendToSocket(getFormatter().format(level, (as2Msg == null?"":as2Msg.getLogMsgID()) + " " + msgText));
+		sendToSocket(getFormatter().format(level, (as2Msg == null ? "" : as2Msg.getLogMsgID()) + " " + msgText));
 	}
 
 	public void sendToSocket(String msgText) {
-		
-	
 
 		try {
 			Socket sckt = new Socket(ipAddr, port);
@@ -56,9 +54,8 @@ public class SocketLogger extends BaseLogger {
 			sckt.close();
 
 		} catch (UnknownHostException e) {
-	          
+
 			// don't do anything.
-	
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

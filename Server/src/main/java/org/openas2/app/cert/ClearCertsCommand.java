@@ -5,6 +5,7 @@ import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 
 public class ClearCertsCommand extends AliasedCertCommand {
+
 	public String getDefaultDescription() {
 		return "Deletes all certificates from the store";
 	}

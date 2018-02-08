@@ -10,111 +10,112 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 
 public class MultiCommand extends BaseCommand {
-    private List<Command> cmds;
 
-    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
-        super.init(session, parameters);
-        getParameter(PARAM_NAME, true);
-        getParameter(PARAM_DESCRIPTION, true);
-        if (getUsage() == null) {
-            setUsage(getName() + " <command> <parameters>");
-        }
-    }
+	private List<Command> cmds;
 
-    public Command getCommand(String name) {
-        name = name.toLowerCase();
+	public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
+		super.init(session, parameters);
+		getParameter(PARAM_NAME, true);
+		getParameter(PARAM_DESCRIPTION, true);
+		if (getUsage() == null) {
+			setUsage(getName() + " <command> <parameters>");
+		}
+	}
 
-        List<Command> commands = getCommands();
-        Command cmd;
+	public Command getCommand(String name) {
+		name = name.toLowerCase();
 
-        for (int i = 0; i < commands.size(); i++) {
-            cmd = commands.get(i);
+		List<Command> commands = getCommands();
+		Command cmd;
 
-            if (cmd.getName().equals(name)) {
-                return cmd;
-            }
-        }
+		for (int i = 0; i < commands.size(); i++) {
+			cmd = commands.get(i);
 
-        return null;
-    }
+			if (cmd.getName().equals(name)) {
+				return cmd;
+			}
+		}
 
-    public List<Command> getCommands() {
-        if (cmds == null) {
-            cmds = new ArrayList<Command>();
-        }
+		return null;
+	}
 
-        return cmds;
-    }
+	public List<Command> getCommands() {
+		if (cmds == null) {
+			cmds = new ArrayList<Command>();
+		}
 
-    public String getDescription(String name) {
-        Command cmd = getCommand(name);
+		return cmds;
+	}
 
-        if (cmd != null) {
-            return cmd.getDescription();
-        }
+	public String getDescription(String name) {
+		Command cmd = getCommand(name);
 
-        return null;
-    }
+		if (cmd != null) {
+			return cmd.getDescription();
+		}
 
-    public String getUsage(String name) {
-        Command cmd = getCommand(name);
+		return null;
+	}
 
-        if (cmd != null) {
-            return cmd.getUsage();
-        }
+	public String getUsage(String name) {
+		Command cmd = getCommand(name);
 
-        return null;
-    }
+		if (cmd != null) {
+			return cmd.getUsage();
+		}
 
-    public CommandResult execute(Object[] params) {
-        if (params.length > 0) {
-            String subName = params[0].toString();
-            Command subCmd = getCommand(subName);
+		return null;
+	}
 
-            if (subCmd != null) {
-                List<Object> paramList = Arrays.asList(params);
-                List<Object> subParams = new ArrayList<Object>(paramList);
+	public CommandResult execute(Object[] params) {
+		if (params.length > 0) {
+			String subName = params[0].toString();
+			Command subCmd = getCommand(subName);
 
-                subParams.remove(0);
+			if (subCmd != null) {
+				List<Object> paramList = Arrays.asList(params);
+				List<Object> subParams = new ArrayList<Object>(paramList);
 
-                return subCmd.execute(subParams.toArray());
-            }
-        }
+				subParams.remove(0);
 
-        CommandResult listCmds = new CommandResult(CommandResult.TYPE_ERROR, "List of valid subcommands:");
-        Iterator<Command> cmdIt = getCommands().iterator();
-        Command currentCmd;
+				return subCmd.execute(subParams.toArray());
+			}
+		}
 
-        while (cmdIt.hasNext()) {
-            currentCmd = cmdIt.next();
-            listCmds.getResults().add(currentCmd.getName());
-        }
+		CommandResult listCmds = new CommandResult(CommandResult.TYPE_ERROR, "List of valid subcommands:");
+		Iterator<Command> cmdIt = getCommands().iterator();
+		Command currentCmd;
 
-        return listCmds;
-    }
+		while (cmdIt.hasNext()) {
+			currentCmd = cmdIt.next();
+			listCmds.getResults().add(currentCmd.getName());
+		}
 
-    public CommandResult execute(String name, Object[] params) throws OpenAS2Exception {
-        Command cmd = getCommand(name);
+		return listCmds;
+	}
 
-        if (cmd != null) {
-            return cmd.execute(params);
-        }
-        throw new CommandException("Command doesn't exist: " + name);
-    }
+	public CommandResult execute(String name, Object[] params) throws OpenAS2Exception {
+		Command cmd = getCommand(name);
 
-    public boolean supports(String name) {
-        return getCommand(name) != null;
-    }
+		if (cmd != null) {
+			return cmd.execute(params);
+		}
+		throw new CommandException("Command doesn't exist: " + name);
+	}
 
-    public String getDefaultName() {
-        return null;
-    }
+	public boolean supports(String name) {
+		return getCommand(name) != null;
+	}
 
-    public String getDefaultDescription() {
-        return null;
-    }
+	public String getDefaultName() {
+		return null;
+	}
 
-    public String getDefaultUsage() {
-        return null;
-    }
+	public String getDefaultDescription() {
+		return null;
+	}
+
+	public String getDefaultUsage() {
+		return null;
+	}
 }
