@@ -187,7 +187,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						sourceIpAddress = msg.getXRealIP();
 					}
 					if(sourceIpAddress != null) {
-						logger.trace(msg.getLogMsgID() + " The server goes through the proxy " + msg.getAttribute(NetAttribute.MA_SOURCE_IP) + ", the original ip is " + sourceIpAddress);
+						logger.info(msg.getLogMsgID() + " The server goes through the proxy " + msg.getAttribute(NetAttribute.MA_SOURCE_IP) + ", the original ip is " + sourceIpAddress);
 						msg.setAttribute(NetAttribute.MA_SOURCE_IP, sourceIpAddress);
 					}
 					// Extract AS2 ID's from header, find the message's partnership and update the message
