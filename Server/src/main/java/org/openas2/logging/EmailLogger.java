@@ -99,7 +99,7 @@ public class EmailLogger extends BaseLogger {
                 subject = getSubject(null);
             }
             subject = parseText(null, false, subject);
-            sendMessage(subject, getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
+            sendMessage(subject, getFormatter().format(level, (as2Msg == null?"":as2Msg.getLogMsgID())+ " " + msgText));
         } catch (Exception e) {
             System.out.println("Failed to send email: " + org.openas2.logging.Log.getExceptionMsg(e));
             e.printStackTrace();

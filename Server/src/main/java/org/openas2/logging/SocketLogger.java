@@ -40,7 +40,7 @@ public class SocketLogger extends BaseLogger {
 	}
 
 	public void doLog(Level level, String msgText, Message as2Msg) {
-		sendToSocket(getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
+		sendToSocket(getFormatter().format(level, (as2Msg == null?"":as2Msg.getLogMsgID()) + " " + msgText));
 	}
 
 	public void sendToSocket(String msgText) {

@@ -58,17 +58,16 @@ public class DirectoryResenderModule extends BaseResenderModule {
 			oos.writeObject(retries);
 			oos.writeObject(msg);
             
-            logger.info("message put in resend queue"+msg.getLogMsgID());
+            logger.info(msg.getLogMsgID() + " message put in resend queue");
             if (logger.isTraceEnabled())
     			try
     			{
-    				logger.trace("Message object in resender module for storage. Content-Disposition: " + msg.getContentDisposition()
+    				logger.trace(msg.getLogMsgID() + " Message object in resender module for storage. Content-Disposition: " + msg.getContentDisposition()
     				    + "\n      Content-Type : " + msg.getContentType()
     				    + "\n      Retries : " + retries
     				    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
     				    + "\n      Content-Disposition in MSG getData() MIMEPART: "
-    				    + msg.getData().getContentType()
-    					+msg.getLogMsgID()	);
+    				    + msg.getData().getContentType());
     			} catch (Exception e){}
 		} catch (IOException ioe) {
 			throw new WrappedException(ioe);
@@ -165,16 +164,15 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 ois.close();
 
 				// Transmit the message
-                if (logger.isInfoEnabled()) logger.info("loaded message for resend."+msg.getLogMsgID());
+                if (logger.isInfoEnabled()) logger.info(msg.getLogMsgID() + " loaded message for resend.");
                 if (logger.isTraceEnabled())
 					try
 					{
-						logger.trace("Reconstituted Message object in resender. Content-Disposition: " + msg.getContentDisposition()
+						logger.trace(msg.getLogMsgID() + " Reconstituted Message object in resender. Content-Disposition: " + msg.getContentDisposition()
 						    + "\n      Content-Type : " + msg.getContentType()
 						    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
 						    + "\n      Content-Disposition in MSG getData() MIMEPART: "
-						    + msg.getData().getContentType()
-							+msg.getLogMsgID()	);
+						    + msg.getData().getContentType());
 					} catch (Exception e){}
                 msg.setOption(SenderModule.SOPT_RETRIES, retries);
                 msg.setStatus(Message.MSG_STATUS_MSG_RESEND);
@@ -185,7 +183,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
 						file.getAbsolutePath());
 				}
 
-				if (logger.isDebugEnabled()) logger.debug("deleted " + file.getAbsolutePath()+msg.getLogMsgID());
+				if (logger.isDebugEnabled()) logger.debug(msg.getLogMsgID() + " deleted " + file.getAbsolutePath());
 			} catch (IOException ioe) {
 				throw new WrappedException(ioe);
 			} catch (ClassNotFoundException cnfe) {

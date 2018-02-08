@@ -22,7 +22,7 @@ public class FileLogger extends BaseLogger {
     }
 
     public void doLog(Level level, String msgText, Message as2Msg) {
-        appendToFile(getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
+        appendToFile(getFormatter().format(level, (as2Msg == null?"":as2Msg.getLogMsgID()) + " " + msgText));
     }
 
     protected String getShowDefaults() {
