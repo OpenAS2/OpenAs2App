@@ -60,8 +60,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck")))
 				{
 					if (logger.isInfoEnabled())
-						logger.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]"
-								+ msg.getLogMsgID());
+						logger.info(msg.getLogMsgID() + " Healthcheck ping detected" + " [" + getClientInfo(s) + "]");
 					return;
 				}
 				else
@@ -81,8 +80,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			// check if the requested URL is defined in attribute "as2_receipt_option"
 			// in one of partnerships, if yes, then process incoming AsyncMDN
 			if (logger.isInfoEnabled())
-				logger.info("incoming connection for receiving AsyncMDN" + " [" + getClientInfo(s) + "]"
-						+ msg.getLogMsgID());
+				logger.info(msg.getLogMsgID() + " incoming connection for receiving AsyncMDN" + " [" + getClientInfo(s) + "]");
 			if (logger.isTraceEnabled())
 				logger.trace("Incoming ASYNC MDN message - Message struct: " + msg.toString());
 			ContentType receivedContentType;

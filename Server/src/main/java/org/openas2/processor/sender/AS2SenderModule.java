@@ -9,11 +9,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
@@ -22,10 +19,8 @@ import javax.net.ssl.SSLHandshakeException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openas2.DBFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
-import org.openas2.XMLSession;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.message.AS2Message;
@@ -36,12 +31,9 @@ import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
 import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.SecurePartnership;
-import org.openas2.processor.receiver.AS2ReceiverHandler;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
@@ -71,7 +63,7 @@ public class AS2SenderModule extends HttpSenderModule {
     {
         if (logger.isInfoEnabled())
         {
-            logger.info("message sender invoked" + msg.getLogMsgID());
+            logger.info(msg.getLogMsgID() + " message sender invoked");
         }
         boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
         options.put("DIRECTION", "SEND");
@@ -101,7 +93,7 @@ public class AS2SenderModule extends HttpSenderModule {
         {
             if (logger.isTraceEnabled())
             {
-                logger.trace("Adding custom header attribute to custom headers map..." + msg.getLogMsgID());
+                logger.trace(msg.getLogMsgID() + " Adding custom header attribute to custom headers map...");
             }
             String[] headers = customHeaders.split("\\s*;\\s*");
             for (int i = 0; i < headers.length; i++)
@@ -109,8 +101,8 @@ public class AS2SenderModule extends HttpSenderModule {
                 String[] header = headers[i].split("\\s*:\\s*");
                 if (logger.isTraceEnabled())
                 {
-                    logger.trace("Adding custom header: " + headers[i]
-                            + " :::Split count:" + header.length + msg.getLogMsgID());
+                    logger.trace(msg.getLogMsgID() + " Adding custom header: " + headers[i]
+                            + " :::Split count:" + header.length);
                 }
                 if (header.length != 2)
                 {
@@ -141,10 +133,9 @@ public class AS2SenderModule extends HttpSenderModule {
         {
             try
             {
-                logger.trace("Message object in sender module. Content-Disposition: " + msg.getContentDisposition()
+                logger.trace(msg.getLogMsgID() + " Message object in sender module. Content-Disposition: " + msg.getContentDisposition()
                         + "\n      Content-Type : " + msg.getContentType() + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
-                        + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType()
-                        + msg.getLogMsgID());
+                        + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType());
             } catch (Exception e)
             {
             }
@@ -189,7 +180,7 @@ public class AS2SenderModule extends HttpSenderModule {
             }
             if (logger.isTraceEnabled())
             {
-                logger.trace("Message sent. Checking if MDN will be returned..." + msg.getLogMsgID());
+                logger.trace(msg.getLogMsgID() + " Message sent. Checking if MDN will be returned...");
             }
             // Receive an MDN
             if (msg.isConfiguredForMDN())
@@ -200,17 +191,17 @@ public class AS2SenderModule extends HttpSenderModule {
                 {
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Waiting for synchronous MDN response..." + msg.getLogMsgID());
+                        logger.trace(msg.getLogMsgID() + " Waiting for synchronous MDN response...");
                     }
                     // Create a MessageMDN and copy HTTP headers
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Awaiting sync MDN. Orig msg contains headers:" + AS2Util.printHeaders(msg.getHeaders().getAllHeaders()) + msg.getLogMsgID());
+                        logger.trace(msg.getLogMsgID() + " Awaiting sync MDN. Orig msg contains headers:" + AS2Util.printHeaders(msg.getHeaders().getAllHeaders()));
                     }
                     MessageMDN mdn = new AS2MessageMDN((AS2Message) msg, false);
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("MDN msg initalised for inbound contains headers:" + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()) + msg.getLogMsgID());
+                        logger.trace(msg.getLogMsgID() + " MDN msg initalised for inbound contains headers:" + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()));
                     }
                     HTTPUtil.copyHttpHeaders(conn, mdn.getHeaders());
 
@@ -274,7 +265,7 @@ public class AS2SenderModule extends HttpSenderModule {
 
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Synchronous MDN received. Start processing..." + msg.getLogMsgID());
+                        logger.trace(msg.getLogMsgID() + " Synchronous MDN received. Start processing...");
                     }
                     msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
                     try
@@ -360,7 +351,7 @@ public class AS2SenderModule extends HttpSenderModule {
 
         if (logger.isInfoEnabled())
         {
-            logger.info("Connecting to: " + conn.getURL() + msg.getLogMsgID());
+            logger.info(msg.getLogMsgID() + " Connecting to: " + conn.getURL());
         }
 
         // Note: closing this stream causes connection abort errors on some AS2
@@ -379,7 +370,7 @@ public class AS2SenderModule extends HttpSenderModule {
             Profiler.endProfile(transferStub);
             if (logger.isInfoEnabled())
             {
-                logger.info("transferred " + IOUtilOld.getTransferRate(bytes, transferStub) + msg.getLogMsgID());
+                logger.info(msg.getLogMsgID() + " transferred " + IOUtilOld.getTransferRate(bytes, transferStub));
             }
         } finally
         {
@@ -501,10 +492,9 @@ public class AS2SenderModule extends HttpSenderModule {
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("Params for creating signed body part:: DATA: " + dataBP + "\n SIGN DIGEST: " + digest
+                logger.debug(msg.getLogMsgID() + " Params for creating signed body part:: DATA: " + dataBP + "\n SIGN DIGEST: " + digest
                         + "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName()
-                        + "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm()
-                        + msg.getLogMsgID());
+                        + "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm());
             }
             boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(partnership.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
             dataBP = AS2Util.getCryptoHelper().sign(dataBP, senderCert, senderKey, digest
@@ -516,7 +506,7 @@ public class AS2SenderModule extends HttpSenderModule {
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("signed data" + msg.getLogMsgID());
+                logger.debug(msg.getLogMsgID() + " signed data");
             }
         }
 
@@ -550,7 +540,7 @@ public class AS2SenderModule extends HttpSenderModule {
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("encrypted data" + msg.getLogMsgID());
+                logger.debug(msg.getLogMsgID() + " encrypted data");
             }
         }
 
@@ -566,7 +556,7 @@ public class AS2SenderModule extends HttpSenderModule {
     {
         if (logger.isTraceEnabled())
         {
-            logger.trace("Adding custom headers to outer MBP...." + msg.getLogMsgID());
+            logger.trace(msg.getLogMsgID() + " Adding custom headers to outer MBP....");
         }
         Map<String, String> hdrs = msg.getCustomOuterMimeHeaders();
         if (hdrs == null)
@@ -578,7 +568,7 @@ public class AS2SenderModule extends HttpSenderModule {
             dataBP.addHeader(entry.getKey(), entry.getValue());
             if (logger.isTraceEnabled())
             {
-                logger.trace("Added custom headers to outer MBP: " + entry.getKey() + "--->" + entry.getValue() + msg.getLogMsgID());
+                logger.trace(msg.getLogMsgID() + " Added custom headers to outer MBP: " + entry.getKey() + "--->" + entry.getValue());
             }
         }
     }
@@ -665,7 +655,7 @@ public class AS2SenderModule extends HttpSenderModule {
         {
             if (logger.isTraceEnabled())
             {
-                logger.trace("Adding custom headers to HTTP..." + msg.getLogMsgID());
+                logger.trace(msg.getLogMsgID() + " Adding custom headers to HTTP...");
             }
             for (Map.Entry<String, String> entry : msg.getCustomOuterMimeHeaders().entrySet())
             {
@@ -714,8 +704,7 @@ public class AS2SenderModule extends HttpSenderModule {
 
             if (logger.isInfoEnabled())
             {
-                logger.info("Save Original mic & message id information into file: " + pendingInfoFile
-                        + msg.getLogMsgID());
+                logger.info(msg.getLogMsgID() + " Save Original mic & message id information into file: " + pendingInfoFile);
             }
             oos.writeObject(msg.getAttribute(FileAttribute.MA_FILENAME));
             oos.writeObject(pendingFile);
@@ -725,12 +714,12 @@ public class AS2SenderModule extends HttpSenderModule {
             oos.writeObject(msg.getAttributes());
             if (logger.isTraceEnabled())
             {
-                logger.trace("Pending info file written to:" + pendingInfoFile + "\n\tOriginal MIC: "
+                logger.trace(msg.getLogMsgID() + " Pending info file written to:" + pendingInfoFile + "\n\tOriginal MIC: "
                         + msg.getCalculatedMIC() + "\n\tRetry Count: " + retries
                         + "\n\tOriginal file name : " + msg.getAttribute(FileAttribute.MA_FILENAME)
                         + "\n\tPending message file : " + pendingFile + "\n\tError directory: "
                         + msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n\tSent directory: "
-                        + msg.getAttribute(FileAttribute.MA_SENT_DIR) + msg.getLogMsgID());
+                        + msg.getAttribute(FileAttribute.MA_SENT_DIR));
             }
 
             msg.setAttribute(FileAttribute.MA_STATUS, FileAttribute.MA_PENDING);
@@ -768,10 +757,10 @@ public class AS2SenderModule extends HttpSenderModule {
             // Generate some alternative MIC's to see if the partner is somehow using a different default
             String tmic = AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg()
                     , includeHeaders, !msg.getPartnership().isPreventCanonicalization());
-            logger.trace("MIC outbound with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());
+            logger.trace(msg.getLogMsgID() + " MIC outbound with forced reversed prevent canocalization: " + tmic);
             tmic = AS2Util.getCryptoHelper().calculateMIC(msg.getData(), dispOptions.getMicalg(),
                     false, msg.getPartnership().isPreventCanonicalization());
-            logger.trace("MIC outbound with forced exclude headers flag: " + tmic + msg.getLogMsgID());
+            logger.trace(msg.getLogMsgID() + " MIC outbound with forced exclude headers flag: " + tmic);
 
         }
     }

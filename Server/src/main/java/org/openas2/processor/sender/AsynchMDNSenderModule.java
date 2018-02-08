@@ -95,13 +95,13 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			MessageMDN mdn = msg.getMDN();
 
 			// Create a HTTP connection
-			if (logger.isDebugEnabled()) logger.debug("ASYNC MDN attempting connection to: " + url + msg.getLogMsgID());
+			if (logger.isDebugEnabled()) logger.debug(msg.getLogMsgID() + " ASYNC MDN attempting connection to: " + url);
 			HttpURLConnection conn = getConnection(url, true, true, false,
 					"POST");
 
 			try {
 
-				if (logger.isInfoEnabled()) logger.info("connected to " + url + msg.getLogMsgID());
+				if (logger.isInfoEnabled()) logger.info(msg.getLogMsgID() + " connected to " + url);
 
 				conn.setRequestProperty("Connection", "close, TE");
 				conn.setRequestProperty("User-Agent", msg.getAppTitle() + " (AsyncMDNSenderModule)");
@@ -117,7 +117,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 					headerValue.replace('\r', ' ');
 					conn.setRequestProperty(header.getName(), headerValue);
 					if (logger.isTraceEnabled())
-						logger.trace("Set HTTP response request property: " + header.getName() + " -> " + headerValue + msg.getLogMsgID());
+						logger.trace(msg.getLogMsgID() + " Set HTTP response request property: " + header.getName() + " -> " + headerValue);
 				}
 
 				// Note: closing this stream causes connection abort errors on
@@ -131,9 +131,8 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 
                     int bytes = IOUtils.copy(messageIn, messageOut);
                     Profiler.endProfile(transferStub);
-					if (logger.isInfoEnabled()) logger.info("transferred "
-							+ IOUtilOld.getTransferRate(bytes, transferStub)
-							+ msg.getLogMsgID());
+					if (logger.isInfoEnabled()) logger.info(msg.getLogMsgID() + " transferred "
+							+ IOUtilOld.getTransferRate(bytes, transferStub));
 				} finally {
 					messageIn.close();
 				}
@@ -155,8 +154,8 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 							respCode, conn.getResponseMessage());
 				}
 
-				if (logger.isInfoEnabled()) logger.info("sent AsyncMDN [" + disposition.toString()
-						+ "] OK " + msg.getLogMsgID());
+				if (logger.isInfoEnabled()) logger.info(msg.getLogMsgID() + " sent AsyncMDN [" + disposition.toString()
+						+ "] OK ");
 
 				// log & store mdn into backup folder.
 				getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
@@ -171,7 +170,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 		} catch (HttpResponseException hre)
 		{
 			// Resend if the HTTP Response has an error code
-			logger.warn("HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre) + msg.getLogMsgID(), hre);
+			logger.warn(msg.getLogMsgID() + " HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre), hre);
 			hre.terminate();
 			resend(msg, hre);
 			// Log significant msg state
@@ -179,7 +178,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			msg.trackMsgState(getSession());
 		} catch (IOException ioe)
 		{
-			logger.warn("IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe) + msg.getLogMsgID(), ioe);
+			logger.warn(msg.getLogMsgID() + " IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe), ioe);
 			// Resend if a network error occurs during transmission
 			WrappedException wioe = new WrappedException(ioe);
 			wioe.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
@@ -190,7 +189,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
 			msg.trackMsgState(getSession());
 		} catch (Exception e) {
-			logger.warn("Unexpected exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(e) + msg.getLogMsgID(), e);
+			logger.warn(msg.getLogMsgID() + " Unexpected exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
 			// Propagate error if it can't be handled by a resend
 			// log & store mdn into backup folder.
 			getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
@@ -227,7 +226,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
             msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
             msg.trackMsgState(getSession());
             AS2Util.cleanupFiles(msg, false);
-    		throw new OpenAS2Exception("MDN response abandoned after retry limit reached." + msg.getLogMsgID());
+    		throw new OpenAS2Exception(msg.getLogMsgID() + " MDN response abandoned after retry limit reached.");
     	}
 		Map<Object, Object> options = new HashMap<Object, Object>();
 		options.put(ResenderModule.OPTION_CAUSE, cause);

@@ -123,10 +123,9 @@ public class MimeBodyPartEncodingTest {
             PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
             String digest = msg.getPartnership().getAttribute(SecurePartnership.PA_SIGN);
 
-            System.out.println("Params for creating signed body part:: SIGN DIGEST: " + digest
+            System.out.println(msg.getLogMsgID() + " Params for creating signed body part:: SIGN DIGEST: " + digest
                     + "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName()
-                    + "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm()
-                    + msg.getLogMsgID());
+                    + "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm());
 
             String testFile = TestConfig.TEST_OUTPUT_FOLDER + "/" + TestConfig.TEST_DEFAULT_TGT_FILE_NAME + ".presigning";
             FileOutputStream fos = new FileOutputStream(testFile);

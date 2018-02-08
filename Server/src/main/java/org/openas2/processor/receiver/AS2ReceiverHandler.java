@@ -109,8 +109,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck")))
 				{
 					if (logger.isInfoEnabled())
-						logger.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]"
-								+ msg.getLogMsgID());
+						logger.info(msg.getLogMsgID() + " Healthcheck ping detected" + " [" + getClientInfo(s) + "]");
 					return;
 				}
 				else
@@ -130,12 +129,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			else
 			{
 				if (logger.isInfoEnabled())
-						logger.info("received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s)
-								+ msg.getLogMsgID());
+						logger.info(msg.getLogMsgID() + " received " + IOUtilOld.getTransferRate(data.length, transferStub) + getClientInfo(s));
 
 				if (logger.isTraceEnabled())
 				{
-					logger.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
+					logger.trace(msg.getLogMsgID() + " Received msg built from HTTP input stream: " + msg.toString());
 				}
 				// TODO store HTTP request, headers, and data to file in Received folder -> use message-id for filename?
 				try {
@@ -154,8 +152,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 								new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
 						if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
 						{
-							logger.trace("Received MimeBodyPart for inbound message: " + msg.getLogMsgID()
-									+ "\n" + MimeUtil.toString(receivedPart, true));
+							logger.trace(msg.getLogMsgID() + " Received MimeBodyPart for inbound message: \n" + MimeUtil.toString(receivedPart, true));
 						}
 						// Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the HTTP header
 						// since it may not be set in the received mime body part
@@ -173,7 +170,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						}
 						else if (logger.isTraceEnabled())
 						{
-							logger.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
+							logger.trace(msg.getLogMsgID() + " Received msg MimePart has transfer encoding: " + cte);
 						}
 						msg.setData(receivedPart);
 					} catch (Exception e) {
@@ -184,6 +181,15 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 								AS2ReceiverModule.DISP_PARSING_MIME_FAILED, e);
 					}
 
+					// check if request is forwarded by a reverse proxy
+					String sourceIpAddress = msg.getXForwardedFor();
+					if (sourceIpAddress == null) {
+						sourceIpAddress = msg.getXRealIP();
+					}
+					if(sourceIpAddress != null) {
+						logger.trace(msg.getLogMsgID() + " The server goes through the proxy " + msg.getAttribute(NetAttribute.MA_SOURCE_IP) + ", the original ip is " + sourceIpAddress);
+						msg.setAttribute(NetAttribute.MA_SOURCE_IP, sourceIpAddress);
+					}
 					// Extract AS2 ID's from header, find the message's partnership and update the message
 					try {
 						msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
@@ -248,7 +254,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 						} else {
 							HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
 							out.flush();
-							logger.info("sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
+							logger.info(msg.getLogMsgID() + " sent HTTP OK" + getClientInfo(s));
 						}
 					} catch (Exception e) {
 						msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
@@ -312,15 +318,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     // Create a new message and record the source ip and port
     protected AS2Message createMessage(Socket s) {
         AS2Message msg = new AS2Message();
-        String sourceIpAddress;
-        
-        // check if request is forwarded by a reverse proxy
-        if ((sourceIpAddress = msg.getXForwardedFor()).isEmpty()) {
-        	if ((sourceIpAddress = msg.getXRealIP()).isEmpty()) {
-        		sourceIpAddress = s.getInetAddress().toString();
-        	}
-        }
-        msg.setAttribute(NetAttribute.MA_SOURCE_IP, sourceIpAddress);
+        msg.setAttribute(NetAttribute.MA_SOURCE_IP, s.getInetAddress().toString());
         msg.setAttribute(NetAttribute.MA_SOURCE_PORT, Integer.toString(s.getPort()));
         msg.setAttribute(NetAttribute.MA_DESTINATION_IP, s.getLocalAddress().toString());
         msg.setAttribute(NetAttribute.MA_DESTINATION_PORT, Integer.toString(s.getLocalPort()));
@@ -346,15 +344,14 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             if (ch.isEncrypted(msg.getData())) {
             	msg.setRxdMsgWasEncrypted(true);
               // Decrypt
-            	if (logger.isDebugEnabled()) logger.debug("decrypting :::"+msg.getLogMsgID());
+            	if (logger.isDebugEnabled()) logger.debug(msg.getLogMsgID() + " ::: decrypting");
 
                 X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
                 PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
 				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
 				{
-					logger.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID()
-							+ "\n" + MimeUtil.toString(msg.getData(), true));
+					logger.trace(msg.getLogMsgID() + " Received MimeBodyPart for inbound message after decryption:\n" + MimeUtil.toString(msg.getData(), true));
 				}
             }
         } catch (Exception e) {
@@ -372,8 +369,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 				isDecompressed = true;
 				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
 				{
-					logger.trace("Received MimeBodyPart for inbound message after decompression: " + msg.getLogMsgID()
-							+ "\n" + MimeUtil.toString(msg.getData(), true));
+					logger.trace(msg.getLogMsgID() + " Received MimeBodyPart for inbound message after decompression:\n" + MimeUtil.toString(msg.getData(), true));
 				}
 			}
 		} catch (Exception e1) {
@@ -386,14 +382,13 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         try {
             if (ch.isSigned(msg.getData())) {
             	msg.setRxdMsgWasSigned(true);
-            	if (logger.isDebugEnabled()) logger.debug("verifying signature"+msg.getLogMsgID());
+            	if (logger.isDebugEnabled()) logger.debug(msg.getLogMsgID() + " verifying signature");
 
                 X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
                 msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
 				if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false")))
 				{
-					logger.trace("Received MimeBodyPart for inbound message after signature verification: " + msg.getLogMsgID()
-							+ "\n" + MimeUtil.toString(msg.getData(), true));
+					logger.trace(msg.getLogMsgID() + " Received MimeBodyPart for inbound message after signature verification:\n" + MimeUtil.toString(msg.getData(), true));
 				}
             }
         } catch (Exception e) {
@@ -432,10 +427,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		        	// Generate some alternative MIC's to see if the partner is somehow using a different default
 		        	String tmic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
 						        (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), !msg.getPartnership().isPreventCanonicalization());
-		        		logger.trace("MIC with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());
+		        		logger.trace(msg.getLogMsgID() + " MIC with forced reversed prevent canocalization: " + tmic);
 	        		tmic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(),
 						        false, msg.getPartnership().isPreventCanonicalization());
-		        		logger.trace("MIC with forced exclude headers flag: " + tmic + msg.getLogMsgID());
+		        		logger.trace(msg.getLogMsgID() + " MIC with forced exclude headers flag: " + tmic);
 		        	
 		        }
 			} catch (Exception e) {
@@ -486,7 +481,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 	out.write("Content-Length: 0\r\n\r\n".getBytes()); 
                 	out.flush();
                 	if (logger.isInfoEnabled())
-	                	  logger.info("setup to send asynch MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
+	                	  logger.info(msg.getLogMsgID() + " setup to send asynch MDN [" + disposition.toString() + "]");
                     return;
                 }
                 
@@ -515,14 +510,14 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 }
 
             	if (logger.isTraceEnabled())
-              	  logger.trace("MDN HEADERS SENT: " + saveHeaders + msg.getLogMsgID());
+              	  logger.trace(msg.getLogMsgID() + " MDN HEADERS SENT: " + saveHeaders);
                 out.write("\r\n".getBytes()); 
                 data.writeTo(out);
 				out.flush();
                 // Save sent MDN  for later examination
 				getModule().getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
 				if (logger.isInfoEnabled()) 
-					logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
+					logger.info(msg.getLogMsgID() + " sent MDN [" + disposition.toString() + "]");
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);

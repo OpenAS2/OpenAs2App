@@ -118,7 +118,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		{
 			String[] headerNames = customHeaderList.split("\\s*,\\s*");
 			String delimiters = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAME_DELIMITERS_IN_FILENAME);
-			if (logger.isTraceEnabled()) logger.trace("Adding custom headers based on message file name to custom headers map. Delimeters: " + delimiters + msg.getLogMsgID());
+			if (logger.isTraceEnabled()) logger.trace(msg.getLogMsgID() + " Adding custom headers based on message file name to custom headers map. Delimeters: " + delimiters);
 			if (delimiters != null)
 			{
 				// Extract the values based on delimiters which means the mime header names are prefixed with a target
@@ -132,8 +132,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 				for (int i = 0; i < headerNames.length; i++)
 				{
 					String[] header = headerNames[i].split("\\.");
-					if (logger.isTraceEnabled()) logger.trace("Adding custom header: " + headerNames[i] 
-							+ " :::Split count:" + header.length + msg.getLogMsgID());
+					if (logger.isTraceEnabled()) logger.trace(msg.getLogMsgID() + " Adding custom header: " + headerNames[i] 
+							+ " :::Split count:" + header.length);
 					if (header.length != 2) throw new OpenAS2Exception("Invalid custom header: " + headerNames[i] + "  :: The header name must be prefixed by \"header.\" or \"junk.\" etc");
 			    	if (!"header".equalsIgnoreCase(header[0])) continue; // Ignore anything not prefixed by "header"
 					msg.addCustomOuterMimeHeader(header[1], valueTokens.nextToken());
@@ -162,14 +162,14 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			}
 		}
 		if (logger.isInfoEnabled())
-			logger.info("File assigned to message: " + filename + msg.getLogMsgID());
+			logger.info(msg.getLogMsgID() + " File assigned to message: " + filename);
 
 		if (msg.getData() == null)
 		{
 			throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + filename);
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());
+			logger.trace(msg.getLogMsgID() + " PARTNERSHIP parms: " + msg.getPartnership().getAttributes());
 		// Retry count - first try on partnership then directory polling module
 		String maxRetryCnt = msg.getPartnership().getAttribute(AS2Partnership.PA_RESEND_MAX_RETRIES);
 		if (maxRetryCnt == null || maxRetryCnt.length() < 1)
@@ -177,7 +177,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			maxRetryCnt = getSession().getProcessor().getParameters().get(PARAM_RESEND_MAX_RETRIES);
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("RESEND COUNT extracted from config: " + maxRetryCnt + msg.getLogMsgID());
+			logger.trace(msg.getLogMsgID() + " RESEND COUNT extracted from config: " + maxRetryCnt);
 		Map<Object, Object> options = msg.getOptions();
 		options.put(ResenderModule.OPTION_RETRIES, maxRetryCnt);
 
@@ -185,12 +185,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			try
 			{
 				
-				logger.trace("Message object in directory polling module. Content-Disposition: " + msg.getContentDisposition()
-				    + "\n      Content-Type : " + msg.getContentType()
-				    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
-				    + "\n      Content-Disposition in MSG getData() MIMEPART: "
-				    + msg.getData().getContentType()
-					+msg.getLogMsgID()	);
+				logger.trace(msg.getLogMsgID() + " Message object in directory polling module. Content-Disposition: " + msg.getContentDisposition()
+					+ "\n      Content-Type : " + msg.getContentType()
+					+ "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
+					+ "\n      Content-Disposition in MSG getData() MIMEPART: "
+					+ msg.getData().getContentType());
 			} catch (Exception e){}
 		try
 		{
