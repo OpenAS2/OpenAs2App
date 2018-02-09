@@ -1,4 +1,4 @@
-F<commands>
+<commands>
 	<multicommand name="cert"
 				  description="Certificate commands">
 		<command classname="org.openas2.app.cert.ImportCertCommand"/>

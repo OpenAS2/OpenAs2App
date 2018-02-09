@@ -163,7 +163,7 @@ public class XMLSession extends BaseSession {
 		if (LogManager.isRegisteredWithApache()) {
 			; // continue
 		} else {
-            // if using the OpenAS2 loggers the log manager must registered with the jvm argument
+			// if using the OpenAS2 loggers the log manager must registered with the jvm argument
 			// -Dorg.apache.commons.logging.Log=org.openas2.logging.Log
 			throw new OpenAS2Exception("the OpenAS2 loggers' log manager must registered with the jvm argument -Dorg.apache.commons.logging.Log=org.openas2.logging.Log");
 		}
@@ -187,13 +187,7 @@ public class XMLSession extends BaseSession {
 			String url = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_URL).getNodeValue();
 			String user = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_USER).getNodeValue();
 			String password = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_PASSWORD).getNodeValue();
-			String tableMessage = null;
-			try {
-				tableMessage = namedNodeMap.getNamedItem(DBFactory.CONFIG_NAMED_NODE_TABLE_MESSAGE).getNodeValue();
-			} catch (NullPointerException e) {
-				//nothing
-			}
-			DBFactory bFactory = new DBFactory(url, user, password, tableMessage);
+			DBFactory bFactory = new DBFactory(url, user, password);
 			DBFactory.DBFactoryList.put(name, bFactory);
 		} catch (DOMException e) {
 			throw new OpenAS2Exception("Attributes '" + DBFactory.CONFIG_NAMED_NODE_NAME + "', '" + DBFactory.CONFIG_NAMED_NODE_URL + "', '"
