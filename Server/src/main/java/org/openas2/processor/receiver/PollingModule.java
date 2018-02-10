@@ -11,6 +11,8 @@ import org.openas2.params.InvalidParameterException;
 public abstract class PollingModule extends MessageBuilderModule {
 
 	private static final String PARAM_POLLING_INTERVAL = "interval";
+	public static final String PARAM_SEND_FILE_NAME= "sendfilename";
+	public static final String PARAM_FILE_NAME_FORMAT = "filenameformat";
 	private Timer timer;
 	private boolean busy;
 

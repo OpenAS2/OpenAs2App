@@ -18,11 +18,9 @@ import javax.mail.internet.MimeBodyPart;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openas2.DBFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
-import org.openas2.XMLSession;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
@@ -256,9 +254,16 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
 			// add below statement will tell the receiver to save the filename
 			// as the one sent by sender. 2007-06-01
-			String sendFileName = getParameter("sendfilename", false);
-			if (sendFileName != null && sendFileName.equals("true")) {
-				String contentDisposition = "Attachment; filename=\"" + msg.getAttribute(FileAttribute.MA_FILENAME) + "\"";
+			String sendFileName = getParameter(PollingModule.PARAM_SEND_FILE_NAME, false);
+			if (sendFileName != null && sendFileName.equalsIgnoreCase("true")) {
+				String fileNameFormat = getParameter(PollingModule.PARAM_FILE_NAME_FORMAT, false);
+				String fileName;
+				if(fileNameFormat == null) {
+					fileName = msg.getAttribute(FileAttribute.MA_FILENAME);
+				} else {
+					fileName = ParameterParser.parse(fileNameFormat, new MessageParameters(msg));
+				}
+				String contentDisposition = "Attachment; filename=\"" + fileName + "\"";
 				body.setHeader("Content-Disposition", contentDisposition);
 				msg.setContentDisposition(contentDisposition);
 			}
