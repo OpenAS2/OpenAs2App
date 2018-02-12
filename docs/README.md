@@ -5,8 +5,8 @@ In this document a partner can be either your own company or a company you will 
 The sample configurations in this document are based on Unix type OS but in general the onlysignificant difference is that it may be necessary to use “\” instead of “/” for folder name separators on Windows based machines but because the application is Java it should work fine leaving the “/” for the most part as Java will do the conversion if necessary.
 This document is valid for version 2.4.0 and up.
 # 2. Glossary
-EDI – Electronic Data Interchange
-MDN - Message Disposition Notification
+EDI : Electronic Data Interchange
+MDN : Message Disposition Notification
 # 3. Installing OpenAS2
 ## 3.1. System Requirements
 To be able to run the OpenAS2, you will need:
@@ -757,6 +757,7 @@ Where the field is left blank, the setting is unknown and the default that comes
 | Seeburger | ? | ? | ?
 | Oracle Integration B2B | false | false | false
 | Amazon | false | true | false
+| Chorus Pro | false | false | false
 # 15. Remote Control
 By default the OpenAS2 server application will start up a command processor as a socket listener allowing remote connection to the OpenAS2 server to execute commands. The OpenAS2 remote application is part of the application package but is not necessary to use it if you have no remote access requirement and should be disabled in the config.xml file if not using it by removing or commenting out the <commandProcessor> element with classname value
 org.openas2.cmd.processor.SocketCommandProcessor
@@ -846,13 +847,37 @@ The variables used in the configuration files are as follows:
         -Dorg.openas2.cert.Password=<somePassword>
         ```
 
-     -  Node: `partnerships` Describes the OpenAS2 classes to handle the trading partner identifications.
+     -  Node: `dbconfig` Create a connection to a database.
 
+        | Attributes | Description | example |
+        | ------ | ------ | ------ |
+        | name | describes the Java class to process the partnerships file. | org.openas2.partner.XMLPartnershipFactory |
+        | url | describes JDBC connect string. | jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8 |
+        | user | describes user. | openas2 |
+        | password | describes password. | 2oM2905Z#8 |
+        Sample:
+        ```XML
+        <dbconfig   name="as2_dbA" 
+                    url="jdbc:mysql://127.0.0.1/openas2?characterEncoding=UTF-8"
+                    user="openas2"
+                    password="2oM2905Z#8"/>
+        ```
+     -  Node: `partnerships` Describes the OpenAS2 classes to handle the trading partner identifications.
+        
         | Attributes | Description | example |
         | ------ | ------ | ------ |
         | classname | describes the Java class to process the partnerships file. | org.openas2.partner.XMLPartnershipFactory |
         | defines | the file name containing the partnerships definitions describes. | %home%/partnerships.xml |
-
+        ```XML
+        <partnerships classname="org.openas2.partner.XMLPartnershipFactory" filename="%home%/partnerships.xml"/>
+        ```
+        | Attributes | Description | example |
+        | ------ | ------ | ------ |
+        | classname | describes the Java class to process the partnerships file. | org.openas2.partner.XMLPartnershipFactory |
+        | dbconfig | defines the connection to the database to use. | as2_db |
+        ```XML
+        <partnerships classname="org.openas2.partner.DBPartnershipFactory" dbconfig="as2_db"/>
+        ```
      - Node: `loggers`
             Describes the OpenAS2 logging classes to use. You must include in your startup:
                 ```
@@ -862,6 +887,7 @@ The variables used in the configuration files are as follows:
                 Do not use this node when using other logging packages (e.g. log4j) with the OpenAS2 package.
          -  Node: logger (for E-mail logging)
             Optional, if not specified no E-mail logging is performed.
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to process E-mail logging | org.openas2.logging.EmailLogger |
@@ -876,7 +902,7 @@ The variables used in the configuration files are as follows:
             | smtppwd | defines user password if authentication is required for the SMTP server |  |
             | subject | describes the e-mail to the receiving party | $exception.name$: $exception.message$ (onlyrelevant a specific exceptions type) |
             | bodytemplate | defines the file that contains the body of the message | %home%/emailtemplate.txt |
-        
+
             > Possible values: `show` 
                             - all = all exceptions (terminated or not) and info
                             - terminated = all terminated exceptions Default value
@@ -884,6 +910,7 @@ The variables used in the configuration files are as follows:
     
          -  Node: logger (for file logging)
             Optional, if not specified no file logging is performed.
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to log messages | org.openas2.logging.FileLogger |
@@ -896,6 +923,7 @@ The variables used in the configuration files are as follows:
 
          - Node: logger (for Console logging, writes to System.out)
             Optional, if not specified no console logging is performed.
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to log messages | org.openas2.logging.ConsoleLogger |
@@ -908,6 +936,7 @@ The variables used in the configuration files are as follows:
 
      - Node: `commands`
         Describes the OpenAS2 command classes to use
+
         | Attributes | Description | example |
         | ------ | ------ | ------ |
         | classname | describes the Java class to process the command file. | org.openas2.app.XMLCommandRegistry |
@@ -915,11 +944,13 @@ The variables used in the configuration files are as follows:
 
      - Node: `processor`
         Describes the OpenAS2 class to handle the message processors.
+
         | Attributes | Description | example |
         | ------ | ------ | ------ |
         | classname | describes the default Java class to handle outgoing message. | org.openas2.processor.DefaultProcessor |
         - Node: `module`
             Module that sends out AS2 messages.
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to send outgoing Messages. | org.openas2.processor.sender.AS2SenderModule |
@@ -929,6 +960,7 @@ The variables used in the configuration files are as follows:
 
         - Node: `module`
             Module that sends out AS2 MDNs asynchronously.
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to send asynch MDN. | org.openas2.processor.sender.AsynchMDNSenderModule |
@@ -938,6 +970,7 @@ The variables used in the configuration files are as follows:
 
         - Node: `module`
         The following will describe a module to process outgoing message placed in a generic directory. The module determines the receiver and send from the file name placed in the directory (see format attribute). This module will look for files in specified directory and file names to send to the default message processor.
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to process files to be sent to the AS2SenderModule for its delivery process. | org.openas2.processor.receiver.AS2DirectoryPollingModule |
@@ -950,6 +983,7 @@ The variables used in the configuration files are as follows:
             | mimetype | describes the outgoing message mime message type. | application/EDI-X12 |
 
         - Node: `module`
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to process files for a particular trading partner that are sent to the AS2SenderModule for its delivery process. | org.openas2.processor.receiver.AS2DirectoryPollingModule |
@@ -963,6 +997,7 @@ The variables used in the configuration files are as follows:
             | filenameformat | describes he format in which the filename is to be passed. |  |
 
         - Node: `module`
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to process incoming MDNs. | org.openas2.processor.storage.MDNFileModule |
@@ -972,6 +1007,7 @@ The variables used in the configuration files are as follows:
 
         - Node: `module`
         Defines the module to handle messages.Attributes
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to process and store incoming messages. | org.openas2.processor.storage.MessageFileModule |
@@ -979,6 +1015,7 @@ The variables used in the configuration files are as follows:
             | protocol | describes the AS2 protocol | as2 |
             | tempdir | (Optional) defines temporary directory used to store MDNs during message processing. | %home%/temp |
         - Node: `module`
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to process handle incoming transfers. | org.openas2.processor.receiver.AS2ReceiverModule |
@@ -996,6 +1033,7 @@ The variables used in the configuration files are as follows:
             ```
 
         - Node: `module`
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to send asynchronous MDN response. | org.openas2.processor.receiver.AS2MDNReceiverModule |
@@ -1010,6 +1048,7 @@ The variables used in the configuration files are as follows:
             ```
             
         - Node: `module`
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | describes the Java class to rehandle messages. | org.openas2.processor.resender.DirectoryResenderModule |
@@ -1032,6 +1071,7 @@ This file describes your company and your trading partners. This file requires m
 
      - Node: `partnership`
             defines partner relationships between sender and receiver
+
         | Attributes | Description | example |
         | ------ | ------ | ------ |
         | name | Unique name of partnership relation. See filename parsing above. | OpenAS2A-OpenAS2B |
@@ -1079,12 +1119,14 @@ This file describes your company and your trading partners. This file requires m
 List of commands available to the OpenAS2 server Application.
  - Node: `commands` the root node
      - Node: `multicommand`
+
         | Attributes | Description | example |
         | ------ | ------ | ------ |
         | name | certificate commands or partnership commands | cert, partner, partnership |
         | description | value is some useful text |  |
 
          - Node: `command`
+
             | Attributes | Description | example |
             | ------ | ------ | ------ |
             | classname | value is a OpenAS2 classname that will process a command |  |
