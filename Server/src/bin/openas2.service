@@ -13,6 +13,7 @@ Environment=OPENAS2_PID=/opt/OpenAS2/bin/OpenAS2.pid
 PIDFile=/opt/OpenAS2/bin/OpenAS2.pid
 WorkingDirectory=/opt/OpenAS2
 ExecStart=/opt/OpenAS2/bin/start-openas2.sh
+SuccessExitStatus=0 143
 
 [Install]
 WantedBy=multi-user.target
