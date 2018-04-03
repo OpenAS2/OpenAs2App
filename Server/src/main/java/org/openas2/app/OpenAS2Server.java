@@ -3,12 +3,14 @@ package org.openas2.app;
 import java.io.File;
 
 import javax.annotation.Nonnull;
+import javax.crypto.Cipher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.XMLSession;
+import org.openas2.lib.helper.ICryptoHelper;
 
 
 /**
@@ -83,6 +85,11 @@ public class OpenAS2Server {
 
         public OpenAS2Server run(String... args) throws Exception
         {
+            // an error if the JCE is limited
+            if (Cipher.getMaxAllowedKeyLength(ICryptoHelper.DIGEST_MD5) <= ICryptoHelper.JCE_LIMITED_MAX_LENGTH) {
+                LOGGER.fatal(ICryptoHelper.JCE_LIMITATION_ERROR);
+                System.exit(1);
+            }
 
             XMLSession session = new XMLSession(findConfig(args).getAbsolutePath());
             final OpenAS2Server server = new OpenAS2Server(session);

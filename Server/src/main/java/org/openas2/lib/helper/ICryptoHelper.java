@@ -13,6 +13,9 @@ import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 
 public interface ICryptoHelper {
+    static final int JCE_LIMITED_MAX_LENGTH = 128;
+    static final String JCE_LIMITATION_ERROR = "OpenAS2 needs `Java Cryptography Extension` (JCE) Unlimited Strength Jurisdiction Policy Files!\nPlease verify it is installed in your Java installation. You can download it from Oracle Web site.";
+
     static final String DIGEST_MD2 = "md2";
     static final String DIGEST_MD5 = "md5";
     static final String DIGEST_SHA1 = "sha1";
