@@ -39,8 +39,6 @@ public class OpenAS2Exception extends Exception {
 
     public Object getSource(String id)
     {
-        Map<String, Object> sources = getSources();
-
         return sources.get(id);
     }
 
@@ -51,7 +49,6 @@ public class OpenAS2Exception extends Exception {
 
     public void addSource(String id, Object source)
     {
-        Map<String, Object> sources = getSources();
         sources.put(id, source);
     }
 
