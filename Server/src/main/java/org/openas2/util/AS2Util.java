@@ -66,14 +66,17 @@ public class AS2Util {
 
         return ch;
     }
-    
+
+    private static CompositeParameters getCompositeParams(Message msg) {
+    	return new CompositeParameters(false).
+				add("date", new DateParameters()).
+				add("msg", new MessageParameters(msg)).
+				add("rand", new RandomParameters());
+	}
+
     public static String generateMessageID(Message msg) throws InvalidParameterException
     {
-    	CompositeParameters params = 
-    		new CompositeParameters(false).
-    			add("date", new DateParameters()).
-    			add("msg", new MessageParameters(msg)).
-    			add("rand", new RandomParameters());
+    	CompositeParameters params = getCompositeParams(msg);
         
     	String idFormat = msg.getPartnership().getAttribute(AS2Partnership.PA_MESSAGEID);
     	if (idFormat == null)
@@ -84,7 +87,21 @@ public class AS2Util {
   		return ParameterParser.parse(idFormat, params);
     }
 
+	public static String generateMDNMessageID(Message msg) throws InvalidParameterException
+	{
+		CompositeParameters params = getCompositeParams(msg);
 
+		String idFormat = msg.getPartnership().getAttribute(AS2Partnership.PA_MDN_MESSAGEID);
+		if (idFormat == null)
+		{
+			idFormat = Properties.getProperty("as2_mdn_message_id_format", null);
+			if (idFormat == null) {
+				// Fallback
+				return generateMessageID(msg);
+			}
+		}
+		return ParameterParser.parse(idFormat, params);
+	}
 
     public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
             DispositionType disposition, String text) throws Exception {
