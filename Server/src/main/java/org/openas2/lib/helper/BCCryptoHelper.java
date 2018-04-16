@@ -409,14 +409,6 @@ public class BCCryptoHelper implements ICryptoHelper {
         X509Certificate x509Cert = castCertificate(cert);
 
         MimeMultipart mainParts = (MimeMultipart) part.getContent();
-        if (logger.isInfoEnabled())
-	{
-		logger.info("SIGNED MimeBodyPart for inbound MDN message: " 
-			        + "\n" + MimeUtil.toString(part, true)
-				+ "\n\t Multipart count: " + mainParts.getCount()
-				+ "\n\t Multipart content class: " + part.getContent().getClass().getName());
-	}
-
 
         SMIMESigned signedPart = new SMIMESigned(mainParts);
         //SignerInformationStore  signers = signedPart.getSignerInfos();
