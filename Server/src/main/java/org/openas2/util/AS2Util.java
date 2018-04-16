@@ -545,7 +545,7 @@ public class AS2Util {
     				+ newPendInfFile.getName() + msg.getLogMsgID());
     	try
     	{
-    		newPendInfFile = IOUtilOld.moveFile(oldPendInfFile, newPendInfFile, false, true);
+    		newPendInfFile = IOUtil.moveFile(oldPendInfFile, newPendInfFile, false, true);
     		// Update the name of the file in the message object
     		msg.setAttribute(FileAttribute.MA_PENDINGINFO, newPendingInfoFileName);
     		if (logger.isInfoEnabled())
@@ -704,7 +704,7 @@ public class AS2Util {
      * @param msg - the Message object containing enough information to build the pending info file name
      */
     
-	public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
+public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 		// use original message ID to open the pending information file from pendinginfo folder.
@@ -791,7 +791,7 @@ public class AS2Util {
 
 		try
 		{
-			IOUtilOld.deleteFile(fPendingInfoFile);
+			IOUtil.deleteFile(fPendingInfoFile);
             if (logger.isTraceEnabled()) logger.trace("deleted " + pendingInfoFileName + msg.getLogMsgID());
 		} catch (Exception e)
 		{
@@ -803,7 +803,7 @@ public class AS2Util {
 		File fPendingFile = new File(pendingFileName);
 		try
 		{
-			IOUtilOld.deleteFile(new File(pendingFileName + ".object"));
+			IOUtil.deleteFile(new File(pendingFileName + ".object"));
             if (logger.isTraceEnabled()) logger.trace("deleted " + pendingFileName + ".object" + msg.getLogMsgID());
 		} catch (Exception e)
 		{
@@ -834,7 +834,7 @@ public class AS2Util {
 				try
 				{
 					tgtFile = new File(tgtDir + "/" + fPendingFile.getName());
-					tgtFile = IOUtilOld.moveFile(fPendingFile, tgtFile, false, true);
+					tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false, true);
 					isMoved = true;
 
 					if (logger.isInfoEnabled())
@@ -849,7 +849,7 @@ public class AS2Util {
 
 			if (!isMoved)
 			{
-				IOUtilOld.deleteFile(fPendingFile);
+				IOUtil.deleteFile(fPendingFile);
 	            if (logger.isInfoEnabled()) logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
 			}
 		} catch (Exception e)

@@ -24,7 +24,7 @@ import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
 import org.openas2.util.DispositionType;
-import org.openas2.util.IOUtilOld;
+import org.openas2.util.IOUtil;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
 import org.openas2.util.Properties;
@@ -129,7 +129,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
                     int bytes = IOUtils.copy(messageIn, messageOut);
                     Profiler.endProfile(transferStub);
 					if (logger.isInfoEnabled()) logger.info("transferred "
-							+ IOUtilOld.getTransferRate(bytes, transferStub)
+							+ IOUtil.getTransferRate(bytes, transferStub)
 							+ msg.getLogMsgID());
 				} finally {
 					messageIn.close();

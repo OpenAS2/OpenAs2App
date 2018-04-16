@@ -37,7 +37,7 @@ import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtilOld;
+import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
@@ -148,8 +148,8 @@ public abstract class NetModule extends BaseReceiverModule {
             String name = params.format(getParameter(PARAM_ERRORS, DEFAULT_ERRORS));
             String directory = getParameter(PARAM_ERROR_DIRECTORY, true);
 
-            File msgFile = IOUtilOld.getUnique(IOUtilOld.getDirectoryFile(directory),
-                    IOUtilOld.cleanFilename(name));
+            File msgFile = IOUtil.getUnique(IOUtil.getDirectoryFile(directory),
+                    IOUtil.cleanFilename(name));
             String msgText = msg.toString();
             FileOutputStream fOut = new FileOutputStream(msgFile);
 

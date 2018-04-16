@@ -82,6 +82,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 import org.openas2.processor.receiver.AS2ReceiverModule;
@@ -408,6 +409,14 @@ public class BCCryptoHelper implements ICryptoHelper {
         X509Certificate x509Cert = castCertificate(cert);
 
         MimeMultipart mainParts = (MimeMultipart) part.getContent();
+        if (logger.isInfoEnabled())
+	{
+		logger.info("SIGNED MimeBodyPart for inbound MDN message: " 
+			        + "\n" + MimeUtil.toString(part, true)
+				+ "\n\t Multipart count: " + mainParts.getCount()
+				+ "\n\t Multipart content class: " + part.getContent().getClass().getName());
+	}
+
 
         SMIMESigned signedPart = new SMIMESigned(mainParts);
         //SignerInformationStore  signers = signedPart.getSignerInfos();

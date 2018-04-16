@@ -10,7 +10,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.message.InvalidMessageException;
 
 
-public class IOUtilOld {
+public class IOUtil {
     private static final String VALID_FILENAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@-";
 
     public static File getDirectoryFile(String directory)
@@ -80,22 +80,26 @@ public class IOUtilOld {
         return new File(dir, filename + "." + UUID.randomUUID());
     }
 
-    public static String cleanFilename(String filename)
-    {
-        byte[] fnBytes = filename.getBytes();
-        byte c;
+    public static String cleanFilename(String filename) {
+	/*
+	 * byte[] fnBytes = filename.getBytes(); byte c;
+	 * 
+	 * for (int i = 0; i < fnBytes.length; i++) { c = fnBytes[i];
+	 * 
+	 * if (VALID_FILENAME_CHARS.indexOf(c) == -1) { fnBytes[i] = '_'; } }
+	 * 
+	 * return new String(fnBytes);
+	 */
+	String reservedFilenameChars = Properties.getProperty("reservedFilenameCharacters", "<>:\"|?*");
+	if (reservedFilenameChars != null && reservedFilenameChars.length() > 0) {
+	    String srchReplStr = reservedFilenameChars.replaceAll("\\[", "\\[").replaceAll("\\]", "\\]");
+	    if (reservedFilenameChars.contains(":") && filename.matches("^[a-zA-Z]{1}:.*")) {
+		filename = filename.substring(0, 2) + filename.substring(2).replaceAll("[" + srchReplStr + "]", "");
+	    } else
+		filename = filename.replaceAll("[" + srchReplStr + "]", "");
+	}
+	return filename;
 
-        for (int i = 0; i < fnBytes.length; i++)
-        {
-            c = fnBytes[i];
-
-            if (VALID_FILENAME_CHARS.indexOf(c) == -1)
-            {
-                fnBytes[i] = '_';
-            }
-        }
-
-        return new String(fnBytes);
     }
 
     // move the file to an error directory    
@@ -106,12 +110,12 @@ public class IOUtilOld {
 
         try
         {
-            File errorDir = IOUtilOld.getDirectoryFile(errorDirectory);
+            File errorDir = IOUtil.getDirectoryFile(errorDirectory);
 
             destFile = new File(errorDir, file.getName());
 
             // move the file
-            destFile = IOUtilOld.moveFile(file, destFile, false, true);
+            destFile = IOUtil.moveFile(file, destFile, false, true);
         } catch (IOException ioe)
         {
             InvalidMessageException im = new InvalidMessageException("Failed to move " +

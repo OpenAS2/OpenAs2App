@@ -17,6 +17,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -39,10 +40,11 @@ import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
 import org.openas2.util.DispositionOptions;
 import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtilOld;
+import org.openas2.util.IOUtil;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
 import org.openas2.util.Properties;
+import org.openas2.util.StringUtil;
 
 public class AS2SenderModule extends HttpSenderModule {
 
@@ -359,6 +361,15 @@ public class AS2SenderModule extends HttpSenderModule {
         // Note: closing this stream causes connection abort errors on some AS2
         // servers
         OutputStream messageOut = conn.getOutputStream();
+        FileOutputStream audit = null;
+        String partnerAuditFlag = msg.getPartnership().getAttribute("create_http_audit_file_send");
+        if (partnerAuditFlag == null || partnerAuditFlag.length() == 0) partnerAuditFlag = Properties.getProperty("create_http_audit_files", "false");
+        if ("true".equalsIgnoreCase(partnerAuditFlag)) {
+            String fileName = "xxx";
+            audit = new FileOutputStream(fileName);
+            TeeOutputStream tee = new TeeOutputStream(messageOut, audit);
+            messageOut = tee;
+        }
 
         // Transfer the data
         InputStream messageIn = securedData.getInputStream();
@@ -372,7 +383,7 @@ public class AS2SenderModule extends HttpSenderModule {
             Profiler.endProfile(transferStub);
             if (logger.isInfoEnabled())
             {
-                logger.info("transferred " + IOUtilOld.getTransferRate(bytes, transferStub) + msg.getLogMsgID());
+                logger.info("Transferred " + IOUtil.getTransferRate(bytes, transferStub) + msg.getLogMsgID());
             }
         } finally
         {
