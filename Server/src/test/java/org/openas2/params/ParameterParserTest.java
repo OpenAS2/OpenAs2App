@@ -3,12 +3,14 @@ package org.openas2.params;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openas2.message.AS2Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
+import org.openas2.util.Properties;
 import org.openas2.util.StringUtil;
 
 import static org.hamcrest.Matchers.is;
@@ -22,6 +24,8 @@ public class ParameterParserTest {
     private static final String senderId = "MySenderId";
     private static final String receiverId = "MyReceiverId";
     private static final String prefix = "PARSER@";
+    private static final String homeParam = "%home%";
+    private static final String homeValue = "/My/Home/Dir";
     // Parameter string and regex test for various params
     private String [][] positiveTests = {
 	    { prefix + "$msg.sender."+ AS2Partnership.PID_AS2 + "$_$msg.receiver." + AS2Partnership.PID_AS2 + "$"
@@ -31,6 +35,7 @@ public class ParameterParserTest {
            ,{ "$date.yyyyMMddHHmmssZ$", "[0-9]{14}[-+][0-9]{4}" }
            ,{ "$rand.1234$-$rand.UUID$-$rand.shortUUID$", "[0-9]{4}-[a-fA-F0-9-]{36}-[a-zA-Z0-9]*" }
            ,{ prefix + "$$$rand.12345$", prefix + "\\$[0-9]{5}" }
+           ,{ homeParam + "/$rand.12345$", homeValue + "/[0-9]{5}" }
          };
     private String [][] negativeTests = {
 	    { prefix + "$sender$", prefix + senderId }
@@ -53,7 +58,7 @@ public class ParameterParserTest {
         when(mdn.getPartnership()).thenReturn(partnership);
         when(partnership.getReceiverID(eq(AS2Partnership.PID_AS2))).thenReturn(receiverId);
         when(partnership.getSenderID(eq(AS2Partnership.PID_AS2))).thenReturn(senderId);
-
+        Properties.setProperty(Properties.APP_BASE_DIR_PROP, homeValue);
     }
 
     @Test

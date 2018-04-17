@@ -62,6 +62,7 @@ public class StringUtil {
      * @throws InvalidParameterException - a parameter found in the string cannot be identified
      */
     public static String parseParameterisedString(String paramString, Message msg) throws InvalidParameterException {
+	paramString = paramString.replaceAll("%home%", Properties.getProperty(Properties.APP_BASE_DIR_PROP, "%home%"));
         CompositeParameters compParams = new CompositeParameters(false)
             .add("date", new DateParameters())
    	    .add("rand", new RandomParameters());
