@@ -13,7 +13,7 @@ public class Properties
 	
 	public static void setProperties(Map<String, String> map)
 	{
-		_properties = map;
+		_properties.putAll(map);
 	}
 
 	public static void setProperty(String prop, String val)
