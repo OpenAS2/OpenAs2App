@@ -7,6 +7,7 @@ import org.openas2.message.Message;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
@@ -52,5 +53,26 @@ public class StringUtil {
 	}
         return strBuf.toString();
     }
+
+    /*
+     * Returns a string where identified parameters are replaced with their values
+     * @param paramString - the string containing parameters to be parsed and replaced
+     * @param msg - optional parameter, The message object associated with AS2 messages
+     * @return the parsed string
+     * @throws InvalidParameterException - a parameter found in the string cannot be identified
+     */
+    public static String parseParameterisedString(String paramString, Message msg) throws InvalidParameterException {
+        CompositeParameters compParams = new CompositeParameters(false)
+            .add("date", new DateParameters())
+   	    .add("rand", new RandomParameters());
+       	if (msg != null) {
+       	    compParams.add("msg", new MessageParameters(msg));
+       	    
+       	    if (msg.getMDN() != null) compParams.add("mdn", new MessageMDNParameters(msg.getMDN()));
+       	}
+ 
+        return ParameterParser.parse(paramString, compParams);
+    }
+
 
 }
