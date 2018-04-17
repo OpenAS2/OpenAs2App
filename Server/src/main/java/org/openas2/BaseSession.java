@@ -9,6 +9,7 @@ import javax.activation.MailcapCommandMap;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
+import org.openas2.util.Properties;
 
 
 public abstract class BaseSession implements Session {
@@ -120,6 +121,7 @@ public abstract class BaseSession implements Session {
     void setBaseDirectory(String dir)
     {
         baseDirectory = dir;
+        Properties.setProperty(Properties.APP_BASE_DIR_PROP, baseDirectory);
     }
 
 }
