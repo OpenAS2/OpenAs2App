@@ -174,10 +174,10 @@ public abstract class DirectoryPollingModule extends PollingModule
             } else
             {
                 // if the file length has changed, update the tracker
-				long newLength = file.length();
+		long newLength = file.length();
                 if (newLength != fileLength)
                 {
-                    trackedFiles.put(fileEntry.getKey(), new Long(newLength));
+                    trackedFiles.put(fileEntry.getKey(), Long.valueOf(newLength));
                 } else
                 {
                     // if the file length has stayed the same, process the file
