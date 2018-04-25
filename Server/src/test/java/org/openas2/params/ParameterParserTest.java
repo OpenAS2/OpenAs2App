@@ -3,7 +3,6 @@ package org.openas2.params;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openas2.message.AS2Message;
@@ -30,7 +29,7 @@ public class ParameterParserTest {
     private String [][] positiveTests = {
 	    { prefix + "$msg.sender."+ AS2Partnership.PID_AS2 + "$_$msg.receiver." + AS2Partnership.PID_AS2 + "$"
 		, prefix + senderId + "_" + receiverId }
-		   ,{ "$mdn.msg.sender."+ AS2Partnership.PID_AS2 + "$", senderId }
+	   ,{ "$mdn.msg.sender."+ AS2Partnership.PID_AS2 + "$", senderId }
 	   ,{ "$mdn.sender."+ AS2Partnership.PID_AS2 + "$", senderId }
            ,{ "$date.yyyyMMddHHmmssZ$", "[0-9]{14}[-+][0-9]{4}" }
            ,{ "$rand.1234$-$rand.UUID$-$rand.shortUUID$", "[0-9]{4}-[a-fA-F0-9-]{36}-[a-zA-Z0-9]*" }
