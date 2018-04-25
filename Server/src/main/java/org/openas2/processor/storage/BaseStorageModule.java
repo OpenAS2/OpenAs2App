@@ -13,7 +13,6 @@ import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.processor.BaseProcessorModule;
 import org.openas2.util.IOUtil;
-import org.openas2.util.Properties;
 
 public abstract class BaseStorageModule extends BaseProcessorModule implements StorageModule {
     public static final String PARAM_FILENAME = "filename";
