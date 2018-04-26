@@ -444,7 +444,7 @@ public class HTTPUtil {
 
         if (data == null || data.size() < 1) {
             // if no data will be sent, write the HTTP code or zero Content-Length
-            boolean sendHttpCodeAsString = "true".equals(Properties.getProperty("remove_http_header_folding", "false"));
+            boolean sendHttpCodeAsString = "true".equals(Properties.getProperty("send_http_code_as_string_when_no_data", "false"));
     	    if (sendHttpCodeAsString) {
     		byte[] responseCodeBytes = httpResponse.toString().getBytes();
     		out.write(("Content-Length: " + responseCodeBytes.length + "\r\n\r\n").getBytes()); 
