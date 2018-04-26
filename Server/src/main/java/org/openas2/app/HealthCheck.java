@@ -22,7 +22,7 @@ public class HealthCheck {
 	// Invoke each configured modules healthcheck method with any results returned in the failures array
 	List<String> failures = new ArrayList<String>();
 	try {
-	    if (module != null) logger.warn("Module passed in to helathcheck is NULL so not module check was performed.");
+	    if (module == null) logger.warn("Module passed in to helathcheck is NULL so not module check was performed.");
 	    else module.getSession().getProcessor().checkActiveModules(failures);
 	} catch (ComponentNotFoundException e) {
 	    failures.add("Error executing module check: " + e.getMessage());
