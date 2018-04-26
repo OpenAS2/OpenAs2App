@@ -81,7 +81,7 @@ public class AS2Util {
     		idFormat = Properties.getProperty("as2_message_id_format"
     				, "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>");
     	}
-  		return ParameterParser.parse(idFormat, params);
+    	return ParameterParser.parse(idFormat, params);
     }
 
 
@@ -602,7 +602,7 @@ public class AS2Util {
 					+ org.openas2.logging.Log.getExceptionMsg(e1));
 			logger.error(msg, e1);
 			if (isAsyncMDN)
-				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, false);
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, null);
 			throw new OpenAS2Exception("Error receiving MDN. Processing stopped.");
 		}
 
@@ -632,7 +632,7 @@ public class AS2Util {
 			 * errors or MIC mismatch
 			 */
 			if (isAsyncMDN)
-				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
 
 		} catch (DispositionException de)
 		{
@@ -641,7 +641,7 @@ public class AS2Util {
 			 * indicate message received
 			 */
 			if (isAsyncMDN)
-				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
 			// If a disposition exception occurs then there must have been an
 			// error response in the disposition
 			if (logger.isErrorEnabled()) logger.error("Disposition exception processing MDN ..." + msg.getLogMsgID(), de);
@@ -655,7 +655,7 @@ public class AS2Util {
 		{
 			// Possibly MIC mismatch so resend
 			if (isAsyncMDN)
-				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
 			OpenAS2Exception oae2 = new OpenAS2Exception(
 					"Message was sent but an error occured while receiving the MDN: "
 							+ org.openas2.logging.Log.getExceptionMsg(oae));

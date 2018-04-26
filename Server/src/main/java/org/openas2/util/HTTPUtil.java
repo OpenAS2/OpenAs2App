@@ -2,6 +2,7 @@ package org.openas2.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -326,7 +327,7 @@ public class HTTPUtil {
                 }
         		else {
         			if (outStream != null) 
-        				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
+        				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, null);
         			throw new IOException("Transfer-Encoding unimplemented: " + transfer_encoding);
         		}
         	}
@@ -344,39 +345,35 @@ public class HTTPUtil {
     }
 
     /*
-     * TODO: Move this out of HTTPUtil class so that class does not depend on AS2 specific stuff
+     * TODO: Move this out of HTTPUtil class so that class does not depend on AS2
+     * specific stuff
      */
-    @SuppressWarnings("unchecked")
-	public static byte[] readData(InputStream inStream, OutputStream outStream, Message msg) throws IOException, MessagingException {
-        List<String> request = new ArrayList<String>(2);
-    	byte[] data = readHTTP(inStream, outStream, msg.getHeaders(), request);
-        
-        msg.setAttribute(MA_HTTP_REQ_TYPE, request.get(0));
-        msg.setAttribute(MA_HTTP_REQ_URL, request.get(1));
-        if (data == null)
-        {
-        	String healthCheckUri = Properties.getProperty("health_check_uri", "healthcheck");
-        	if ("GET".equalsIgnoreCase(request.get(0)) && request.get(1).matches("^[/]{0,1}"+healthCheckUri+"*"))
-        	{
-        		if (outStream != null)
-        		{
-    				HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_OK, false);
-    				msg.setAttribute("isHealthCheck", "true"); // provide means for caller to know what happened
-        		}
-        		return null;
-        	}
-        	else
-        	{
-    			HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, false);
-                Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
-            	logger.error("Inbound HTTP request does not provide means to determine data length: "
-                     + request.get(0) + " " + request.get(1)
-                     + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;")
-                    );
-                throw new IOException("Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");        		
-        	}
-        }
-        return data;
+    public static byte[] readData(InputStream inStream, OutputStream outStream, Message msg)
+	    throws IOException, MessagingException {
+	List<String> request = new ArrayList<String>(2);
+	byte[] data = readHTTP(inStream, outStream, msg.getHeaders(), request);
+
+	msg.setAttribute(MA_HTTP_REQ_TYPE, request.get(0));
+	msg.setAttribute(MA_HTTP_REQ_URL, request.get(1));
+	if (data == null) {
+	    String healthCheckUri = Properties.getProperty("health_check_uri", "healthcheck");
+	    if ("GET".equalsIgnoreCase(request.get(0)) && request.get(1).matches("^[/]{0,1}" + healthCheckUri + "*")) {
+		if (outStream != null) {
+		    HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_OK, null);
+		    msg.setAttribute("isHealthCheck", "true"); // provide means for caller to know what happened
+		}
+		return null;
+	    } else {
+		HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, null);
+		Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
+		logger.error("Inbound HTTP request does not provide means to determine data length: " + request.get(0)
+			+ " " + request.get(1) + "\n\tHeaders: "
+			+ printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;"));
+		throw new IOException(
+			"Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
+	    }
+	}
+	return data;
     }
 
     public static String[] readRequest(InputStream in) throws IOException {
@@ -414,7 +411,15 @@ public class HTTPUtil {
         }
     }
 
-    public static void sendHTTPResponse(OutputStream out, int responseCode, boolean hasData)
+    /*
+     * Sends an HTTP response on the connection passed as a parameter with the specified response code.
+     * If there are headers in the enumeration then it will send the headers
+     * @param out The HTTP output stream
+     * @param responsCode The HTTP response code to be sent
+     * @param data Data if any. Can be null
+     * @param headers Headers if any to be sent
+     */
+    public static void sendHTTPResponse(OutputStream out, int responseCode, ByteArrayOutputStream data, Enumeration<String> headers)
             throws IOException {
         StringBuffer httpResponse = new StringBuffer();
         httpResponse.append(Integer.toString(responseCode)).append(" ");
@@ -423,10 +428,52 @@ public class HTTPUtil {
         StringBuffer response = new StringBuffer("HTTP/1.1 ");
         response.append(httpResponse);
         out.write(response.toString().getBytes());
-        if (!hasData) { // if no data will be sent, write the HTTP code
-            out.write("\r\n".getBytes());
-            out.write(httpResponse.toString().getBytes());
+        String header;
+
+        if (headers != null) {
+            boolean removeHeaderFolding = "true".equals(Properties.getProperty("remove_http_header_folding", "true"));
+            while (headers.hasMoreElements()) {
+                header = (String) headers.nextElement();
+                // Support https://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-13#section-3.2
+                if (removeHeaderFolding) {
+                	header = header.replaceAll("\r\n[ \t]*", " ");
+                }
+                out.write((header + "\r\n").getBytes());
+            }
         }
+
+        if (data == null || data.size() < 1) {
+            // if no data will be sent, write the HTTP code or zero Content-Length
+            boolean sendHttpCodeAsString = "true".equals(Properties.getProperty("remove_http_header_folding", "false"));
+    	    if (sendHttpCodeAsString) {
+    		byte[] responseCodeBytes = httpResponse.toString().getBytes();
+    		out.write(("Content-Length: " + responseCodeBytes.length + "\r\n\r\n").getBytes()); 
+                out.write(responseCodeBytes);
+    	    }
+    	    else out.write("Content-Length: 0\r\n\r\n".getBytes()); 
+    		
+        }
+        else {
+            data.writeTo(out);
+        }
+        out.flush();
+    }
+
+    /*
+     * Sends an HTTP response on the connection passed as a parameter with the specified response code.
+    * @param out The HTTP output stream
+     * @param responsCode The HTTP response code to be sent
+     * @param data Data if any. Can be null
+     */
+    public static void sendHTTPResponse(OutputStream out, int responseCode, String data)
+            throws IOException {
+	ByteArrayOutputStream dataOS = null;
+	if (data != null) {
+	    dataOS = new ByteArrayOutputStream();
+	    dataOS.write(data.getBytes());
+	}
+        
+	sendHTTPResponse(out, responseCode, dataOS, null);
     }
 
     public static String printHeaders(Enumeration<Header> hdrs, String nameValueSeparator, String valuePairSeparator)

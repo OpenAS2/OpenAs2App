@@ -16,6 +16,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.ParseException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.DispositionException;
@@ -110,7 +111,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		    return;
 		} else {
 		    try {
-			HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
+			HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
 		    } catch (IOException e1) {
 		    }
 		    OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
@@ -248,7 +249,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			    msg.trackMsgState(getModule().getSession());
 
 			} else {
-			    HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
+			    HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
 			    out.flush();
 			    logger.info("sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
 			}
@@ -477,48 +478,31 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
                 //if asyncMDN requested... 
                 if (msg.isRequestingAsynchMDN() ) {
-                    HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, false);
-                	out.write("Content-Length: 0\r\n\r\n".getBytes()); 
-                	out.flush();
-                	if (logger.isInfoEnabled())
+                    HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
+                    if (logger.isInfoEnabled())
 	                	  logger.info("setup to send asynch MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
                     return;
                 }
                 
                 //  otherwise, send sync MDN back on same connection
-                HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, true);
-
 
                 // make sure to set the content-length header
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
                 MimeBodyPart part = mdn.getData();
-				IOUtils.copy(part.getInputStream(), data);
-				mdn.setHeader("Content-Length", Integer.toString(data.size()));
+                IOUtils.copy(part.getInputStream(), data);
+                mdn.setHeader("Content-Length", Integer.toString(data.size()));
 
 
-                Enumeration<String> headers = mdn.getHeaders().getAllHeaderLines();
-                String header;
-                StringBuffer saveHeaders = new StringBuffer();
-
-                while (headers.hasMoreElements()) {
-                    header = (String) headers.nextElement();
-                    // Support https://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-13#section-3.2
-                    saveHeaders = saveHeaders.append(";;").append(header);
-                    if (removeHeaderFolding) {
-                    	header = header.replaceAll("\r\n[ \t]*", " ");
-                    }
-                    out.write((header + "\r\n").getBytes());
-                }
-
-            	if (logger.isTraceEnabled())
-              	  logger.trace("MDN HEADERS SENT: " + saveHeaders + msg.getLogMsgID());
-                out.write("\r\n".getBytes()); 
-                data.writeTo(out);
-				out.flush();
+                HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, data, mdn.getHeaders().getAllHeaderLines());
+            	if (logger.isTraceEnabled()) {
+            	    Enumeration<String> headers = mdn.getHeaders().getAllHeaderLines();
+            	    if (headers.hasMoreElements())
+            		logger.trace("MDN HEADERS SENT: " + StringUtils.join(headers, ";;")+ msg.getLogMsgID());
+            	}
                 // Save sent MDN  for later examination
-				getModule().getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
-				if (logger.isInfoEnabled()) 
-					logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
+                getModule().getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
+                if (logger.isInfoEnabled()) 
+                    	logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);

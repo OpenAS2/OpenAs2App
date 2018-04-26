@@ -60,7 +60,6 @@ public class AS2SenderModule extends HttpSenderModule {
         return (msg instanceof AS2Message);
     }
 
-    @SuppressWarnings("unchecked")
     public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception
     {
 
@@ -358,17 +357,21 @@ public class AS2SenderModule extends HttpSenderModule {
             logger.info("Connecting to: " + conn.getURL() + msg.getLogMsgID());
         }
 
-        // Note: closing this stream causes connection abort errors on some AS2
-        // servers
+        // Note: closing this stream causes connection abort errors on some AS2 servers
         OutputStream messageOut = conn.getOutputStream();
         FileOutputStream audit = null;
-        String partnerAuditFlag = msg.getPartnership().getAttribute("create_http_audit_file_send");
+        String partnerAuditFlag = msg.getPartnership().getAttribute("create_http_audit_files");
         if (partnerAuditFlag == null || partnerAuditFlag.length() == 0) partnerAuditFlag = Properties.getProperty("create_http_audit_files", "false");
         if ("true".equalsIgnoreCase(partnerAuditFlag)) {
-            String fileName = "xxx";
-            audit = new FileOutputStream(fileName);
-            TeeOutputStream tee = new TeeOutputStream(messageOut, audit);
-            messageOut = tee;
+            String filenameParam = Properties.getProperty("audit_filename_message", "");
+            if (!"".equals(filenameParam)) {
+                String fileName = StringUtil.parseParameterisedString(filenameParam, msg);
+                audit = IOUtil.getFileOutPutStream(fileName, true);
+                messageOut = new TeeOutputStream(messageOut, audit);
+            }
+            else {
+        	if (logger.isWarnEnabled()) logger.warn("Audit file logging is enabled but no value for filename was defiend in properties for accessor \"audit_filename_message\"");
+            }
         }
 
         // Transfer the data
@@ -388,6 +391,7 @@ public class AS2SenderModule extends HttpSenderModule {
         } finally
         {
             messageIn.close();
+            if (audit != null) audit.close();
         }
         // Check the HTTP Response code
         int rc = conn.getResponseCode();
