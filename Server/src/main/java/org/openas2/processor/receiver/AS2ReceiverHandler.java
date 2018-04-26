@@ -43,11 +43,9 @@ import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtil;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
-import org.openas2.util.Properties;
 
 public class AS2ReceiverHandler implements NetModuleHandler {
     private AS2ReceiverModule module;
-    private boolean removeHeaderFolding;
 
 	private Log logger = LogFactory.getLog(AS2ReceiverHandler.class.getSimpleName());
 
@@ -55,9 +53,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     public AS2ReceiverHandler(AS2ReceiverModule module) {
         super();
         this.module = module;
-        removeHeaderFolding = "true".equals(Properties.getProperty("remove_http_header_folding", "true"));
-    	if (logger.isTraceEnabled())
-  	  logger.trace("************  HEADER FOLDING REMOVAL FLAG: " + removeHeaderFolding + "  *************");
 
     }
 
