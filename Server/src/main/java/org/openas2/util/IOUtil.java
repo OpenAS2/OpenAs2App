@@ -1,8 +1,12 @@
 package org.openas2.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -11,7 +15,36 @@ import org.openas2.message.InvalidMessageException;
 
 
 public class IOUtil {
-    private static final String VALID_FILENAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@-";
+    //private static final String VALID_FILENAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@-";
+
+    public static OutputStreamWriter getOutPutStreamWriter(String target, boolean createDirectories, String charsetName)
+            throws IOException{
+	if (charsetName == null) charsetName = StandardCharsets.UTF_8.name();
+	Charset charSet = Charset.forName(charsetName);
+
+        return new OutputStreamWriter(getFileOutPutStream(target, createDirectories), charSet);
+    }
+
+    public static FileOutputStream getFileOutPutStream(String target, boolean createDirectories)
+            throws IOException {
+        File tgtFile = new File(target);
+	if (createDirectories) {
+	    String directory = tgtFile.getParent();
+	    File directoryFile = new File(directory);
+
+	    if (!directoryFile.exists()) {
+		if (!directoryFile.mkdirs()) {
+		    throw new IOException("Could not create directory: " + directory);
+		}
+	    }
+
+	    if (!directoryFile.isDirectory()) {
+		throw new IOException("Invalid directory: " + directory);
+	    }
+	}
+
+        return new FileOutputStream(tgtFile);
+    }
 
     public static File getDirectoryFile(String directory)
             throws IOException
