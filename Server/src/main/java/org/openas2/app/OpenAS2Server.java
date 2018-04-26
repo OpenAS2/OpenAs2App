@@ -26,6 +26,11 @@ public class OpenAS2Server {
     private final Session session;
 
 
+    public Session getSession() {
+        return session;
+    }
+
+
     public OpenAS2Server(@Nonnull Session session)
     {
         this.session = session;
