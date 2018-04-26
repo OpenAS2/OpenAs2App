@@ -13,7 +13,7 @@ public abstract class EDIINTMessageMDN extends EDIINTMessage {
 		// make sure MDN content types are added to JavaMail
 		MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
 	    mc.addMailcap(
-	        "message/disposition-notification;; x-java-content-handler=org.openas2.lib.util.javamail.DispositionDataContentHandler");
+	        MDNData.DISPOSITION_TYPE + ";; x-java-content-handler=org.openas2.lib.util.javamail.DispositionDataContentHandler");
 	    CommandMap.setDefaultCommandMap(mc);	    
 	}
 	

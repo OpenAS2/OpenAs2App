@@ -33,6 +33,7 @@ import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.message.MDNData;
 import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
@@ -170,13 +171,13 @@ public class AS2Util {
         reportData.append("\r\n");
 
         String reportText = reportData.toString();
-        reportPart.setContent(reportText, "message/disposition-notification");
-        reportPart.setHeader("Content-Type", "message/disposition-notification");        
+        reportPart.setContent(reportText, MDNData.DISPOSITION_TYPE);
+        reportPart.setHeader("Content-Type", MDNData.DISPOSITION_TYPE);        
         reportParts.addBodyPart(reportPart);
 
         // Convert report parts to MimeBodyPart
         MimeBodyPart report = new MimeBodyPart();
-        reportParts.setSubType("report; report-type=disposition-notification");
+        reportParts.setSubType(MDNData.REPORT_SUBTYPE);
         report.setContent(reportParts);
         report.setHeader("Content-Type", reportParts.getContentType());
 
@@ -263,7 +264,7 @@ public class AS2Util {
 
 			            if (reportPart.isMimeType("text/plain")) {
 			                mdn.setText(reportPart.getContent().toString());
-			            } else if (reportPart.isMimeType("message/disposition-notification")) {
+			            } else if (reportPart.isMimeType(MDNData.DISPOSITION_TYPE)) {
 			                InternetHeaders disposition = new InternetHeaders(reportPart
 			                        .getInputStream());
 			                mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, disposition.getHeader(
