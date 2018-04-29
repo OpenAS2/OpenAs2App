@@ -8,7 +8,7 @@ public class Properties
 	public static String APP_VERSION_PROP = "app.version";
 	public static String APP_TITLE_PROP = "app.title";
 	public static String APP_BASE_DIR_PROP = "app.base.dir";
-	public static String APP_USER_AGENT_PROP = "app.user.agent";
+	public static String HTTP_USER_AGENT_PROP = "app.user.agent";
 	
 	private static Map<String, String> _properties = new HashMap<String, String>();
 	
