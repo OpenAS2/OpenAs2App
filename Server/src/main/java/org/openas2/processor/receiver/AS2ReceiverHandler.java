@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
@@ -227,26 +229,18 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			    // Log significant msg state
 			    msg.setOption("STATE", Message.MSG_STATE_MDN_SEND_START);
 			    msg.trackMsgState(getModule().getSession());
-			    sendMDNResponse(msg, out,
+			    boolean sentMDN = sendResponse(msg, out,
 				    new DispositionType("automatic-action", "MDN-sent-automatically", "processed"), mic,
 				    AS2ReceiverModule.DISP_SUCCESS);
-			    // if asyncMDN requested, close connection and initiate separate MDN send
-			    if (msg.isRequestingAsynchMDN()) {
-				out.close();
-				out = null; // Prevent yet another error in finally block
-				getModule().getSession().getProcessor().handle(SenderModule.DO_SENDMDN, msg, null);
-				if (logger.isDebugEnabled())
-				    logger.debug("Call to asynch MDN initiated");
-				return;
+			    if (!sentMDN) {
+				    // Not sure what to do here as the AS2 spec does not specify so log warning for now
+				    if (logger.isWarnEnabled())
+				        logger.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
 			    }
-			    // Log significant msg state
-			    msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
-			    msg.trackMsgState(getModule().getSession());
-
 			} else {
 			    HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
 			    out.flush();
-			    logger.info("sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
+			    logger.info("Msg received, no MDN requested. Sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
 			}
 		    } catch (Exception e) {
 			msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
@@ -258,34 +252,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		    }
 
 		} catch (DispositionException de) {
-		    // Log significant msg state
-		    msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
-		    msg.trackMsgState(getModule().getSession());
-		    sendMDNResponse(msg, out, de.getDisposition(), mic, de.getText());
-		    // if asyncMDN requested, close connection and initiate separate MDN send
-		    if (msg.isRequestingAsynchMDN()) {
-			try {
-			    out.close();
-			    out = null; // Prevent yet another error in finally block
-			} catch (IOException e) {
-			    msg.setLogMsg(
-				    "Failed to close connection on DispositionException handling to send async MDN.");
-			    logger.error(msg, e);
-			}
-			try {
-			    getModule().getSession().getProcessor().handle(SenderModule.DO_SENDMDN, msg, null);
-			    if (logger.isDebugEnabled())
-				logger.debug("Call to asynch MDN sender initiated");
-			} catch (Exception e) {
-			    msg.setLogMsg("Failed to initiate async MDN send on DispositionException handling.");
-			    logger.error(msg, e);
-			    // Log significant msg state
-			    msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
-			    msg.trackMsgState(getModule().getSession());
-			}
-			return;
-		    }
-
+		    sendResponse(msg, out, de.getDisposition(), mic, de.getText());
 		    getModule().handleError(msg, de);
 		} catch (OpenAS2Exception oae) {
 		    // Log significant msg state
@@ -301,7 +268,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		} catch (IOException e) {
 		    msg.setLogMsg("Failed to close output connection.");
 		    logger.error(msg, e);
-		    ;
 		}
 	    }
 	}
@@ -461,53 +427,69 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		return mic;
     }
 
-    protected void sendMDNResponse(AS2Message msg, BufferedOutputStream out, DispositionType disposition, String mic, String text) {
-        boolean mdnBlocked = false;
+    /**
+     * Sends a response for received AS2 message.
+     * If sending an MDN is enabled then sets up MDN object and invokes the {@link MDNSenderModule}
+     * @param msg The received message that an MDN must be sent for.
+     * @param out The output stream for the connection the AS2 message was received on
+     * @param disposition The disposition type that must be sent in the MDN
+     * @param mic The MIC of the received AS2 message
+     * @param text The textual message describing the result of the message receipt and processing
+     * @return Returns true if an response was sent
+     */
+	protected boolean sendResponse(AS2Message msg, BufferedOutputStream out, DispositionType disposition, String mic,
+			String text) {
+		boolean mdnBlocked = false;
 
-        mdnBlocked = (msg.getPartnership().getAttribute(ASXPartnership.PA_BLOCK_ERROR_MDN) != null);
+		mdnBlocked = (msg.getPartnership().getAttribute(ASXPartnership.PA_BLOCK_ERROR_MDN) != null);
 
-        if (!mdnBlocked) {
-            try {
-            	
-            	MessageMDN mdn = AS2Util.createMDN(getModule().getSession(), msg, mic, disposition, text);
+		if (!mdnBlocked) {
 
-                //if asyncMDN requested... 
-                if (msg.isRequestingAsynchMDN() ) {
-                    HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
-                    if (logger.isInfoEnabled())
-	                	  logger.info("setup to send asynch MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
-                    return;
-                }
-                
-                //  otherwise, send sync MDN back on same connection
+			try {
+				AS2Util.createMDN(getModule().getSession(), msg, mic, disposition, text);
+			} catch (Exception e1) {
+				// Maybe should construct error disposition and try to send but ....
+				try {
+					HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_INTERNAL_ERROR, null);
+				} catch (IOException e) {
+					if (logger.isErrorEnabled())
+						logger.error("Error sending HTTP_INTERNAL_ERROR response. " + msg.getLogMsgID(), e);
+					return false;
+				}
+				WrappedException we = new WrappedException("Error creating MDN", e1);
+				we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
+				we.terminate();
+				msg.setLogMsg("Unexpected error occurred creating MDN: " + org.openas2.logging.Log.getExceptionMsg(e1));
+				logger.error(msg, e1);
+				return false;
+			}
+			try {
+				Map<Object, Object> options = new HashMap<Object, Object>();
+				options.put("buffered_output_stream", out);
 
-                // make sure to set the content-length header
-                ByteArrayOutputStream data = new ByteArrayOutputStream();
-                MimeBodyPart part = mdn.getData();
-                IOUtils.copy(part.getInputStream(), data);
-                mdn.setHeader("Content-Length", Integer.toString(data.size()));
+				getModule().getSession().getProcessor().handle(SenderModule.DO_SENDMDN, msg, options);
 
+				if (logger.isInfoEnabled())
+					logger.info("Sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
 
-                HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, data, mdn.getHeaders().getAllHeaderLines());
-            	if (logger.isTraceEnabled()) {
-            	    Enumeration<String> headers = mdn.getHeaders().getAllHeaderLines();
-            	    if (headers.hasMoreElements())
-            		logger.trace("MDN HEADERS SENT: " + StringUtils.join(headers, ";;")+ msg.getLogMsgID());
-            	}
-                // Save sent MDN  for later examination
-                getModule().getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
-                if (logger.isInfoEnabled()) 
-                    	logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
-            } catch (Exception e) {
-                WrappedException we = new WrappedException("Error sending MDN", e);
-                we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                we.terminate();
-                msg.setLogMsg("Unexpected error occurred sending MDN: " + org.openas2.logging.Log.getExceptionMsg(e));
-                logger.error(msg, e);
-            }
-        }
-    }
-    
-
+			} catch (Exception e) {
+				WrappedException we = new WrappedException("Error sending MDN", e);
+				we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
+				we.terminate();
+				msg.setLogMsg("Unexpected error occurred sending MDN: " + org.openas2.logging.Log.getExceptionMsg(e));
+				logger.error(msg, e);
+				return false;
+			}
+		} else {
+			try {
+				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
+			} catch (IOException e) {
+				if (logger.isErrorEnabled())
+					logger.error("Error sending HTTP OK response. " + msg.getLogMsgID(), e);
+				return false;
+			}
+		}
+		return true;
+	}
  
 }
