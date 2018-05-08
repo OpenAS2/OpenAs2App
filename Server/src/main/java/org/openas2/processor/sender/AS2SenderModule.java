@@ -596,8 +596,8 @@ public class AS2SenderModule extends HttpSenderModule {
         Partnership partnership = msg.getPartnership();
 
         conn.setRequestProperty("Connection", "close, TE");
-	String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, 
-		msg.getAppTitle() + " (" + AS2SenderModule.class.getSimpleName() + ")");
+	    String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, 
+		          msg.getAppTitle() + " (" + AS2SenderModule.class.getSimpleName() + ")");
         conn.setRequestProperty("User-Agent", userAgent);
 
 		// Ensure date is formatted in english so there are only USASCII chars to avoid error
