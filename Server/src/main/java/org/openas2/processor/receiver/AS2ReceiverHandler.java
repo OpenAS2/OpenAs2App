@@ -1,13 +1,11 @@
 package org.openas2.processor.receiver;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +15,6 @@ import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.ParseException;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.DispositionException;
@@ -30,7 +26,6 @@ import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
-import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.ASXPartnership;
