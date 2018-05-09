@@ -174,18 +174,18 @@ public class MDNEngine {
 
         // Append the sender and receiver ID's to the message
         StringBuffer text = new StringBuffer();
-        text.append("Sender ID:    ").append(msg.getSenderID()).append(SystemUtils.LINE_SEPARATOR);
+        text.append("Sender ID:    ").append(msg.getSenderID()).append(System.lineSeparator());
         text.append("Receiver ID:  ").append(msg.getReceiverID())
-                .append(SystemUtils.LINE_SEPARATOR);
+                .append(System.lineSeparator());
 
         // Append true/false of whether the message was decrypted and/or
         // verified
         String decryption = results.getStatusDescription(results.getEncryption());
-        text.append("Decryption:   ").append(decryption).append(SystemUtils.LINE_SEPARATOR);
+        text.append("Decryption:   ").append(decryption).append(System.lineSeparator());
         String verification = results.getStatusDescription(results.getSignature());
-        text.append("Verification: ").append(verification).append(SystemUtils.LINE_SEPARATOR);
+        text.append("Verification: ").append(verification).append(System.lineSeparator());
 
-        text.append(SystemUtils.LINE_SEPARATOR);
+        text.append(System.lineSeparator());
         // If the message was not processed successfully
         if (disposition.isError()) {
             text.append("The message could not be processed: ");
