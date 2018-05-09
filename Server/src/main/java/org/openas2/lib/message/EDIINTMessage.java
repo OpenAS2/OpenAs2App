@@ -11,7 +11,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.openas2.lib.util.MimeUtil;
 
 
@@ -156,10 +155,10 @@ public abstract class EDIINTMessage {
 
         while (headers.hasMoreElements()) {
             buf.append(headers.nextElement());
-            buf.append(SystemUtils.LINE_SEPARATOR);
+            buf.append(System.lineSeparator());
         }
 
-        buf.append(SystemUtils.LINE_SEPARATOR);
+        buf.append(System.lineSeparator());
 
         try {
             if (getData() != null) {
