@@ -31,6 +31,8 @@ public interface MessageMDN extends Serializable {
 
     public void setHeaders(InternetHeaders headers);
 
+    public void copyHeaders(InternetHeaders srcHeaders);
+    
     public InternetHeaders getHeaders();
 
     public void setHistory(DataHistory history);
