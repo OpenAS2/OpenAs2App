@@ -1,5 +1,6 @@
 package org.openas2.app;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -31,12 +32,18 @@ public class HealthCheckTest {
     @BeforeClass
     public static void startServer() throws Exception
     {
-        executorService = Executors.newFixedThreadPool(20);
-        System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
-        //System.setProperty("org.openas2.logging.defaultlog", "TRACE");
+        try {
+			System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
+			//System.setProperty("org.openas2.logging.defaultlog", "TRACE");
+			executorService = Executors.newFixedThreadPool(20);
 
-        //openAS2AHome = RESOURCE.get("OpenAS2A");
-        HealthCheckTest.openAS2A = new OpenAS2Server.Builder().run(RESOURCE.get("OpenAS2A", "config", "config.xml").getAbsolutePath());
+			//openAS2AHome = RESOURCE.get("OpenAS2A");
+			HealthCheckTest.openAS2A = new OpenAS2Server.Builder().run(RESOURCE.get("OpenAS2A", "config", "config.xml").getAbsolutePath());
+		} catch (Throwable e) {
+			// aid for debugging JUnit tests
+			System.err.println("ERROR occurred: " + ExceptionUtils.getStackTrace(e));
+			throw new Exception(e);
+		}
     }
 
     @AfterClass
