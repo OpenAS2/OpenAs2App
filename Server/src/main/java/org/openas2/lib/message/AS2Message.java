@@ -57,8 +57,10 @@ public class AS2Message extends EDIINTMessage {
     public void setDefaults() {
         super.setDefaults();
         setAS2Version(Properties.getProperty(Properties.APP_VERSION_PROP, ""));
-        setUserAgent(Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server"));
-        setServer(Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server"));
+        String ua = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, null);
+        if (ua == null) ua= Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server");
+        setUserAgent(ua);
+        setServer(ua);
     }
 
     public void setDispositionNotificationOptions(String options) {
