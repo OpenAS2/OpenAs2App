@@ -15,6 +15,7 @@
         <attribute name="content_transfer_encoding" value="8bit"/>
         <attribute name="compression_type" value="ZLIB"/>
         <attribute name="subject" value="From OpenAS2A to OpenAS2B"/>
+        <attribute name="as2_url" value="http://localhost:20080"/>
         <attribute name="mdnsubject" value="Your requested MDN response from $receiver.as2_id$"/>
         <attribute name="as2_mdn_to" value="edi@openas2b.org"/>
         <!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
@@ -38,7 +39,8 @@
         <attribute name="subject" value="From OpenAS2B to OpenAS2A"/>
         <attribute name="as2_url" value="http://localhost:10080"/>
         <attribute name="as2_mdn_to" value="edi@openas2a.org"/>
-        <!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
+         <!--   ...for async MDN-->
+        <attribute name="as2_receipt_option" value="http://localhost:20081"/>
         <attribute name="as2_mdn_options"
                    value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256"/>
         <attribute name="encrypt" value="3DES"/>
