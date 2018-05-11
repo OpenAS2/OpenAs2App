@@ -53,7 +53,7 @@
 		<module classname="org.openas2.processor.sender.AS2SenderModule"
 		    retries="5"/>
 
-		<module classname="org.openas2.processor.sender.AsynchMDNSenderModule"
+		<module classname="org.openas2.processor.sender.MDNSenderModule"
 		    retries="3"/>
 
 				<!-- This will parse the filename to get a sender and receiver. For instance a file
