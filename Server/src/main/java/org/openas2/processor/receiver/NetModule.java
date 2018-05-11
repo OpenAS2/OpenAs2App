@@ -13,6 +13,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ import org.openas2.params.MessageParameters;
 import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
+import org.openas2.util.ResponseWrapper;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
@@ -109,16 +111,14 @@ public abstract class NetModule extends BaseReceiverModule {
 
 	    	if (logger.isTraceEnabled())
 	    		logger.trace("Helthcheck about to try URL: " + urlString);
-	    	Map<String, String> responseWrapper = null;
-	    	if ("https".equalsIgnoreCase(hcProtocol))
-			{
-	    		responseWrapper = HTTPUtil.querySite(urlString, "GET", null, null);
-	    		//responseWrapper =HTTPUtil.querySiteSSLVerifierOverride(urlString, "GET", null, null);
-			}
-	    	else responseWrapper = HTTPUtil.querySite(urlString, "GET", null, null);
-	    	if (!"200".equals(responseWrapper.get("response_code")))
+	    	Map<String, String> options = new HashMap<String, String>();
+	    	options.put(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS, "true");
+			ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options);
+	    	if (200 != rw.getStatusCode())
 	    	{
-	    		failures.add(this.getClass().getSimpleName() + " - Error making HTTP connection. Rsponse code: " + responseWrapper.get("response_code"));
+	    		failures.add(this.getClass().getSimpleName()
+	    				+ " - Error making HTTP connection. Response code: "
+	    				+ rw.getStatusCode() + " " + rw.getStatusPhrase());
 				return false;
 	    	}
 		} catch (Exception e)
