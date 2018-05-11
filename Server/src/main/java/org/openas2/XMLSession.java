@@ -180,7 +180,7 @@ public class XMLSession extends BaseSession {
         {
             // if using the OpenAS2 loggers the log manager must registered with the jvm argument
             // -Dorg.apache.commons.logging.Log=org.openas2.logging.Log
-            throw new OpenAS2Exception("the OpenAS2 loggers' log manager must registered with the jvm argument -Dorg.apache.commons.logging.Log=org.openas2.logging.Log");
+            throw new OpenAS2Exception("the OpenAS2 loggers' log manager must be registered with the jvm argument -Dorg.apache.commons.logging.Log=org.openas2.logging.Log");
         }
         NodeList loggers = rootNode.getChildNodes();
         Node logger;
