@@ -41,7 +41,7 @@ public class OpenAS2ServerTest {
 	private static TestPartner partnerB;
 	private static OpenAS2Server serverA;
 	private static OpenAS2Server serverB;
-	private final int msgCnt = 1;
+	private final int msgCnt = 2;
 
 	private static ExecutorService executorService;
 	@Rule
@@ -49,7 +49,7 @@ public class OpenAS2ServerTest {
 
 	@BeforeClass
 	public static void startServers() throws Exception {
-		System.setProperty("org.openas2.logging.defaultlog", "TRACE");
+		//System.setProperty("org.openas2.logging.defaultlog", "TRACE");
 		System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
 		try {
 			partnerA = new TestPartner("OpenAS2A");
