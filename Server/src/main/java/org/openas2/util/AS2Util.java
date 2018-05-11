@@ -95,7 +95,10 @@ public class AS2Util {
         mdn.setHeader("AS2-Version", "1.1");
         // RFC2822 format: Wed, 04 Mar 2009 10:59:17 +0100
         mdn.setHeader("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
-        mdn.setHeader("Server", session.getAppTitle());
+		mdn.setHeader(HTTPUtil.HEADER_CONNECTION, "close, TE");
+		String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, msg.getAppTitle());
+		mdn.setHeader(HTTPUtil.HEADER_USER_AGENT, userAgent);
+        mdn.setHeader("Server",userAgent);
         mdn.setHeader("Mime-Version", "1.0");
         
         // get the MDN partnership info
@@ -179,7 +182,11 @@ public class AS2Util {
         MimeBodyPart report = new MimeBodyPart();
         reportParts.setSubType(MDNData.REPORT_SUBTYPE);
         report.setContent(reportParts);
-        report.setHeader("Content-Type", reportParts.getContentType());
+        String contentType = reportParts.getContentType();
+        if ("true".equalsIgnoreCase(Properties.getProperty("remove_multipart_content_type_header_folding", "false"))) {
+            contentType = contentType.replaceAll("\r\n[ \t]*", " ");
+        }
+        report.setHeader("Content-Type", contentType);
 
         // Sign the data if needed
         if (signatureProtocol != null) {            
@@ -212,7 +219,11 @@ public class AS2Util {
 
         // Update the MDN headers with content information
         MimeBodyPart data = mdn.getData();
-        mdn.setHeader("Content-Type", data.getContentType());
+        String headerContentType = data.getContentType();
+        if ("true".equalsIgnoreCase(Properties.getProperty("remove_http_header_folding", "true"))) {
+            headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
+        }
+        mdn.setHeader("Content-Type", headerContentType);
 
         //int size = getSize(data);
         //mdn.setHeader("Content-Length", Integer.toString(size));
