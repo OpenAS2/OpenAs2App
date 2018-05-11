@@ -25,6 +25,17 @@ public class OpenAS2Server {
     @Nonnull
     private final Session session;
 
+	private boolean isStarted = false;
+
+    public boolean isStarted() {
+		return isStarted;
+	}
+
+
+	public void setStarted(boolean isStarted) {
+		this.isStarted = isStarted;
+	}
+
 
     public Session getSession() {
         return session;
@@ -49,6 +60,7 @@ public class OpenAS2Server {
         LOGGER.info("Starting " + session.getAppTitle() + "...");
         session.start();
         LOGGER.info(session.getAppTitle() + " started.");
+        setStarted(true);
     }
 
     public void shutdown()
