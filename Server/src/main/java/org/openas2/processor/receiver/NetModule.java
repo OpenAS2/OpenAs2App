@@ -198,14 +198,14 @@ public abstract class NetModule extends BaseReceiverModule {
         {
             Socket s = getSocket();
 
-            getOwner().getHandler().handle(getOwner(), s);
-
-            try
-            {
-                s.close();
-            } catch (IOException sce)
-            {
-                new WrappedException(sce).terminate();
+            try {
+                getOwner().getHandler().handle(getOwner(), s);
+            } finally {
+                try {
+                    s.close();
+                } catch (IOException sce) {
+                    new WrappedException(sce).terminate();
+                }
             }
         }
     }
