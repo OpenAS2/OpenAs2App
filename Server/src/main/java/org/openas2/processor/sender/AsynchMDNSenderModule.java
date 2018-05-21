@@ -63,7 +63,7 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
         		DateUtil.formatDate(
         				Properties.getProperty("HTTP_HEADER_DATE_FORMAT", "EEE, dd MMM yyyy HH:mm:ss Z")
         				, Locale.ENGLISH));
-		conn.setRequestProperty("Message-ID", msg.getMessageID());
+		conn.setRequestProperty("Message-ID", "<" + msg.getMessageID() + ">");
 		conn.setRequestProperty("Mime-Version", "1.0"); // make sure this is the
 														// encoding used in the
 														// msg, run TBF1
@@ -112,7 +112,12 @@ public class AsynchMDNSenderModule extends HttpSenderModule {
 					headerValue.replace('\t', ' ');
 					headerValue.replace('\n', ' ');
 					headerValue.replace('\r', ' ');
-					conn.setRequestProperty(header.getName(), headerValue);
+					String name = header.getName().toLowerCase();
+					if ("message-id".equals(name) || "original-message-id".equals(name)) {
+						conn.setRequestProperty(header.getName(), "<" + headerValue + ">");
+					} else {
+						conn.setRequestProperty(header.getName(), headerValue);
+					}
 					if (logger.isTraceEnabled())
 						logger.trace("Set HTTP response request property: " + header.getName() + " -> " + headerValue + msg.getLogMsgID());
 				}

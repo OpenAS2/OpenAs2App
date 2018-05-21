@@ -118,7 +118,11 @@ public class AS2Util {
         mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, "rfc822; " + msg.getHeader("AS2-To"));
         mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, "rfc822; "
                 + msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
-        mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, msg.getHeader("Message-ID"));
+        String id = msg.getHeader("Message-ID");
+        if ((id != null) && id.startsWith("<") && id.endsWith(">")) {
+        	id = id.substring(1, id.length() - 1);
+		}
+        mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, id);
         mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, disposition.toString());
 
         DispositionOptions dispOptions = new DispositionOptions(msg
@@ -155,8 +159,8 @@ public class AS2Util {
                 .getAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT));
         reportValues.setHeader("Final-Recipient", mdn
                 .getAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT));
-        reportValues.setHeader("Original-Message-ID", mdn
-                .getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID));
+        reportValues.setHeader("Original-Message-ID", "<" + mdn
+                .getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID) + ">");
         reportValues.setHeader("Disposition", mdn.getAttribute(AS2MessageMDN.MDNA_DISPOSITION));
         reportValues.setHeader("Received-Content-MIC", mdn.getAttribute(AS2MessageMDN.MDNA_MIC));
 
@@ -272,8 +276,11 @@ public class AS2Util {
 			                        "Original-Recipient", ", "));
 			                mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, disposition.getHeader(
 			                        "Final-Recipient", ", "));
-			                mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, disposition.getHeader(
-			                        "Original-Message-ID", ", "));
+			                String id = disposition.getHeader("Original-Message-ID", ", ");
+			                if ((id != null) && id.startsWith("<") && id.endsWith(">")) {
+			                	id = id.substring(1, id.length() - 1);
+							}
+			                mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, id);
 			                mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, disposition.getHeader(
 			                        "Disposition", ", "));
 			                mdn.setAttribute(AS2MessageMDN.MDNA_MIC, disposition.getHeader(

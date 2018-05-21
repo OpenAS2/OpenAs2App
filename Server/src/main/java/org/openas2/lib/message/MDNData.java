@@ -78,7 +78,11 @@ public class MDNData {
                             setReportingUA(disposition.getHeader("Reporting-UA", ", "));
                             setOriginalRecipient(disposition.getHeader("Original-Recipient", ", "));
                             setFinalRecipient(disposition.getHeader("Final-Recipient", ", "));
-                            setOriginalMessageID(disposition.getHeader("Original-Message-ID", ", "));
+                            String id = disposition.getHeader("Original-Message-ID", ", ");
+                            if ((id != null) && id.startsWith("<") && id.endsWith(">")) {
+                                id = id.substring(1, id.length() - 1);
+                            }
+                            setOriginalMessageID(id);
                             setDisposition(disposition.getHeader("Disposition", ", "));
                             setReceivedContentMIC(disposition.getHeader("Received-Content-MIC", ", "));
                         } catch (IOException ioe) {
@@ -207,7 +211,7 @@ public class MDNData {
         dispValues.setHeader("Reporting-UA", getReportingUA());
         dispValues.setHeader("Original-Recipient", getOriginalRecipient());
         dispValues.setHeader("Final-Recipient", getFinalRecipient());
-        dispValues.setHeader("Original-Message-ID", getOriginalMessageID());
+        dispValues.setHeader("Original-Message-ID", "<" + getOriginalMessageID() + ">");
         dispValues.setHeader("Disposition", getDisposition());
         dispValues.setHeader("Received-Content-MIC", getReceivedContentMIC());
 

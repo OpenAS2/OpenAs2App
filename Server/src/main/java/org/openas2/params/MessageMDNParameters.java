@@ -50,7 +50,11 @@ public class MessageMDNParameters extends ParameterParser {
 			} else if (area.equals(KEY_ATTRIBUTES)) {
 				target.setAttribute(areaID, value);
 			} else if (area.equals(KEY_HEADERS)) {
-				target.setHeader(areaID, value);
+				if ("message-id".equalsIgnoreCase(areaID) || "original-message-id".equalsIgnoreCase(areaID)) {
+					getTarget().setHeader(areaID, "<" + value + ">");
+				} else {
+					getTarget().setHeader(areaID, value);
+				}
 			} else {
 				throw new InvalidParameterException("Invalid area in key", this, "key", key);
 			}
@@ -85,7 +89,13 @@ public class MessageMDNParameters extends ParameterParser {
 		} else if (area.equals(KEY_ATTRIBUTES)) {
 			return target.getAttribute(areaID);
 		} else if (area.equals(KEY_HEADERS)) {
-			return target.getHeader(areaID);
+			String value = getTarget().getHeader(areaID);
+			if ((value != null) && ("message-id".equalsIgnoreCase(areaID) || "original-message-id".equalsIgnoreCase(areaID))) {
+				if (value.startsWith("<") && value.endsWith(">")) {
+					value = value.substring(1, value.length() - 1);
+				}
+			}
+			return value;
 		} else {
 			throw new InvalidParameterException("Invalid area in key", this, "key", key);
 		}

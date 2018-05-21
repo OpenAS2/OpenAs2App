@@ -112,12 +112,16 @@ public abstract class BaseMessageMDN implements MessageMDN {
     }
 
     public String getMessageID() {
-        return getHeader("Message-ID");
+        String id = getHeader("Message-ID");
+        if ((id != null) && id.startsWith("<") && id.endsWith(">")) {
+            id = id.substring(1, id.length() - 1);
+        }
+        return id;
     }
 
     public void setMessageID(String messageID)
     {
-        setHeader("Message-ID", messageID);
+        setHeader("Message-ID", "<" + messageID + ">");
     }
 
     public Partnership getPartnership() {

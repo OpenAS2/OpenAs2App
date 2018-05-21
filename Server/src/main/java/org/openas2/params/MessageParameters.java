@@ -42,7 +42,11 @@ public class MessageParameters extends ParameterParser {
 		} else if (area.equals(KEY_ATTRIBUTES)) {
 			getTarget().setAttribute(areaID, value);
 		} else if (area.equals(KEY_HEADERS)) {
-			getTarget().setHeader(areaID, value);
+			if ("message-id".equalsIgnoreCase(areaID) || "original-message-id".equalsIgnoreCase(areaID)) {
+				getTarget().setHeader(areaID, "<" + value + ">");
+			} else {
+				getTarget().setHeader(areaID, value);
+			}
 		} else {
 			throw new InvalidParameterException("Invalid area in key", this, key, null);
 		}
@@ -65,7 +69,13 @@ public class MessageParameters extends ParameterParser {
 		} else if (area.equals(KEY_ATTRIBUTES)) {
 			return getTarget().getAttribute(areaID);
 		} else if (area.equals(KEY_HEADERS)) {
-			return getTarget().getHeader(areaID);
+			String value = getTarget().getHeader(areaID);
+			if ((value != null) && ("message-id".equalsIgnoreCase(areaID) || "original-message-id".equalsIgnoreCase(areaID))) {
+				if (value.startsWith("<") && value.endsWith(">")) {
+					value = value.substring(1, value.length() - 1);
+				}
+			}
+			return value;
 		} else if (area.equals(KEY_CONTENT_FILENAME) && areaID.equals("filename")) {
 			String filename = "noContentDispositionFilename";
 			String s = null;
