@@ -460,7 +460,12 @@ public class HTTPUtil {
 		if (properties != null) {
 			for (Map.Entry<String, String> entry : params.entrySet())
 			{
-				conn.setRequestProperty(entry.getKey(), entry.getValue());				
+			    String name = entry.getKey().toLowerCase();
+			    if ("message-id".equals(name) || "original-message-id".equals(name)) {
+                    conn.setRequestProperty(entry.getKey(), "<" + entry.getValue() + ">");
+                } else {
+                    conn.setRequestProperty(entry.getKey(), entry.getValue());
+                }
 			}			
 		}
 		if (doOutput)

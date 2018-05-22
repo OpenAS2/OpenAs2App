@@ -588,7 +588,7 @@ public class AS2SenderModule extends HttpSenderModule {
         		DateUtil.formatDate(
         				Properties.getProperty("HTTP_HEADER_DATE_FORMAT", "EEE, dd MMM yyyy HH:mm:ss Z")
         				, Locale.ENGLISH));
-        conn.setRequestProperty("Message-ID", msg.getMessageID());
+        conn.setRequestProperty("Message-ID", "<" + msg.getMessageID() + ">");
         conn.setRequestProperty("Mime-Version", "1.0"); // make sure this is the
         // encoding used in the
         // msg, run TBF1
