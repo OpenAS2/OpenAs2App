@@ -9,6 +9,7 @@ public interface AS2Partnership {
 	public static final String PA_AS2_MDN_OPTIONS = "as2_mdn_options"; // Requested options for returned MDN
 	public static final String PA_AS2_RECEIPT_OPTION = "as2_receipt_option"; // URL destination for an async MDN
 	public static final String PA_MESSAGEID = "messageid";  // format to use for message-id if not default
+	public static final String PA_MDN_MESSAGEID = "mdn_messageid";  // format to use for MDN message-id if not default
 	public static final String PA_RESEND_MAX_RETRIES = "resend_max_retries";  // format to use for message-id if not default
 	public static final String PA_CUSTOM_MIME_HEADERS = "custom_mime_headers"; // list of nme/value pairs for setting custom mime headers
 	public static final String PA_ADD_CUSTOM_MIME_HEADERS_TO_HTTP = "add_custom_mime_headers_to_http"; // Add the custom mime headers (if any) to HTTP header if "true"
