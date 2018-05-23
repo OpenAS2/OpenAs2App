@@ -7,7 +7,7 @@ import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
 
 import org.openas2.cert.CertificateFactory;
-import org.openas2.lib.message.MDNData;
+import org.openas2.lib.message.AS2Standards;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.util.Properties;
@@ -110,7 +110,7 @@ public abstract class BaseSession implements Session {
     {
         MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
         mc.addMailcap(
-                MDNData.DISPOSITION_TYPE + ";; x-java-content-handler=org.openas2.lib.util.javamail.DispositionDataContentHandler");
+                AS2Standards.DISPOSITION_TYPE + ";; x-java-content-handler=org.openas2.lib.util.javamail.DispositionDataContentHandler");
         CommandMap.setDefaultCommandMap(mc);
     }
 
