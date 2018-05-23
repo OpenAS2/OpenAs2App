@@ -14,9 +14,6 @@ import java.util.jar.Manifest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +21,7 @@ import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
 import org.openas2.cmd.processor.BaseCommandProcessor;
+import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.openas2.logging.LogManager;
 import org.openas2.logging.Logger;
 import org.openas2.partner.PartnershipFactory;
@@ -36,7 +34,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * original author unknown
@@ -63,8 +60,7 @@ public class XMLSession extends BaseSession {
 
     private static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
 
-    public XMLSession(String configAbsPath) throws OpenAS2Exception,
-            ParserConfigurationException, SAXException, IOException
+    public XMLSession(String configAbsPath) throws Exception
     {
         File configXml = new File(configAbsPath);
         File configDir = configXml.getParentFile();
@@ -86,13 +82,10 @@ public class XMLSession extends BaseSession {
     }
 
 
-    protected void load(InputStream in) throws ParserConfigurationException,
-            SAXException, IOException, OpenAS2Exception
+    protected void load(InputStream in) throws Exception
     {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        Document document = XMLUtil.parseXML(in, new PropertyReplacementFilter());
 
-        DocumentBuilder parser = factory.newDocumentBuilder();
-        Document document = parser.parse(in);
         Element root = document.getDocumentElement();
 
         NodeList rootNodes = root.getChildNodes();
