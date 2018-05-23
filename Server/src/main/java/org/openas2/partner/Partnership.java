@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.openas2.util.Properties;
+
 import java.util.Map.Entry;
 
 
@@ -17,6 +20,7 @@ public class Partnership implements Serializable {
     public static final String PA_CONTENT_TRANSFER_ENCODING = "content_transfer_encoding"; // optional content transfer enc value
     public static final String PA_REMOVE_PROTECTION_ATTRIB = "remove_cms_algorithm_protection_attrib"; // Some AS2 systems do not support the attribute
     public static final String PA_SET_CONTENT_TRANSFER_ENCODING_OMBP = "set_content_transfer_encoding_on_outer_mime_bodypart"; // optional content transfer enc value
+	public static final String PA_RESEND_REQUIRES_NEW_MESSAGE_ID = "resend_requires_new_message_id"; // list of nme/value pairs for setting custom mime headers
     /**
      *
      */
@@ -54,6 +58,14 @@ public class Partnership implements Serializable {
     public void setAttributes(Map<String, String> attributes)
     {
         this.attributes = attributes;
+    }
+
+    public String getAttributeOrProperty(String id, String defaultValue) {
+        String val = getAttributes().get(id);
+        if (val == null || val.length() < 1) {
+        	val = Properties.getProperty(id, defaultValue);
+        }
+        return val;
     }
 
     public void setReceiverID(String id, String value) {
