@@ -10,6 +10,9 @@ public class Properties
 	public static String APP_BASE_DIR_PROP = "app.base.dir";
 	public static String HTTP_USER_AGENT_PROP = "http.user.agent";
 	
+	public static String AS2_MESSAGE_ID_FORMAT = "as2_message_id_format";
+	public static String AS2_MDN_MESSAGE_ID_FORMAT = "as2_mdn_message_id_format";
+	
 	private static Map<String, String> _properties = new HashMap<String, String>();
 	
 	public static void setProperties(Map<String, String> map)
