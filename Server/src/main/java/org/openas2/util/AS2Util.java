@@ -44,6 +44,7 @@ import org.openas2.message.NetAttribute;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
@@ -68,20 +69,21 @@ public class AS2Util {
         return ch;
     }
     
-    public static String generateMessageID(Message msg) throws InvalidParameterException
+    public static String generateMessageID(Message msg, boolean isMDN) throws InvalidParameterException
     {
+    	String idFormat = null;
     	CompositeParameters params = 
     		new CompositeParameters(false).
     			add("date", new DateParameters()).
     			add("msg", new MessageParameters(msg)).
     			add("rand", new RandomParameters());
-        
-    	String idFormat = msg.getPartnership().getAttribute(AS2Partnership.PA_MESSAGEID);
+        if (isMDN) {
+        	params.add("mdn", new MessageMDNParameters(msg.getMDN()));
+        	idFormat = msg.getPartnership().getAttributeOrProperty(Properties.AS2_MDN_MESSAGE_ID_FORMAT,null);
+        }
     	if (idFormat == null)
-    	{
-    		idFormat = Properties.getProperty("as2_message_id_format"
-    				, "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>");
-    	}
+    		idFormat = msg.getPartnership().getAttributeOrProperty(Properties.AS2_MESSAGE_ID_FORMAT
+    			, "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>");
     	return ParameterParser.parse(idFormat, params);
     }
 
@@ -707,7 +709,7 @@ public class AS2Util {
     	if (msgId == null || msgId.length() < 1)
     	{
     		// No ID set yet so generate a random string for uniqueness
-    		msgId = AS2Util.generateMessageID(msg);
+    		msgId = AS2Util.generateMessageID(msg, false);
     	}
 		return (dir	+ "/" + msgId);
     }
@@ -870,6 +872,10 @@ public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Ex
 			msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
 			logger.error(msg, e);
 		}
+    }
+    
+    public static String removeAngleBrackets(String srcString) {
+    	return srcString.replaceAll("^<([^>]+)>$", "$1");
     }
 
     public static String printHeaders(Enumeration<Header> hdrs)

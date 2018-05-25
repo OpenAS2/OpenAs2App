@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
+import org.openas2.util.Properties;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -27,7 +28,7 @@ public class AS2MessageMDNTest {
         when(message.getPartnership()).thenReturn(partnership);
         when(partnership.getReceiverID(eq(AS2Partnership.PID_AS2))).thenReturn("receiverId");
         when(partnership.getSenderID(eq(AS2Partnership.PID_AS2))).thenReturn("senderId");
-        when(message.getPartnership().getAttribute(eq(AS2Partnership.PA_MESSAGEID)))
+        when(message.getPartnership().getAttribute(eq(Properties.AS2_MESSAGE_ID_FORMAT)))
         .thenReturn("OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.1234$@$msg.sender.as2_id$_$msg.receiver.as2_id$");
     }
 

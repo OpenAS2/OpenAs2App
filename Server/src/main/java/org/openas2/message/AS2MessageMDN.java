@@ -34,7 +34,7 @@ public class AS2MessageMDN extends BaseMessageMDN {
     @Override
     public String generateMessageID() throws InvalidParameterException
     {
-        return org.openas2.util.AS2Util.generateMessageID(getMessage());
+        return org.openas2.util.AS2Util.generateMessageID(getMessage(), true);
     }
 
 
