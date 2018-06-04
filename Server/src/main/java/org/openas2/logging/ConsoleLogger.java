@@ -1,6 +1,5 @@
 package org.openas2.logging;
 
-import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 
 

@@ -1,14 +1,8 @@
 package org.openas2.message;
 
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
-import org.openas2.util.Properties;
 
 
 public class AS2Message extends BaseMessage implements Message {
@@ -21,7 +15,7 @@ public class AS2Message extends BaseMessage implements Message {
     }
 
     public String generateMessageID() throws InvalidParameterException {
-    	return org.openas2.util.AS2Util.generateMessageID(this);
+    	return org.openas2.util.AS2Util.generateMessageID(this, false);
     }
 
     public boolean isRequestingMDN() {

@@ -3,8 +3,6 @@ package org.openas2.processor.receiver;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.mail.internet.ContentType;
@@ -71,7 +69,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 				{
 					try
 					{
-						HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
+						HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
 					} catch (IOException e1)
 					{
 					}
@@ -104,9 +102,9 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			String to = msg.getHeader("AS2-To");
 			msg.setHeader("AS2-To", msg.getHeader("AS2-From"));
 			msg.setHeader("AS2-From", to);
-	        msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
-	        msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
-	        getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
+			msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
+			msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
+			getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
 			
 			// Create a MessageMDN
 			MessageMDN mdn = new AS2MessageMDN(msg, true);
@@ -136,7 +134,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 				 */
 				try
 				{
-					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
+					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
 				} catch (IOException e1)
 				{
 				}
@@ -153,7 +151,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 				// Must have received MDN successfully so must respond with OK
 				try
 				{
-					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, false);
+					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, null);
 				} catch (IOException e1)
 				{ // What to do .... 
 				}

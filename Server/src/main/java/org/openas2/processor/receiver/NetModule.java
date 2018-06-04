@@ -6,15 +6,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +36,9 @@ import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtilOld;
+import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
+import org.openas2.util.ResponseWrapper;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
@@ -111,16 +111,14 @@ public abstract class NetModule extends BaseReceiverModule {
 
 	    	if (logger.isTraceEnabled())
 	    		logger.trace("Helthcheck about to try URL: " + urlString);
-	    	Map<String, String> responseWrapper = null;
-	    	if ("https".equalsIgnoreCase(hcProtocol))
-			{
-	    		responseWrapper = HTTPUtil.querySite(urlString, "GET", null, null);
-	    		//responseWrapper =HTTPUtil.querySiteSSLVerifierOverride(urlString, "GET", null, null);
-			}
-	    	else responseWrapper = HTTPUtil.querySite(urlString, "GET", null, null);
-	    	if (!"200".equals(responseWrapper.get("response_code")))
+	    	Map<String, String> options = new HashMap<String, String>();
+	    	options.put(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS, "true");
+			ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options);
+	    	if (200 != rw.getStatusCode())
 	    	{
-	    		failures.add(this.getClass().getSimpleName() + " - Error making HTTP connection. Rsponse code: " + responseWrapper.get("response_code"));
+	    		failures.add(this.getClass().getSimpleName()
+	    				+ " - Error making HTTP connection. Response code: "
+	    				+ rw.getStatusCode() + " " + rw.getStatusPhrase());
 				return false;
 	    	}
 		} catch (Exception e)
@@ -148,8 +146,8 @@ public abstract class NetModule extends BaseReceiverModule {
             String name = params.format(getParameter(PARAM_ERRORS, DEFAULT_ERRORS));
             String directory = getParameter(PARAM_ERROR_DIRECTORY, true);
 
-            File msgFile = IOUtilOld.getUnique(IOUtilOld.getDirectoryFile(directory),
-                    IOUtilOld.cleanFilename(name));
+            File msgFile = IOUtil.getUnique(IOUtil.getDirectoryFile(directory),
+                    IOUtil.cleanFilename(name));
             String msgText = msg.toString();
             FileOutputStream fOut = new FileOutputStream(msgFile);
 

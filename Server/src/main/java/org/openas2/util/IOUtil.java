@@ -1,8 +1,12 @@
 package org.openas2.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -10,8 +14,37 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.message.InvalidMessageException;
 
 
-public class IOUtilOld {
-    private static final String VALID_FILENAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@-";
+public class IOUtil {
+    //private static final String VALID_FILENAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@-";
+
+    public static OutputStreamWriter getOutPutStreamWriter(String target, boolean createDirectories, String charsetName)
+            throws IOException{
+	if (charsetName == null) charsetName = StandardCharsets.UTF_8.name();
+	Charset charSet = Charset.forName(charsetName);
+
+        return new OutputStreamWriter(getFileOutPutStream(target, createDirectories), charSet);
+    }
+
+    public static FileOutputStream getFileOutPutStream(String target, boolean createDirectories)
+            throws IOException {
+        File tgtFile = new File(target);
+	if (createDirectories) {
+	    String directory = tgtFile.getParent();
+	    File directoryFile = new File(directory);
+
+	    if (!directoryFile.exists()) {
+		if (!directoryFile.mkdirs()) {
+		    throw new IOException("Could not create directory: " + directory);
+		}
+	    }
+
+	    if (!directoryFile.isDirectory()) {
+		throw new IOException("Invalid directory: " + directory);
+	    }
+	}
+
+        return new FileOutputStream(tgtFile);
+    }
 
     public static File getDirectoryFile(String directory)
             throws IOException
@@ -80,22 +113,26 @@ public class IOUtilOld {
         return new File(dir, filename + "." + UUID.randomUUID());
     }
 
-    public static String cleanFilename(String filename)
-    {
-        byte[] fnBytes = filename.getBytes();
-        byte c;
+    public static String cleanFilename(String filename) {
+	/*
+	 * byte[] fnBytes = filename.getBytes(); byte c;
+	 * 
+	 * for (int i = 0; i < fnBytes.length; i++) { c = fnBytes[i];
+	 * 
+	 * if (VALID_FILENAME_CHARS.indexOf(c) == -1) { fnBytes[i] = '_'; } }
+	 * 
+	 * return new String(fnBytes);
+	 */
+	String reservedFilenameChars = Properties.getProperty("reservedFilenameCharacters", "<>:\"|?*");
+	if (reservedFilenameChars != null && reservedFilenameChars.length() > 0) {
+	    String srchReplStr = reservedFilenameChars.replaceAll("\\[", "\\[").replaceAll("\\]", "\\]");
+	    if (reservedFilenameChars.contains(":") && filename.matches("^[a-zA-Z]{1}:.*")) {
+		filename = filename.substring(0, 2) + filename.substring(2).replaceAll("[" + srchReplStr + "]", "");
+	    } else
+		filename = filename.replaceAll("[" + srchReplStr + "]", "");
+	}
+	return filename;
 
-        for (int i = 0; i < fnBytes.length; i++)
-        {
-            c = fnBytes[i];
-
-            if (VALID_FILENAME_CHARS.indexOf(c) == -1)
-            {
-                fnBytes[i] = '_';
-            }
-        }
-
-        return new String(fnBytes);
     }
 
     // move the file to an error directory    
@@ -106,12 +143,12 @@ public class IOUtilOld {
 
         try
         {
-            File errorDir = IOUtilOld.getDirectoryFile(errorDirectory);
+            File errorDir = IOUtil.getDirectoryFile(errorDirectory);
 
             destFile = new File(errorDir, file.getName());
 
             // move the file
-            destFile = IOUtilOld.moveFile(file, destFile, false, true);
+            destFile = IOUtil.moveFile(file, destFile, false, true);
         } catch (IOException ioe)
         {
             InvalidMessageException im = new InvalidMessageException("Failed to move " +

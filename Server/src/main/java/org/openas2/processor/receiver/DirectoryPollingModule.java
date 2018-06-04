@@ -15,7 +15,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
-import org.openas2.util.IOUtilOld;
+import org.openas2.util.IOUtil;
 
 public abstract class DirectoryPollingModule extends PollingModule
 {
@@ -35,16 +35,16 @@ public abstract class DirectoryPollingModule extends PollingModule
 		try
 		{
 			outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
-			IOUtilOld.getDirectoryFile(outboxDir);
+			IOUtil.getDirectoryFile(outboxDir);
 			errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
-			IOUtilOld.getDirectoryFile(errorDir);
+			IOUtil.getDirectoryFile(errorDir);
 			sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
 			if (sentDir != null)
-				IOUtilOld.getDirectoryFile(sentDir);
+				IOUtil.getDirectoryFile(sentDir);
             String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
-            IOUtilOld.getDirectoryFile(pendingInfoFolder);
+            IOUtil.getDirectoryFile(pendingInfoFolder);
             String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
-            IOUtilOld.getDirectoryFile(pendingFolder);
+            IOUtil.getDirectoryFile(pendingFolder);
 
 		} catch (IOException e)
 		{
@@ -57,7 +57,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 	{
     	try
 		{
-			IOUtilOld.getDirectoryFile(outboxDir);
+			IOUtil.getDirectoryFile(outboxDir);
 		} catch (IOException e)
 		{
 			failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
@@ -86,11 +86,11 @@ public abstract class DirectoryPollingModule extends PollingModule
 
 	protected void scanDirectory(String directory) throws IOException, InvalidParameterException
 	{
-		File dir = IOUtilOld.getDirectoryFile(directory);
+		File dir = IOUtil.getDirectoryFile(directory);
 		String extensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
 
 		// get a list of entries in the directory
-		File[] files = extensionFilter.length() > 0 ? IOUtilOld.getFiles(dir, extensionFilter) : dir.listFiles();
+		File[] files = extensionFilter.length() > 0 ? IOUtil.getFiles(dir, extensionFilter) : dir.listFiles();
 		if (files == null)
 		{
 			throw new InvalidParameterException("Error getting list of files in directory", this,
@@ -174,10 +174,10 @@ public abstract class DirectoryPollingModule extends PollingModule
             } else
             {
                 // if the file length has changed, update the tracker
-				long newLength = file.length();
+		long newLength = file.length();
                 if (newLength != fileLength)
                 {
-                    trackedFiles.put(fileEntry.getKey(), new Long(newLength));
+                    trackedFiles.put(fileEntry.getKey(), Long.valueOf(newLength));
                 } else
                 {
                     // if the file length has stayed the same, process the file
@@ -190,7 +190,7 @@ public abstract class DirectoryPollingModule extends PollingModule
                         e.terminate();
                         try
                         {
-                            IOUtilOld.handleError(file, errorDir);
+                            IOUtil.handleError(file, errorDir);
                         } catch (OpenAS2Exception e1)
                         {
                             logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
@@ -217,7 +217,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 			processDocument(new FileInputStream(file), file.getName());
 			try
 			{
-				IOUtilOld.deleteFile(file);
+				IOUtil.deleteFile(file);
 			} catch (IOException e)
 			{
 				throw new OpenAS2Exception("Failed to delete file handed off for processing:" + file.getAbsolutePath(), e);

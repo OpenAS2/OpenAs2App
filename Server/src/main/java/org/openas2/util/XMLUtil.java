@@ -1,20 +1,49 @@
 package org.openas2.util;
 
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.openas2.Component;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
+import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLFilterImpl;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 
 public class XMLUtil {
+	public static Document parseXML(InputStream in, XMLFilterImpl handler)
+			throws Exception {
+    	XMLReader xmlparser = XMLReaderFactory.createXMLReader();
+    	handler.setParent(xmlparser);
+
+    	SAXSource source = new SAXSource(handler,new InputSource(in));
+    	DOMResult result = new DOMResult();
+    	TransformerFactory tFactory = TransformerFactory.newInstance();
+        Transformer transformer = tFactory.newTransformer();
+        transformer.transform(source,result);
+        return (Document) result.getNode();
+	}
+	
     public static Component getComponent(Node node, Session session)
             throws OpenAS2Exception
     {
@@ -180,5 +209,15 @@ public class XMLUtil {
                 }
             }
         }
+    }
+    
+    public static String domToString(Document doc) throws TransformerException {
+    	TransformerFactory tf = TransformerFactory.newInstance();
+    	Transformer transformer = tf.newTransformer();
+    	transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    	transformer.setOutputProperty(OutputKeys.INDENT, "no");
+    	StringWriter writer = new StringWriter();
+    	transformer.transform(new DOMSource(doc), new StreamResult(writer));
+    	return writer.toString().replaceAll("\n|\r", "");
     }
 }

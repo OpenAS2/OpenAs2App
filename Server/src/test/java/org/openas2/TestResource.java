@@ -35,6 +35,11 @@ public class TestResource {
         return new TestResource(clazz.getSimpleName());
     }
 
+    public static TestResource forGroup(String group)
+    {
+        return new TestResource(group);
+    }
+
     /**
      * Get a file or directory within {@link #pathPrefix}
      *

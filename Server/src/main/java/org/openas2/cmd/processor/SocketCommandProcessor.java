@@ -22,7 +22,6 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
-import org.openas2.processor.sender.AS2SenderModule;
 import org.openas2.util.CommandTokenizer;
 
 /**

@@ -165,6 +165,24 @@ public class DefaultProcessor extends BaseComponent implements Processor {
 		return isHealthy;
 	}
 
+	/*
+	 * Find all active modules that are an instance of the given class
+	 * @param clazz The class of interest
+	 * @returns A list of active modules that match the requested class
+	 */
+	public List<ActiveModule> getActiveModulesByClass(Class<?> clazz)
+	{
+		List<ActiveModule> classModuleInstances = new ArrayList<ActiveModule>();
+		List<ActiveModule> activeModules = getActiveModules();
+		for (ActiveModule activeModule : activeModules)
+		{
+			if (clazz.isInstance(activeModule)) {
+			    classModuleInstances.add(activeModule);
+			}
+		}
+		return classModuleInstances;
+	}
+
     @Override
     public void destroy() throws Exception
     {

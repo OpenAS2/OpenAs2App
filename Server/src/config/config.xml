@@ -2,7 +2,7 @@
     <properties
         log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
         sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
-        as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
+        as2_message_id_format="&lt;OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>"
     />
 	<certificates classname="org.openas2.cert.PKCS12CertificateFactory"
 		filename="%home%/as2_certs.p12"
@@ -10,7 +10,8 @@
 		interval="300"/>
 
 	<partnerships classname="org.openas2.partner.XMLPartnershipFactory"
-		filename="%home%/partnerships.xml"/>
+		filename="%home%/partnerships.xml"
+		interval="120"/>
 
 	<loggers>
 		<logger classname="org.openas2.logging.ConsoleLogger"/>
@@ -52,7 +53,7 @@
 		<module classname="org.openas2.processor.sender.AS2SenderModule"
 		    retries="5"/>
 
-		<module classname="org.openas2.processor.sender.AsynchMDNSenderModule"
+		<module classname="org.openas2.processor.sender.MDNSenderModule"
 		    retries="3"/>
 
 				<!-- This will parse the filename to get a sender and receiver. For instance a file

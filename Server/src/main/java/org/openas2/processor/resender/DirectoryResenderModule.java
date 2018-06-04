@@ -23,7 +23,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
-import org.openas2.util.IOUtilOld;
+import org.openas2.util.IOUtil;
 
 
 public class DirectoryResenderModule extends BaseResenderModule {
@@ -47,8 +47,8 @@ public class DirectoryResenderModule extends BaseResenderModule {
 		throws OpenAS2Exception {
 		ObjectOutputStream oos = null;
 		try {                        
-			File resendDir = IOUtilOld.getDirectoryFile(resendDirPath);
-			File resendFile = IOUtilOld.getUnique(resendDir, getFilename());
+			File resendDir = IOUtil.getDirectoryFile(resendDirPath);
+			File resendFile = IOUtil.getUnique(resendDir, getFilename());
 			oos = new ObjectOutputStream(new FileOutputStream(resendFile));
 			String method = (String) options.get (ResenderModule.OPTION_RESEND_METHOD);
 			if (method == null) method = SenderModule.DO_SEND;
@@ -118,7 +118,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
 	{
     	try
 		{
-        	IOUtilOld.getDirectoryFile(resendDirPath);
+        	IOUtil.getDirectoryFile(resendDirPath);
 		} catch (IOException e)
 		{
 			failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + resendDirPath);
@@ -195,12 +195,12 @@ public class DirectoryResenderModule extends BaseResenderModule {
 			oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			oae.addSource(OpenAS2Exception.SOURCE_FILE, file);
 			oae.terminate();
-			IOUtilOld.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
+			IOUtil.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
 		}
 	}
 
 	protected List<File> scanDirectory() throws OpenAS2Exception, IOException {
-		File resendDir = IOUtilOld.getDirectoryFile(getParameter(PARAM_RESEND_DIRECTORY, true));
+		File resendDir = IOUtil.getDirectoryFile(getParameter(PARAM_RESEND_DIRECTORY, true));
 		List<File> sendFiles = new ArrayList<File>();
 
 		File[] files = resendDir.listFiles();
