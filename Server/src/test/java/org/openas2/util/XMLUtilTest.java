@@ -12,7 +12,7 @@ import javax.xml.transform.TransformerException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.w3c.dom.Document;
 import org.xml.sax.helpers.XMLFilterImpl;
