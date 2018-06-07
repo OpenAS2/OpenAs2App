@@ -14,7 +14,6 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -104,10 +103,8 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     public void processCommand() throws OpenAS2Exception
     {
 
-        SSLSocket socket = null;
-        try
+        try (SSLSocket socket =  (SSLSocket) sslserversocket.accept())
         {
-            socket = (SSLSocket) sslserversocket.accept();
             socket.setSoTimeout(2000);
             rdr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             wrtr = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -146,8 +143,7 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
                     	wrtr.flush();
                     	rdr.close();
                     	wrtr.close();
-                    	IOUtils.closeQuietly(socket);
-                        terminate();
+                    	terminate();
                     } else
                     {
                         List<String> params = new ArrayList<String>();
@@ -202,9 +198,6 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
         } catch (Exception e)
         {
             //nothing
-        } finally
-        {
-            IOUtils.closeQuietly(socket);
         }
 
     }
@@ -214,7 +207,7 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     {
     	if (logger.isTraceEnabled())
     			logger.trace("SocketCommandProcessor.destroy called...");
-        IOUtils.closeQuietly(sslserversocket);  // closes remote session
+        sslserversocket.close();  // closes remote session
         super.destroy();
 
     }

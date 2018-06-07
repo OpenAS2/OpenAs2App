@@ -122,13 +122,12 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
 
     protected void writeStream(InputStream in, File destination) throws IOException
     {
-        FileOutputStream out = new FileOutputStream(destination);
-        try
+        try (FileOutputStream out = new FileOutputStream(destination))
         {
             IOUtils.copy(in, out);
         } finally
         {
-            IOUtils.closeQuietly(in, out);
+            in.close();
         }
     }
 
