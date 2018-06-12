@@ -12,6 +12,7 @@ public class Properties
 	
 	public static String AS2_MESSAGE_ID_FORMAT = "as2_message_id_format";
 	public static String AS2_MDN_MESSAGE_ID_FORMAT = "as2_mdn_message_id_format";
+	public static String AS2_MESSAGE_ID_ENCLOSE_IN_BRACKETS = "as2_message_id_enclose_in_brackets";
 	
 	private static Map<String, String> _properties = new HashMap<String, String>();
 	
