@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -84,10 +83,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
     void refresh() throws OpenAS2Exception
     {
-        FileInputStream inputStream = null;
-        try
+        try (FileInputStream inputStream = new FileInputStream(getFilename()))
         {
-            inputStream = new FileInputStream(getFilename());
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder parser = factory.newDocumentBuilder();
@@ -123,9 +120,6 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         } catch (Exception e)
         {
             throw new WrappedException(e);
-        } finally
-        {
-            IOUtils.closeQuietly(inputStream);
         }
     }
 

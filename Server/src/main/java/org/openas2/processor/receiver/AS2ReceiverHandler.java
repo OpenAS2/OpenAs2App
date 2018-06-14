@@ -6,13 +6,16 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.ContentType;
+import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
@@ -22,11 +25,18 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cert.CertificateFactory;
+import org.openas2.cert.CertificateNotFoundException;
+import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.message.AS2Standards;
 import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
+import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
+import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
+import org.openas2.params.MessageParameters;
+import org.openas2.params.ParameterParser;
 import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
@@ -34,12 +44,14 @@ import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
+import org.openas2.util.DateUtil;
 import org.openas2.util.DispositionOptions;
 import org.openas2.util.DispositionType;
 import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtil;
 import org.openas2.util.Profiler;
 import org.openas2.util.ProfilerStub;
+import org.openas2.util.Properties;
 
 public class AS2ReceiverHandler implements NetModuleHandler {
     private AS2ReceiverModule module;
@@ -61,212 +73,215 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         return module;
     }
 
-    public void handle(NetModule owner, Socket s) {
-	if (logger.isInfoEnabled())
-	    logger.info("incoming connection" + getClientInfo(s));
-
-	AS2Message msg = createMessage(s);
-
-	byte[] data = null;
-	BufferedOutputStream out;
-
-	msg.setOption("DIRECTION", "RECEIVE");
-
-	try {
-	    out = new BufferedOutputStream(s.getOutputStream());
-	} catch (IOException e1) {
-	    msg.setLogMsg("Failed to get outputstream on received socket. Response cannot be sent.");
-	    logger.error(msg, e1);
-	    return;
-	}
-
-	try {
-	    // Time the transmission
-	    ProfilerStub transferStub = Profiler.startProfile();
-	    // Read in the message request, headers, and data
-	    try {
-		data = HTTPUtil.readData(s.getInputStream(), s.getOutputStream(), msg);
-
-	    } catch (Exception e) {
-		msg.setLogMsg("HTTP connection error on inbound message.");
-		logger.error(msg, e);
-		NetException ne = new NetException(s.getInetAddress(), s.getPort(), e);
-		ne.terminate();
-	    }
-	    Profiler.endProfile(transferStub);
-
-	    String mic = null;
-	    if (data == null) {
-		if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck"))) {
-		    if (logger.isInfoEnabled())
-			logger.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]" + msg.getLogMsgID());
-		    return;
-		} else {
-		    try {
-			HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
-		    } catch (IOException e1) {
-		    }
-		    OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
-		    msg.setLogMsg("Error receiving message for inbound AS2 request. There is no data.");
-		    logger.error(msg, oe);
-		    return;
-		}
-	    } else {
+	public void handle(NetModule owner, Socket s) {
 		if (logger.isInfoEnabled())
-		    logger.info("received " + IOUtil.getTransferRate(data.length, transferStub) + getClientInfo(s)
-			    + msg.getLogMsgID());
+			logger.info("incoming connection" + getClientInfo(s));
 
-		if (logger.isTraceEnabled()) {
-		    logger.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
-		}
-		// TODO store HTTP request, headers, and data to file in Received folder -> use
-		// message-id for filename?
+		AS2Message msg = createMessage(s);
+
+		byte[] data = null;
+		BufferedOutputStream out;
+
+		msg.setOption("DIRECTION", "RECEIVE");
+
 		try {
-		    // Put received data in a MIME body part
-		    ContentType receivedContentType = null;
+			out = new BufferedOutputStream(s.getOutputStream());
+		} catch (IOException e1) {
+			msg.setLogMsg("Failed to get outputstream on received socket. Response cannot be sent.");
+			logger.error(msg, e1);
+			return;
+		}
 
-		    try {
-			/*
-			 * receivedPart = new MimeBodyPart(msg.getHeaders(), data);
-			 * msg.setData(receivedPart); receivedContentType = new
-			 * ContentType(receivedPart.getContentType());
-			 */
-			receivedContentType = new ContentType(msg.getHeader("Content-Type"));
+		try {
+			// Time the transmission
+			ProfilerStub transferStub = Profiler.startProfile();
+			// Read in the message request, headers, and data
+			try {
+				data = HTTPUtil.readData(s.getInputStream(), s.getOutputStream(), msg);
 
-			MimeBodyPart receivedPart = new MimeBodyPart();
-			receivedPart.setDataHandler(
-				new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
-			if (logger.isTraceEnabled()
-				&& "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
-			    logger.trace("Received MimeBodyPart for inbound message: " + msg.getLogMsgID() + "\n"
-				    + MimeUtil.toString(receivedPart, true));
+			} catch (Exception e) {
+				msg.setLogMsg("HTTP connection error on inbound message.");
+				logger.error(msg, e);
+				NetException ne = new NetException(s.getInetAddress(), s.getPort(), e);
+				ne.terminate();
 			}
-			// Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the
-			// HTTP header
-			// since it may not be set in the received mime body part
-			receivedPart.setHeader("Content-Type", receivedContentType.toString());
+			Profiler.endProfile(transferStub);
 
-			// Set the transfer encoding if necessary
-			String cte = receivedPart.getEncoding();
-			if (cte == null) {
-			    // Not in the MimeBodyPart so try the HTTP headers...
-			    cte = msg.getHeader("Content-Transfer-Encoding");
-			    // Nada ... set to system default
-			    if (cte == null)
-				cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-			    receivedPart.setHeader("Content-Transfer-Encoding", cte);
-			} else if (logger.isTraceEnabled()) {
-			    logger.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
-			}
-			msg.setData(receivedPart);
-		    } catch (Exception e) {
-			msg.setLogMsg("Error extracting received message.");
-			logger.error(msg, e);
-			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
-				"processed", "Error", "unexpected-processing-error"),
-				AS2ReceiverModule.DISP_PARSING_MIME_FAILED, e);
-		    }
-
-		    // Check if request is forwarded by a reverse proxy
-		    String sourceIpAddress = msg.getXForwardedFor();
-		    if (sourceIpAddress == null) {
-			sourceIpAddress = msg.getXRealIP();
-		    }
-		    if (sourceIpAddress != null) {
-			logger.info(msg.getLogMsgID() + " AS2 message has been forwarded by the proxy "
-				+ msg.getAttribute(NetAttribute.MA_SOURCE_IP) + ", the original server IP address is "
-				+ sourceIpAddress);
-			msg.setAttribute(NetAttribute.MA_SOURCE_IP, sourceIpAddress);
-		    }
-
-		    // Extract AS2 ID's from header, find the message's partnership and update the
-		    // message
-		    try {
-			msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
-			msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
-
-			getModule().getSession().getPartnershipFactory().updatePartnership(msg, false);
-		    } catch (OpenAS2Exception oae) {
-			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
-				"processed", "Error", "authentication-failed"),
-				AS2ReceiverModule.DISP_PARTNERSHIP_NOT_FOUND, oae);
-		    }
-		    // Log significant msg state
-		    msg.setOption("STATE", Message.MSG_STATE_RECEIVE_START);
-		    msg.trackMsgState(getModule().getSession());
-		    // Decrypt and verify signature of the data, and attach data to the message
-		    mic = decryptAndVerify(msg);
-		    try {
-			// Extract and Store the received filename of the payload
-			msg.setPayloadFilename(msg.extractPayloadFilename());
-		    } catch (ParseException e1) {
-			logger.error("Failed to extract the file name from received content-disposition", e1);
-		    }
-
-		    // Process the received message
-		    try {
-			getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, null);
-		    } catch (OpenAS2Exception oae) {
-			msg.setLogMsg("Error handling received message: " + oae.getCause());
-			logger.error(msg, oae);
-			// Log significant msg state
-			msg.setOption("STATE", Message.MSG_STATE_RECEIVE_EXCEPTION);
-			msg.trackMsgState(getModule().getSession());
-
-			throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
-				"processed", "Error", "unexpected-processing-error"),
-				AS2ReceiverModule.DISP_STORAGE_FAILED, oae);
-		    }
-
-		    // Transmit a success MDN if requested
-		    try {
-			if (msg.isRequestingMDN()) {
-			    // Log significant msg state
-			    msg.setOption("STATE", Message.MSG_STATE_MDN_SEND_START);
-			    msg.trackMsgState(getModule().getSession());
-			    boolean sentMDN = sendResponse(msg, out,
-				    new DispositionType("automatic-action", "MDN-sent-automatically", "processed"), mic,
-				    AS2ReceiverModule.DISP_SUCCESS);
-			    if (!sentMDN) {
-				    // Not sure what to do here as the AS2 spec does not specify so log warning for now
-				    if (logger.isWarnEnabled())
-				        logger.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
-			    }
+			String mic = null;
+			if (data == null) {
+				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck"))) {
+					if (logger.isInfoEnabled())
+						logger.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]" + msg.getLogMsgID());
+					return;
+				} else {
+					try {
+						HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
+					} catch (IOException e1) {
+					}
+					OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
+					msg.setLogMsg("Error receiving message for inbound AS2 request. There is no data.");
+					logger.error(msg, oe);
+					return;
+				}
 			} else {
-			    HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
-			    out.flush();
-			    logger.info("Msg received, no MDN requested. Sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
-			}
-		    } catch (Exception e) {
-			msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
-			logger.error(msg, e);
-			// Log significant msg state
-			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
-			msg.trackMsgState(getModule().getSession());
-			throw new WrappedException("Error creating and returning MDN, message was still processed", e);
-		    }
+				if (logger.isInfoEnabled())
+					logger.info("received " + IOUtil.getTransferRate(data.length, transferStub) + getClientInfo(s)
+							+ msg.getLogMsgID());
 
-		} catch (DispositionException de) {
-		    sendResponse(msg, out, de.getDisposition(), mic, de.getText());
-		    getModule().handleError(msg, de);
-		} catch (OpenAS2Exception oae) {
-		    // Log significant msg state
-		    msg.setOption("STATE", Message.MSG_STATE_RECEIVE_FAIL);
-		    msg.trackMsgState(getModule().getSession());
-		    getModule().handleError(msg, oae);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
+				}
+				// TODO store HTTP request, headers, and data to file in Received folder -> use
+				// message-id for filename?
+				try {
+					// Put received data in a MIME body part
+					ContentType receivedContentType = null;
+
+					try {
+						/*
+						 * receivedPart = new MimeBodyPart(msg.getHeaders(), data);
+						 * msg.setData(receivedPart); receivedContentType = new
+						 * ContentType(receivedPart.getContentType());
+						 */
+						receivedContentType = new ContentType(msg.getHeader("Content-Type"));
+
+						MimeBodyPart receivedPart = new MimeBodyPart();
+						receivedPart.setDataHandler(
+								new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
+						if (logger.isTraceEnabled()
+								&& "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
+							logger.trace("Received MimeBodyPart for inbound message: " + msg.getLogMsgID() + "\n"
+									+ MimeUtil.toString(receivedPart, true));
+						}
+						// Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the
+						// HTTP header
+						// since it may not be set in the received mime body part
+						receivedPart.setHeader("Content-Type", receivedContentType.toString());
+
+						// Set the transfer encoding if necessary
+						String cte = receivedPart.getEncoding();
+						if (cte == null) {
+							// Not in the MimeBodyPart so try the HTTP headers...
+							cte = msg.getHeader("Content-Transfer-Encoding");
+							// Nada ... set to system default
+							if (cte == null)
+								cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+							receivedPart.setHeader("Content-Transfer-Encoding", cte);
+						} else if (logger.isTraceEnabled()) {
+							logger.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
+						}
+						msg.setData(receivedPart);
+					} catch (Exception e) {
+						msg.setLogMsg("Error extracting received message.");
+						logger.error(msg, e);
+						throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
+								"processed", "Error", "unexpected-processing-error"),
+								AS2ReceiverModule.DISP_PARSING_MIME_FAILED, e);
+					}
+
+					// Check if request is forwarded by a reverse proxy
+					String sourceIpAddress = msg.getXForwardedFor();
+					if (sourceIpAddress == null) {
+						sourceIpAddress = msg.getXRealIP();
+					}
+					if (sourceIpAddress != null) {
+						logger.info(msg.getLogMsgID() + " AS2 message has been forwarded by the proxy "
+								+ msg.getAttribute(NetAttribute.MA_SOURCE_IP) + ", the original server IP address is "
+								+ sourceIpAddress);
+						msg.setAttribute(NetAttribute.MA_SOURCE_IP, sourceIpAddress);
+					}
+
+					// Extract AS2 ID's from header, find the message's partnership and update the
+					// message
+					try {
+						msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
+						msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
+
+						getModule().getSession().getPartnershipFactory().updatePartnership(msg, false);
+					} catch (OpenAS2Exception oae) {
+						throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
+								"processed", "Error", "authentication-failed"),
+								AS2ReceiverModule.DISP_PARTNERSHIP_NOT_FOUND, oae);
+					}
+					// Log significant msg state
+					msg.setOption("STATE", Message.MSG_STATE_RECEIVE_START);
+					msg.trackMsgState(getModule().getSession());
+					// Decrypt and verify signature of the data, and attach data to the message
+					mic = decryptAndVerify(msg);
+					try {
+						// Extract and Store the received filename of the payload
+						msg.setPayloadFilename(msg.extractPayloadFilename());
+					} catch (ParseException e1) {
+						logger.error("Failed to extract the file name from received content-disposition", e1);
+					}
+
+					// Process the received message
+					try {
+						getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, null);
+					} catch (OpenAS2Exception oae) {
+						msg.setLogMsg("Error handling received message: " + oae.getCause());
+						logger.error(msg, oae);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_RECEIVE_EXCEPTION);
+						msg.trackMsgState(getModule().getSession());
+
+						throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically",
+								"processed", "Error", "unexpected-processing-error"),
+								AS2ReceiverModule.DISP_STORAGE_FAILED, oae);
+					}
+
+					// Transmit a success MDN if requested
+					try {
+						if (msg.isRequestingMDN()) {
+							// Log significant msg state
+							msg.setOption("STATE", Message.MSG_STATE_MDN_SEND_START);
+							msg.trackMsgState(getModule().getSession());
+							boolean sentMDN = sendResponse(msg, out,
+									new DispositionType("automatic-action", "MDN-sent-automatically", "processed"), mic,
+									AS2ReceiverModule.DISP_SUCCESS);
+							if (!sentMDN) {
+								// Not sure what to do here as the AS2 spec does not specify so log warning for
+								// now
+								if (logger.isWarnEnabled())
+									logger.warn("Received message processed but MDN could not be sent for Message-ID: "
+											+ msg.getMessageID());
+							}
+						} else {
+							HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
+							out.flush();
+							logger.info("Msg received, no MDN requested. Sent HTTP OK" + getClientInfo(s)
+									+ msg.getLogMsgID());
+						}
+					} catch (Exception e) {
+						msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
+						logger.error(msg, e);
+						// Log significant msg state
+						msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
+						msg.trackMsgState(getModule().getSession());
+						throw new WrappedException("Error creating and returning MDN, message was still processed", e);
+					}
+
+				} catch (DispositionException de) {
+					sendResponse(msg, out, de.getDisposition(), mic, de.getText());
+					getModule().handleError(msg, de);
+				} catch (OpenAS2Exception oae) {
+					// Log significant msg state
+					msg.setOption("STATE", Message.MSG_STATE_RECEIVE_FAIL);
+					msg.trackMsgState(getModule().getSession());
+					getModule().handleError(msg, oae);
+				}
+			}
+		} finally {
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+					msg.setLogMsg("Failed to close output connection.");
+					logger.error(msg, e);
+				}
+			}
 		}
-	    }
-	} finally {
-	    if (out != null) {
-		try {
-		    out.close();
-		} catch (IOException e) {
-		    msg.setLogMsg("Failed to close output connection.");
-		    logger.error(msg, e);
-		}
-	    }
 	}
-    }
 
     // Create a new message and record the source ip and port
     protected AS2Message createMessage(Socket s) {
@@ -441,7 +456,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		if (!mdnBlocked) {
 
 			try {
-				AS2Util.createMDN(getModule().getSession(), msg, mic, disposition, text);
+				createMDN(getModule().getSession(), msg, mic, disposition, text);
 			} catch (Exception e1) {
 				// Maybe should construct error disposition and try to send but ....
 				try {
@@ -486,5 +501,148 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 		}
 		return true;
 	}
+
+	public MessageMDN createMDN(Session session, AS2Message msg, String mic,
+	        DispositionType disposition, String text) throws Exception {
+	
+		AS2MessageMDN mdn = new AS2MessageMDN(msg, false);
+	    
+	    mdn.setHeader("AS2-Version", "1.1");
+	    // RFC2822 format: Wed, 04 Mar 2009 10:59:17 +0100
+	    mdn.setHeader("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
+		mdn.setHeader(HTTPUtil.HEADER_CONNECTION, "close, TE");
+		String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, msg.getAppTitle());
+		mdn.setHeader(HTTPUtil.HEADER_USER_AGENT, userAgent);
+	    mdn.setHeader("Server",userAgent);
+	    mdn.setHeader("Mime-Version", "1.0");
+	    
+	    // get the MDN partnership info
+	    // not sure that it should be this way since the config should relfect the inbound original message settings but ...
+	    mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
+	    mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
+	    session.getPartnershipFactory().updatePartnership(mdn, true);
+	
+	    mdn.setHeader("From", msg.getPartnership().getReceiverID(Partnership.PID_EMAIL));
+	    String subject = mdn.getPartnership().getAttribute(ASXPartnership.PA_MDN_SUBJECT);
+	
+	    if (subject != null) {
+	        mdn.setHeader("Subject", ParameterParser.parse(subject, new MessageParameters(msg)));
+	    } else {
+	        mdn.setHeader("Subject", "Your Requested MDN Response");
+	    }
+	    mdn.setText(ParameterParser.parse(text, new MessageParameters(msg)));
+	    mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, session.getAppTitle() + "@"
+	            + msg.getAttribute(NetAttribute.MA_DESTINATION_IP) + ":"
+	            + msg.getAttribute(NetAttribute.MA_DESTINATION_PORT));
+	    mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, "rfc822; " + msg.getHeader("AS2-To"));
+	    mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, "rfc822; "
+	            + msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
+	    mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, msg.getHeader("Message-ID"));
+	    mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, disposition.toString());
+	
+	    DispositionOptions dispOptions = new DispositionOptions(msg
+	            .getHeader("Disposition-Notification-Options"));
+	
+	    mdn.setAttribute(AS2MessageMDN.MDNA_MIC, mic);
+	    createMDNData(session, mdn, dispOptions.getMicalg(), dispOptions.getProtocol());
+	
+	    mdn.updateMessageID();
+	    
+	    // store MDN into msg in case AsynchMDN is sent fails, needs to be resent by send module
+	    msg.setMDN(mdn);
+	
+	    return mdn;
+	}
  
+
+
+    public void createMDNData(Session session, MessageMDN mdn, String micAlg,
+            String signatureProtocol) throws Exception {
+        // Create the report and sub-body parts
+        MimeMultipart reportParts = new MimeMultipart();
+
+        // Create the text part
+        MimeBodyPart textPart = new MimeBodyPart();
+        String text = mdn.getText() + "\r\n";            
+        textPart.setContent(text, "text/plain");
+        textPart.setHeader("Content-Type", "text/plain");        
+        reportParts.addBodyPart(textPart);
+
+        // Create the report part
+        MimeBodyPart reportPart = new MimeBodyPart();
+        InternetHeaders reportValues = new InternetHeaders();
+        reportValues.setHeader("Reporting-UA", mdn.getAttribute(AS2MessageMDN.MDNA_REPORTING_UA));
+        reportValues.setHeader("Original-Recipient", mdn
+                .getAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT));
+        reportValues.setHeader("Final-Recipient", mdn
+                .getAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT));
+        reportValues.setHeader("Original-Message-ID", mdn
+                .getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID));
+        reportValues.setHeader("Disposition", mdn.getAttribute(AS2MessageMDN.MDNA_DISPOSITION));
+        reportValues.setHeader("Received-Content-MIC", mdn.getAttribute(AS2MessageMDN.MDNA_MIC));
+
+        Enumeration<String> reportEn = reportValues.getAllHeaderLines();
+        StringBuffer reportData = new StringBuffer();
+
+        while (reportEn.hasMoreElements()) {
+            reportData.append((String) reportEn.nextElement()).append("\r\n");
+        }
+
+        reportData.append("\r\n");
+
+        String reportText = reportData.toString();
+        reportPart.setContent(reportText, AS2Standards.DISPOSITION_TYPE);
+        reportPart.setHeader("Content-Type", AS2Standards.DISPOSITION_TYPE);        
+        reportParts.addBodyPart(reportPart);
+
+        // Convert report parts to MimeBodyPart
+        MimeBodyPart report = new MimeBodyPart();
+        reportParts.setSubType(AS2Standards.REPORT_SUBTYPE);
+        report.setContent(reportParts);
+        String contentType = reportParts.getContentType();
+        if ("true".equalsIgnoreCase(Properties.getProperty("remove_multipart_content_type_header_folding", "false"))) {
+            contentType = contentType.replaceAll("\r\n[ \t]*", " ");
+        }
+        report.setHeader("Content-Type", contentType);
+
+        // Sign the data if needed
+        if (signatureProtocol != null) {            
+            CertificateFactory certFx = session.getCertificateFactory();
+
+            try {
+            	// The receiver of the original message is the sender of the MDN....
+            	X509Certificate senderCert = certFx.getCertificate(mdn,
+                        Partnership.PTYPE_RECEIVER);                
+                PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
+        		Partnership p = mdn.getPartnership();
+                String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+                boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
+        		if (contentTxfrEncoding == null)
+        			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                // sign the data using CryptoHelper
+                MimeBodyPart signedReport = AS2Util.getCryptoHelper().sign(report, senderCert,
+                        senderKey, micAlg, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
+                mdn.setData(signedReport);
+            } catch (CertificateNotFoundException cnfe) {
+                cnfe.terminate();
+                mdn.setData(report);
+            } catch (KeyNotFoundException knfe) {
+                knfe.terminate();
+                mdn.setData(report);
+            }
+        } else {
+            mdn.setData(report);
+        }
+
+        // Update the MDN headers with content information
+        MimeBodyPart data = mdn.getData();
+        String headerContentType = data.getContentType();
+        if ("true".equalsIgnoreCase(Properties.getProperty("remove_http_header_folding", "true"))) {
+            headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
+        }
+        mdn.setHeader("Content-Type", headerContentType);
+
+        //int size = getSize(data);
+        //mdn.setHeader("Content-Length", Integer.toString(size));
+    }
 }

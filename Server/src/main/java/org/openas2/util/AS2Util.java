@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -29,8 +28,6 @@ import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cert.CertificateFactory;
-import org.openas2.cert.CertificateNotFoundException;
-import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.message.AS2Standards;
@@ -40,7 +37,6 @@ import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
-import org.openas2.message.NetAttribute;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
@@ -49,7 +45,6 @@ import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.AS2Partnership;
-import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
@@ -84,152 +79,21 @@ public class AS2Util {
     	if (idFormat == null)
     		idFormat = msg.getPartnership().getAttributeOrProperty(Properties.AS2_MESSAGE_ID_FORMAT
     			, "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>");
-    	return ParameterParser.parse(idFormat, params);
+    	String id = ParameterParser.parse(idFormat, params);
+    	// RFC822 requires enclosing message in <> but AS2 spec provides for this to be overridden
+    	String isEncap = msg.getPartnership().getAttributeOrProperty(Properties.AS2_MESSAGE_ID_ENCLOSE_IN_BRACKETS, "true");
+		if ("true".equalsIgnoreCase(isEncap)) {
+			// Add the angle brackets if not already added
+			if (!id.startsWith("<")) {
+				id = "<" + id;
+			}
+			if (!id.endsWith(">")) {
+				id = id + ">";
+			}
+		}
+    	return id;
     }
 
-
-
-    public static MessageMDN createMDN(Session session, AS2Message msg, String mic,
-            DispositionType disposition, String text) throws Exception {
-
-    	AS2MessageMDN mdn = new AS2MessageMDN(msg, false);
-        
-        mdn.setHeader("AS2-Version", "1.1");
-        // RFC2822 format: Wed, 04 Mar 2009 10:59:17 +0100
-        mdn.setHeader("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
-		mdn.setHeader(HTTPUtil.HEADER_CONNECTION, "close, TE");
-		String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, msg.getAppTitle());
-		mdn.setHeader(HTTPUtil.HEADER_USER_AGENT, userAgent);
-        mdn.setHeader("Server",userAgent);
-        mdn.setHeader("Mime-Version", "1.0");
-        
-        // get the MDN partnership info
-        // not sure that it should be this way since the config should relfect the inbound original message settings but ...
-        mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
-        mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
-        session.getPartnershipFactory().updatePartnership(mdn, true);
-
-        mdn.setHeader("From", msg.getPartnership().getReceiverID(Partnership.PID_EMAIL));
-        String subject = mdn.getPartnership().getAttribute(ASXPartnership.PA_MDN_SUBJECT);
-
-        if (subject != null) {
-            mdn.setHeader("Subject", ParameterParser.parse(subject, new MessageParameters(msg)));
-        } else {
-            mdn.setHeader("Subject", "Your Requested MDN Response");
-        }
-        mdn.setText(ParameterParser.parse(text, new MessageParameters(msg)));
-        mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, session.getAppTitle() + "@"
-                + msg.getAttribute(NetAttribute.MA_DESTINATION_IP) + ":"
-                + msg.getAttribute(NetAttribute.MA_DESTINATION_PORT));
-        mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, "rfc822; " + msg.getHeader("AS2-To"));
-        mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, "rfc822; "
-                + msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
-        mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, msg.getHeader("Message-ID"));
-        mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, disposition.toString());
-
-        DispositionOptions dispOptions = new DispositionOptions(msg
-                .getHeader("Disposition-Notification-Options"));
-
-        mdn.setAttribute(AS2MessageMDN.MDNA_MIC, mic);
-        createMDNData(session, mdn, dispOptions.getMicalg(), dispOptions.getProtocol());
-
-        mdn.updateMessageID();
-        
-        // store MDN into msg in case AsynchMDN is sent fails, needs to be resent by send module
-        msg.setMDN(mdn);
-
-        return mdn;
-    }
-
-    public static void createMDNData(Session session, MessageMDN mdn, String micAlg,
-            String signatureProtocol) throws Exception {
-        // Create the report and sub-body parts
-        MimeMultipart reportParts = new MimeMultipart();
-
-        // Create the text part
-        MimeBodyPart textPart = new MimeBodyPart();
-        String text = mdn.getText() + "\r\n";            
-        textPart.setContent(text, "text/plain");
-        textPart.setHeader("Content-Type", "text/plain");        
-        reportParts.addBodyPart(textPart);
-
-        // Create the report part
-        MimeBodyPart reportPart = new MimeBodyPart();
-        InternetHeaders reportValues = new InternetHeaders();
-        reportValues.setHeader("Reporting-UA", mdn.getAttribute(AS2MessageMDN.MDNA_REPORTING_UA));
-        reportValues.setHeader("Original-Recipient", mdn
-                .getAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT));
-        reportValues.setHeader("Final-Recipient", mdn
-                .getAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT));
-        reportValues.setHeader("Original-Message-ID", mdn
-                .getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID));
-        reportValues.setHeader("Disposition", mdn.getAttribute(AS2MessageMDN.MDNA_DISPOSITION));
-        reportValues.setHeader("Received-Content-MIC", mdn.getAttribute(AS2MessageMDN.MDNA_MIC));
-
-        Enumeration<String> reportEn = reportValues.getAllHeaderLines();
-        StringBuffer reportData = new StringBuffer();
-
-        while (reportEn.hasMoreElements()) {
-            reportData.append((String) reportEn.nextElement()).append("\r\n");
-        }
-
-        reportData.append("\r\n");
-
-        String reportText = reportData.toString();
-        reportPart.setContent(reportText, AS2Standards.DISPOSITION_TYPE);
-        reportPart.setHeader("Content-Type", AS2Standards.DISPOSITION_TYPE);        
-        reportParts.addBodyPart(reportPart);
-
-        // Convert report parts to MimeBodyPart
-        MimeBodyPart report = new MimeBodyPart();
-        reportParts.setSubType(AS2Standards.REPORT_SUBTYPE);
-        report.setContent(reportParts);
-        String contentType = reportParts.getContentType();
-        if ("true".equalsIgnoreCase(Properties.getProperty("remove_multipart_content_type_header_folding", "false"))) {
-            contentType = contentType.replaceAll("\r\n[ \t]*", " ");
-        }
-        report.setHeader("Content-Type", contentType);
-
-        // Sign the data if needed
-        if (signatureProtocol != null) {            
-            CertificateFactory certFx = session.getCertificateFactory();
-
-            try {
-            	// The receiver of the original message is the sender of the MDN....
-            	X509Certificate senderCert = certFx.getCertificate(mdn,
-                        Partnership.PTYPE_RECEIVER);                
-                PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
-        		Partnership p = mdn.getPartnership();
-                String contentTxfrEncoding =  p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-                boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
-        		if (contentTxfrEncoding == null)
-        			contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-                // sign the data using CryptoHelper
-                MimeBodyPart signedReport = getCryptoHelper().sign(report, senderCert,
-                        senderKey, micAlg, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
-                mdn.setData(signedReport);
-            } catch (CertificateNotFoundException cnfe) {
-                cnfe.terminate();
-                mdn.setData(report);
-            } catch (KeyNotFoundException knfe) {
-                knfe.terminate();
-                mdn.setData(report);
-            }
-        } else {
-            mdn.setData(report);
-        }
-
-        // Update the MDN headers with content information
-        MimeBodyPart data = mdn.getData();
-        String headerContentType = data.getContentType();
-        if ("true".equalsIgnoreCase(Properties.getProperty("remove_http_header_folding", "true"))) {
-            headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
-        }
-        mdn.setHeader("Content-Type", headerContentType);
-
-        //int size = getSize(data);
-        //mdn.setHeader("Content-Length", Integer.toString(size));
-    }
 
     public static void parseMDN(Message msg, X509Certificate receiver) throws OpenAS2Exception
     {
@@ -710,8 +574,9 @@ public class AS2Util {
     	{
     		// No ID set yet so generate a random string for uniqueness
     		msgId = AS2Util.generateMessageID(msg, false);
+    		msg.setMessageID(msgId);
     	}
-		return (dir	+ "/" + msgId);
+		return (dir	+ "/" + IOUtil.cleanFilename(msgId));
     }
     /*
      * @description This method retrieves the information from the pending information file written by 
@@ -724,7 +589,7 @@ public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Ex
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 		// use original message ID to open the pending information file from pendinginfo folder.
 		String originalMsgId = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID);
-		// TODO: CB: Think we are supposed to verify the MDN received msg Id with what we sent
+		
 		msg.setMessageID(originalMsgId); 
 		String pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
 		
@@ -732,10 +597,23 @@ public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Ex
 		ObjectInputStream pifois;
 		try
 		{
-			pifois = new ObjectInputStream(new FileInputStream(new File(pendinginfofile)));
-		} catch (FileNotFoundException e)
-		{
-			throw new OpenAS2Exception("Could not retrieve pending info file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+			// Get the pending information file based on original message ID
+			File iFile = new File(pendinginfofile);
+			if (!iFile.exists()) {
+				// try without the angle brackets in case they were added
+				String oMsgIdStripped = removeAngleBrackets(originalMsgId);
+				if (originalMsgId.equals(oMsgIdStripped)) {
+					// No difference so...
+					throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
+				}
+				msg.setMessageID(oMsgIdStripped); 
+				pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
+				iFile = new File(pendinginfofile);
+				if (!iFile.exists()) {
+					throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
+				}
+			}
+			pifois = new ObjectInputStream(new FileInputStream(iFile));
 		} catch (IOException e)
 		{
 			throw new OpenAS2Exception("Could not open pending info file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
