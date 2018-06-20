@@ -57,14 +57,16 @@ public class MDNSenderModule extends HttpSenderModule {
 			// for asyncMDN initiate MDN send via separate channel so indicate receipt
 			// processed OK
 			try {
-				HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
+				if (!Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus())) {
+					HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			if (logger.isTraceEnabled())
 				logger.trace("Calling asynch MDN sender....");
-			sendAsyncMDN(mdn, ((AS2Message) msg).getAsyncMDNurl(), disposition, options);
+			if (!sendAsyncMDN(mdn, ((AS2Message) msg).getAsyncMDNurl(), disposition, options)) return;
 		} else {
 			// otherwise, send sync MDN back on same connection
 
@@ -75,7 +77,7 @@ public class MDNSenderModule extends HttpSenderModule {
 			} catch (Exception e) {
 				WrappedException we = new WrappedException("Error writing MDN to byte array.", e);
 				we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-				we.terminate();
+				//we.terminate();
 				throw new WrappedException(we);
 			}
 			// make sure to set the content-length header
@@ -86,7 +88,7 @@ public class MDNSenderModule extends HttpSenderModule {
 			} catch (IOException e) {
 				WrappedException we = new WrappedException("Error writing MDN to output stream.", e);
 				we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-				we.terminate();
+				//we.terminate();
 				throw new WrappedException(we);
 			}
 			if (logger.isTraceEnabled()) {
@@ -102,7 +104,7 @@ public class MDNSenderModule extends HttpSenderModule {
 
 	}
 
-	private void sendAsyncMDN(MessageMDN mdn, String url, DispositionType disposition, Map<Object, Object> options)
+	private boolean sendAsyncMDN(MessageMDN mdn, String url, DispositionType disposition, Map<Object, Object> options)
 			throws OpenAS2Exception {
 
 		Message msg = mdn.getMessage();
@@ -144,6 +146,7 @@ public class MDNSenderModule extends HttpSenderModule {
 			// Log significant msg state
 			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
 			msg.trackMsgState(getSession());
+			return false;
 		} catch (IOException ioe) {
 			logger.warn("IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe)
 					+ msg.getLogMsgID(), ioe);
@@ -156,6 +159,7 @@ public class MDNSenderModule extends HttpSenderModule {
 			// Log significant msg state
 			msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
 			msg.trackMsgState(getSession());
+			return false;
 		} catch (Exception e) {
 			logger.warn("Unexpected exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(e)
 					+ msg.getLogMsgID(), e);
@@ -167,6 +171,7 @@ public class MDNSenderModule extends HttpSenderModule {
 			msg.trackMsgState(getSession());
 			throw new WrappedException(e);
 		}
+		return true;
 	}
 
 	protected void resend(Message msg, OpenAS2Exception cause) throws OpenAS2Exception {
