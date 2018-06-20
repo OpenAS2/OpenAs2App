@@ -21,8 +21,8 @@ This is an enhancement and bugfix release:
   7. Provide ability to configure emails for successfully received and sent files.
   8. Upgrade libraries to the latest release.
   9. Support using system environment variables in config.xml
-  10. Change attribute name for overriding Message-ID format t partnership level to match name at system level. NB See upgrade notes for attribute name change.
-  11.(Fixes https://sourceforge.net/p/openas2/tickets/5/)
+  10. Change attribute name for overriding Message-ID format at partnership level to match name at system level. NB See upgrade notes for attribute name change.
+  11. Add scheduled task to detect failed sent messages where files are not cleaned up. (Fixes https://sourceforge.net/p/openas2/tickets/5/)
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
