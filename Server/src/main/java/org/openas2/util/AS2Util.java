@@ -20,8 +20,6 @@ import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.ParseException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.DispositionException;
@@ -160,18 +158,9 @@ public class AS2Util {
 			        }
 			    }
 			}
-		} catch (ParseException e)
+		} catch (Exception e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MessagingException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new OpenAS2Exception("Filed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
 		}
     } 
     
@@ -318,7 +307,7 @@ public class AS2Util {
 	 *  it will fall back to a system default
 	 */
 	public static boolean resend(Session session, Object sourceClass, String how, Message msg, OpenAS2Exception cause,
-			String tries, boolean useOriginalMsgObject) throws OpenAS2Exception {
+			String tries, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 		if (logger.isDebugEnabled())
 			logger.debug(
@@ -378,8 +367,10 @@ public class AS2Util {
 			// Update original with latest message-id and pendinginfo file so it
 			// is kept up to date
 			originalMsg.setAttribute(FileAttribute.MA_PENDINGINFO, msg.getAttribute(FileAttribute.MA_PENDINGINFO));
-			originalMsg.setMessageID(msg.getMessageID());
-			originalMsg.setOption(ResenderModule.OPTION_RETRIES, tries);
+			if (!keepOriginalData) {
+				originalMsg.setMessageID(msg.getMessageID());
+				originalMsg.setOption(ResenderModule.OPTION_RETRIES, tries);
+			}
 			if (logger.isTraceEnabled())
 				logger.trace("Message file extracted from passed in object: "
 						+ msg.getAttribute(FileAttribute.MA_PENDINGFILE)
@@ -526,7 +517,7 @@ public class AS2Util {
 			if (logger.isErrorEnabled()) logger.error("Disposition exception processing MDN ..." + msg.getLogMsgID(), de);
 			// Hmmmm... Error may require manual intervention but keep
 			// trying.... possibly change retry count to 1 or just fail????
-			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, retries, true);
+			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, retries, true, false);
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
 			msg.trackMsgState(session);
 			return;
@@ -541,7 +532,7 @@ public class AS2Util {
 			oae2.initCause(oae);
 			oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			oae2.terminate();
-			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true);
+			AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true, false);
 			msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
 			msg.trackMsgState(session);
 			return;
@@ -584,36 +575,45 @@ public class AS2Util {
      * @param msg - the Message object containing enough information to build the pending info file name
      */
     
-public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
+    public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception
+	{
+		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+		// use original message ID to open the pending information file from pendinginfo
+		// folder.
+		String originalMsgId = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID);
+
+		msg.setMessageID(originalMsgId);
+		String pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
+
+		if (logger.isDebugEnabled())
+			logger.debug("Pending info file to retrieve data from in MDN receiver: " + pendinginfofile);
+		// Get the pending information file based on original message ID
+		File iFile = new File(pendinginfofile);
+		if (!iFile.exists()) {
+			// try without the angle brackets in case they were added
+			String oMsgIdStripped = removeAngleBrackets(originalMsgId);
+			if (originalMsgId.equals(oMsgIdStripped)) {
+				// No difference so...
+				throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
+			}
+			msg.setMessageID(oMsgIdStripped);
+			pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
+			iFile = new File(pendinginfofile);
+			if (!iFile.exists()) {
+				throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
+			}
+		}
+		msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendinginfofile);
+		getMetaData(msg, iFile);
+	}
+
+    public static void getMetaData(AS2Message msg, File inFile) throws OpenAS2Exception
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
-		// use original message ID to open the pending information file from pendinginfo folder.
-		String originalMsgId = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID);
-		
-		msg.setMessageID(originalMsgId); 
-		String pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
-		
-		if (logger.isDebugEnabled()) logger.debug("Pending info file to retrieve data from in MDN receiver: " + pendinginfofile);
 		ObjectInputStream pifois;
 		try
 		{
-			// Get the pending information file based on original message ID
-			File iFile = new File(pendinginfofile);
-			if (!iFile.exists()) {
-				// try without the angle brackets in case they were added
-				String oMsgIdStripped = removeAngleBrackets(originalMsgId);
-				if (originalMsgId.equals(oMsgIdStripped)) {
-					// No difference so...
-					throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
-				}
-				msg.setMessageID(oMsgIdStripped); 
-				pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
-				iFile = new File(pendinginfofile);
-				if (!iFile.exists()) {
-					throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
-				}
-			}
-			pifois = new ObjectInputStream(new FileInputStream(iFile));
+			pifois = new ObjectInputStream(new FileInputStream(inFile));
 		} catch (IOException e)
 		{
 			throw new OpenAS2Exception("Could not open pending info file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
@@ -637,7 +637,6 @@ public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Ex
 			msg.setAttribute(FileAttribute.MA_SENT_DIR, (String)pifois.readObject());
 			msg.getAttributes().putAll((Map<String,String>)pifois.readObject());
 
-			msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendinginfofile);
 			if (logger.isTraceEnabled())
 				logger.trace(
 					"Data retrieved from Pending info file:"
@@ -676,79 +675,84 @@ public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Ex
     public static void cleanupFiles(Message msg, boolean isError)
     {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
-		String pendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
-		File fPendingInfoFile = new File(pendingInfoFileName);
-		if (logger.isTraceEnabled())
-				logger.trace("Deleting pendinginfo file : " + fPendingInfoFile.getAbsolutePath()
-						+ msg.getLogMsgID());
 
-		try
-		{
-			IOUtil.deleteFile(fPendingInfoFile);
-            if (logger.isTraceEnabled()) logger.trace("deleted " + pendingInfoFileName + msg.getLogMsgID());
-		} catch (Exception e)
-		{
-			msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingInfoFileName);
-			logger.warn(msg, e);
-		}			
+		String pendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
+		if (pendingInfoFileName != null) {
+			File fPendingInfoFile = new File(pendingInfoFileName);
+			if (logger.isTraceEnabled())
+					logger.trace("Deleting pendinginfo file : " + fPendingInfoFile.getAbsolutePath()
+							+ msg.getLogMsgID());
+
+			try
+			{
+				IOUtil.deleteFile(fPendingInfoFile);
+	            if (logger.isTraceEnabled()) logger.trace("deleted " + pendingInfoFileName + msg.getLogMsgID());
+			} catch (Exception e)
+			{
+				msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingInfoFileName);
+				logger.warn(msg, e);
+			}			
+		}
 
 		String pendingFileName = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
-		File fPendingFile = new File(pendingFileName);
-		try
-		{
-			IOUtil.deleteFile(new File(pendingFileName + ".object"));
-            if (logger.isTraceEnabled()) logger.trace("deleted " + pendingFileName + ".object" + msg.getLogMsgID());
-		} catch (Exception e)
-		{
-			msg.setLogMsg("File was successfully sent but message object file not deleted: "
-						+ org.openas2.logging.Log.getExceptionMsg(e));
-			logger.warn(msg, e);
-		}
-		if (logger.isTraceEnabled())
-			logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " from pending folder : "
-					+ fPendingFile.getParent() + msg.getLogMsgID());
-		try
-		{
-			boolean isMoved = false;
-			String tgtDir = null;
-			if (isError)
+		if (pendingFileName != null) {
+			File fPendingFile = new File(pendingFileName);
+			try
 			{
-				tgtDir = msg.getAttribute(FileAttribute.MA_ERROR_DIR);
+				IOUtil.deleteFile(new File(pendingFileName + ".object"));
+	            if (logger.isTraceEnabled()) logger.trace("deleted " + pendingFileName + ".object" + msg.getLogMsgID());
+			} catch (Exception e)
+			{
+				msg.setLogMsg("File was successfully sent but message object file not deleted: "
+							+ org.openas2.logging.Log.getExceptionMsg(e));
+				logger.warn(msg, e);
 			}
-			else
+			if (logger.isTraceEnabled())
+				logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " from pending folder : "
+						+ fPendingFile.getParent() + msg.getLogMsgID());
+			try
 			{
-				// If the Sent Directory option is set, move the transmitted file to the sent directory
-				tgtDir = msg.getAttribute(FileAttribute.MA_SENT_DIR);
-			}
-			if (tgtDir != null && tgtDir.length() > 0)
-			{
-				File tgtFile = null;
-
-				try
+				boolean isMoved = false;
+				String tgtDir = null;
+				if (isError)
 				{
-					tgtFile = new File(tgtDir + "/" + fPendingFile.getName());
-					tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false, true);
-					isMoved = true;
-
-					if (logger.isInfoEnabled())
-						logger.info("moved " + fPendingFile.getAbsolutePath() + " to " + tgtFile.getAbsolutePath()
-								+ msg.getLogMsgID());
-
-				} catch (IOException iose)
-				{
-					logger.error("Error moving file to sent folder: " + iose.getMessage() + msg.getLogMsgID(), iose);
+					tgtDir = msg.getAttribute(FileAttribute.MA_ERROR_DIR);
 				}
-			}
+				else
+				{
+					// If the Sent Directory option is set, move the transmitted file to the sent directory
+					tgtDir = msg.getAttribute(FileAttribute.MA_SENT_DIR);
+				}
+				if (tgtDir != null && tgtDir.length() > 0)
+				{
+					File tgtFile = null;
 
-			if (!isMoved)
+					try
+					{
+						tgtFile = new File(tgtDir + "/" + fPendingFile.getName());
+						tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false, true);
+						isMoved = true;
+
+						if (logger.isInfoEnabled())
+							logger.info("moved " + fPendingFile.getAbsolutePath() + " to " + tgtFile.getAbsolutePath()
+									+ msg.getLogMsgID());
+
+					} catch (IOException iose)
+					{
+						logger.error("Error moving file to sent folder: " + iose.getMessage() + msg.getLogMsgID(), iose);
+					}
+				}
+
+				if (!isMoved)
+				{
+					IOUtil.deleteFile(fPendingFile);
+		            if (logger.isInfoEnabled()) logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
+				}
+			} catch (Exception e)
 			{
-				IOUtil.deleteFile(fPendingFile);
-	            if (logger.isInfoEnabled()) logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
+				msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
+				logger.error(msg, e);
 			}
-		} catch (Exception e)
-		{
-			msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
-			logger.error(msg, e);
 		}
     }
     
