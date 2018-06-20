@@ -698,6 +698,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 			AS2Message msg = new AS2Message();
 			try {
 				AS2Util.getMetaData(msg, inFile);
+				String msgStr = "Pending information file detected that is past max wait time due to unknown failure: " + inFile.getAbsolutePath();
+				msg.setLogMsg(msgStr);
+				logger.error(msg, null);
 				AS2Util.cleanupFiles(msg, true);
 			} catch (Exception e) {
 				logger.warn(
