@@ -1,5 +1,6 @@
 package org.openas2.processor.sender;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -9,14 +10,19 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.net.ssl.SSLHandshakeException;
 
+import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.ComponentNotFoundException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cert.CertificateFactory;
@@ -33,16 +39,20 @@ import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.SecurePartnership;
 import org.openas2.processor.resender.ResenderModule;
+import org.openas2.schedule.HasSchedule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
 import org.openas2.util.DispositionOptions;
 import org.openas2.util.HTTPUtil;
+import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
 import org.openas2.util.ResponseWrapper;
 
-public class AS2SenderModule extends HttpSenderModule {
+public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
     private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
+
+    private static final Void VOID = null;
 
     public boolean canHandle(String action, Message msg, Map<Object, Object> options)
     {
@@ -127,7 +137,7 @@ public class AS2SenderModule extends HttpSenderModule {
             } catch (HttpResponseException hre)
             {
                 // Will have been logged so just resend
-                resend(msg, hre, retries);
+                resend(msg, hre, retries, false);
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
                 msg.trackMsgState(getSession());
@@ -143,7 +153,7 @@ public class AS2SenderModule extends HttpSenderModule {
             {
                 msg.setLogMsg("Unexpected error sending file: " + org.openas2.logging.Log.getExceptionMsg(e));
                 logger.error(msg, e);
-                resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), retries);
+                resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), retries, false);
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
                 msg.trackMsgState(getSession());
@@ -220,7 +230,6 @@ public class AS2SenderModule extends HttpSenderModule {
 		if (msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) != null) {
 			// Async MDN
 			msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
-			// TODO: Add mechanism to time out if MDN not received and force a resend
 		} else {
 			// Create a MessageMDN and copy HTTP headers
 			MessageMDN mdn = new AS2MessageMDN((AS2Message) msg, false);
@@ -269,9 +278,9 @@ public class AS2SenderModule extends HttpSenderModule {
 		}
 	}
 
-    private void resend(Message msg, OpenAS2Exception cause, String tries) throws OpenAS2Exception
+    private void resend(Message msg, OpenAS2Exception cause, String tries, boolean keepRestoredData) throws OpenAS2Exception
     {
-        AS2Util.resend(getSession(), this, SenderModule.DO_SEND, msg, cause, tries, false);
+        AS2Util.resend(getSession(), this, SenderModule.DO_SEND, msg, cause, tries, false, keepRestoredData);
     }
 
     /**
@@ -574,6 +583,7 @@ public class AS2SenderModule extends HttpSenderModule {
             String pendingInfoFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdninfo");
             String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
             msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
+            msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendingInfoFile);
             if (!isResend)
             {
                 // Write the object to a file to keep a lot of the original
@@ -584,7 +594,6 @@ public class AS2SenderModule extends HttpSenderModule {
                 oos.flush();
                 oos.close();
             }
-            msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendingInfoFile);
             oos = new ObjectOutputStream(new FileOutputStream(pendingInfoFile));
             oos.writeObject(msg.getCalculatedMIC());
             String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
@@ -608,11 +617,17 @@ public class AS2SenderModule extends HttpSenderModule {
                         + "\n\tOriginal file name : " + msg.getAttribute(FileAttribute.MA_FILENAME)
                         + "\n\tPending message file : " + pendingFile + "\n\tError directory: "
                         + msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n\tSent directory: "
-                        + msg.getAttribute(FileAttribute.MA_SENT_DIR) + msg.getLogMsgID());
+                        + msg.getAttribute(FileAttribute.MA_SENT_DIR)
+    					+ "\n\tAttributes: " + msg.getAttributes()
+                        + msg.getLogMsgID());
             }
 
             msg.setAttribute(FileAttribute.MA_STATUS, FileAttribute.MA_PENDING);
-
+            // If ASYNC MDN is requested, set up a file watcher in case partner MDN is not received
+            if (msg.isConfiguredForAsynchMDN()) {
+            	// Create a listener that will force resend if the pendinginfo file is still there after set amount of time
+            	
+            }
         } catch (Exception e)
         {
             msg.setLogMsg("Error setting up pending information files: " + org.openas2.logging.Log.getExceptionMsg(e));
@@ -654,4 +669,57 @@ public class AS2SenderModule extends HttpSenderModule {
         }
     }
 
+	protected void detectFailedSentMessages() {
+		String dir;
+		try {
+			dir = (String) getSession().getProcessor().getParameters().get("pendingmdninfo");
+		} catch (ComponentNotFoundException e) {
+			logger.warn(
+					"Failed to retrieve the name of the pending info folder for sent messages in trying to run the failed message detection method.",
+					e);
+			return;
+		}
+		File pendingDir;
+		try {
+			pendingDir = IOUtil.getDirectoryFile(dir);
+		} catch (IOException e) {
+			logger.warn(
+					"Failed to open the pending info folder for sent messages in trying to run the failed message detection method.",
+					e);
+			return;
+		}
+		// We are interested in files older than one day
+		int maxWaitMdnResponseSecs = Integer
+				.parseInt(Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "300"));
+		long cutoff = System.currentTimeMillis() - (maxWaitMdnResponseSecs * 1000);
+		String[] files = pendingDir.list(new AgeFileFilter(cutoff));
+		for (int i = 0; i < files.length; i++) {
+			File inFile = new File(pendingDir + File.separator + files[i]);
+			AS2Message msg = new AS2Message();
+			try {
+				AS2Util.getMetaData(msg, inFile);
+				String msgStr = "Pending information file detected that is past max wait time due to unknown failure: " + inFile.getAbsolutePath();
+				msg.setLogMsg(msgStr);
+				logger.error(msg, null);
+				AS2Util.cleanupFiles(msg, true);
+			} catch (Exception e) {
+				logger.warn(
+						"Failed to process the pending info folder for sent messages in trying to run the failed message detection method.",
+						e);
+			}
+		}
+	}
+
+	@Override
+	public void schedule(ScheduledExecutorService executor) {
+ 	   String delayStr = Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "300");
+ 	   Long delay = Long.parseLong(delayStr)/4*1000;
+		executor.scheduleWithFixedDelay(new Runnable() {
+           @Override
+           public void run()
+           {
+           	detectFailedSentMessages();
+           }
+       }, delay, delay, TimeUnit.MILLISECONDS);
+	}
 }

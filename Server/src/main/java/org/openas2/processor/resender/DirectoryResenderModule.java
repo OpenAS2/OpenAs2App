@@ -68,6 +68,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     				    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
     				    + "\n      Content-Disposition in MSG getData() MIMEPART: "
     				    + msg.getData().getContentType()
+    					+ "\n        Attributes: " + msg.getAttributes()
     					+msg.getLogMsgID()	);
     			} catch (Exception e){}
 		} catch (IOException ioe) {
@@ -129,10 +130,11 @@ public class DirectoryResenderModule extends BaseResenderModule {
 
 	protected String getFilename() throws InvalidParameterException {		
         long resendDelay;
-        if (getParameter(PARAM_RESEND_DELAY, false) == null) {
+        String cfgResendDelay = getParameter(PARAM_RESEND_DELAY, false);
+        if (cfgResendDelay == null) {
             resendDelay = DEFAULT_RESEND_DELAY;
         } else {
-            resendDelay = getParameterInt(PARAM_RESEND_DELAY, false) * 1000;
+            resendDelay = Integer.parseInt(cfgResendDelay) * 1000;
         }
 		long resendTime = new Date().getTime() + resendDelay;
 
@@ -174,11 +176,18 @@ public class DirectoryResenderModule extends BaseResenderModule {
 						    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
 						    + "\n      Content-Disposition in MSG getData() MIMEPART: "
 						    + msg.getData().getContentType()
-							+msg.getLogMsgID()	);
+						    + "\n      ATTRIBUTES : " + msg.getAttributes()
+							+ msg.getLogMsgID()
+							);
 					} catch (Exception e){}
                 msg.setOption(SenderModule.SOPT_RETRIES, retries);
                 msg.setStatus(Message.MSG_STATUS_MSG_RESEND);
-				getSession().getProcessor().handle(method, msg, msg.getOptions());
+				try {
+					getSession().getProcessor().handle(method, msg, msg.getOptions());
+				} catch (OpenAS2Exception e) {
+					// Just log and ignore since it will have been handled upstream
+					logger.error("Error resending message", e);
+				}
                 
 				if (!file.delete()) { // Delete the file, sender will re-queue if the transmission fails again
 					throw new OpenAS2Exception("File was successfully sent but not deleted: " +
