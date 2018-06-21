@@ -75,5 +75,8 @@ public class StringUtil {
         return ParameterParser.parse(paramString, compParams);
     }
 
+    public static String removeDoubleQuotes(String srcString) {
+    	return srcString.replaceAll("^\"([^\"]+)\"$", "$1");
+    }
 
 }
