@@ -248,6 +248,11 @@ public class HTTPUtil {
 						"Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
 			}
 		}
+		// Handle the case where the AS2 ID could be encapsulated in double quotes per RFC4130
+		String [] idHeaders = {"AS2-From", "AS2-To"};
+		for (int i = 0; i < idHeaders.length; i++) {
+			msg.setHeader(idHeaders[i], StringUtil.removeDoubleQuotes(msg.getHeader(idHeaders[i])));
+		}
 		return data;
 	}
 

@@ -212,9 +212,9 @@ public abstract class DirectoryPollingModule extends PollingModule
 		if (logger.isInfoEnabled())
 			logger.info("processing " + file.getAbsolutePath());
 
-		try
+		try (FileInputStream in = new FileInputStream(file))
 		{
-			processDocument(new FileInputStream(file), file.getName());
+			processDocument(in, file.getName());
 			try
 			{
 				IOUtil.deleteFile(file);
@@ -222,7 +222,7 @@ public abstract class DirectoryPollingModule extends PollingModule
 			{
 				throw new OpenAS2Exception("Failed to delete file handed off for processing:" + file.getAbsolutePath(), e);
 			}
-		} catch (FileNotFoundException e)
+		} catch (IOException e)
 		{
 			throw new OpenAS2Exception("Failed to process file:" + file.getAbsolutePath(), e);
 		}
