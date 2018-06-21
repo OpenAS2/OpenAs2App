@@ -526,8 +526,12 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 		}
 		ih.addHeader("Content-Transfer-Encoding", cte);
 		ih.addHeader("Recipient-Address", partnership.getAttribute(AS2Partnership.PA_AS2_URL));
-		ih.addHeader("AS2-To", partnership.getReceiverID(AS2Partnership.PID_AS2));
-		ih.addHeader("AS2-From", partnership.getSenderID(AS2Partnership.PID_AS2));
+		String rId = partnership.getReceiverID(AS2Partnership.PID_AS2);
+		if (rId.contains(" ")) rId = "\"" + rId + "\"";
+		ih.addHeader("AS2-To", rId);
+		String sId = partnership.getSenderID(AS2Partnership.PID_AS2);
+		if (sId.contains(" ")) sId = "\"" + sId + "\"";
+		ih.addHeader("AS2-From", sId);
 		ih.addHeader("Subject", msg.getSubject());
 		ih.addHeader("From", partnership.getSenderID(Partnership.PID_EMAIL));
 		String dispTo = partnership.getAttribute(AS2Partnership.PA_AS2_MDN_TO);
