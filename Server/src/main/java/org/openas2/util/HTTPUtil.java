@@ -65,6 +65,14 @@ import org.openas2.WrappedException;
 import org.openas2.message.Message;
 
 
+/**
+ * @author Christopher
+ *
+ */
+/**
+ * @author Christopher
+ *
+ */
 public class HTTPUtil {
 	public static final String MA_HTTP_REQ_TYPE = "HTTP_REQUEST_TYPE";
 	public static final String MA_HTTP_REQ_URL = "HTTP_REQUEST_URL";
@@ -248,12 +256,25 @@ public class HTTPUtil {
 						"Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
 			}
 		}
+		cleanIdHeaders(msg.getHeaders());
+		return data;
+	}
+	
+	/**
+	 * @param msg The message containing the 
+	 */
+	public static void cleanIdHeaders(InternetHeaders hdrs) {
 		// Handle the case where the AS2 ID could be encapsulated in double quotes per RFC4130
+		// some AS2 applications will send the quoted AND the unquoted ID so need 
 		String [] idHeaders = {"AS2-From", "AS2-To"};
 		for (int i = 0; i < idHeaders.length; i++) {
-			msg.setHeader(idHeaders[i], StringUtil.removeDoubleQuotes(msg.getHeader(idHeaders[i])));
-		}
-		return data;
+			// Target only the first entry if there is more than one to get a single value
+			String value = StringUtil.removeDoubleQuotes(hdrs.getHeader(idHeaders[i], null));
+			// Delete all headers with the same key
+			hdrs.removeHeader(idHeaders[i]);
+			// Add back as a single value without quotes
+			hdrs.setHeader(idHeaders[i], value);
+		}	
 	}
 
 	public static String[] readRequest(InputStream in) throws IOException {
