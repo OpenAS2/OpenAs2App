@@ -10,7 +10,6 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -51,8 +50,6 @@ import org.openas2.util.ResponseWrapper;
 public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
     private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
-
-    private static final Void VOID = null;
 
     public boolean canHandle(String action, Message msg, Map<Object, Object> options)
     {
