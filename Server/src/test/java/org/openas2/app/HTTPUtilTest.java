@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
-import org.openas2.partner.AS2Partnership;
+import org.openas2.partner.Partnership;
 import org.openas2.util.HTTPUtil;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -33,9 +33,9 @@ public class HTTPUtilTest {
 		hdrs.addHeader(toIdKey, toId);
 		hdrs.addHeader(toIdKey, "\"" + toId + "\"");
 		HTTPUtil.cleanIdHeaders(msg.getHeaders());
-		msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader(fromIdKey));
-		msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader(toIdKey));
-		assertThat("Duplicate FROM headers have been removed", msg.getPartnership().getSenderID(AS2Partnership.PID_AS2), equalTo(fromId));
-		assertThat("Duplicate TO headers have been removed", msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2), equalTo(toId));
+		msg.getPartnership().setSenderID(Partnership.PID_AS2, msg.getHeader(fromIdKey));
+		msg.getPartnership().setReceiverID(Partnership.PID_AS2, msg.getHeader(toIdKey));
+		assertThat("Duplicate FROM headers have been removed", msg.getPartnership().getSenderID(Partnership.PID_AS2), equalTo(fromId));
+		assertThat("Duplicate TO headers have been removed", msg.getPartnership().getReceiverID(Partnership.PID_AS2), equalTo(toId));
 	}
 }

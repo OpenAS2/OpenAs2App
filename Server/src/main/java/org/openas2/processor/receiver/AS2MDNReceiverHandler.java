@@ -15,7 +15,7 @@ import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
-import org.openas2.partner.AS2Partnership;
+import org.openas2.partner.Partnership;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.HTTPUtil;
@@ -102,8 +102,8 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			String to = msg.getHeader("AS2-To");
 			msg.setHeader("AS2-To", msg.getHeader("AS2-From"));
 			msg.setHeader("AS2-From", to);
-			msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
-			msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
+			msg.getPartnership().setSenderID(Partnership.PID_AS2, msg.getHeader("AS2-From"));
+			msg.getPartnership().setReceiverID(Partnership.PID_AS2, msg.getHeader("AS2-To"));
 			getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
 			
 			// Create a MessageMDN

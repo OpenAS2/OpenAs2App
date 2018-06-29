@@ -24,7 +24,6 @@ import org.junit.rules.TemporaryFolder;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.TestPartner;
 import org.openas2.TestResource;
-import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.util.DateUtil;
@@ -181,11 +180,11 @@ public class OpenAS2ServerTest {
 		for (Map.Entry<String, Object> pair: partners.entrySet()) {
 			if (pair.getKey().equals(partnerB.getName())) {
 			    Map<String, String> partner = (Map<String, String>)pair.getValue();
-				partnerB.setAs2Id(partner.get(AS2Partnership.PID_AS2));
+				partnerB.setAs2Id(partner.get(Partnership.PID_AS2));
 			}
 			else if (pair.getKey().equals(partnerA.getName())) {
 			    Map<String, String> partner = (Map<String, String>)pair.getValue();
-				partnerA.setAs2Id(partner.get(AS2Partnership.PID_AS2));
+				partnerA.setAs2Id(partner.get(Partnership.PID_AS2));
 			}
 		}
 		String partnershipFolderAtoB = partnerA.getAs2Id() + "-" + partnerB.getAs2Id();
@@ -215,7 +214,7 @@ public class OpenAS2ServerTest {
 		Partnership p = new Partnership();
 	    Partnership asyncPartnership = pf.getPartnership(p, false);
 	    if (asyncPartnership != null) {
-	    	asyncPartnership.setAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
+	    	asyncPartnership.setAttribute(Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
 	    }
 	    else {
 	    	throw new Exception("Could not set partnership to ~ASYNC mode");

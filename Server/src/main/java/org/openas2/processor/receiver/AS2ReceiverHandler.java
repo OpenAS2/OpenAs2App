@@ -37,8 +37,6 @@ import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
-import org.openas2.partner.AS2Partnership;
-import org.openas2.partner.ASXPartnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
@@ -194,8 +192,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 					// Extract AS2 ID's from header, find the message's partnership and update the
 					// message
 					try {
-						msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
-						msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
+						msg.getPartnership().setSenderID(Partnership.PID_AS2, msg.getHeader("AS2-From"));
+						msg.getPartnership().setReceiverID(Partnership.PID_AS2, msg.getHeader("AS2-To"));
 
 						getModule().getSession().getPartnershipFactory().updatePartnership(msg, false);
 					} catch (OpenAS2Exception oae) {
@@ -451,7 +449,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 			String text) {
 		boolean mdnBlocked = false;
 
-		mdnBlocked = (msg.getPartnership().getAttribute(ASXPartnership.PA_BLOCK_ERROR_MDN) != null);
+		mdnBlocked = (msg.getPartnership().getAttribute(Partnership.PA_BLOCK_ERROR_MDN) != null);
 
 		if (!mdnBlocked) {
 
@@ -518,12 +516,12 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 	    
 	    // get the MDN partnership info
 	    // not sure that it should be this way since the config should relfect the inbound original message settings but ...
-	    mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
-	    mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
+	    mdn.getPartnership().setSenderID(Partnership.PID_AS2, mdn.getHeader("AS2-From"));
+	    mdn.getPartnership().setReceiverID(Partnership.PID_AS2, mdn.getHeader("AS2-To"));
 	    session.getPartnershipFactory().updatePartnership(mdn, true);
 	
 	    mdn.setHeader("From", msg.getPartnership().getReceiverID(Partnership.PID_EMAIL));
-	    String subject = mdn.getPartnership().getAttribute(ASXPartnership.PA_MDN_SUBJECT);
+	    String subject = mdn.getPartnership().getAttribute(Partnership.PA_SUBJECT);
 	
 	    if (subject != null) {
 	        mdn.setHeader("Subject", ParameterParser.parse(subject, new MessageParameters(msg)));
@@ -536,7 +534,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 	            + msg.getAttribute(NetAttribute.MA_DESTINATION_PORT));
 	    mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, "rfc822; " + msg.getHeader("AS2-To"));
 	    mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, "rfc822; "
-	            + msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
+	            + msg.getPartnership().getReceiverID(Partnership.PID_AS2));
 	    mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, msg.getHeader("Message-ID"));
 	    mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, disposition.toString());
 	

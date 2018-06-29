@@ -54,12 +54,12 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         msg.getPartnership().copy(partnership);
 		//  Now set dynamic parms based on file name if configured to
         String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
-		String filenameToParmsList = msg.getPartnership().getAttribute(AS2Partnership.PA_ATTRIB_NAMES_FROM_FILENAME);
+		String filenameToParmsList = msg.getPartnership().getAttribute(Partnership.PAIB_NAMES_FROM_FILENAME);
 		if (filename != null && filenameToParmsList != null && filenameToParmsList.length() > 0)
 		{
 			String[] headerNames = filenameToParmsList.split("\\s*,\\s*");
 
-			String regex = msg.getPartnership().getAttribute(AS2Partnership.PA_ATTRIB_VALUES_REGEX_ON_FILENAME);
+			String regex = msg.getPartnership().getAttribute(Partnership.PAIB_VALUES_REGEX_ON_FILENAME);
 			if (regex != null)
 			{
 				Pattern p = Pattern.compile(regex);

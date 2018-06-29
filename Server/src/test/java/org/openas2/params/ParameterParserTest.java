@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openas2.message.AS2Message;
 import org.openas2.message.MessageMDN;
-import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.util.Properties;
 import org.openas2.util.StringUtil;
@@ -27,10 +26,10 @@ public class ParameterParserTest {
 	private static final String homeValue = "/My/Home/Dir";
 	// Parameter string and regex test for various params
 	private String[][] positiveTests = {
-			{ prefix + "$msg.sender." + AS2Partnership.PID_AS2 + "$_$msg.receiver." + AS2Partnership.PID_AS2 + "$",
+			{ prefix + "$msg.sender." + Partnership.PID_AS2 + "$_$msg.receiver." + Partnership.PID_AS2 + "$",
 					prefix + senderId + "_" + receiverId },
-			{ "$mdn.msg.sender." + AS2Partnership.PID_AS2 + "$", senderId },
-			{ "$mdn.sender." + AS2Partnership.PID_AS2 + "$", senderId },
+			{ "$mdn.msg.sender." + Partnership.PID_AS2 + "$", senderId },
+			{ "$mdn.sender." + Partnership.PID_AS2 + "$", senderId },
 			{ "$date.yyyyMMddHHmmssZ$", "[0-9]{14}[-+][0-9]{4}" },
 			{ "$rand.1234$-$rand.UUID$-$rand.shortUUID$", "[0-9]{4}-[a-fA-F0-9-]{36}-[a-zA-Z0-9]*" },
 			{ prefix + "$$$rand.12345$", prefix + "\\$[0-9]{5}" },
@@ -50,8 +49,8 @@ public class ParameterParserTest {
 		when(mdn.getMessage()).thenReturn(message);
 		when(message.getPartnership()).thenReturn(partnership);
 		when(mdn.getPartnership()).thenReturn(partnership);
-		when(partnership.getReceiverID(eq(AS2Partnership.PID_AS2))).thenReturn(receiverId);
-		when(partnership.getSenderID(eq(AS2Partnership.PID_AS2))).thenReturn(senderId);
+		when(partnership.getReceiverID(eq(Partnership.PID_AS2))).thenReturn(receiverId);
+		when(partnership.getSenderID(eq(Partnership.PID_AS2))).thenReturn(senderId);
 		Properties.setProperty(Properties.APP_BASE_DIR_PROP, homeValue);
 	}
 

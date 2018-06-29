@@ -28,7 +28,6 @@ import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
-import org.openas2.partner.SecurePartnership;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.support.FileMonitorAdapter;
 import org.openas2.util.AS2Util;
@@ -49,10 +48,10 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements
 
         if (partnershipType == Partnership.PTYPE_RECEIVER)
         {
-            alias = partnership.getReceiverID(SecurePartnership.PID_X509_ALIAS);
+            alias = partnership.getReceiverID(Partnership.PID_X509_ALIAS);
         } else if (partnershipType == Partnership.PTYPE_SENDER)
         {
-            alias = partnership.getSenderID(SecurePartnership.PID_X509_ALIAS);
+            alias = partnership.getSenderID(Partnership.PID_X509_ALIAS);
         }
 
         if (alias == null)
