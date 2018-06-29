@@ -1,11 +1,12 @@
 package org.openas2.util;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
+import java.io.IOException;
 import javax.mail.internet.InternetHeaders;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.openas2.OpenAS2Exception;
 
 public class ResponseWrapper {
 	private String _transferTimeMs = "-1"; // amount of time in milliseconds taken to send a message and receive a response
@@ -13,27 +14,27 @@ public class ResponseWrapper {
 	private String _statusPhrase = null;
 	private InternetHeaders _headers = new InternetHeaders();
 
-	private String _body = null;
+	private byte[] _body = null;
 
-	public ResponseWrapper(HttpResponse response) {
+	public ResponseWrapper(HttpResponse response) throws OpenAS2Exception {
 		super();
 		setStatusCode(response.getStatusLine().getStatusCode());
 		setStatusPhrase(response.getStatusLine().getReasonPhrase());
 
-		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
-
-			StringBuilder sb = new StringBuilder(200);
-			String output;
-			while ((output = br.readLine()) != null) {
-				sb.append(output).append("\n");
-			}
-
-			setBody(sb.toString());
-		} catch (Exception e) {
-			setBody(e.toString());
+        for (org.apache.http.Header header : response.getAllHeaders()) {
+			this.addHeaderLine(header.toString());
 		}
-	}
+        
+        HttpEntity entity = response.getEntity();
+        if (entity == null) return;
+			byte[] data = null;
+			try {
+				data = EntityUtils.toByteArray(entity);
+			} catch (IOException e) {
+				throw new OpenAS2Exception("Failed to read response content", e);
+			}
+			setBody(data);
+        }
 
 	public InternetHeaders getHeaders() {
 		return _headers;
@@ -71,11 +72,11 @@ public class ResponseWrapper {
 		this._statusPhrase = statusPhrase;
 	}
 
-	public String getBody() {
+	public byte[] getBody() {
 		return _body;
 	}
 
-	protected void setBody(String body) {
+	protected void setBody(byte[] body) {
 		this._body = body;
 	}
 
