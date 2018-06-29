@@ -209,7 +209,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         {
             msg.setLogMsg("Error sending message. URL: " + url
             		+ " ::: Response Code: " + rc + " " + resp.getStatusPhrase()
-                    + " ::: Response Message: " + resp.getBody());
+                    + " ::: Response Message: " + resp.getBody().toString());
             logger.error(msg);
             throw new HttpResponseException(url, rc, resp.getStatusPhrase());
         }
@@ -241,7 +241,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 			}
 			msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
 			try {
-				AS2Util.processMDN((AS2Message) msg, response.getBody().getBytes(), null, false, getSession(), this);
+				AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this);
 				// Log significant msg state
 				msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
 				msg.trackMsgState(getSession());
