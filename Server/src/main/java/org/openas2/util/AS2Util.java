@@ -42,7 +42,6 @@ import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
-import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
@@ -98,6 +97,15 @@ public class AS2Util {
 		Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
         MessageMDN mdn = msg.getMDN();
         MimeBodyPart mainPart = mdn.getData();
+		if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMdnMimeBodyParts", "false")))
+		{
+			try {
+				logger.trace("Received MimeBodyPart for inbound MDN: " + msg.getLogMsgID()
+						+ "\n" + MimeUtil.toString(mainPart, true));
+			} catch (Exception e) {
+				logger.trace("Failed to log the MimeBodyPart as part of trace logging: " + e.getMessage());
+			}
+		}
         try
 		{
 			ICryptoHelper ch = getCryptoHelper();
@@ -115,12 +123,6 @@ public class AS2Util {
         try
 		{
 			MimeMultipart reportParts = new MimeMultipart(mainPart.getDataHandler().getDataSource());
-
-			if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMdnMimeBodyParts", "false")))
-			{
-				logger.trace("Received MimeBodyPart for inbound MDN: " + msg.getLogMsgID()
-						+ "\n" + MimeUtil.toString(mainPart, true));
-			}
 
 			if (reportParts != null) {
 			    ContentType reportType = new ContentType(reportParts.getContentType());
@@ -265,11 +267,15 @@ public class AS2Util {
 				 * RFC 6362 specifies that the sent attachments should be
 				 * considered invalid and retransmitted
 				 */
-				String errmsg = "MIC algorithm returned by partner is not the same as the algorithm requested, original MIC alg: "
+				String errmsg = "MIC algorithm returned by partner is not the same as the algorithm requested but must be the same per RFC4130 section 7.4.3. Original MIC alg: "
 						+ cMicAlg
 						+ " ::: returned MIC alg: "
 						+ rMicAlg
-						+ "\n\t\tPartner probably not implemented AS2 spec correctly or does not support the requested algorithm. Check that the \"as2_mdn_options\" attribute for the partner uses the same algorithm as the \"sign\" attribute.";
+						+ "\n\t\tEnsure that Partner supports the requested algorithm and the \""
+						+ Partnership.PA_AS2_MDN_OPTIONS
+						+ "\" attribute for the outbound partnership uses the same algorithm as the \" +"
+						+ Partnership.PA_SIGNATURE_ALGORITHM
+						+ "\" attribute.";
 				throw new OpenAS2Exception(errmsg + " Forcing Resend");
 			}
 		}
@@ -457,8 +463,8 @@ public class AS2Util {
 		MessageMDN mdn = msg.getMDN();
 		if (logger.isTraceEnabled()) logger.trace("HTTP headers in received MDN: " + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()));
 		// get the MDN partnership info
-		mdn.getPartnership().setSenderID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-From"));
-		mdn.getPartnership().setReceiverID(AS2Partnership.PID_AS2, mdn.getHeader("AS2-To"));
+		mdn.getPartnership().setSenderID(Partnership.PID_AS2, mdn.getHeader("AS2-From"));
+		mdn.getPartnership().setReceiverID(Partnership.PID_AS2, mdn.getHeader("AS2-To"));
 		session.getPartnershipFactory().updatePartnership(mdn, false);
 
 		MimeBodyPart part;
@@ -759,6 +765,31 @@ public class AS2Util {
     public static String removeAngleBrackets(String srcString) {
     	return srcString.replaceAll("^<([^>]+)>$", "$1");
     }
+
+	public static void attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {
+		Pattern PATTERN = Pattern.compile("\\$attribute\\.([^\\$]++)\\$");
+		for (Map.Entry<String, String> entry : attribs.entrySet()) {
+			String input = entry.getValue();
+			StringBuffer strBuf = new StringBuffer();
+			Matcher matcher = PATTERN.matcher(input);
+			boolean hasChanged = false;
+			while (matcher.find()) {
+				String key = matcher.group(1);
+				String value = attribs.get(key);
+				hasChanged = true;
+				if (value == null) {
+					throw new OpenAS2Exception("Missing attribute value for replacement: " + matcher.group());
+				} else {
+					matcher.appendReplacement(strBuf,Matcher.quoteReplacement(value));
+				}
+			}
+			if (hasChanged) {
+				matcher.appendTail(strBuf);
+				attribs.put(entry.getKey(), strBuf.toString());
+			}
+		}
+	}
+
 
     public static String printHeaders(Enumeration<Header> hdrs)
     {
