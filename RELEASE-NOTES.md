@@ -24,6 +24,9 @@ This is an enhancement and bugfix release:
   10. Change attribute name for overriding Message-ID format at partnership level to match name at system level. NB See upgrade notes for attribute name change.
   11. Allow modules to have scheduled tasks using the HasSchedule implementation.
   12. Add scheduled task to detect failed sent messages where files are not cleaned up. (Fixes https://sourceforge.net/p/openas2/tickets/5/)
+  13. Allow attributes in partnership element to reference other partnership elements and resolve the references at load time.
+  14. Default sample in partnerships.xml for "as2_mdn_options" to use the "sign" attribute value for the micalg value.
+  15. Support AS2 ID with spaces in the value.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
@@ -34,6 +37,7 @@ This is an enhancement and bugfix release:
 ### If upgrading from versions older than 2.5.0:
       1. Change the name of the MDN sender module from "AsynchMDNSenderModule" to "MDNSenderModule" in the config.xml if using your existing config.xml file in the upgrade.
       2. Change the name of the partnership attribute "messageid" to "as2_message_id_format" if used in any partnership definition.
+      3. Change the "as2_mdn_options" attribute to use $attribute.sign$ instead of hard coded signing algorithm
 
 
 ### If upgrading from versions older than 2.4.1:
