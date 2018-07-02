@@ -34,9 +34,7 @@ import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
 import org.openas2.params.InvalidParameterException;
-import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
-import org.openas2.partner.SecurePartnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.util.AS2Util;
@@ -122,7 +120,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             {
             }
         }
-        String url = msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_URL);
+        String url = msg.getPartnership().getAttribute(Partnership.PA_AS2_URL);
             try
             {
                 // Create the HTTP connection and set up headers
@@ -165,12 +163,12 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         try
         {
             InvalidParameterException.checkValue(msg, "ContentType", msg.getContentType());
-            InvalidParameterException.checkValue(msg, "Attribute: " + AS2Partnership.PA_AS2_URL,
-                    partnership.getAttribute(AS2Partnership.PA_AS2_URL));
-            InvalidParameterException.checkValue(msg, "Receiver: " + AS2Partnership.PID_AS2,
-                    partnership.getReceiverID(AS2Partnership.PID_AS2));
-            InvalidParameterException.checkValue(msg, "Sender: " + AS2Partnership.PID_AS2,
-                    partnership.getSenderID(AS2Partnership.PID_AS2));
+            InvalidParameterException.checkValue(msg, "Attribute: " + Partnership.PA_AS2_URL,
+                    partnership.getAttribute(Partnership.PA_AS2_URL));
+            InvalidParameterException.checkValue(msg, "Receiver: " + Partnership.PID_AS2,
+                    partnership.getReceiverID(Partnership.PID_AS2));
+            InvalidParameterException.checkValue(msg, "Sender: " + Partnership.PID_AS2,
+                    partnership.getSenderID(Partnership.PID_AS2));
             InvalidParameterException.checkValue(msg, "Subject", msg.getSubject());
             InvalidParameterException.checkValue(msg, "Sender: " + Partnership.PID_EMAIL,
                     partnership.getSenderID(Partnership.PID_EMAIL));
@@ -209,7 +207,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         {
             msg.setLogMsg("Error sending message. URL: " + url
             		+ " ::: Response Code: " + rc + " " + resp.getStatusPhrase()
-                    + " ::: Response Message: " + resp.getBody());
+                    + " ::: Response Message: " + resp.getBody().toString());
             logger.error(msg);
             throw new HttpResponseException(url, rc, resp.getStatusPhrase());
         }
@@ -224,7 +222,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 		if (!msg.isConfiguredForMDN())
 			return;
 		// Check if it will be a Sync or AsyncMDN
-		if (msg.getPartnership().getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION) != null) {
+		if (msg.getPartnership().getAttribute(Partnership.PA_AS2_RECEIPT_OPTION) != null) {
 			// Async MDN
 			msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
 		} else {
@@ -241,7 +239,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 			}
 			msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
 			try {
-				AS2Util.processMDN((AS2Message) msg, response.getBody().getBytes(), null, false, getSession(), this);
+				AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this);
 				// Log significant msg state
 				msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
 				msg.trackMsgState(getSession());
@@ -312,8 +310,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
         }
 
-        boolean encrypt = partnership.getAttribute(SecurePartnership.PA_ENCRYPT) != null;
-        boolean sign = partnership.getAttribute(SecurePartnership.PA_SIGN) != null;
+        boolean encrypt = partnership.getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM) != null;
+        boolean sign = partnership.getAttribute(Partnership.PA_SIGNATURE_ALGORITHM) != null;
 
         if (!sign)
         {
@@ -374,7 +372,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
 
             PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
-            String digest = partnership.getAttribute(SecurePartnership.PA_SIGN);
+            String digest = partnership.getAttribute(Partnership.PA_SIGNATURE_ALGORITHM);
 
             if (logger.isDebugEnabled())
             {
@@ -415,7 +413,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         {
             //Add any additional headers since this will be the outermost Mime body part if configured
             addCustomOuterMimeHeaders(msg, dataBP);
-            String algorithm = partnership.getAttribute(SecurePartnership.PA_ENCRYPT);
+            String algorithm = partnership.getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM);
 
             X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
             dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm, contentTxfrEncoding);
@@ -440,7 +438,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
     }
     
     protected void addCustomHeaders(Message msg) throws OpenAS2Exception {
-        String customHeaders = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADERS);
+        String customHeaders = msg.getPartnership().getAttribute(Partnership.PA_CUSTOM_MIME_HEADERS);
         if (customHeaders != null && customHeaders.length() > 0)
         {
             if (logger.isTraceEnabled())
@@ -522,24 +520,24 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 			cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
 		}
 		ih.addHeader("Content-Transfer-Encoding", cte);
-		ih.addHeader("Recipient-Address", partnership.getAttribute(AS2Partnership.PA_AS2_URL));
-		String rId = partnership.getReceiverID(AS2Partnership.PID_AS2);
+		ih.addHeader("Recipient-Address", partnership.getAttribute(Partnership.PA_AS2_URL));
+		String rId = partnership.getReceiverID(Partnership.PID_AS2);
 		if (rId.contains(" ")) rId = "\"" + rId + "\"";
 		ih.addHeader("AS2-To", rId);
-		String sId = partnership.getSenderID(AS2Partnership.PID_AS2);
+		String sId = partnership.getSenderID(Partnership.PID_AS2);
 		if (sId.contains(" ")) sId = "\"" + sId + "\"";
 		ih.addHeader("AS2-From", sId);
 		ih.addHeader("Subject", msg.getSubject());
 		ih.addHeader("From", partnership.getSenderID(Partnership.PID_EMAIL));
-		String dispTo = partnership.getAttribute(AS2Partnership.PA_AS2_MDN_TO);
+		String dispTo = partnership.getAttribute(Partnership.PA_AS2_MDN_TO);
 		if (dispTo != null) {
 			ih.addHeader("Disposition-Notification-To", dispTo);
 		}
-		String dispOptions = partnership.getAttribute(AS2Partnership.PA_AS2_MDN_OPTIONS);
+		String dispOptions = partnership.getAttribute(Partnership.PA_AS2_MDN_OPTIONS);
 		if (dispOptions != null) {
 			ih.addHeader("Disposition-Notification-Options", dispOptions);
 		}
-		String receiptOption = partnership.getAttribute(AS2Partnership.PA_AS2_RECEIPT_OPTION);
+		String receiptOption = partnership.getAttribute(Partnership.PA_AS2_RECEIPT_OPTION);
 		if (receiptOption != null) {
 			ih.addHeader("Receipt-Delivery-Option", receiptOption);
 		}
@@ -552,7 +550,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 		if (contentDisp != null) {
 			ih.addHeader("Content-Disposition", contentDisp);
 		}
-		if ("true".equalsIgnoreCase((partnership.getAttribute(AS2Partnership.PA_ADD_CUSTOM_MIME_HEADERS_TO_HTTP)))) {
+		if ("true".equalsIgnoreCase((partnership.getAttribute(Partnership.PA_ADD_CUSTOM_MIME_HEADERS_TO_HTTP)))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Adding custom headers to HTTP..." + msg.getLogMsgID());
 			}
@@ -654,7 +652,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         // includeHeaders = (msg.getHistory().getItems().size() > 1);
 
         DispositionOptions dispOptions = new DispositionOptions(msg.getPartnership().getAttribute(
-                AS2Partnership.PA_AS2_MDN_OPTIONS));
+                Partnership.PA_AS2_MDN_OPTIONS));
         msg.setCalculatedMIC(AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg()
                 , includeHeaders, msg.getPartnership().isPreventCanonicalization()));
         if (logger.isTraceEnabled())

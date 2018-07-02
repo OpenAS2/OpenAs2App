@@ -26,6 +26,7 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.support.FileMonitorAdapter;
+import org.openas2.util.AS2Util;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -128,6 +129,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     {
         Map<String, String> nodes = XMLUtil.mapAttributeNodes(node.getChildNodes(), "attribute", "name", "value");
 
+        AS2Util.attributeEnhancer(nodes);
         partnership.getAttributes().putAll(nodes);
     }
 
@@ -155,7 +157,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
         if (partnerNode == null)
         {
-            throw new OpenAS2Exception("Partnership " + partnershipName + " is missing sender");
+            throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing sender");
         }
 
         Map<String, String> partnerAttr = XMLUtil.mapAttributes(partnerNode);

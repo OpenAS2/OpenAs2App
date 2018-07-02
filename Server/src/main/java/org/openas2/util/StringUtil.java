@@ -76,6 +76,7 @@ public class StringUtil {
     }
 
     public static String removeDoubleQuotes(String srcString) {
+    	if (srcString == null) return null;
     	return srcString.replaceAll("^\"([^\"]+)\"$", "$1");
     }
 

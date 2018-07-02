@@ -24,7 +24,6 @@ import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.partner.Partnership;
-import org.openas2.partner.SecurePartnership;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 
@@ -121,7 +120,7 @@ public class MimeBodyPartEncodingTest {
             X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
 
             PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
-            String digest = msg.getPartnership().getAttribute(SecurePartnership.PA_SIGN);
+            String digest = msg.getPartnership().getAttribute(Partnership.PA_SIGNATURE_ALGORITHM);
 
             System.out.println("Params for creating signed body part:: SIGN DIGEST: " + digest
                     + "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName()
@@ -142,7 +141,7 @@ public class MimeBodyPartEncodingTest {
             fos.close();
             System.out.println("MimeBodyPart written to: " + testFile);
 
-            String algorithm = msg.getPartnership().getAttribute(SecurePartnership.PA_ENCRYPT);
+            String algorithm = msg.getPartnership().getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM);
             X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
             signedMbp = AS2Util.getCryptoHelper().encrypt(signedMbp, receiverCert, algorithm, contentTxfrEncoding);
             testFile = TestConfig.TEST_OUTPUT_FOLDER + "/" + TestConfig.TEST_DEFAULT_TGT_FILE_NAME + ".encrypted";

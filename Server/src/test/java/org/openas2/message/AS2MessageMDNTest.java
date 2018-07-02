@@ -8,7 +8,6 @@ import org.mockito.exceptions.misusing.InvalidUseOfMatchersException;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.util.Properties;
 
@@ -38,8 +37,8 @@ public class AS2MessageMDNTest {
     public void setUp() throws Exception
     {
         when(message.getPartnership()).thenReturn(partnership);
-        when(partnership.getReceiverID(matches(AS2Partnership.PID_AS2))).thenReturn("receiverId");
-        when(partnership.getSenderID(matches(AS2Partnership.PID_AS2))).thenReturn("senderId");
+        when(partnership.getReceiverID(matches(Partnership.PID_AS2))).thenReturn("receiverId");
+        when(partnership.getSenderID(matches(Partnership.PID_AS2))).thenReturn("senderId");
         when(message.getPartnership().getAttributeOrProperty(anyString(), (String)any()))
         .thenAnswer(
         	    new Answer<Object>() {
