@@ -8,7 +8,7 @@ The release download file is: OpenAS2Server-2.5.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.5.0 - 2018-05-15
+Version 2.5.0 - 2018-07-02
 This is an enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
