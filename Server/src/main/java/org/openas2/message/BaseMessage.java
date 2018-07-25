@@ -364,6 +364,8 @@ public abstract class BaseMessage implements Message {
         if (MDN != null) {
             MDN.setMessage(this);
         }
+        
+        customOuterMimeHeaders = new HashMap<String, String>();
     }
 
     private void writeObject(java.io.ObjectOutputStream out)
