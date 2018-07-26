@@ -116,7 +116,7 @@ public abstract class NetModule extends BaseReceiverModule {
 	    		logger.trace("Helthcheck about to try URL: " + urlString);
 	    	Map<String, String> options = new HashMap<String, String>();
 	    	options.put(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS, "true");
-			ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options);
+			ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options, 0L);
 	    	if (200 != rw.getStatusCode())
 	    	{
 	    		failures.add(this.getClass().getSimpleName()

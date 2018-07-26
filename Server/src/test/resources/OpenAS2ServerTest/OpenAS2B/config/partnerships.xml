@@ -39,6 +39,7 @@
         <attribute name="subject" value="From OpenAS2B to OpenAS2A"/>
         <attribute name="as2_url" value="http://localhost:10080"/>
         <attribute name="as2_mdn_to" value="edi@openas2a.org"/>
+        <attribute name="no_chunked_max_size" value="10485760"/> <!-- Disables chunked transfer, set max. mime-size to 10 MB -->
          <!--   ...for async MDN-->
         <attribute name="as2_receipt_option" value="http://localhost:20081"/>
         <attribute name="as2_mdn_options"

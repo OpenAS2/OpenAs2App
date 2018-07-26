@@ -1,14 +1,6 @@
 package org.openas2.util;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -42,6 +34,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpHost;
@@ -54,6 +47,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -332,7 +326,7 @@ public class HTTPUtil {
 	 */
 	public static ResponseWrapper execRequest(String method, String url
 			, Enumeration<Header> headers, NameValuePair[] params
-			, InputStream inputStream, Map<String, String> options) throws Exception {
+			, InputStream inputStream, Map<String, String> options, long noChunkMaxSize) throws Exception {
 
 		String connectTimeOutStr = options.get(PARAM_CONNECT_TIMEOUT);
 		String readTimeOutStr = options.get(PARAM_READ_TIMEOUT);
@@ -393,8 +387,18 @@ public class HTTPUtil {
 			setProxyConfig(httpBuilder, rb, urlObj.getProtocol());
 
  			if (inputStream != null) {
-				InputStreamEntity ise = new InputStreamEntity(inputStream);
-				rb.setEntity(ise);
+ 			    if (noChunkMaxSize > 0L) {
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    long copied = IOUtils.copyLarge(inputStream, bout, 0L, noChunkMaxSize + 1, new byte[8192]);
+                    if (copied > noChunkMaxSize) {
+                        throw new IOException("Mime inputstream too big to put in memory (more than " + noChunkMaxSize + " bytes).");
+                    }
+                    ByteArrayEntity bae = new ByteArrayEntity(bout.toByteArray(), null);
+                    rb.setEntity(bae);
+ 			    } else {
+                    InputStreamEntity ise = new InputStreamEntity(inputStream);
+                    rb.setEntity(ise);
+ 			    }
 			}
 			httpClient = httpBuilder.build();
             ProfilerStub transferStub = Profiler.startProfile();

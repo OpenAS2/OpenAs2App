@@ -43,6 +43,7 @@ public class Partnership implements Serializable {
 	public static final String PA_CUSTOM_MIME_HEADER_NAMES_REGEX_ON_FILENAME = "custom_mime_header_names_regex_on_filename"; // Regex to split filename into values
 	public static final String PAIB_NAMES_FROM_FILENAME = "attribute_names_from_filename"; // List of attribute names to be set from parsed filename
 	public static final String PAIB_VALUES_REGEX_ON_FILENAME = "attribute_values_regex_on_filename"; // Regex to split filename into values
+	public static final String PA_HTTP_NO_CHUNKED_MAX_SIZE = "no_chunked_max_size"; // Disables chunked HTTP transfer when file size is set larger as 0 
 
 	/*
 	 * If set and an error occurs while processing a document, an error MDN will not be sent. This
@@ -227,4 +228,19 @@ public class Partnership implements Serializable {
     {
     	return "true".equalsIgnoreCase(getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
     }
+    
+    public boolean isNoChunkedTransfer()
+    {
+        return (getNoChunkedMaxSize() > 0L);
+    }
+    
+    public long getNoChunkedMaxSize()
+    {
+        long max = 0L;
+        try {
+            max = Long.valueOf(getAttribute(Partnership.PA_HTTP_NO_CHUNKED_MAX_SIZE));
+        } catch (Exception ignored) {}
+        return max;
+    }
+
 }
