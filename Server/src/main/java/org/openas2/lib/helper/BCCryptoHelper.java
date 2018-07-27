@@ -447,22 +447,26 @@ public class BCCryptoHelper implements ICryptoHelper {
             SignerInformation signer = it.next();
             if (logger.isTraceEnabled())
             {
-                Map<Object, Attribute> attrTbl = signer.getSignedAttributes().toHashtable();
-                StringBuffer strBuf = new StringBuffer(20);
-                for(Map.Entry<Object, Attribute> pair: attrTbl.entrySet()) {
-                	strBuf.append("\n\t").append(pair.getKey()).append(":=");
-                	ASN1Encodable[] asn1s = pair.getValue().getAttributeValues();
-                	for (int i = 0; i < asn1s.length; i++) {
-						strBuf.append(asn1s[i]).append(";");
-					}            	
+                try { // Code block below does not do null-checks or other encoding error checking. 
+                    Map<Object, Attribute> attrTbl = signer.getSignedAttributes().toHashtable();
+                    StringBuilder strBuf = new StringBuilder();
+                    for(Map.Entry<Object, Attribute> pair: attrTbl.entrySet()) {
+                    	strBuf.append("\n\t").append(pair.getKey()).append(":=");
+                    	ASN1Encodable[] asn1s = pair.getValue().getAttributeValues();
+                    	for (int i = 0; i < asn1s.length; i++) {
+    						strBuf.append(asn1s[i]).append(";");
+    					}            	
+                    }
+                    logger.trace("Signer Attributes: " + strBuf.toString());
+                    
+                    AttributeTable attributes = signer.getSignedAttributes();
+                    Attribute attribute = attributes.get(CMSAttributes.messageDigest);
+                    DEROctetString digest = (DEROctetString) attribute.getAttrValues().getObjectAt(0);
+                    logger.trace("\t**** Signed Attribute Message-Digest := " + Hex.toHexString(digest.getOctets()));
+                    logger.trace("\t**** Signed Content-Digest := " + Hex.toHexString(signer.getContentDigest()));
+                } catch (Exception e) {
+                    logger.trace("Signer Attributes: data not available."); 
                 }
-                logger.trace("Signer Attributes: " + (attrTbl == null ? "NULL" : strBuf.toString()));
-                
-                AttributeTable attributes = signer.getSignedAttributes();
-                Attribute attribute = attributes.get(CMSAttributes.messageDigest);
-                DEROctetString digest = (DEROctetString) attribute.getAttrValues().getObjectAt(0);
-                logger.trace("\t**** Signed Attribute Message-Digest := " + Hex.toHexString(digest.getOctets()));
-                logger.trace("\t**** Signed Content-Digest := " + Hex.toHexString(signer.getContentDigest()));
             }
             if (signer.verify(signerInfoVerifier))
             {
