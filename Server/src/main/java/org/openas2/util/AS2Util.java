@@ -598,7 +598,7 @@ public class AS2Util {
 		if (!iFile.exists()) {
 			// try without the angle brackets in case they were added
 			String oMsgIdStripped = removeAngleBrackets(originalMsgId);
-			if (originalMsgId.equals(oMsgIdStripped)) {
+			if (oMsgIdStripped == null || originalMsgId.equals(oMsgIdStripped)) {
 				// No difference so...
 				throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
 			}
@@ -762,8 +762,8 @@ public class AS2Util {
 		}
     }
     
-    public static String removeAngleBrackets(String srcString) {
-    	return srcString.replaceAll("^<([^>]+)>$", "$1");
+    private static String removeAngleBrackets(String srcString) {
+    	return (srcString == null ? null : srcString.replaceAll("^<([^>]+)>$", "$1"));
     }
 
 	public static void attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {

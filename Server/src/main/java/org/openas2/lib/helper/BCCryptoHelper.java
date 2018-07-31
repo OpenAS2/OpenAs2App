@@ -139,8 +139,7 @@ public class BCCryptoHelper implements ICryptoHelper {
                 logger.trace("Compressed MIME msg AFTER COMPRESSION Content-Disposition:" + part.getDisposition());
             } catch (MessagingException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.trace("Compression check: no data available.");
             }
         }
         if (baseType.equalsIgnoreCase("application/pkcs7-mime"))
@@ -344,7 +343,9 @@ public class BCCryptoHelper implements ICryptoHelper {
         PrivateKey privKey = castKey(key);
         String encryptAlg = cert.getPublicKey().getAlgorithm();
 
-        SMIMESignedGenerator sGen = new SMIMESignedGenerator();
+        // Fix copied from https://github.com/phax/as2-lib/commit/ed08dd00b6d721ec3e3e7255f642045c9cbee9c3
+        SMIMESignedGenerator sGen = new SMIMESignedGenerator(
+            adjustDigestToOldName ? SMIMESignedGenerator.RFC3851_MICALGS : SMIMESignedGenerator.RFC5751_MICALGS);
         sGen.setContentTransferEncoding(getEncoding(contentTxfrEncoding));
         SignerInfoGenerator sig;
         try
@@ -388,15 +389,8 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         MimeBodyPart tmpBody = new MimeBodyPart();
         tmpBody.setContent(signedData);
-        String ct = signedData.getContentType();
-        // FIX for latest BC version setting the micalg value to sha-1 when passed sha1 as digest
-        if (adjustDigestToOldName && digest.equalsIgnoreCase("SHA1"))
-        {
-            ct = ct.replaceAll("-1", "1");
-        }
-        tmpBody.setHeader("Content-Type", ct);
-        //tmpBody.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
-
+        // Content-type header is required, unit tests fail badly on async MDNs if not set.
+        tmpBody.setHeader("Content-Type", signedData.getContentType());
         return tmpBody;
     }
 
