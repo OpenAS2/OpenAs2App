@@ -7,8 +7,8 @@ binDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 keyStorePwd=$1
 PWD_OVERRIDE=""
 
-if [ -z $PID_FILE ]; then
-  export PID_FILE=$binDir/OpenAS2.pid
+if [ -z $OPENAS2_PID ]; then
+  export OPENAS2_PID=$binDir/OpenAS2.pid
 fi
 
 # Set some of the base system properties for the Java environment and logging
@@ -21,6 +21,9 @@ EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${binDir}/../config/config.xml"
 
 # For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
 #EXTRA_PARMS="$EXTRA_PARMS -Dsun.net.http.allowRestrictedHeaders=true"
+
+# When using old (unsecure) certificates (please replace them!) that fail to load from the certificate store.
+#EXTRA_PARMS="$EXTRA_PARMS -Dorg.bouncycastle.asn1.allow_unsafe_integer=true"
 
 #EXTRA_PARMS="$EXTRA_PARMS -Dhttps.protocols=TLSv1.2"
 
@@ -62,8 +65,8 @@ if [ "true" = "$OPENAS2_AS_DAEMON" ]; then
   RETVAL="$?"
   PID=$!
   if [ "$RETVAL" = 0 ]; then
-    echo "Writing PID $PID to file $PID_FILE"
-    echo $PID > $PID_FILE
+    echo "Writing PID $PID to file $OPENAS2_PID"
+    echo $PID > $OPENAS2_PID
   fi
 else
   ${CMD}
