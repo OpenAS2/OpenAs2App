@@ -7,12 +7,18 @@ binDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 keyStorePwd=$1
 PWD_OVERRIDE=""
 
-if [ -z $OPENAS2_PID ]; then
+# Backwards compatibility: use value from pid_file if pid_file has a value and openas2_pid has no value.
+#
+if [ -n "$PID_FILE" ] && [ -z "$OPENAS2_PID" ]; then
+  export OPENAS2_PID=$PID_FILE
+fi
+
+if [ -z "$OPENAS2_PID" ]; then
   export OPENAS2_PID=$binDir/OpenAS2.pid
 fi
 
 # Set some of the base system properties for the Java environment and logging
-# remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package    
+# remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package
 #
 EXTRA_PARMS="-Xms32m -Xmx384m -Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
 
