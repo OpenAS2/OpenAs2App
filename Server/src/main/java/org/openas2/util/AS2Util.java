@@ -422,7 +422,7 @@ public class AS2Util {
 				logger.trace("Attempting to rename pending info file : " + oldPendInfFile.getName() + " :::: New name: "
 						+ newPendInfFile.getName() + msg.getLogMsgID());
 			try {
-				newPendInfFile = IOUtil.moveFile(oldPendInfFile, newPendInfFile, false, true);
+				newPendInfFile = IOUtil.moveFile(oldPendInfFile, newPendInfFile, false);
 				// Update the name of the file in the message object
 				msg.setAttribute(FileAttribute.MA_PENDINGINFO, newPendingInfoFileName);
 				if (logger.isInfoEnabled())
@@ -736,7 +736,7 @@ public class AS2Util {
 					try
 					{
 						tgtFile = new File(tgtDir + "/" + fPendingFile.getName());
-						tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false, true);
+						tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false);
 						isMoved = true;
 
 						if (logger.isInfoEnabled())
