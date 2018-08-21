@@ -1,6 +1,7 @@
 package org.openas2.logging;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
@@ -14,6 +15,8 @@ import org.openas2.params.ParameterParser;
 
 public class FileLogger extends BaseLogger {
     public static final String PARAM_FILENAME = "filename";
+    
+    private final Object fileWriteLock = new Object();
 
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         super.init(session, parameters);
@@ -30,14 +33,16 @@ public class FileLogger extends BaseLogger {
     }
 
     protected void appendToFile(String text) {
-        try {
-            File logFile = getLogFile();
-            FileWriter writer = new FileWriter(logFile, true);
-            writer.write(text);
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    	
+    	final byte[] msg = text.getBytes();
+    	// one thread might have to wait a long time (several seconds) if it is busy.
+    	synchronized(fileWriteLock) { 
+    		try (FileOutputStream fos = new FileOutputStream(getLogFile(), true)) {
+    			fos.write(msg);
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
     }
 
     protected File getLogFile() throws OpenAS2Exception {
