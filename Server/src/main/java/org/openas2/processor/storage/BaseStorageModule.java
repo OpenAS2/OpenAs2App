@@ -113,7 +113,7 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
             writeStream(in, tempFile);
 
             // copy the temp file over to the destination
-            IOUtil.moveFile(tempFile, msgFile, true, false);
+            IOUtil.moveFile(tempFile, msgFile, true);
         } else
         {
             writeStream(in, msgFile);
