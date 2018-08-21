@@ -8,6 +8,8 @@ set EXTRA_PARMS=-Xms32m -Xmx384m  -Dorg.apache.commons.logging.Log=org.openas2.l
 rem For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dsun.net.http.allowRestrictedHeaders=true
 
+rem When using old (unsecure) certificates (please replace them!) that fail to load from the certificate store.
+rem set EXTRA_PARMS=%EXTRA_PARMS% -Dorg.bouncycastle.asn1.allow_unsafe_integer=true
 
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dhttps.protocols=TLSv1.2
 

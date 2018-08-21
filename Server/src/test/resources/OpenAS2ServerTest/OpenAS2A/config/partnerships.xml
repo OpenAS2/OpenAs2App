@@ -26,9 +26,7 @@
         <attribute name="sign" value="SHA1"/>
         <attribute name="resend_max_retries" value="3"/>
         <attribute name="prevent_canonicalization_for_mic" value="false"/>
-        <attribute name="no_set_transfer_encoding_for_signing" value="false"/>
-        <attribute name="no_set_transfer_encoding_for_encryption" value="false"/>
-        <attribute name="rename_digest_to_old_name" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="true"/>
         <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
     </partnership>
 
@@ -47,6 +45,7 @@
         <attribute name="encrypt" value="3DES"/>
         <attribute name="sign" value="SHA256"/>
         <attribute name="prevent_canonicalization_for_mic" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="false"/>
         <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
         <!--
         Example for adding static custom headers to Mime body part and additionally add to HTTP

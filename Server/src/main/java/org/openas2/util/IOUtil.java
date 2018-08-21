@@ -7,9 +7,14 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.InvalidMessageException;
 
@@ -17,54 +22,39 @@ import org.openas2.message.InvalidMessageException;
 public class IOUtil {
     //private static final String VALID_FILENAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@-";
 
-    public static OutputStreamWriter getOutPutStreamWriter(String target, boolean createDirectories, String charsetName)
-            throws IOException{
-	if (charsetName == null) charsetName = StandardCharsets.UTF_8.name();
-	Charset charSet = Charset.forName(charsetName);
+    private static final Log logger = LogFactory.getLog(IOUtil.class.getSimpleName());
 
+    public static OutputStreamWriter getOutPutStreamWriter(String target, boolean createDirectories, String charsetName)
+            throws IOException 
+    {
+    	if (charsetName == null) {
+    		charsetName = StandardCharsets.UTF_8.name();
+    	}
+    	Charset charSet = Charset.forName(charsetName);
         return new OutputStreamWriter(getFileOutPutStream(target, createDirectories), charSet);
     }
 
     public static FileOutputStream getFileOutPutStream(String target, boolean createDirectories)
-            throws IOException {
-        File tgtFile = new File(target);
-	if (createDirectories) {
-	    String directory = tgtFile.getParent();
-	    File directoryFile = new File(directory);
-
-	    if (!directoryFile.exists()) {
-		if (!directoryFile.mkdirs()) {
-		    throw new IOException("Could not create directory: " + directory);
-		}
-	    }
-
-	    if (!directoryFile.isDirectory()) {
-		throw new IOException("Invalid directory: " + directory);
-	    }
-	}
-
+            throws IOException 
+    {
+    	File tgtFile = new File(target);
+    	if (createDirectories) {
+    		File dir = tgtFile.getParentFile();
+    		if (dir != null && !dir.exists()) {
+    			createDirs(dir);
+    		}
+    	}
         return new FileOutputStream(tgtFile);
     }
 
     public static File getDirectoryFile(String directory)
             throws IOException
     {
-        File directoryFile = new File(directory);
-
-        if (!directoryFile.exists())
-        {
-            if (!directoryFile.mkdirs())
-            {
-                throw new IOException("Could not create directory: " + directory);
-            }
-        }
-
-        if (!directoryFile.isDirectory())
-        {
-            throw new IOException("Invalid directory: " + directory);
-        }
-
-        return directoryFile;
+    	File dir = new File(directory);
+    	if (!dir.exists()) {
+			createDirs(dir);
+    	}
+        return dir;
     }
 
     public static String getTransferRate(int bytes, ProfilerStub stub)
@@ -90,7 +80,7 @@ public class IOUtil {
 
     private static String getTransferRate(long bytesPerSecond)
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         long kbytesPerSecond = bytesPerSecond / 1024;
 
         if (bytesPerSecond < 1024)
@@ -103,7 +93,6 @@ public class IOUtil {
         {
             buf.append(kbytesPerSecond / 1024).append(".").append(kbytesPerSecond % 1024).append(" MBps");
         }
-
         return buf.toString();
     }
 
@@ -113,7 +102,8 @@ public class IOUtil {
         return new File(dir, filename + "." + UUID.randomUUID());
     }
 
-    public static String cleanFilename(String filename) {
+    public static String cleanFilename(String filename) 
+    {
 	/*
 	 * byte[] fnBytes = filename.getBytes(); byte c;
 	 * 
@@ -123,16 +113,16 @@ public class IOUtil {
 	 * 
 	 * return new String(fnBytes);
 	 */
-	String reservedFilenameChars = Properties.getProperty("reservedFilenameCharacters", "<>:\"|?*");
-	if (reservedFilenameChars != null && reservedFilenameChars.length() > 0) {
-	    String srchReplStr = reservedFilenameChars.replaceAll("\\[", "\\[").replaceAll("\\]", "\\]");
-	    if (reservedFilenameChars.contains(":") && filename.matches("^[a-zA-Z]{1}:.*")) {
-		filename = filename.substring(0, 2) + filename.substring(2).replaceAll("[" + srchReplStr + "]", "");
-	    } else
-		filename = filename.replaceAll("[" + srchReplStr + "]", "");
-	}
-	return filename;
-
+    	String reservedFilenameChars = Properties.getProperty("reservedFilenameCharacters", "<>:\"|?*");
+    	if (reservedFilenameChars != null && reservedFilenameChars.length() > 0) {
+    		String srchReplStr = reservedFilenameChars.replaceAll("\\[", "\\[").replaceAll("\\]", "\\]");
+    		if (reservedFilenameChars.contains(":") && filename.matches("^[a-zA-Z]{1}:.*")) {
+    			filename = filename.substring(0, 2) + filename.substring(2).replaceAll("[" + srchReplStr + "]", "");
+    		} else {
+    			filename = filename.replaceAll("[" + srchReplStr + "]", "");
+    		}
+		}
+		return filename;
     }
 
     // move the file to an error directory    
@@ -148,7 +138,7 @@ public class IOUtil {
             destFile = new File(errorDir, file.getName());
 
             // move the file
-            destFile = IOUtil.moveFile(file, destFile, false, true);
+            destFile = IOUtil.moveFile(file, destFile, false);
         } catch (IOException ioe)
         {
             InvalidMessageException im = new InvalidMessageException("Failed to move " +
@@ -163,60 +153,99 @@ public class IOUtil {
         imMoved.terminate();
     }
 
-
-    public static File moveFile(File src, File dest, boolean overwrite, boolean rename)
+    public static File moveFile(File src, File dest, boolean overwrite)
             throws IOException
     {
-        if (!overwrite && dest.exists())
-        {
-            if (rename)
-            {
-                dest = getUnique(dest.getAbsoluteFile().getParentFile(), dest.getName());
-            } else
-            {
-                throw new IOException("File already exists: " + dest);
+        if (!overwrite && dest.exists()) {
+            dest = getUnique(dest.getAbsoluteFile().getParentFile(), dest.getName());
+        }
+        // fast-track, try an atomic move.
+        IOException moveFail = null;
+        try {
+        	moveFileAtomic(src, dest, overwrite);
+        	return dest;
+        } catch (IOException e) {
+        	moveFail = e;
+        }
+        // check if destination directory exists
+    	boolean destDirCreated = false; 
+    	File destParent = dest.getParentFile();
+    	if (destParent != null && !destParent.exists()) {
+    		createDirs(destParent);
+    		destDirCreated = true;
+    	}
+    	// retry atomic move when destination directory was created
+    	if (destDirCreated) {
+    		try {
+            	moveFileAtomic(src, dest, overwrite);
+            	return dest;
+            } catch (IOException e) {
+            	moveFail = e;
+            }
+    	}
+        if (logger.isTraceEnabled()) {
+            logger.trace("Atomic move for " + src + " failed with [" + moveFail + "], trying alternatives to move to " + dest);
+        }
+        if (overwrite) {
+        	// method below overwrites destination file when it exists.
+            FileUtils.copyFile(src, dest);
+            deleteFile(src);
+            if (logger.isDebugEnabled()) {
+            	logger.debug("Moved file using copy-delete from " + src + " to " + dest);
+            }
+        } else {
+        	// method below will throw an exception when destination file exists.
+            FileUtils.moveFile(src, dest);
+            if (logger.isDebugEnabled()) {
+            	logger.debug("Moved file using rename from " + src + " to " + dest);
             }
         }
-
-        //copyFile(src, dest); //todo why copy??
-        FileUtils.copyFile(src, dest); //
-
-
-        //if (!new File(file.getAbsolutePath()).delete()) {  // do this if file deletion always fails, may help
-        if (!src.delete())
-        {
-            dest.delete();
-            throw new IOException("Move failed, unable to delete " + src);
-        }
-
         return dest;
     }
-
+    
+    private static void moveFileAtomic(File src, File dest, boolean overwrite) 
+    		throws IOException
+    {
+        if (overwrite) {
+            Files.move(src.toPath(), dest.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            Files.move(src.toPath(), dest.toPath(), StandardCopyOption.ATOMIC_MOVE);
+        }
+        if (logger.isDebugEnabled()) {
+        	logger.debug("Moved file atomically from " + src + " to " + dest);
+        }
+    }
+    
+    private static synchronized void createDirs(File dir)
+    		throws IOException
+    {
+    	/*
+    	 * This method must be synchronized to prevent checking on partially constructed directories. 
+    	 */
+        if (dir != null) {
+        	if (dir.mkdirs()) {
+                logger.info("Created directory " + dir);
+        	} else if (!dir.isDirectory()) { // this is why we need synchronized.
+                throw new IOException("Directory '" + dir + "' cannot be created");
+        	}
+        }
+    }
+    
     public static void deleteFile(File f) throws IOException
     {
-        if (!f.exists())
-        {
-            return;
+        try {
+            // On Windows this can fail easily (e.g. read-only files will give an IO exception on delete).
+            Files.delete(f.toPath());
+        } catch (NoSuchFileException fileGone) {
+            return; // File was already gone.
+        } catch (IOException deleteFail) {
+            // Old io-delete method has work-arounds for Windows odd behavior.
+            if (!f.delete() && f.exists()) {
+                throw deleteFail;
+            }
         }
-        // Delete the file using java.nio.file.Files.delete() instead of java.io.File.delete()
-        // if possible (requires Java 7 or better) so exception can be used for debugging cause of fail
-        boolean canUseNio = true;
-        try
-        {
-            Class.forName("java.nio.file.Path");
-            // it exists on the classpath
-        } catch (ClassNotFoundException e)
-        {
-            // it does not exist on the classpath
-            canUseNio = false;
-        }
-        if (canUseNio)
-        {
-            java.nio.file.Path fp = f.toPath();
-            java.nio.file.Files.delete(fp);
-        } else if (!f.delete())
-        {
-            throw new IOException("Failed to delete file: " + f.getName());
+        if (logger.isDebugEnabled()) {
+        	logger.debug("Deleted file " + f);
         }
     }
 
