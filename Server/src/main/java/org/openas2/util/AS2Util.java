@@ -767,15 +767,20 @@ public class AS2Util {
     }
 
 	public static void attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {
-		Pattern PATTERN = Pattern.compile("\\$attribute\\.([^\\$]++)\\$");
+		Pattern PATTERN = Pattern.compile("\\$attribute\\.([^\\$]++)\\$|\\$properties\\.([^\\$]++)\\$");
 		for (Map.Entry<String, String> entry : attribs.entrySet()) {
 			String input = entry.getValue();
 			StringBuffer strBuf = new StringBuffer();
 			Matcher matcher = PATTERN.matcher(input);
 			boolean hasChanged = false;
 			while (matcher.find()) {
+				String value = null;
 				String key = matcher.group(1);
-				String value = attribs.get(key);
+				if (key == null) {
+					key = matcher.group(2);
+					value = Properties.getProperty(key, null);
+				}
+				else value = attribs.get(key);
 				hasChanged = true;
 				if (value == null) {
 					throw new OpenAS2Exception("Missing attribute value for replacement: " + matcher.group());
