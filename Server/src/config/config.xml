@@ -1,5 +1,6 @@
 <openas2>
     <properties
+		storageBaseDir="%home%/../data"
         log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
         sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
         as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
@@ -47,8 +48,8 @@
 	    userid="userID" password="pWd"/>
 	</commandProcessors>
 	<processor classname="org.openas2.processor.DefaultProcessor"
-	    pendingMDN="%home%/../data/pendingMDN3"
-	    pendingMDNinfo="%home%/../data/pendinginfoMDN3"   
+	    pendingMDN="$properties.storageBaseDir$/pendingMDN3"
+	    pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"   
 	>
 		<module classname="org.openas2.processor.sender.AS2SenderModule"
 		    retries="5"/>
@@ -59,24 +60,24 @@
 				<!-- This will parse the filename to get a sender and receiver. For instance a file
 			named OpenAS2A_OID-OpenAS2B_OID.1234 would be sent from OpenAS2A to OpenAS2B. -->
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="%home%/../data/toAny"
-			errordir="%home%/../data/toAny/error"
+			outboxdir="$properties.storageBaseDir$/toAny"
+			errordir="$properties.storageBaseDir$/toAny/error"
 			interval="5"
 			delimiters="-."
             sendfilename="true"
 			format="sender.as2_id, receiver.as2_id, attributes.filename"
 			mimetype="application/EDI-X12" />
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="%home%/../data/toOpenAS2A/"
-			errordir="%home%/../data/toOpenAS2A/error"
+			outboxdir="$properties.storageBaseDir$/toOpenAS2A/"
+			errordir="$properties.storageBaseDir$/toOpenAS2A/error"
 			interval="5"
 			defaults="sender.as2_id=OpenAS2B_OID, receiver.as2_id=OpenAS2A_OID"
 			sendfilename="true"
 			mimetype="application/EDI-X12"/>
 
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="%home%/../data/toOpenAS2B"
-			errordir="%home%/../data/toOpenAS2B/error"
+			outboxdir="$properties.storageBaseDir$/toOpenAS2B"
+			errordir="$properties.storageBaseDir$/toOpenAS2B/error"
 			interval="5"
 			defaults="sender.as2_id=OpenAS2A_OID, receiver.as2_id=OpenAS2B_OID"
 			sendFilename="true"
@@ -98,19 +99,19 @@
 		/>
 
 		<module classname="org.openas2.processor.storage.MDNFileModule"
-			filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
+			filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
 			protocol="as2"
-			tempdir="%home%/../data/temp"/>
+			tempdir="$properties.storageBaseDir$/temp"/>
 
 		<module classname="org.openas2.processor.storage.MessageFileModule"
-			filename="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
-			header="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
+			filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
+			header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
 			protocol="as2"
-			tempdir="%home%/../data/temp"/>
+			tempdir="$properties.storageBaseDir$/temp"/>
 
 		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"
 			port="10080"
-			errordir="%home%/../data/inbox/error"
+			errordir="$properties.storageBaseDir$/inbox/error"
 			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
 		<!--
 		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"
@@ -119,7 +120,7 @@
 			ssl_protocol="TLS"
 			ssl_keystore="%home%/ssl_certs.jks"
 			ssl_keystore_password="testas2"
-			errordir="%home%/../data/inbox/error"
+			errordir="$properties.storageBaseDir$/inbox/error"
 			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
 			-->
 		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
@@ -135,8 +136,8 @@
 			-->
 
 		<module classname="org.openas2.processor.resender.DirectoryResenderModule"
-			resenddir="%home%/../data/resend"
-			errordir="%home%/../data/resend/error"
+			resenddir="$properties.storageBaseDir$/resend"
+			errordir="$properties.storageBaseDir$/resend/error"
 			resenddelay="60"/>
 		<!--
 		<module classname="org.openas2.processor.receiver.HealthCheckModule"

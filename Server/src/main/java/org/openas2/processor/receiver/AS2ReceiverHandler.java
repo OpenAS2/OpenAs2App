@@ -437,7 +437,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
     /**
      * Sends a response for received AS2 message.
-     * If sending an MDN is enabled then sets up MDN object and invokes the {@link MDNSenderModule}
+     * If sending an MDN is enabled then sets up MDN object and invokes the {@link org.openas2.processor.sender.MDNSenderModule}
      * @param msg The received message that an MDN must be sent for.
      * @param out The output stream for the connection the AS2 message was received on
      * @param disposition The disposition type that must be sent in the MDN
