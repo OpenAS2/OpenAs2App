@@ -422,7 +422,7 @@ public class AS2Util {
 				logger.trace("Attempting to rename pending info file : " + oldPendInfFile.getName() + " :::: New name: "
 						+ newPendInfFile.getName() + msg.getLogMsgID());
 			try {
-				newPendInfFile = IOUtil.moveFile(oldPendInfFile, newPendInfFile, false, true);
+				newPendInfFile = IOUtil.moveFile(oldPendInfFile, newPendInfFile, false);
 				// Update the name of the file in the message object
 				msg.setAttribute(FileAttribute.MA_PENDINGINFO, newPendingInfoFileName);
 				if (logger.isInfoEnabled())
@@ -598,7 +598,7 @@ public class AS2Util {
 		if (!iFile.exists()) {
 			// try without the angle brackets in case they were added
 			String oMsgIdStripped = removeAngleBrackets(originalMsgId);
-			if (originalMsgId.equals(oMsgIdStripped)) {
+			if (oMsgIdStripped == null || originalMsgId.equals(oMsgIdStripped)) {
 				// No difference so...
 				throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
 			}
@@ -736,7 +736,7 @@ public class AS2Util {
 					try
 					{
 						tgtFile = new File(tgtDir + "/" + fPendingFile.getName());
-						tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false, true);
+						tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false);
 						isMoved = true;
 
 						if (logger.isInfoEnabled())
@@ -762,20 +762,25 @@ public class AS2Util {
 		}
     }
     
-    public static String removeAngleBrackets(String srcString) {
-    	return srcString.replaceAll("^<([^>]+)>$", "$1");
+    private static String removeAngleBrackets(String srcString) {
+    	return (srcString == null ? null : srcString.replaceAll("^<([^>]+)>$", "$1"));
     }
 
 	public static void attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {
-		Pattern PATTERN = Pattern.compile("\\$attribute\\.([^\\$]++)\\$");
+		Pattern PATTERN = Pattern.compile("\\$attribute\\.([^\\$]++)\\$|\\$properties\\.([^\\$]++)\\$");
 		for (Map.Entry<String, String> entry : attribs.entrySet()) {
 			String input = entry.getValue();
 			StringBuffer strBuf = new StringBuffer();
 			Matcher matcher = PATTERN.matcher(input);
 			boolean hasChanged = false;
 			while (matcher.find()) {
+				String value = null;
 				String key = matcher.group(1);
-				String value = attribs.get(key);
+				if (key == null) {
+					key = matcher.group(2);
+					value = Properties.getProperty(key, null);
+				}
+				else value = attribs.get(key);
 				hasChanged = true;
 				if (value == null) {
 					throw new OpenAS2Exception("Missing attribute value for replacement: " + matcher.group());

@@ -16,6 +16,9 @@ import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManagerFactory;
@@ -113,7 +116,7 @@ public abstract class NetModule extends BaseReceiverModule {
 	    		logger.trace("Helthcheck about to try URL: " + urlString);
 	    	Map<String, String> options = new HashMap<String, String>();
 	    	options.put(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS, "true");
-			ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options);
+			ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options, 0L);
 	    	if (200 != rw.getStatusCode())
 	    	{
 	    		failures.add(this.getClass().getSimpleName()
@@ -170,16 +173,14 @@ public abstract class NetModule extends BaseReceiverModule {
         }
     }
 
-    protected class ConnectionThread extends Thread {
-        private NetModule owner;
-        private Socket socket;
+    protected class ConnectionHandler implements Runnable {
+        private final NetModule owner;
+        private final Socket socket;
 
-        public ConnectionThread(NetModule owner, Socket socket)
+        public ConnectionHandler(NetModule owner, Socket socket)
         {
-            super(ClassUtils.getSimpleName(ConnectionThread.class) + "-Thread");
             this.owner = owner;
             this.socket = socket;
-            start();
         }
 
         public NetModule getOwner()
@@ -192,6 +193,7 @@ public abstract class NetModule extends BaseReceiverModule {
             return socket;
         }
 
+        @Override
         public void run()
         {
             Socket s = getSocket();
@@ -209,9 +211,10 @@ public abstract class NetModule extends BaseReceiverModule {
     }
 
     protected class HTTPServerThread extends Thread {
-        private NetModule owner;
-        private ServerSocket socket;
-        private boolean terminated;
+        private final NetModule owner;
+        private final ServerSocket socket;
+        private final ExecutorService connectionThreads;
+        private final AtomicBoolean terminated = new AtomicBoolean();
 
         HTTPServerThread(NetModule owner, @Nullable String address, int port)
                 throws IOException
@@ -326,6 +329,7 @@ public abstract class NetModule extends BaseReceiverModule {
                     socket.bind(new InetSocketAddress(port));
                 }
             }
+            connectionThreads = Executors.newCachedThreadPool();
         }
 
         NetModule getOwner()
@@ -340,25 +344,25 @@ public abstract class NetModule extends BaseReceiverModule {
 
         public boolean isTerminated()
         {
-            return terminated;
+            return terminated.get();
         }
 
-        public void setTerminated(boolean terminated)
+        public void terminate()
         {
-            this.terminated = terminated;
-
-            if (socket != null)
-            {
-                try
-                {
-                    socket.close();
-                } catch (IOException e)
-                {
-                    owner.forceStop(e);
-                }
+            if (!terminated.compareAndSet(false, true) || socket == null) {
+                return;
             }
+            try
+            {
+                socket.close();
+            } catch (IOException e)
+            {
+                owner.forceStop(e);
+            }
+            connectionThreads.shutdown();
         }
 
+        @Override
         public void run()
         {
             while (!isTerminated())
@@ -367,7 +371,7 @@ public abstract class NetModule extends BaseReceiverModule {
                 {
                     Socket conn = socket.accept();
                     conn.setSoLinger(true, 60);
-                    new ConnectionThread(getOwner(), conn);
+                    connectionThreads.execute(new ConnectionHandler(getOwner(), conn));
                 } catch (IOException e)
                 {
                     if (!isTerminated())
@@ -379,9 +383,5 @@ public abstract class NetModule extends BaseReceiverModule {
         }
 
 
-        public void terminate()
-        {
-            setTerminated(true);
-        }
     }
 }
