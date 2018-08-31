@@ -1,32 +1,24 @@
 #              OpenAS2 Server
-#              Version 2.5.0
+#              Version 2.6.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.5.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.0
 
-The release download file is: OpenAS2Server-2.5.0.zip
+The release download file is: OpenAS2Server-2.6.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.5.0 - 2018-07-02
-This is an enhancement and bugfix release:
+Version 2.6.0 - 2018-08-31
+This is an enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Supports Java 7 and up. Java 6 (Java 1.6) is no longer supported.
-  2. Provide "log" command to dynamically alter logging levels in real time without restarting the application.
-  3. Rationalize MDN sending so that Synchronous and Asynchronous are processed by a single module. NB See upgrade notes for class name change.
-  4. Move HTTP header folding removal to HTTPUtils for centralised management
-  5. Make the HTTP "User-Agent" header configurable via a property.
-  6. Default "Message-Id" format complies with https://www.ietf.org/rfc/rfc2822.txt section 3.6.4.
-  7. Provide ability to configure emails for successfully received and sent files.
-  8. Upgrade libraries to the latest release.
-  9. Support using system environment variables in config.xml
-  10. Change attribute name for overriding Message-ID format at partnership level to match name at system level. NB See upgrade notes for attribute name change.
-  11. Allow modules to have scheduled tasks using the HasSchedule implementation.
-  12. Add scheduled task to detect failed sent messages where files are not cleaned up. (Fixes https://sourceforge.net/p/openas2/tickets/5/)
-  13. Allow attributes in partnership element to reference other partnership elements and resolve the references at load time.
-  14. Default sample in partnerships.xml for "as2_mdn_options" to use the "sign" attribute value for the micalg value.
-  15. Support AS2 ID with spaces in the value.
+  1. Support for deploying as a Windows service - see OpenAS2HowTo.pdf for details
+  2. Allow all components in the config.xml to use the attribute enhancer feature.
+  3. Fix possibility of logs getting cleared
+  4. Fix the DB logging module not being able to use the "tcp_server_start" parameter is always true in previous versions.
+  5. Optimise the move file method
+  6. Optimise the HTTP client handler
+  7. Rationalise the PID environment variable name to match between service script and startup script
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
