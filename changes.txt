@@ -1,3 +1,15 @@
+Version 2.6.0 - 2018-08-31
+This is an enhancement and bugfix release:
+       IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support for deploying as a Windows service - see OpenAS2HowTo.pdf for details
+  2. Allow all components in the config.xml to use the attribute enhancer feature.
+  3. Fix possibility of logs getting cleared
+  4. Fix the DB logging module not being able to use the "tcp_server_start" parameter is always true in previous versions.
+  5. Optimise the move file method
+  6. Optimise the HTTP client handler
+  7. Rationalise the PID environment variable name to match between service script and startup script
+
 Version 2.5.0 - 2018-07-02
 This is an enhancement and bugfix release:
        IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
