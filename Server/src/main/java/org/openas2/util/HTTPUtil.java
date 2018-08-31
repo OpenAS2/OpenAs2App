@@ -253,7 +253,9 @@ public class HTTPUtil {
 	}
 	
 	/**
-	 * @param msg The message containing the 
+	 * Cleans specific headers to ensure AS2 compatibility
+	 * 
+	 * @param hdrs Headers to be cleaned
 	 */
 	public static void cleanIdHeaders(InternetHeaders hdrs) {
 		// Handle the case where the AS2 ID could be encapsulated in double quotes per RFC4130
@@ -312,13 +314,16 @@ public class HTTPUtil {
 	 * @param method GET, PUT, POST, DELETE, etc
 	 * @param url
 	 *            The remote connection string
-	 * @param HTTP
-	 *            headers to be sent
-	 * @param paramString
+	 * @param headers
+	 *            HTTP headers to be sent
+	 * @param params
 	 *            Parameters for the get. Can be null.
-	 * @param contentType
-	 *            Content-Type attribute string for the {@link paramString}. Can be
-	 *            null
+	 * @param inputStream
+	 *            Source stream for retrieving request data
+	 * @param options
+	 *            Any additional options for affecting request behaviour. Can be null.
+	 * @param noChunkMaxSize
+	 *            The maximum size before chunking would need to be utilised. 0 disables check for chunking
 	 * @return ResponseWrapper
 	 * @throws Exception
 	 */
