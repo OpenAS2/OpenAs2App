@@ -77,7 +77,7 @@ if not "%JAVA%" == "" goto :Check_JAVA_END
     )
     set JAVA=%JAVA_HOME%\bin\java
 :Check_JAVA_END
-set LIB_JARS=%OPENAS2_BASE_DIR/lib/*
+set LIB_JARS=%OPENAS2_BASE_DIR%/lib/*
 rem    
 "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server ../config/config.xml
 
