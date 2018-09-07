@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.mail.Header;
 import javax.mail.internet.MimeBodyPart;
 
 import org.apache.commons.io.IOUtils;
@@ -92,9 +93,9 @@ public class MDNSenderModule extends HttpSenderModule {
 				throw new WrappedException(we);
 			}
 			if (logger.isTraceEnabled()) {
-				Enumeration<String> headers = mdn.getHeaders().getAllHeaderLines();
+				Enumeration<Header> headers = mdn.getHeaders().getAllHeaders();
 				if (headers.hasMoreElements())
-					logger.trace("MDN HEADERS SENT: " + StringUtils.join(headers, ";;") + msg.getLogMsgID());
+					logger.trace("MDN HEADERS SENT: " + HTTPUtil.printHeaders(headers, ";", "=") + msg.getLogMsgID());
 			}
 		}
 		// Save sent MDN for later examination
