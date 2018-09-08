@@ -1,3 +1,9 @@
+Version 2.6.1 - 2018-09-09
+This is a minor enhancement:
+       IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Allow MDN subject to use filename parsing functionality to set the text.
+ 
 Version 2.6.0 - 2018-08-31
 This is an enhancement and bugfix release:
        IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading

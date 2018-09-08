@@ -1,24 +1,18 @@
 #              OpenAS2 Server
-#              Version 2.6.0
+#              Version 2.6.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.1
 
-The release download file is: OpenAS2Server-2.6.0.zip
+The release download file is: OpenAS2Server-2.6.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.6.0 - 2018-08-31
-This is an enhancement and minor bugfix release:
+Version 2.6.1 - 2018-09-09
+This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Support for deploying as a Windows service - see OpenAS2HowTo.pdf for details
-  2. Allow all components in the config.xml to use the attribute enhancer feature.
-  3. Fix possibility of logs getting cleared
-  4. Fix the DB logging module not being able to use the "tcp_server_start" parameter is always true in previous versions.
-  5. Optimise the move file method
-  6. Optimise the HTTP client handler
-  7. Rationalise the PID environment variable name to match between service script and startup script
+  1. Allow MDN subject to use filename parsing functionality to set the text.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
@@ -27,7 +21,7 @@ This is an enhancement and minor bugfix release:
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
 
 ### If upgrading from versions older than 2.5.0:
-      1. Change the name of the MDN sender module from "AsynchMDNSenderModule" to "MDNSenderModule" in the config.xml if using your existing config.xml file in the upgrade.
+      1. Change the name of the MDN sender module from "AsynchMDNSenderModule" to "MDNSenderModule" in the config.xml if using your existing config.xml file in the upgrade. If "AsynchMDNSenderModule" is not in the config then add the following: <module classname="org.openas2.processor.sender.MDNSenderModule" retries="3"/>
       2. Change the name of the partnership attribute "messageid" to "as2_message_id_format" if used in any partnership definition.
       3. Change the "as2_mdn_options" attribute to use $attribute.sign$ instead of hard coded signing algorithm
 
