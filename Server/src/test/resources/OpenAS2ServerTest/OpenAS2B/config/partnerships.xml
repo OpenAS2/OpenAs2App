@@ -14,7 +14,6 @@
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="8bit"/>
         <attribute name="compression_type" value="ZLIB"/>
-        <attribute name="subject" value="From OpenAS2A to OpenAS2B"/>
         <attribute name="as2_url" value="http://localhost:20080"/>
         <attribute name="mdnsubject" value="Your requested MDN response from $receiver.as2_id$"/>
         <attribute name="as2_mdn_to" value="edi@openas2b.org"/>
@@ -34,7 +33,7 @@
         <receiver name="OpenAS2A"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="8bit"/>
-        <attribute name="subject" value="From OpenAS2B to OpenAS2A"/>
+		<attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
         <attribute name="as2_url" value="http://localhost:10080"/>
         <attribute name="as2_mdn_to" value="edi@openas2a.org"/>
         <attribute name="no_chunked_max_size" value="10485760"/> <!-- Disables chunked transfer, set max. mime-size to 10 MB -->

@@ -526,7 +526,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 	    if (subject != null) {
 	        mdn.setHeader("Subject", ParameterParser.parse(subject, new MessageParameters(msg)));
 	    } else {
-	        mdn.setHeader("Subject", "Your Requested MDN Response");
+	        mdn.setHeader("Subject", "Your Requested MDN Response re: " + mdn.getMessage().getSubject());
 	    }
 	    mdn.setText(ParameterParser.parse(text, new MessageParameters(msg)));
 	    mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, session.getAppTitle() + "@"
