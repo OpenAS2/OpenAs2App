@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 public class HealthCheckTest {
 	private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
 	// private static File openAS2AHome;
-	private static OpenAS2Server openAS2A;
+	private static OpenAS2Server serverInstance;
 	private static ExecutorService executorService;
 
 	@Rule
@@ -36,9 +36,8 @@ public class HealthCheckTest {
 			//System.setProperty("org.openas2.logging.defaultlog", "TRACE");
 			executorService = Executors.newFixedThreadPool(20);
 
-			// openAS2AHome = RESOURCE.get("OpenAS2A");
-			HealthCheckTest.openAS2A = new OpenAS2Server.Builder()
-					.run(RESOURCE.get("OpenAS2A", "config", "config.xml").getAbsolutePath());
+			HealthCheckTest.serverInstance = new OpenAS2Server.Builder()
+					.run(RESOURCE.get("MyCompany", "config", "config.xml").getAbsolutePath());
 		} catch (Throwable e) {
 			// aid for debugging JUnit tests
 			System.err.println("ERROR occurred: " + ExceptionUtils.getStackTrace(e));
@@ -48,14 +47,14 @@ public class HealthCheckTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		openAS2A.shutdown();
+		serverInstance.shutdown();
 		executorService.shutdown();
 	}
 
 	@Test
 	public void shouldRespondToHealthCheckOnNetModule() throws Exception {
 		Class<NetModule> listenerClass = NetModule.class;
-		List<ActiveModule> listeners = openAS2A.getSession().getProcessor().getActiveModulesByClass(listenerClass);
+		List<ActiveModule> listeners = serverInstance.getSession().getProcessor().getActiveModulesByClass(listenerClass);
 		for (ActiveModule listener : listeners) {
 			List<String> failures = new ArrayList<String>();
 			NetModule m = (NetModule) listener;
