@@ -52,31 +52,8 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         // Fill in any available partnership information
         Partnership partnership = getPartnership(msg.getPartnership(), false);
         msg.getPartnership().copy(partnership);
-		//  Now set dynamic parms based on file name if configured to
-        String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
-		String filenameToParmsList = msg.getPartnership().getAttribute(Partnership.PAIB_NAMES_FROM_FILENAME);
-		if (filename != null && filenameToParmsList != null && filenameToParmsList.length() > 0)
-		{
-			String[] headerNames = filenameToParmsList.split("\\s*,\\s*");
 
-			String regex = msg.getPartnership().getAttribute(Partnership.PAIB_VALUES_REGEX_ON_FILENAME);
-			if (regex != null)
-			{
-				Pattern p = Pattern.compile(regex);
-				Matcher m = p.matcher(filename);
-				if (!m.find() || m.groupCount() != headerNames.length)
-				{
-					throw new OpenAS2Exception("Could not match filename (" + filename + ") to parameters required using the regex provided (" + regex + "): "
-							+ (m.find() ? ("Mismatch in parameter count to extracted group count: " + headerNames.length
-									+ "::" + m.groupCount()) : "No match found in filename"));
-				}
-				for (int i = 0; i < headerNames.length; i++)
-				{
-					msg.setAttribute(headerNames[i], m.group(i + 1));
-				}
-			}
-		}
-
+        processFilenameBasedAttribs(msg);
 
         // Set attributes
         if (overwrite) {
@@ -87,11 +64,43 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         }
     }
 
-    public void updatePartnership(MessageMDN mdn, boolean overwrite) throws OpenAS2Exception {
+	public void processFilenameBasedAttribs(Message msg) throws OpenAS2Exception {
+		// Now set dynamic parms based on file name if configured to
+		String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
+		if (filename == null) {
+			// If invoked processing an MDN might be somewhere else... 
+			filename = msg.getPayloadFilename();
+			if (filename == null)  return;
+		}
+		String filenameToParmsList = msg.getPartnership().getAttribute(Partnership.PAIB_NAMES_FROM_FILENAME);
+		if (filenameToParmsList == null || filenameToParmsList.length() < 1)
+			return;
+		String regex = msg.getPartnership().getAttribute(Partnership.PAIB_VALUES_REGEX_ON_FILENAME);
+		if (regex == null)
+			return;
+
+		String[] headerNames = filenameToParmsList.split("\\s*,\\s*");
+		Pattern p = Pattern.compile(regex);
+		Matcher m = p.matcher(filename);
+		if (!m.find() || m.groupCount() != headerNames.length) {
+			throw new OpenAS2Exception("Could not match filename (" + filename
+					+ ") to parameters required using the regex provided (" + regex + "): "
+					+ (m.find()
+							? ("Mismatch in parameter count to extracted group count: " + headerNames.length + "::"
+									+ m.groupCount())
+							: "No match found in filename"));
+		}
+		for (int i = 0; i < headerNames.length; i++) {
+			msg.setAttribute(headerNames[i], m.group(i + 1));
+		}
+	}
+
+    public void updatePartnership(MessageMDN mdn, boolean processFilenameAttribs) throws OpenAS2Exception {
         // Fill in any available partnership information
         // the MDN partnership should be the one used to send original message hence reverse lookup
         Partnership partnership = getPartnership(mdn.getPartnership(), true);
         mdn.getPartnership().copy(partnership);
+        if (processFilenameAttribs) processFilenameBasedAttribs(mdn.getMessage());
     }
 
     protected Partnership getPartnership(Map<String, Object> senderIDs, Map<String, Object> receiverIDs) {
