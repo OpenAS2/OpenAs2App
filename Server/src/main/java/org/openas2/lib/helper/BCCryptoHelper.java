@@ -528,7 +528,7 @@ public class BCCryptoHelper implements ICryptoHelper {
 
     protected String getEncoding(String contentTxfrEncoding)
     {
-        // Bouncy castle only deals with binary or base64 so pass base64 for 7bit, 8bit etc
+        // Bouncy castle only deals with binary or base64 so pass binary for 7bit, 8bit etc
         return "base64".equalsIgnoreCase(contentTxfrEncoding) ? "base64" : "binary";
     }
 
