@@ -487,11 +487,11 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
     }
 
 
-	protected InternetHeaders getHttpHeaders(Message msg, MimeBodyPart securedData) {
+	protected InternetHeaders getHttpHeaders(Message msg, MimeBodyPart securedData) throws MessagingException {
 		Partnership partnership = msg.getPartnership();
 		InternetHeaders ih = new InternetHeaders();
 
-		ih.addHeader("Connection", "close, TE");
+		ih.addHeader(HTTPUtil.HEADER_CONNECTION, "close, TE");
 		String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP,
 				msg.getAppTitle() + " (" + AS2SenderModule.class.getSimpleName() + ")");
 		ih.addHeader("User-Agent", userAgent);
@@ -503,24 +503,27 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 		ih.addHeader("Mime-Version", "1.0"); // make sure this is the
 		// encoding used in the msg, run TBF1
 		try {
-			ih.addHeader("Content-type", securedData.getContentType());
+			ih.addHeader(HTTPUtil.HEADER_CONTENT_TYPE, securedData.getContentType());
 		} catch (MessagingException e) {
-			ih.addHeader("Content-type", msg.getContentType());
+			ih.addHeader(HTTPUtil.HEADER_CONTENT_TYPE, msg.getContentType());
 		}
-		ih.addHeader("AS2-Version", "1.1"); // RFC6017 - AS2 V1.1 supports compression
 		// AS2 V1.2 additionally supports EDIINT-Features
 		// ih.addHeader("EDIINT-Features","CEM,multiple-attachments"); 
 		// TODO (possibly implement???)
-		String cte = null;
-		try {
-			cte = securedData.getEncoding();
-		} catch (MessagingException e1) {
-			e1.printStackTrace();
+		ih.addHeader("AS2-Version", "1.1"); // RFC6017 - AS2 V1.1 supports compression
+		/* The Content-Transfer-Encoding header is now a restricted header for HTTP so allow
+		 *  it to be controlled by config at partnership level
+		 *  Java will automatically remove this even if set  unless the
+		 *  sun.net.http.allowRestrictedHeaders property is set to "true"
+		 */
+		if ("true".equalsIgnoreCase(System.getProperty("sun.net.http.allowRestrictedHeaders", "false"))) {
+			if (logger.isDebugEnabled()) logger.debug("HTTP RESTRICTED HEADERS property is not active");
+			String cte = null;
+			cte = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TRANSFER_ENCODING, null);
+			if (cte != null) {
+				ih.addHeader("Content-Transfer-Encoding", cte);			
+			}
 		}
-		if (cte == null) {
-			cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-		}
-		ih.addHeader("Content-Transfer-Encoding", cte);
 		ih.addHeader("Recipient-Address", partnership.getAttribute(Partnership.PA_AS2_URL));
 		String rId = partnership.getReceiverID(Partnership.PID_AS2);
 		if (rId.contains(" ")) rId = "\"" + rId + "\"";
@@ -535,7 +538,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 			ih.addHeader("Disposition-Notification-To", dispTo);
 		}
 		String dispOptions = partnership.getAttribute(Partnership.PA_AS2_MDN_OPTIONS);
-		if (dispOptions != null) {
+		if (dispOptions != null && !"none".equalsIgnoreCase(dispOptions)) {
 			ih.addHeader("Disposition-Notification-Options", dispOptions);
 		}
 		String receiptOption = partnership.getAttribute(Partnership.PA_AS2_RECEIPT_OPTION);
@@ -652,8 +655,12 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         // Calculate and get the original mic
         // includeHeaders = (msg.getHistory().getItems().size() > 1);
 
-        DispositionOptions dispOptions = new DispositionOptions(msg.getPartnership().getAttribute(
-                Partnership.PA_AS2_MDN_OPTIONS));
+    	String mdnOptions = msg.getPartnership().getAttributeOrProperty(Partnership.PA_AS2_MDN_OPTIONS, null);
+    	if (mdnOptions == null || mdnOptions.length() < 1) {
+    		throw new OpenAS2Exception("Partner attribute " + Partnership.PA_AS2_MDN_OPTIONS + "is required but can be set to \"none\"");
+    	}
+    	if ("none".equalsIgnoreCase(mdnOptions)) return;
+        DispositionOptions dispOptions = new DispositionOptions(mdnOptions);
         msg.setCalculatedMIC(AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg()
                 , includeHeaders, msg.getPartnership().isPreventCanonicalization()));
         if (logger.isTraceEnabled())
