@@ -139,7 +139,8 @@ public class HTTPUtil {
 	};
 
 	public static String getHTTPResponseMessage(int responseCode) {
-		return httpResponseCodeToPhrase.getOrDefault((Integer)responseCode, "Unknown");
+		String code = httpResponseCodeToPhrase.get((Integer)responseCode);
+		return (code == null)?"Unknown":code;
 	}
 
 	public static byte[] readHTTP(InputStream inStream, OutputStream outStream, InternetHeaders headerCache,

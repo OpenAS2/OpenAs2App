@@ -38,7 +38,8 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
 	public void start(String connectString, String userName, String pwd, Map<String, String> params) throws OpenAS2Exception
 	{
 		createConnectionPool(connectString, userName, pwd);
-		if ("true".equalsIgnoreCase(params.getOrDefault(PARAM_TCP_SERVER_START, "true")))
+		String isStartSrvr = params.get(PARAM_TCP_SERVER_START);
+		if (isStartSrvr == null || "true".equalsIgnoreCase(isStartSrvr))
 		{
 			String tcpPort = params.get(PARAM_TCP_SERVER_PORT);
 			if (tcpPort == null || tcpPort.length() < 1) tcpPort = "9092";
