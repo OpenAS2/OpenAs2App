@@ -521,7 +521,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 			String cte = null;
 			cte = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TRANSFER_ENCODING, null);
 			if (cte != null) {
-				if ("true".equalsIgnoreCase(msg.getPartnership().getAttribute(Partnership.PA_SET_CONTENT_TRANSFER_ENCODING_HTTP)))
+				if ("true".equalsIgnoreCase(msg.getPartnership().getAttributeOrProperty(Partnership.PA_SET_CONTENT_TRANSFER_ENCODING_HTTP, "false")))
 					ih.addHeader("Content-Transfer-Encoding", cte);			
 			}
 		}
