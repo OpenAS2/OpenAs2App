@@ -1,18 +1,20 @@
 #              OpenAS2 Server
-#              Version 2.6.1
+#              Version 2.6.2
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.2
 
-The release download file is: OpenAS2Server-2.6.1.zip
+The release download file is: OpenAS2Server-2.6.2.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.6.1 - 2018-09-09
+Version 2.6.2 - 2018-09-26
 This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Allow MDN subject to use filename parsing functionality to set the text.
+  1. Provide ability to use restricted headers in HTTP with partnership level overrides for the "Content-Transfer-Encoding" header
+  2. Allow unsigned MDN to be sent using the "none" keyword for the "as2_mdn_options" attribute
+  3. Use a Java 7 compatible method call for a Map class method that required Java 8
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
@@ -24,6 +26,7 @@ This is a minor enhancement release:
       1. Change the name of the MDN sender module from "AsynchMDNSenderModule" to "MDNSenderModule" in the config.xml if using your existing config.xml file in the upgrade. If "AsynchMDNSenderModule" is not in the config then add the following: <module classname="org.openas2.processor.sender.MDNSenderModule" retries="3"/>
       2. Change the name of the partnership attribute "messageid" to "as2_message_id_format" if used in any partnership definition.
       3. Change the "as2_mdn_options" attribute to use $attribute.sign$ instead of hard coded signing algorithm
+      4. If you experience issues with partners failing that were working in the previous version, check the troubleshooting section of the OpenAS2HowTo guide - specifically the issues around Content Transfer Encoding and Content Length/Chunking
 
 
 ### If upgrading from versions older than 2.4.1:
