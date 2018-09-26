@@ -1,3 +1,12 @@
+Version 2.6.2 - 2018-09-26
+This is a minor enhancement and bgufix:
+       IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Provide ability to use restricted headers in HTTP with partnership level overrides for the "Content-Transfer-Encoding" header
+  2. Allow unsigned MDN to be sent using the "none" keyword for the "as2_mdn_options" attribute
+  3. Use a Java 7 compatible method call for a Map class method that required Java 8
+
+
 Version 2.6.1 - 2018-09-09
 This is a minor enhancement:
        IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
