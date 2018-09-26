@@ -204,10 +204,13 @@ public class AS2Util {
 			throw new OpenAS2Exception(e);
 		}
 
+		if ("none".equalsIgnoreCase(msg.getPartnership().getAttribute(Partnership.PA_AS2_MDN_OPTIONS))) {
+			// signed MDN not requested so...
+			return true;
+		}
 		if (logger.isTraceEnabled())
 			logger.trace("MIC processing start... ");
 		// get the returned mic from mdn object
-
 		String returnMIC = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
 		if (returnMIC == null || returnMIC.length() < 1) {
 			if (dispositionHasWarning)

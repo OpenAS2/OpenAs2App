@@ -253,7 +253,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		try
 		{
 			//byte[] data = IOUtilOld.getFileBytes(file);
-			String contentType = getParameter(PARAM_MIMETYPE, false);
+			// Allow Content-Type to be overridden at partnership level or as property
+			String contentType = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TYPE, null);
+			if (contentType == null) contentType = getParameter(PARAM_MIMETYPE, false);
 			if (contentType == null)
 			{
 				contentType = "application/octet-stream";

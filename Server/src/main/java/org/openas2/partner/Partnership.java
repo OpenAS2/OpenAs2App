@@ -24,7 +24,9 @@ public class Partnership implements Serializable {
 
     /* partnership definition attributes */
     public static final String PA_SUBJECT = "subject"; // Subject sent in messages    
+    public static final String PA_CONTENT_TYPE = "content_type"; // optional content type for mime parts
     public static final String PA_CONTENT_TRANSFER_ENCODING = "content_transfer_encoding"; // optional content transfer enc value
+    public static final String PA_SET_CONTENT_TRANSFER_ENCODING_HTTP = "set_content_transfer_encoding_http_header"; // See as an HTTP header
     public static final String PA_REMOVE_PROTECTION_ATTRIB = "remove_cms_algorithm_protection_attrib"; // Some AS2 systems do not support the attribute
     public static final String PA_SET_CONTENT_TRANSFER_ENCODING_OMBP = "set_content_transfer_encoding_on_outer_mime_bodypart"; // optional content transfer enc value
 	public static final String PA_RESEND_REQUIRES_NEW_MESSAGE_ID = "resend_requires_new_message_id"; // list of nme/value pairs for setting custom mime headers
