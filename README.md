@@ -17,4 +17,6 @@ Maven is used as a build. Therefore in order to build a snapshot the following c
 
 ## Deploy to Maven Central
 To deploy the released artifacts requires user ID and password for Sonatype. See developer guide for details:
-`./mvnw clean deploy`
+`./mvnw clean deploy -P release` - will require manual closing and release in Sonatype
+`./mvnw release:perform`
+`./mvnw nexus-staging:release -Ddescription="Some release comment here"`
