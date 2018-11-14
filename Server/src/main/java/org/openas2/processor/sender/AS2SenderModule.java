@@ -698,7 +698,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 		}
 		// We are interested in files older than one day
 		int maxWaitMdnResponseSecs = Integer
-				.parseInt(Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "300"));
+				.parseInt(Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "4560"));
 		long cutoff = System.currentTimeMillis() - (maxWaitMdnResponseSecs * 1000);
 		String[] files = pendingDir.list(new AgeFileFilter(cutoff));
 		for (int i = 0; i < files.length; i++) {
@@ -720,7 +720,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
 	@Override
 	public void schedule(ScheduledExecutorService executor) {
- 	   String delayStr = Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "300");
+ 	   String delayStr = Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "4560");
  	   Long delay = Long.parseLong(delayStr)/4*1000;
 		executor.scheduleWithFixedDelay(new Runnable() {
            @Override
