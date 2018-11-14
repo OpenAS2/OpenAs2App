@@ -1,20 +1,19 @@
 #              OpenAS2 Server
-#              Version 2.6.2
+#              Version 2.6.3
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.3
 
-The release download file is: OpenAS2Server-2.6.2.zip
+The release download file is: OpenAS2Server-2.6.3.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.6.2 - 2018-09-26
-This is a minor enhancement release:
+Version 2.6.3 - 2018-11-14
+This is a minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Provide ability to use restricted headers in HTTP with partnership level overrides for the "Content-Transfer-Encoding" header
-  2. Allow unsigned MDN to be sent using the "none" keyword for the "as2_mdn_options" attribute
-  3. Use a Java 7 compatible method call for a Map class method that required Java 8
+  1. Make Async MDN sender use the "no_chunked_max_size" attribute to switch between chinked and Content-Length modes of sending
+  2. Add "sentdir" attribute to documentation for saving sent files on DirectoryPollingModule.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

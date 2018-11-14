@@ -1,3 +1,10 @@
+Version 2.6.3 - 2018-11-14
+This is a minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
+
+  1. Make Async MDN sender use the "no_chunked_max_size" attribute to switch between chinked and Content-Length modes of sending
+  2. Add "sentdir" attribute to documentation for saving sent files on DirectoryPollingModule.
+
 Version 2.6.2 - 2018-09-26
 This is a minor enhancement and bgufix:
        IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
