@@ -1,19 +1,19 @@
 #              OpenAS2 Server
-#              Version 2.6.3
+#              Version 2.6.4
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.3
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.4
 
-The release download file is: OpenAS2Server-2.6.3.zip
+The release download file is: OpenAS2Server-2.6.4.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.6.3 - 2018-11-14
+Version 2.6.4 - 2019-02-01
 This is a minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Make Async MDN sender use the "no_chunked_max_size" attribute to switch between chinked and Content-Length modes of sending
-  2. Add "sentdir" attribute to documentation for saving sent files on DirectoryPollingModule.
+  1. Change the "Reporting-UA" MDN attribute to use the "http.user.agent" property value instead of the OpenAS2 application version if set.
+  2. Enhance documentation to show how to configure with multiple partners.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

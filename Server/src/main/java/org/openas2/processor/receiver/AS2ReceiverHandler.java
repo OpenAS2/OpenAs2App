@@ -38,6 +38,7 @@ import org.openas2.message.NetAttribute;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.sender.AS2SenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
@@ -508,9 +509,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 	    mdn.setHeader("AS2-Version", "1.1");
 	    // RFC2822 format: Wed, 04 Mar 2009 10:59:17 +0100
 	    mdn.setHeader("Date", DateUtil.formatDate("EEE, dd MMM yyyy HH:mm:ss Z"));
-		mdn.setHeader(HTTPUtil.HEADER_CONNECTION, "close, TE");
-		String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, msg.getAppTitle());
-		mdn.setHeader(HTTPUtil.HEADER_USER_AGENT, userAgent);
+	    mdn.setHeader(HTTPUtil.HEADER_CONNECTION, "close, TE");
+	    String userAgent = Properties.getProperty(Properties.HTTP_USER_AGENT_PROP, msg.getAppTitle());
+	    mdn.setHeader(HTTPUtil.HEADER_USER_AGENT, userAgent);
 	    mdn.setHeader("Server",userAgent);
 	    mdn.setHeader("Mime-Version", "1.0");
 	    
@@ -529,7 +530,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 	        mdn.setHeader("Subject", "Your Requested MDN Response re: " + mdn.getMessage().getSubject());
 	    }
 	    mdn.setText(ParameterParser.parse(text, new MessageParameters(msg)));
-	    mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, session.getAppTitle() + "@"
+	    mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, userAgent + "@"
 	            + msg.getAttribute(NetAttribute.MA_DESTINATION_IP) + ":"
 	            + msg.getAttribute(NetAttribute.MA_DESTINATION_PORT));
 	    mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, "rfc822; " + msg.getHeader("AS2-To"));
