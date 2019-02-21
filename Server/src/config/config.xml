@@ -80,7 +80,7 @@
 			errordir="$properties.storageBaseDir$/toOpenAS2B/error"
 			interval="5"
 			defaults="sender.as2_id=OpenAS2A_OID, receiver.as2_id=OpenAS2B_OID"
-			sendFilename="true"
+			sendfilename="true"
 			mimetype="application/EDI-X12"/>
 
 		<module classname="org.openas2.processor.msgtracking.DbTrackingModule"
