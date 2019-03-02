@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -249,12 +250,23 @@ public class IOUtil {
         }
     }
 
-    public static File[] getFiles(File dir, final String extensionFilter)
+    public static File[] getFiles(File dir, List<String> allowedExtensions, List<String> excludedExtensions)
     {
+	final List<String> allowExtensions = allowedExtensions;
+	final List<String> excludeExtensions = excludedExtensions;
+	
         return dir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name)
-            {
-                return name.toLowerCase().endsWith("." + extensionFilter);
+            public boolean accept(File dir, String name) {
+        	String extension = name.substring(name.lastIndexOf(".") + 1, name.length());
+        	boolean isAllowed = true;
+        	if (!allowExtensions.isEmpty()) {
+        	    isAllowed = allowExtensions.contains(extension);
+                    if (!isAllowed) return false;
+        	}
+                // Check for the excluded filters
+        	if (!excludeExtensions.isEmpty())
+        	    isAllowed = !excludeExtensions.contains(extension);
+                return isAllowed;
             }
         });
     }
