@@ -76,6 +76,8 @@ public class HTTPUtil {
 	public static final String PARAM_READ_TIMEOUT = "readtimeout";
 	public static final String PARAM_CONNECT_TIMEOUT = "connecttimeout";
 	public static final String PARAM_SOCKET_TIMEOUT = "sockettimeout";
+	public static final String PARAM_HTTP_USER = "http_user";
+	public static final String PARAM_HTTP_PWD = "http_password";
 
 	public static final String HEADER_CONTENT_TYPE = "Content-Type";
 	public static final String HEADER_USER_AGENT = "User-Agent";
@@ -374,6 +376,15 @@ public class HTTPUtil {
 	        }
 	    }
 	    final HttpUriRequest request = rb.build();
+	    
+	    String httpUser = options.get(HTTPUtil.PARAM_HTTP_USER);
+	    String httpPwd = options.get(HTTPUtil.PARAM_HTTP_PWD);
+	    if (httpUser != null) {
+		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		credentialsProvider.setCredentials(AuthScope.ANY, 
+		    new UsernamePasswordCredentials(httpUser, httpPwd));
+		httpBuilder.setDefaultCredentialsProvider(credentialsProvider);		
+	    }
 	    try (CloseableHttpClient httpClient = httpBuilder.build()) {
 	        ProfilerStub transferStub = Profiler.startProfile();
 	        try (CloseableHttpResponse response = httpClient.execute(request)) {
