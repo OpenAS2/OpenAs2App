@@ -42,15 +42,19 @@ public abstract class ParameterParser {
      * 						<code>msg.sender.as2_id,msg.receiver.as2_id,msg.header.content-type</code>
      * @param delimiters	delimiters in string to parse, like "-."
      * @param value			string to parse, like <code>"NORINCO-WALMART.application/X12"</code>
+     * @param mergeExtraTokens	if "value" string contains more tokens than the "foprmat" string merge the extra tokens into final token from "format" string
      * @throws OpenAS2Exception - error in the parameter format string
      */
-    public void setParameters(String format, String delimiters, String value)
+    public void setParameters(String format, String delimiters, String value, boolean mergeExtraTokens)
         throws OpenAS2Exception {
         List<String> keys = parseKeys(format);
 
-        StringTokenizer valueTokens = new StringTokenizer(value, delimiters, false);
+        StringTokenizer valueTokens = new StringTokenizer(value, delimiters, true);
         Iterator<String> keyIt = keys.iterator();
         String key;
+        String tail = "";
+        String finalKey = "";
+        String tailDelim = "";
 
         while (keyIt.hasNext()) {
             if (!valueTokens.hasMoreTokens()) {
@@ -58,10 +62,23 @@ public abstract class ParameterParser {
             }
 
             key = ((String) keyIt.next()).trim();
+            finalKey = key;
 
             if (!key.equals("")) {
-                setParameter(key, valueTokens.nextToken());
+        	String val = valueTokens.nextToken();
+                setParameter(key, val);
+                // Move to next non-delimiter token if more
+                if (valueTokens.hasMoreTokens()) tailDelim = valueTokens.nextToken();
+                finalKey = key;
+                tail = val;
             }
+        }
+        if (mergeExtraTokens && valueTokens.hasMoreTokens()) {
+            while (valueTokens.hasMoreTokens()) {
+        	tail = tail + tailDelim + valueTokens.nextToken();
+        	if (valueTokens.hasMoreTokens()) tailDelim = valueTokens.nextToken();
+            }
+            setParameter(finalKey, tail);
         }
     }
 
@@ -121,6 +138,7 @@ public abstract class ParameterParser {
 
     protected List<String> parseKeys(String format) {
         StringTokenizer tokens = new StringTokenizer(format, ",", false);
+        
         List<String> keys = new ArrayList<String>();
 
         while (tokens.hasMoreTokens()) {
