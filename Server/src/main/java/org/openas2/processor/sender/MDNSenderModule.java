@@ -113,8 +113,11 @@ public class MDNSenderModule extends HttpSenderModule {
 			if (logger.isDebugEnabled())
 				logger.debug("ASYNC MDN attempting connection to: " + url + mdn.getMessage().getLogMsgID());
 			long maxSize = msg.getPartnership().getNoChunkedMaxSize();
+		        Map<String, String> httpOptions = getHttpOptions();
+		        httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
+		        httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
 			ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, mdn.getHeaders().getAllHeaders()
-					, null, mdn.getData().getInputStream(), getHttpOptions(), maxSize);
+					, null, mdn.getData().getInputStream(), httpOptions, maxSize);
 
 			int respCode = resp.getStatusCode();
 			// Check the HTTP Response code

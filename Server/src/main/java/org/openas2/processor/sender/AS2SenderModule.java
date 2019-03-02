@@ -192,9 +192,12 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             logger.info("Connecting to: " + url + msg.getLogMsgID());
         }
 
+        Map<String, String> httpOptions = getHttpOptions();
+        httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
+        httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
         long maxSize = msg.getPartnership().getNoChunkedMaxSize();
 		ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih.getAllHeaders()
-				, null, securedData.getInputStream(), getHttpOptions(), maxSize);
+				, null, securedData.getInputStream(), httpOptions, maxSize);
         if (logger.isInfoEnabled())
         {
             logger.info("Message sent and response received in " + resp.getTransferTimeMs() + "ms" + msg.getLogMsgID());
