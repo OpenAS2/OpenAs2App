@@ -1,19 +1,21 @@
 #              OpenAS2 Server
-#              Version 2.6.4
+#              Version 2.7.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.6.4
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.7.0
 
-The release download file is: OpenAS2Server-2.6.4.zip
+The release download file is: OpenAS2Server-2.7.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.6.4 - 2019-02-01
-This is a minor bugfix release:
-       **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
+Version 2.7.0 - 2019-03-03
+This is a minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
-  1. Change the "Reporting-UA" MDN attribute to use the "http.user.agent" property value instead of the OpenAS2 application version if set.
-  2. Enhance documentation to show how to configure with multiple partners.
+  1. Add an exclude filter option for the file polling module to support large files using a temporary extension until file is copied to directory
+  2. Add support for including extra parts of a parsed file name into the final parameter in the "format" attribute for file name parsing.
+  3. Support HTTP authentication on a per partnership basis.
+  4. Document the use of HTTP authentication, file filters and file name parsing functionality.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

@@ -1,3 +1,12 @@
+Version 2.7.0 - 2019-03-03
+This is a minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Add an exclude filter option for the file polling module to support large files using a temporary extension until file is copied to directory
+  2. Add support for including extra parts of a parsed file name into the final parameter in the "format" attribute for file name parsing.
+  3. Support HTTP authentication on a per partnership basis.
+  4. Document the use of HTTP authentication, file filters and file name parsing functionality.
+
 Version 2.6.4 - 2019-02-01
 This is a minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
