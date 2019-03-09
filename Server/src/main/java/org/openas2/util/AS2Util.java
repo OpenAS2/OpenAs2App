@@ -748,7 +748,7 @@ public class AS2Util {
 
 					} catch (IOException iose)
 					{
-						logger.error("Error moving file to sent folder: " + iose.getMessage() + msg.getLogMsgID(), iose);
+						logger.error("Error moving file to " + tgtDir + " : " + iose.getMessage() + msg.getLogMsgID(), iose);
 					}
 				}
 
