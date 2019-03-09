@@ -255,7 +255,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 					 * best course of action is apart from do nothing
 					 */
 					msg.setLogMsg(
-							"Unhandled error condition processing synchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
+							"Unhandled error condition processing synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
 					logger.error(msg, e);
 				}
 				/*
@@ -265,7 +265,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 				else {
 					// Must have received MDN successfully
 					msg.setLogMsg(
-							"Exception receiving synchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
+							"Exception receiving synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
 					logger.error(msg, e);
 
 				}
