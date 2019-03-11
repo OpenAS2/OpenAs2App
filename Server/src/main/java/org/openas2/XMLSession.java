@@ -59,6 +59,7 @@ public class XMLSession extends BaseSession {
     private static final String MANIFEST_VERSION_ATTRIB = "Implementation-Version";
     private static final String MANIFEST_TITLE_ATTRIB = "Implementation-Title";
     private static final String VENDOR_ID = "net.sf.openas2";
+    private static final String PROJECT_NAME = "OpenAS2 Server";
     private Attributes manifestAttributes = null;
     private String VERSION;
     private String TITLE;
@@ -68,6 +69,7 @@ public class XMLSession extends BaseSession {
     public XMLSession(String configAbsPath) throws Exception {
 	File configXml = new File(configAbsPath);
 	File configDir = configXml.getParentFile();
+	getManifestAttributes();
 
 	FileInputStream configAsStream = new FileInputStream(configXml);
 	setBaseDirectory(configDir.getAbsolutePath());
@@ -232,43 +234,55 @@ public class XMLSession extends BaseSession {
 	proc.getModules().add(procmod);
     }
 
-    @Nullable
-    private String getManifestAttribValue(@Nonnull String attrib) throws OpenAS2Exception {
+    private void getManifestAttributes() throws OpenAS2Exception {
 	Enumeration<?> resEnum;
-	if (manifestAttributes == null) {
-	    try {
-		resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
-		while (resEnum.hasMoreElements()) {
-		    try {
-			URL url = (URL) resEnum.nextElement();
-			InputStream is = url.openStream();
-			if (is != null) {
-			    Manifest manifest = new Manifest(is);
-			    Attributes mainAttribs = manifest.getMainAttributes();
-			    is.close();
-			    String vendor = mainAttribs.getValue(MANIFEST_VENDOR_ID_ATTRIB);
-			    if (vendor != null && VENDOR_ID.equals(vendor)) {
-				manifestAttributes = mainAttribs;
-				break;
+	URL openAS2Manifest = null;
+	try {
+	    resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
+	    while (resEnum.hasMoreElements()) {
+		try {
+		    URL url = (URL) resEnum.nextElement();
+		    InputStream is = url.openStream();
+		    if (is != null) {
+			Manifest manifest = new Manifest(is);
+			Attributes mainAttribs = manifest.getMainAttributes();
+			is.close();
+			String vendor = mainAttribs.getValue(MANIFEST_VENDOR_ID_ATTRIB);
+			if (vendor != null && VENDOR_ID.equals(vendor)) {
+			    // We have an OpenAS2 jar at least - check the project name
+			    String project = mainAttribs.getValue(MANIFEST_TITLE_ATTRIB);
+			    if (project != null && PROJECT_NAME.equals(project)) {
+				if (openAS2Manifest != null) {
+				    // A duplicate detected
+				    throw new OpenAS2Exception("|Duplicate manifests detected: "
+				            + openAS2Manifest.getPath()
+					    + " ::: "
+					    + url.getPath());
+				}
+				openAS2Manifest = url;
+			        manifestAttributes = mainAttribs;
 			    }
 			}
-		    } catch (Exception e) {
-			// Silently ignore wrong manifests on classpath?
 		    }
+		} catch (Exception e) {
+		    // Silently ignore wrong manifests on classpath?
 		}
-	    } catch (IOException e1) {
-		// Silently ignore wrong manifests on classpath?
 	    }
+	} catch (IOException e1) {
+	    // Silently ignore wrong manifests on classpath?
 	}
-	if (manifestAttributes == null) {
-	    throw new OpenAS2Exception("|Failed to find a MANIFEST.MF with the desired vendor.");
+	if (openAS2Manifest == null) {
+	    LOGGER.warn("Failed to find a MANIFEST.MF with the desired vendor and project name.");
 	}
-	String value = manifestAttributes.getValue(attrib);
-	if (value != null) {
-	    return value;
+	else {
+	    LOGGER.info("Using MANIFEST " + openAS2Manifest.getPath());
 	}
+    }
 
-	return null;
+    @Nullable
+    private String getManifestAttribValue(@Nonnull String attrib) throws OpenAS2Exception {
+	if (manifestAttributes != null) return manifestAttributes.getValue(attrib);
+	return "NO MANIFEST";
     }
 
     public String getAppVersion() {
@@ -276,7 +290,8 @@ public class XMLSession extends BaseSession {
 	    try {
 		VERSION = getManifestAttribValue(MANIFEST_VERSION_ATTRIB);
 	    } catch (OpenAS2Exception e) {
-		LOGGER.warn(e.getMessage());;
+		LOGGER.warn(e.getMessage());
+		;
 	    }
 	}
 	return VERSION;
@@ -287,7 +302,8 @@ public class XMLSession extends BaseSession {
 	    try {
 		TITLE = getManifestAttribValue(MANIFEST_TITLE_ATTRIB) + " v" + getAppVersion();
 	    } catch (OpenAS2Exception e) {
-		LOGGER.warn(e.getMessage());;
+		LOGGER.warn(e.getMessage());
+		;
 	    }
 	}
 	return TITLE;
