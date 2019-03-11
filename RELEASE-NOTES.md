@@ -1,21 +1,20 @@
 #              OpenAS2 Server
-#              Version 2.7.0
+#              Version 2.7.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.7.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.7.1
 
-The release download file is: OpenAS2Server-2.7.0.zip
+The release download file is: OpenAS2Server-2.7.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.7.0 - 2019-03-03
+Version 2.7.1 - 2019-03-11
 This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
-  1. Add an exclude filter option for the file polling module to support large files using a temporary extension until file is copied to directory
-  2. Add support for including extra parts of a parsed file name into the final parameter in the "format" attribute for file name parsing.
-  3. Support HTTP authentication on a per partnership basis.
-  4. Document the use of HTTP authentication, file filters and file name parsing functionality.
+  1. Modify the way the application identifies the correct manifest file to determine title and version of the app.
+  2. Alter the file cleanup logging messages to make it easier to debig issues.
+  3. Correct minor spelling errors in logging statements
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
