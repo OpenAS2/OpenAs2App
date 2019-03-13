@@ -657,21 +657,25 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 		    e);
 	    return;
 	}
-	// We are interested in files older than one day
+	// We are interested in files older than configured seconds
 	int maxWaitMdnResponseSecs = Integer
 		.parseInt(Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "4560"));
 	long cutoff = System.currentTimeMillis() - (maxWaitMdnResponseSecs * 1000);
 	String[] files = pendingDir.list(new AgeFileFilter(cutoff));
 	for (int i = 0; i < files.length; i++) {
 	    File inFile = new File(pendingDir + File.separator + files[i]);
-	    AS2Message msg = new AS2Message();
 	    try {
+		AS2Message msg = new AS2Message();
 		AS2Util.getMetaData(msg, inFile);
-		String msgStr = "Pending information file detected that is past max wait time due to unknown failure: "
+		AS2Util.cleanupFiles(msg, true);
+		String msgStr = "Pending information file detected that is past max wait time, Failure most likely due to not receiving MDN response in Async mode: "
 			+ inFile.getAbsolutePath();
 		msg.setLogMsg(msgStr);
+		msg.setStatus(Message.MSG_STATUS_MSG_TERMINATED_IN_ERROR);
 		logger.error(msg, null);
-		AS2Util.cleanupFiles(msg, true);
+		// Log significant msg state
+		msg.setOption("STATE", Message.MSG_STATE_MDN_ASYNC_RECEIVE_FAIL);
+		msg.trackMsgState(getSession());
 	    } catch (Exception e) {
 		logger.warn(
 			"Failed to process the pending info folder for sent messages in trying to run the failed message detection method.",
