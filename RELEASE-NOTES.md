@@ -1,20 +1,20 @@
 #              OpenAS2 Server
-#              Version 2.7.1
+#              Version 2.7.2
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.7.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.7.2
 
-The release download file is: OpenAS2Server-2.7.1.zip
+The release download file is: OpenAS2Server-2.7.2.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.7.1 - 2019-03-11
+Version 2.7.2 - 2019-xx-yy
 This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
-  1. Modify the way the application identifies the correct manifest file to determine title and version of the app.
-  2. Alter the file cleanup logging messages to make it easier to debug issues.
-  3. Correct minor spelling errors in logging statements
+  1. Add DB tracking message when pending information file detected indicating failed receipt of an MDN.
+  2. Changed the partnerships.xml sample to make it easier to understand and proivide examplke for additional partners
+  3. Enhanced documentation to reflect changes in the partnerships.xml and some cleaning uop and adding more detail.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
