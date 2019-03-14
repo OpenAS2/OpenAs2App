@@ -91,6 +91,7 @@
 			db_user="sa"
 			db_pwd="OpenAS2"
 			db_name="openas2"
+			table_name="msg_metadata"
 			db_directory="%home%/DB"
 			jdbc_driver="org.h2.Driver"
 			jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"

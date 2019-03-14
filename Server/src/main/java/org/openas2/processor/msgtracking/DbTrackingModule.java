@@ -29,6 +29,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 	public static final String PARAM_DB_USER = "db_user";
 	public static final String PARAM_DB_PWD = "db_pwd";
 	public static final String PARAM_DB_NAME = "db_name";
+	public static final String PARAM_TABLE_NAME = "table_name";
 	public static final String PARAM_DB_DIRECTORY = "db_directory";
 	public static final String PARAM_JDBC_CONNECT_STRING = "jdbc_connect_string";
 	public static final String PARAM_JDBC_DRIVER = "jdbc_driver";
@@ -48,6 +49,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 	private boolean useEmbeddedDB = true;
 	private boolean forceLoadJdbcDriver = false;
 	private String dbPlatform = "h2";
+	private String tableName = null;
 	IDBHandler dbHandler = null;
 
 	private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
@@ -68,6 +70,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		sqlEscapeChar = Properties.getProperty("sql_escape_character", "'");
 		useEmbeddedDB = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "true"));
 		forceLoadJdbcDriver = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "false"));
+		tableName = getParameter(PARAM_TABLE_NAME, "msg_metadata");
 		if (!useEmbeddedDB && forceLoadJdbcDriver)
 		{
 			try
@@ -113,7 +116,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			Statement s = conn.createStatement();
 			String msgIdField = FIELDS.MSG_ID;
 			ResultSet rs = s.executeQuery(
-					"select * from msg_metadata where " + msgIdField + " = '" + map.get(msgIdField) + "'");
+					"select * from " + tableName + " where " + msgIdField + " = '" + map.get(msgIdField) + "'");
 			ResultSetMetaData meta = rs.getMetaData();
 			boolean isUpdate = rs.next(); // Record already exists so update
 			StringBuffer fieldStmt = new StringBuffer();
@@ -161,10 +164,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 				String stmt = "";
 				if (isUpdate)
 				{
-					stmt = "update msg_metadata set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
+					stmt = "update " + tableName + " set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
 							+ map.get(msgIdField) + "'";
 				} else
-					stmt = "insert into msg_metadata (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
+					stmt = "insert into " + tableName + " (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
 				if (s.executeUpdate(stmt) > 0)
 				{
 					if (logger.isDebugEnabled())
@@ -302,7 +305,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			}
 			Statement s = conn.createStatement();
 			ResultSet rs = s.executeQuery(
-					"select count(*) from msg_metadata");
+					"select count(*) from " + tableName);
 		} catch (Exception e)
 		{
 			failures.add(this.getClass().getSimpleName()
