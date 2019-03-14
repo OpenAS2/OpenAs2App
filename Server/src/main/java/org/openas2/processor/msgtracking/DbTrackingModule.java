@@ -124,7 +124,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			for (int i = 0; i < meta.getColumnCount(); i++)
 			{
 				String colName = meta.getColumnLabel(i + 1);
-				if (colName.equalsIgnoreCase("ID"))
+				if (colName.equalsIgnoreCase("id"))
 					continue;
 				else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT))
 				{
