@@ -4,6 +4,7 @@
         log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
         sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
         as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
+        as2_async_mdn_url="http://localhost:10081"
     />
 	<certificates classname="org.openas2.cert.PKCS12CertificateFactory"
 		filename="%home%/as2_certs.p12"
@@ -57,29 +58,34 @@
 		<module classname="org.openas2.processor.sender.MDNSenderModule"
 		    retries="3"/>
 
-				<!-- This will parse the filename to get a sender and receiver. For instance a file
-			named OpenAS2A_OID-OpenAS2B_OID.1234 would be sent from OpenAS2A to OpenAS2B. -->
+		<!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
+		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
+		     The name of the file sent to the partner will be "OrderID-745634.edi" -->
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
 			outboxdir="$properties.storageBaseDir$/toAny"
 			errordir="$properties.storageBaseDir$/toAny/error"
 			interval="5"
-			delimiters="-."
+			delimiters="-"
+			mergeextratokens="true"
             sendfilename="true"
 			format="sender.as2_id, receiver.as2_id, attributes.filename"
 			mimetype="application/EDI-X12" />
+
+		<!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="$properties.storageBaseDir$/toOpenAS2A/"
-			errordir="$properties.storageBaseDir$/toOpenAS2A/error"
+			outboxdir="$properties.storageBaseDir$/toPartnerA/"
+			errordir="$properties.storageBaseDir$/toPartnerA/error"
 			interval="5"
-			defaults="sender.as2_id=OpenAS2B_OID, receiver.as2_id=OpenAS2A_OID"
+			defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerA_OID"
 			sendfilename="true"
 			mimetype="application/EDI-X12"/>
 
+		<!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
 		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="$properties.storageBaseDir$/toOpenAS2B"
-			errordir="$properties.storageBaseDir$/toOpenAS2B/error"
+			outboxdir="$properties.storageBaseDir$/toPartnerB"
+			errordir="$properties.storageBaseDir$/toPartnerB/error"
 			interval="5"
-			defaults="sender.as2_id=OpenAS2A_OID, receiver.as2_id=OpenAS2B_OID"
+			defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerB_OID"
 			sendfilename="true"
 			mimetype="application/EDI-X12"/>
 
@@ -113,7 +119,7 @@
 			port="10080"
 			errordir="$properties.storageBaseDir$/inbox/error"
 			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
-		<!--
+		<!-- Example HTTPS configuration
 		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"
 			port="10443"
 			protocol="https"
@@ -125,7 +131,7 @@
 			-->
 		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
 			port="10081"/>
-        <!--
+        <!-- Example HTTPS configuration
 		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
 			port="10444"
 			protocol="https"
