@@ -3,7 +3,7 @@ This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
   1. Modify the way the application identifies the correct manifest file to determine title and version of the app.
-  2. Alter the file cleanup logging messages to make it easier to debig issues.
+  2. Alter the file cleanup logging messages to make it easier to debug issues.
   3. Correct minor spelling errors in logging statements
 
 Version 2.7.0 - 2019-03-03
