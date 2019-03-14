@@ -116,7 +116,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			Statement s = conn.createStatement();
 			String msgIdField = FIELDS.MSG_ID;
 			ResultSet rs = s.executeQuery(
-					"select * from " + tableName + " where " + msgIdField + " = '" + map.get(msgIdField) + "'");
+					"SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
 			ResultSetMetaData meta = rs.getMetaData();
 			boolean isUpdate = rs.next(); // Record already exists so update
 			StringBuffer fieldStmt = new StringBuffer();
@@ -164,10 +164,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 				String stmt = "";
 				if (isUpdate)
 				{
-					stmt = "update " + tableName + " set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
+					stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
 							+ map.get(msgIdField) + "'";
 				} else
-					stmt = "insert into " + tableName + " (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
+					stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES (" + valuesStmt.toString() + ")";
 				if (s.executeUpdate(stmt) > 0)
 				{
 					if (logger.isDebugEnabled())
@@ -305,7 +305,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			}
 			Statement s = conn.createStatement();
 			ResultSet rs = s.executeQuery(
-					"select count(*) from " + tableName);
+					"SELECT COUNT(*) FROM " + tableName);
 		} catch (Exception e)
 		{
 			failures.add(this.getClass().getSimpleName()
