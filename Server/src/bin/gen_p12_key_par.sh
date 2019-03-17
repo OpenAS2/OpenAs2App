@@ -8,15 +8,15 @@ if test $# -ne 4; then
   echo "usage: ${x} <target keystore> <cert alias> <sigalg> <distinguished name>"
   echo "            WHERE"
   echo "               target keystore = name of the target keystore file without .p12 extension"
-  echo "               cert alias = alias name for the digital certificate"
-  echo "               sigalg = signing algorithm for the digital certificate ... SHA1, MD5 etc"
+  echo "               cert alias = alias name used to store the created digital certificate in the keystore"
+  echo "               sigalg = signing algorithm for the digital certificate ... SHA256, SHA512 etc"
   echo "               distinguished name = a string in the format:"
   echo "                                       CN=<cName>, OU=<orgUnit>, O=<org>, L=<city>, S=<state>, C=<countryCode>"
 
   echo ""
-  echo "       eg. $0 as2_certs openas2a SHA1 \"CN=OpenAS2A Testing, OU=QA, O=OpenAS2A, L=New York, S=New York, C=US\""
-  echo "OUTPUT: as2_certs.p12 -  keystore containing both public and private key"
-  echo "        openas2a.cer - certificate file the public key."
+  echo "       eg. $0 as2_certs partnera SHA256 \"CN=as2.partnerb.com, OU=QA, O=PartnerA, L=New York, S=New York, C=US\""
+  echo "     Expected OUTPUT: as2_certs.p12 -  keystore containing both public and private key"
+  echo "                     partnera.cer - public key certificate file ."
   exit 1
 fi
 
@@ -54,7 +54,28 @@ fi
 
 read -p "Enter password for keystore:" ksPwd
 $JAVA_HOME/bin/keytool -genkeypair -alias $certAlias -validity $CertValidDays  -keyalg RSA -sigalg $sigAlg -keystore ${tgtStore}.p12 -storepass $ksPwd -storetype pkcs12 -dname "$dName"
+if [ "$?" != 0 ]; then
+	echo ""
+    echo "Failed to create a keystore. See errors above to correct the problem."
+    exit 1
+fi
 
 $JAVA_HOME/bin/keytool -selfcert -alias $certAlias -validity $CertValidDays  -sigalg $sigAlg -keystore ${tgtStore}.p12 -storepass $ksPwd -storetype pkcs12
+if [ "$?" != 0 ]; then
+	echo ""
+    echo "Failed to self certifiy the certificates in the keystore. See errors above to correct the problem."
+    exit 1
+fi
 
 $JAVA_HOME/bin/keytool -export -rfc -file $certAlias.cer -alias $certAlias  -keystore ${tgtStore}.p12 -storepass $ksPwd -storetype pkcs12
+if [ "$?" != 0 ]; then
+	echo ""
+    echo "Failed to export the public key. See errors above to correct the problem."
+    exit 1
+fi
+
+echo ""
+echo "Generated files:"
+echo "     PKCS12 keystore: ${tgtStore}.p12"
+echo "     Public Key File: ${certAlias}.cer"
+echo ""
