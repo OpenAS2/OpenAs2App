@@ -49,9 +49,9 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 		map.put(FIELDS.MSG_ID, msgId);
 		map.put(FIELDS.PRIOR_MSG_ID, msg.getAttribute(FIELDS.PRIOR_MSG_ID));
 		// Default DIRECTION to SEND for now...
-		String direction = (String) options.get("DIRECTION");
+		String direction = (String) options.get(FIELDS.DIRECTION);
 		map.put(FIELDS.DIRECTION, direction == null ? "SEND" : direction);
-		String isResend = (String) options.get("IS_RESEND");
+		String isResend = (String) options.get(FIELDS.IS_RESEND);
 		if (isResend != null)
 		{
 			map.put(FIELDS.IS_RESEND, isResend);
@@ -65,7 +65,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 		if (receiver == null) receiver = mdn.getPartnership().getReceiverID(Partnership.PID_AS2);
 		map.put(FIELDS.RECEIVER_ID, receiver);
 		map.put(FIELDS.STATUS, msg.getStatus());
-		String state = (String) options.get("STATE");
+		String state = (String) options.get(FIELDS.STATE);
 		map.put(FIELDS.STATE, state);
 		map.put(FIELDS.STATE_MSG, Message.STATE_MSGS.get(state));
 		map.put(FIELDS.SIGNATURE_ALGORITHM, msg.getPartnership().getAttribute(Partnership.PA_SIGNATURE_ALGORITHM));
@@ -74,7 +74,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 		map.put(FIELDS.FILE_NAME, msg.getPayloadFilename());
 		map.put(FIELDS.CONTENT_TYPE, msg.getContentType());
 		map.put(FIELDS.CONTENT_TRANSFER_ENCODING, msg.getHeader("Content-Transfer-Encoding"));
-		map.put(FIELDS.MDN_MODE, (msg.getPartnership().isAsyncMDN()?"ASYNC":"SYNC"));
+		map.put(FIELDS.MDN_MODE, (msg.getPartnership().isAsyncMDN() ? "ASYNC" : "SYNC"));
 
 		return map;
 	}
