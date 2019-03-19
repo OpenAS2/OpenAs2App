@@ -29,12 +29,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 	public static final String PARAM_DB_USER = "db_user";
 	public static final String PARAM_DB_PWD = "db_pwd";
 	public static final String PARAM_DB_NAME = "db_name";
+	public static final String PARAM_TABLE_NAME = "table_name";
 	public static final String PARAM_DB_DIRECTORY = "db_directory";
 	public static final String PARAM_JDBC_CONNECT_STRING = "jdbc_connect_string";
 	public static final String PARAM_JDBC_DRIVER = "jdbc_driver";
 	public static final String PARAM_JDBC_SERVER_URL = "jdbc_server_url";
 	public static final String PARAM_JDBC_PARAMS = "jdbc_extra_paramters";
-
+	public static final String PARAM_SQL_ESCAPE_CHARACTER = "sql_escape_character";
 	public static final String PARAM_USE_EMBEDDED_DB = "use_embedded_db";
 	public static final String PARAM_FORCE_LOAD_JDBC_DRIVER = "force_load_jdbc_driver";
 
@@ -48,6 +49,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 	private boolean useEmbeddedDB = true;
 	private boolean forceLoadJdbcDriver = false;
 	private String dbPlatform = "h2";
+	private String tableName = null;
 	IDBHandler dbHandler = null;
 
 	private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
@@ -65,9 +67,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 		jdbcConnectString = ParameterParser.parse(jdbcConnectString, paramParser);
 		dbPlatform = jdbcConnectString.replaceAll(".*jdbc:([^:]*):.*", "$1");
 		jdbcDriver = getParameter(PARAM_JDBC_DRIVER, false);
-		sqlEscapeChar = Properties.getProperty("sql_escape_character", "'");
+		sqlEscapeChar = getParameter(PARAM_SQL_ESCAPE_CHARACTER, "'");
 		useEmbeddedDB = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "true"));
 		forceLoadJdbcDriver = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "false"));
+		tableName = getParameter(PARAM_TABLE_NAME, "msg_metadata");
 		if (!useEmbeddedDB && forceLoadJdbcDriver)
 		{
 			try
@@ -113,7 +116,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			Statement s = conn.createStatement();
 			String msgIdField = FIELDS.MSG_ID;
 			ResultSet rs = s.executeQuery(
-					"select * from msg_metadata where " + msgIdField + " = '" + map.get(msgIdField) + "'");
+					"SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
 			ResultSetMetaData meta = rs.getMetaData();
 			boolean isUpdate = rs.next(); // Record already exists so update
 			StringBuffer fieldStmt = new StringBuffer();
@@ -121,7 +124,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			for (int i = 0; i < meta.getColumnCount(); i++)
 			{
 				String colName = meta.getColumnLabel(i + 1);
-				if (colName.equalsIgnoreCase("ID"))
+				if (colName.equalsIgnoreCase("id"))
 					continue;
 				else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT))
 				{
@@ -161,10 +164,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 				String stmt = "";
 				if (isUpdate)
 				{
-					stmt = "update msg_metadata set " + fieldStmt.toString() + " where " + FIELDS.MSG_ID + " = '"
+					stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
 							+ map.get(msgIdField) + "'";
 				} else
-					stmt = "insert into msg_metadata (" + fieldStmt.toString() + ") values (" + valuesStmt.toString() + ")";
+					stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES (" + valuesStmt.toString() + ")";
 				if (s.executeUpdate(stmt) > 0)
 				{
 					if (logger.isDebugEnabled())
@@ -302,7 +305,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			}
 			Statement s = conn.createStatement();
 			ResultSet rs = s.executeQuery(
-					"select count(*) from msg_metadata");
+					"SELECT COUNT(*) FROM " + tableName);
 		} catch (Exception e)
 		{
 			failures.add(this.getClass().getSimpleName()

@@ -1,11 +1,11 @@
 <openas2>
-    <properties
+	<properties
 		storageBaseDir="%home%/../data"
-        log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
-        sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
-        as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
-        as2_async_mdn_url="http://localhost:10081"
-    />
+		log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
+		sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
+		as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
+		as2_async_mdn_url="http://localhost:10081"
+	/>
 	<certificates classname="org.openas2.cert.PKCS12CertificateFactory"
 		filename="%home%/as2_certs.p12"
 		password="testas2"
@@ -34,9 +34,9 @@
 
 		<logger classname="org.openas2.logging.FileLogger"
 			filename="%home%/../logs/log-$date.yyyyMMdd$.txt"/>
-        <!-- Remove this comment to enable socket logging
+		<!-- Remove this comment to enable socket logging
 		<logger classname="org.openas2.logging.SocketLogger"
-		    ipaddr="127.0.0.1"
+			ipaddr="127.0.0.1"
 			portid="19999"/>
 		-->
 	</loggers>
@@ -44,19 +44,21 @@
 		filename="%home%/commands.xml"/>
 
 	<commandProcessors>
-	  <commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
-	  <commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"  portId="14321"
-	    userid="userID" password="pWd"/>
+		<commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
+		<commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"
+			portId="14321"
+			userid="userID"
+			password="pWd"/>
 	</commandProcessors>
 	<processor classname="org.openas2.processor.DefaultProcessor"
-	    pendingMDN="$properties.storageBaseDir$/pendingMDN3"
-	    pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"   
+		pendingMDN="$properties.storageBaseDir$/pendingMDN3"
+		pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"
 	>
 		<module classname="org.openas2.processor.sender.AS2SenderModule"
-		    retries="5"/>
+			retries="5"/>
 
 		<module classname="org.openas2.processor.sender.MDNSenderModule"
-		    retries="3"/>
+			retries="3"/>
 
 		<!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
 		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
@@ -67,7 +69,7 @@
 			interval="5"
 			delimiters="-"
 			mergeextratokens="true"
-            sendfilename="true"
+			sendfilename="true"
 			format="sender.as2_id, receiver.as2_id, attributes.filename"
 			mimetype="application/EDI-X12" />
 
@@ -90,12 +92,13 @@
 			mimetype="application/EDI-X12"/>
 
 		<module classname="org.openas2.processor.msgtracking.DbTrackingModule"
-            use_embedded_db="true"
-            force_load_jdbc_driver="false"
-		    db_user="sa"
-		    db_pwd="OpenAS2"
-		    db_name="openas2"
-		    db_directory="%home%/DB"
+			use_embedded_db="true"
+			force_load_jdbc_driver="false"
+			db_user="sa"
+			db_pwd="OpenAS2"
+			db_name="openas2"
+			table_name="msg_metadata"
+			db_directory="%home%/DB"
 			jdbc_driver="org.h2.Driver"
 			jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
 			sql_escape_character="'"
@@ -131,7 +134,7 @@
 			-->
 		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
 			port="10081"/>
-        <!-- Example HTTPS configuration
+		<!-- Example HTTPS configuration
 		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
 			port="10444"
 			protocol="https"
@@ -139,7 +142,7 @@
 			ssl_keystore="%home%/ssl_certs.jks"
 			ssl_keystore_password="testas2"
 			/>
-			-->
+		-->
 
 		<module classname="org.openas2.processor.resender.DirectoryResenderModule"
 			resenddir="$properties.storageBaseDir$/resend"
@@ -147,8 +150,7 @@
 			resenddelay="60"/>
 		<!--
 		<module classname="org.openas2.processor.receiver.HealthCheckModule"
-			port="10099"
-		/>
+			port="10099"/>
 		-->
 		
 		
