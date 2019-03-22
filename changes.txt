@@ -1,4 +1,14 @@
-ersion 2.7.1 - 2019-03-11
+Version 2.8.0 - 2019-02-23
+This is a an enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Add DB tracking message when pending information file detected indicating failed receipt of an MDN.
+  2. Changed the partnerships.xml sample to make it easier to understand and proivide examplke for additional partners
+  3. Enhanced documentation to reflect changes in the partnerships.xml and some cleaning uop and adding more detail.
+  4. Provide ability to define a custom table name for tracking messages to a database
+  5. Update documentation for mechanism to use a different table name in the tracking database
+
+Version 2.7.1 - 2019-03-11
 This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
