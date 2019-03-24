@@ -1,20 +1,22 @@
 #              OpenAS2 Server
-#              Version 2.7.2
+#              Version 2.8.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.7.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.8.0
 
-The release download file is: OpenAS2Server-2.7.2.zip
+The release download file is: OpenAS2Server-2.8.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.7.2 - 2019-xx-yy
-This is a minor enhancement release:
+Version 2.8.0 - 2019-02-23
+This is a an enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
   1. Add DB tracking message when pending information file detected indicating failed receipt of an MDN.
   2. Changed the partnerships.xml sample to make it easier to understand and proivide examplke for additional partners
   3. Enhanced documentation to reflect changes in the partnerships.xml and some cleaning uop and adding more detail.
+  4. Provide ability to define a custom table name for tracking messages to a database
+  5. Update documentation for mechanism to use a different table name in the tracking database
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

@@ -713,7 +713,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         } else if (algorithm.equalsIgnoreCase(CRYPT_3DES))
         {
             asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.des_EDE3_CBC.getId());
-        } else if (algorithm.equalsIgnoreCase(CRYPT_RC2_CBC) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC))
+        } else if (algorithm.equalsIgnoreCase(CRYPT_RC2) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC))
         {
             asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.RC2_CBC.getId());
             keyLen = 40;
