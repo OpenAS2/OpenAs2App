@@ -640,9 +640,8 @@ public class AS2Util {
 	    msg.setOption(ResenderModule.OPTION_RETRIES, retries);
 	    // Get the original source file name from the 3rd line of pending information
 	    // file
-	    String origFileName = (String) pifois.readObject();
-	    msg.setAttribute(FileAttribute.MA_FILENAME, origFileName);
-	    msg.setPayloadFilename(origFileName);
+	    msg.setPayloadFilename((String) pifois.readObject());
+	    msg.setAttribute(FileAttribute.MA_FILENAME, (String) pifois.readObject());
 	    // Get the original pending file from the 4th line of pending information file
 	    msg.setAttribute(FileAttribute.MA_PENDINGFILE, (String) pifois.readObject());
 	    msg.setAttribute(FileAttribute.MA_ERROR_DIR, (String) pifois.readObject());
@@ -652,7 +651,8 @@ public class AS2Util {
 	    if (logger.isTraceEnabled())
 		logger.trace("Data retrieved from Pending info file:" + "\n        Original MIC: "
 			+ msg.getCalculatedMIC() + "\n        Retry Count: " + retries
-			+ "\n        Original file name : " + msg.getAttribute(FileAttribute.MA_FILENAME)
+			+ "\n        Original file name : " + msg.getPayloadFilename()
+			+ "\n        Sent file name : " + msg.getAttribute(FileAttribute.MA_FILENAME)
 			+ "\n        Pending message file : " + msg.getAttribute(FileAttribute.MA_PENDINGFILE)
 			+ "\n        Error directory: " + msg.getAttribute(FileAttribute.MA_ERROR_DIR)
 			+ "\n        Sent directory: " + msg.getAttribute(FileAttribute.MA_SENT_DIR)
