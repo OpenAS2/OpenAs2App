@@ -6,6 +6,7 @@ import java.util.Map;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.AS2MessageMDN;
+import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.partner.Partnership;
@@ -72,6 +73,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 		map.put(FIELDS.ENCRYPTION_ALGORITHM, msg.getPartnership().getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM));
 		map.put(FIELDS.COMPRESSION, msg.getPartnership().getAttribute(Partnership.PA_COMPRESSION_TYPE));
 		map.put(FIELDS.FILE_NAME, msg.getPayloadFilename());
+		map.put(FIELDS.SENT_FILE_NAME, msg.getAttribute(FileAttribute.MA_FILENAME));
 		map.put(FIELDS.CONTENT_TYPE, msg.getContentType());
 		map.put(FIELDS.CONTENT_TRANSFER_ENCODING, msg.getHeader("Content-Transfer-Encoding"));
 		map.put(FIELDS.MDN_MODE, (msg.getPartnership().isAsyncMDN() ? "ASYNC" : "SYNC"));
@@ -94,6 +96,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 		public static final String ENCRYPTION_ALGORITHM = "encryption_algorithm";
 		public static final String COMPRESSION = "compression";
 		public static final String FILE_NAME = "file_name";
+		public static final String SENT_FILE_NAME = "sent_file_name";
 		public static final String CONTENT_TYPE = "content_type";
 		public static final String CONTENT_TRANSFER_ENCODING = "content_transfer_encoding";
 		public static final String MDN_MODE = "mdn_mode";
