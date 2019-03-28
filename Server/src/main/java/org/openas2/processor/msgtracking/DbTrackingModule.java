@@ -19,7 +19,6 @@ import org.openas2.params.ComponentParameters;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.util.DateUtil;
-import org.openas2.util.Properties;
 
 public class DbTrackingModule extends BaseMsgTrackingModule
 {
@@ -119,6 +118,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 					"SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
 			ResultSetMetaData meta = rs.getMetaData();
 			boolean isUpdate = rs.next(); // Record already exists so update
+			if (logger.isTraceEnabled()) {
+			    logger.trace("\t\t *** Tracking record found: " + isUpdate
+			                 + "\n\t\t *** Tracking record metadata: " + meta);
+			}
 			StringBuffer fieldStmt = new StringBuffer();
 			StringBuffer valuesStmt = new StringBuffer();
 			for (int i = 0; i < meta.getColumnCount(); i++)
@@ -151,7 +154,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 				} else
 				{
 					// For new record add every field that is not NULL
-					String mapVal = map.get(colName.toUpperCase());
+					String mapVal = map.get(colName.toLowerCase());
+					/*
+					if (logger.isTraceEnabled())
+					    logger.trace("\t\t *** Tracking record field : " + colName
+					                 + "  ::: " + mapVal);
+					*/
 					if (mapVal == null)
 					{
 						continue;
