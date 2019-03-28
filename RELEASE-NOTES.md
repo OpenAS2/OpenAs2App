@@ -1,28 +1,32 @@
 #              OpenAS2 Server
-#              Version 2.8.0
+#              Version 2.9.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.8.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.0
 
-The release download file is: OpenAS2Server-2.8.0.zip
+The release download file is: OpenAS2Server-2.9.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.8.0 - 2019-02-23
-This is a an enhancement release:
+Version 2.9.0 - 2019-03-28
+This is a an enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
-  1. Add DB tracking message when pending information file detected indicating failed receipt of an MDN.
-  2. Changed the partnerships.xml sample to make it easier to understand and proivide examplke for additional partners
-  3. Enhanced documentation to reflect changes in the partnerships.xml and some cleaning uop and adding more detail.
-  4. Provide ability to define a custom table name for tracking messages to a database
-  5. Update documentation for mechanism to use a different table name in the tracking database
+  1. Provide ability to dynamically set the target URL for the partner based on directory polling mopdule configuration.
+  2. Add tracking of sent file name to database tracking of AS2 messages (see upgrade notes for upgrading)
+  3. Document the mechanism for using the dynamic URL feature
+  4. Update documentation on database schema upgrades
+  5. Fix a bug in 2.8.0 release that caused DB tracking not to track messages
+
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
+
+### If upgrading from versions older than 2.9.0:
+      1. Run the schema upgrade process as defined in the Appendix for the relevant database you are tracking messages in.
 
 ### If upgrading from versions older than 2.5.0:
       1. Change the name of the MDN sender module from "AsynchMDNSenderModule" to "MDNSenderModule" in the config.xml if using your existing config.xml file in the upgrade. If "AsynchMDNSenderModule" is not in the config then add the following: <module classname="org.openas2.processor.sender.MDNSenderModule" retries="3"/>

@@ -1,4 +1,14 @@
-Version 2.8.0 - 2019-02-23
+Version 2.9.0 - 2019-03-28
+This is a an enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Provide ability to dynamically set the target URL for the partner based on directory polling mopdule configuration.
+  2. Add tracking of sent file name to database tracking of AS2 messages (see upgrade notes for upgrading)
+  3. Document the mechanism for using the dynamic URL feature
+  4. Update documentation on database schema upgrades
+  5. Fix a bug in 2.8.0 release that caused DB tracking not to track messages
+
+Version 2.8.0 - 2019-03-23
 This is a an enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
