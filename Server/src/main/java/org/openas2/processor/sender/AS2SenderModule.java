@@ -582,6 +582,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 		logger.info(
 			"Save Original mic & message id information into file: " + pendingInfoFile + msg.getLogMsgID());
 	    }
+	    oos.writeObject(msg.getPayloadFilename());
 	    oos.writeObject(msg.getAttribute(FileAttribute.MA_FILENAME));
 	    oos.writeObject(pendingFile);
 	    oos.writeObject(msg.getAttribute(FileAttribute.MA_ERROR_DIR));
