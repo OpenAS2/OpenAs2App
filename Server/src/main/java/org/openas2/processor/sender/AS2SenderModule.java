@@ -33,7 +33,12 @@ import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.message.NetAttribute;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.params.MessageParameters;
+import org.openas2.params.ParameterParser;
+import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.schedule.HasSchedule;
@@ -111,6 +116,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 	    }
 	}
 	String url = msg.getPartnership().getAttribute(Partnership.PA_AS2_URL);
+	// Allow for having dynamic variables in the URL
+	CompositeParameters params = new CompositeParameters(false).add("msg", new MessageParameters(msg));
+	url = ParameterParser.parse(url, params);
 	try {
 	    // Create the HTTP connection and set up headers
 	    // Log significant msg state
