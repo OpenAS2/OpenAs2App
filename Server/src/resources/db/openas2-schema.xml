@@ -17,6 +17,7 @@
 		<column name="encryption_algorithm" type="VARCHAR" size="255" />
 		<column name="compression" type="VARCHAR" size="255" />
 		<column name="file_name" type="VARCHAR" size="255" />
+		<column name="sent_file_name" type="VARCHAR" size="255" />
 		<column name="content_type" type="VARCHAR" size="255" />
 		<column name="content_transfer_encoding" type="VARCHAR" size="255" />
 		<column name="mdn_mode" type="VARCHAR" size="255" />
