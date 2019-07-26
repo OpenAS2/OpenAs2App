@@ -27,7 +27,7 @@ public class CommandLine {
 			String host, port, name, pwd;
 			if (args.length == 0) {
 				host = "localhost";
-				port = "14322";
+				port = "14321";
 				name = "userID";
 				pwd = "pWd"; 
 				
@@ -47,8 +47,22 @@ public class CommandLine {
 				String icmd = br.readLine().trim();
 				System.out.print("");
 				if (icmd.length() < 1) {
-					System.out.println("adios");
-					return;
+					System.out.println("\r\n");
+					continue;
+				}
+				else if ("exit".equals(icmd)) {
+				    System.out.println("Terminating remote session.\r\n");
+				    return;
+				}
+				else if ("shutdown".equals(icmd)) {
+				    System.out.println("This will shutdown your OpenAS2 server. Are you sure you wish to do this? [Y/N]");
+				    String confirm = br.readLine().trim();
+				    if (!"Y".equalsIgnoreCase(confirm)) {
+					    icmd = "";
+					    System.out.println("Command cancelled.\r\n");
+					    continue;
+				    }
+				    else icmd="exit";
 				}
 				s = (SSLSocket) SSLSocketFactory.getDefault().createSocket(InetAddress.getByName(host), iport);
 				String cipherSuites = System.getProperty("CmdProcessorSocketCipher", "TLS_DH_anon_WITH_AES_256_CBC_SHA");

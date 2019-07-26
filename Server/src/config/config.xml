@@ -48,9 +48,10 @@
 		<commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"
 			portId="14321"
 			userid="userID"
-			password="pWd"/>
+			password="pWd"
+			response_format="xml"/>
 	</commandProcessors>
-	<processor classname="org.openas2.processor.DefaultProcessor"
+	<processor classname="org.openas2.processor.DefaultProcessor""src/main/java/org/openas2/processor/receiver/MessageBuilderModule.java"
 		pendingMDN="$properties.storageBaseDir$/pendingMDN3"
 		pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"
 	>
