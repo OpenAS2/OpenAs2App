@@ -24,7 +24,6 @@ import org.openas2.WrappedException;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
-import org.openas2.params.ComponentParameters;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
@@ -49,10 +48,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     public static final String PARAM_RESEND_MAX_RETRIES = "resend_max_retries";
 
     private Log logger = LogFactory.getLog(MessageBuilderModule.class.getSimpleName());
-
-    public MessageBuilderModule() {
-	parameterParser = createParser();
-    }
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
 	super.init(session, options);
