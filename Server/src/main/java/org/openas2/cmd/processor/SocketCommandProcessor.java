@@ -119,14 +119,18 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
 
 	    parser.parse(line);
 
-	    if (parser.getUserid().equals(userid) == false) {
+	    if (!parser.getUserid().equals(userid) ) {
 		wrtr.write("Bad userid/password");
-		throw new OpenAS2Exception("Bad userid");
+		wrtr.flush();
+		logger.error("Remote socket command processor accessed with invalid userid ");
+		return;
 	    }
 
 	    if (parser.getPassword().equals(password) == false) {
 		wrtr.write("Bad userid/password");
-		throw new OpenAS2Exception("Bad password");
+		wrtr.flush();
+		logger.error("Remote socket command processor accessed with invalid password ");
+		return;
 	    }
 
 	    String str = parser.getCommandText();
