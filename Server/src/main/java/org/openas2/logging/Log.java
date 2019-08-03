@@ -180,8 +180,7 @@ public class Log implements org.apache.commons.logging.Log {
 	public void trace(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_TRACE))
 		{
-			lm.log(Level.FINEST, clazzname, message);
-			if (t != null) lm.log(t, false);
+			lm.log(Level.FINEST, clazzname, message, t);
 		}
 	}
 
@@ -195,8 +194,7 @@ public class Log implements org.apache.commons.logging.Log {
 	public void debug(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_DEBUG))
 		{
-			lm.log(Level.FINER, clazzname, message);
-			if (t != null) lm.log(t, false);
+			lm.log(Level.FINER, clazzname, message, t);
 		}
 	}
 
@@ -211,8 +209,7 @@ public class Log implements org.apache.commons.logging.Log {
 	public void info(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_INFO))
 		{
-		  lm.log(Level.FINE, clazzname, message);
-		  if (t != null) lm.log(t, false);
+		  lm.log(Level.FINE, clazzname, message, t);
 		}
 	}
 
@@ -227,8 +224,7 @@ public class Log implements org.apache.commons.logging.Log {
 	public void warn(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_WARN))
 		{
-		  lm.log(Level.WARNING, clazzname, message);
-		  if (t != null) lm.log(t, false);
+		  lm.log(Level.WARNING, clazzname, message, t);
 		}
 	}
 
@@ -247,8 +243,7 @@ public class Log implements org.apache.commons.logging.Log {
 	public void error(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_ERROR))
 		{
-			lm.log(Level.ERROR, clazzname, message);
-			if (t != null) lm.log(t, false);			
+			lm.log(Level.ERROR, clazzname, message, t);			
 		}
 
 	}
@@ -264,8 +259,7 @@ public class Log implements org.apache.commons.logging.Log {
 	public void fatal(Object message, Throwable t) {
 		if (isLevelEnabled(LOG_LEVEL_FATAL))
 		{
-		  lm.log(Level.ERROR, clazzname, message);
-		  if (t != null) lm.log(t, true);
+		  lm.log(Level.ERROR, clazzname, message, t);
 		}
 	}
 
