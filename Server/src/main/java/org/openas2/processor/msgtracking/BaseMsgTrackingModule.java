@@ -66,7 +66,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 		if (receiver == null) receiver = mdn.getPartnership().getReceiverID(Partnership.PID_AS2);
 		map.put(FIELDS.RECEIVER_ID, receiver);
 		map.put(FIELDS.STATUS, msg.getStatus());
-		String state = (String) options.get(FIELDS.STATE);
+		String state = (String) options.get("STATE");
 		map.put(FIELDS.STATE, state);
 		map.put(FIELDS.STATE_MSG, Message.STATE_MSGS.get(state));
 		map.put(FIELDS.SIGNATURE_ALGORITHM, msg.getPartnership().getAttribute(Partnership.PA_SIGNATURE_ALGORITHM));
