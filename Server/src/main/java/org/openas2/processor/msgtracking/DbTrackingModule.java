@@ -135,7 +135,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 					if (isUpdate)
 						appendFieldForUpdate(colName, DateUtil.getSqlTimestamp(), fieldStmt, meta.getColumnType(i + 1));
 				} else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT))
-					map.remove(FIELDS.CREATE_DT);
+					if (isUpdate) map.remove(FIELDS.CREATE_DT);
+					else appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt, meta.getColumnType(i + 1));
 				else if (isUpdate)
 				{
 					// Only write unchanged field values
@@ -178,6 +179,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 					stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES (" + valuesStmt.toString() + ")";
 				if (s.executeUpdate(stmt) > 0)
 				{
+					if (logger.isTraceEnabled())
+						logger.trace("Tracking record SQL statement: " + stmt);
 					if (logger.isDebugEnabled())
 						logger.debug("Tracking record successfully persisted to database: " + map);
 				} else

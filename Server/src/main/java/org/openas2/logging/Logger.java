@@ -13,7 +13,7 @@ public interface Logger extends Component {
 	 * @param msgText The message to log
 	 * @param message The context object that will provide additional information
 	 */
-	public void log(Level level, String msgText, Message message);
+	public void log(Level level, String msgText, Message message, Throwable t);
     
 	public Formatter getFormatter();
 	

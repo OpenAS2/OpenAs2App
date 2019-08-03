@@ -24,9 +24,12 @@ import org.openas2.WrappedException;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
+import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
@@ -50,6 +53,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 	super.init(session, options);
     }
 
+    protected CompositeParameters createParser(Message msg) {
+	return new CompositeParameters(false).add("date", new DateParameters()).add("rand", new RandomParameters()).add("msg", new MessageParameters(msg));
+    }
+
+	
     protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException {
 	Message msg = buildMessageMetadata(filename);
 
@@ -226,9 +234,10 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 	// receiver ID
 	String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
 	msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
-	msg.setAttribute(FileAttribute.MA_ERROR_DIR, getParameter(PARAM_ERROR_DIRECTORY, true));
+	CompositeParameters parser = createParser(msg);
+	msg.setAttribute(FileAttribute.MA_ERROR_DIR, ParameterParser.parse(getParameter(PARAM_ERROR_DIRECTORY, true), parser));
 	if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
-	    msg.setAttribute(FileAttribute.MA_SENT_DIR, getParameter(PARAM_SENT_DIRECTORY, false));
+	    msg.setAttribute(FileAttribute.MA_SENT_DIR, ParameterParser.parse(getParameter(PARAM_SENT_DIRECTORY, false), parser));
 
 	return msg;
 

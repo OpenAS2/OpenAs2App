@@ -20,11 +20,13 @@
 
 		<!-- Remove this comment to enable emailing of exceptions
 		<logger classname="org.openas2.logging.EmailLogger"
-			show="terminated"
+			only_active_msg_transfer_errors="false"
+			log_exception_trace="false"
 			javax.mail.properties.file="%home%/java.mail.properties"
 			from="openas2"
 			to="your email address"
 			smtpserver="your smtp server"
+			smtpport="your smtp server port"
 			smtpauth="true"
 			smtpuser="mySmtpUserId"
 			smtppwd="mySmtpPwd"
@@ -48,7 +50,8 @@
 		<commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"
 			portId="14321"
 			userid="userID"
-			password="pWd"/>
+			password="pWd"
+			response_format="xml"/>
 	</commandProcessors>
 	<processor classname="org.openas2.processor.DefaultProcessor"
 		pendingMDN="$properties.storageBaseDir$/pendingMDN3"
