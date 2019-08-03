@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
 		<groupId>net.sf.openas2</groupId>
 		<artifactId>OpenAS2</artifactId>
-		<version>2.9.0</version>
+		<version>2.9.1</version>
 	</parent>
 
 	<artifactId>openas2-server</artifactId>
@@ -22,6 +22,7 @@
 		<mainClass>org.openas2.app.OpenAS2Server</mainClass>
 		<project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<remote.connect.jar>${project.basedir}/../Remote/target/openas2-remote-${project.version}.jar</remote.connect.jar>
 		<help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
 		<release.notes>${project.basedir}/../RELEASE-NOTES.md</release.notes>
 		<release.history>${project.basedir}/../changes.txt</release.history>
@@ -79,6 +80,9 @@
 									todir="${project.build.directory}/dist" verbose="true" />
 								<copy file="${release.history}"
 									todir="${project.build.directory}/dist" verbose="true" />
+								<!-- Add the remote jar for connecting to the server command interface -->
+								<copy file="${remote.connect.jar}"
+									todir="${project.build.directory}/dist/bin/remote" verbose="true" />
 								<!-- create distribution package -->
 								<zip
 									destfile="${project.basedir}/dist/${project.dist.package.name}"
