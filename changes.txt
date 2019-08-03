@@ -6,8 +6,10 @@ This is a an enhancement and bugfix release:
   2. Fixed error where DB tracking module was not logging fields to database.
   3. Documented additional logging filters.
   4. Support for dynamic variables in sentDir and errorDir attributes in the config.
-  5. Added a script to run the remote command interface from the command line.
-  6. Included the remote socket command processor app jar into the release package to allow use without a separate effort to set up.
+  5. Enhanced the remote command processor to support text output format.
+  6. Updarted remote command processor documentation.
+  7. Added a script to run the remote command interface from the command line.
+  8. Included the remote socket command processor app jar into the release package to allow use without a separate effort to set up.
 
 Version 2.9.0 - 2019-03-28
 This is a an enhancement and bugfix release:
