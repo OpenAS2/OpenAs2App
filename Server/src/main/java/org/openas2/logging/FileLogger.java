@@ -2,7 +2,6 @@ package org.openas2.logging;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
@@ -22,10 +21,6 @@ public class FileLogger extends BaseLogger {
         super.init(session, parameters);
         // check if log file can be created
         getLogFile();
-    }
-
-    public void doLog(Level level, String msgText, Message as2Msg) {
-        appendToFile(getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
     }
 
     protected String getShowDefaults() {
@@ -88,4 +83,9 @@ public class FileLogger extends BaseLogger {
     protected void doLog(Throwable t, boolean terminated) {
         appendToFile(getFormatter().format(t, terminated));
     }
+
+    public void doLog(Level level, String msgText, Message as2Msg) {
+        appendToFile(getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
+    }
+
 }
