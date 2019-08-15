@@ -23,7 +23,10 @@ fi
 EXTRA_PARMS="-Xms32m -Xmx384m -Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
 
 # Set the config file location
-EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${binDir}/../config/config.xml"
+if [ -z $OPENAS2_CONFIG_FILE ]; then
+  OPENAS2_CONFIG_FILE=${binDir}/../config/config.xml
+fi
+EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${OPENAS2_CONFIG_FILE}"
 
 # For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
 #EXTRA_PARMS="$EXTRA_PARMS -Dsun.net.http.allowRestrictedHeaders=true"
