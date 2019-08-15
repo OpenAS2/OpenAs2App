@@ -38,11 +38,6 @@ public abstract class DirectoryPollingModule extends PollingModule {
 	try {
 	    outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
 	    IOUtil.getDirectoryFile(outboxDir);
-	    errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
-	    IOUtil.getDirectoryFile(errorDir);
-	    sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
-	    if (sentDir != null)
-		IOUtil.getDirectoryFile(sentDir);
 	    String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
 	    IOUtil.getDirectoryFile(pendingInfoFolder);
 	    String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");

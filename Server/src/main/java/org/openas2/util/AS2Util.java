@@ -651,12 +651,12 @@ public class AS2Util {
 	    if (logger.isTraceEnabled())
 		logger.trace("Data retrieved from Pending info file:" + "\n        Original MIC: "
 			+ msg.getCalculatedMIC() + "\n        Retry Count: " + retries
-			+ "\n        Original file name : " + msg.getPayloadFilename()
-			+ "\n        Sent file name : " + msg.getAttribute(FileAttribute.MA_FILENAME)
-			+ "\n        Pending message file : " + msg.getAttribute(FileAttribute.MA_PENDINGFILE)
-			+ "\n        Error directory: " + msg.getAttribute(FileAttribute.MA_ERROR_DIR)
-			+ "\n        Sent directory: " + msg.getAttribute(FileAttribute.MA_SENT_DIR)
-			+ "\n        Attributes: " + msg.getAttributes() + msg.getLogMsgID());
+			+ "\n        Original file name : " + msg.getPayloadFilename() + "\n        Sent file name : "
+			+ msg.getAttribute(FileAttribute.MA_FILENAME) + "\n        Pending message file : "
+			+ msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Error directory: "
+			+ msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n        Sent directory: "
+			+ msg.getAttribute(FileAttribute.MA_SENT_DIR) + "\n        Attributes: " + msg.getAttributes()
+			+ msg.getLogMsgID());
 	} catch (IOException e) {
 	    throw new OpenAS2Exception("Failed to retrieve the pending MDN information from file: "
 		    + org.openas2.logging.Log.getExceptionMsg(e), e);
@@ -692,8 +692,7 @@ public class AS2Util {
 		    msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingInfoFileName);
 		    logger.warn(msg, e);
 		}
-	    }
-	    else {
+	    } else {
 		msg.setLogMsg("Cleanup could not find pendinginfo file: " + pendingInfoFileName);
 		logger.warn(msg);
 	    }
@@ -717,18 +716,27 @@ public class AS2Util {
 	    try {
 		boolean isMoved = false;
 		String tgtDir = null;
+		String targetFilenameUnparsed = "";
 		if (isError) {
 		    tgtDir = msg.getAttribute(FileAttribute.MA_ERROR_DIR);
+		    targetFilenameUnparsed = msg.getAttribute(FileAttribute.MA_ERROR_FILENAME);
 		} else {
 		    // If the Sent Directory option is set, move the transmitted file to the sent
 		    // directory
 		    tgtDir = msg.getAttribute(FileAttribute.MA_SENT_DIR);
+		    targetFilenameUnparsed = msg.getAttribute(FileAttribute.MA_SENT_FILENAME);
 		}
 		if (tgtDir != null && tgtDir.length() > 0) {
 		    File tgtFile = null;
-
 		    try {
-			tgtFile = new File(tgtDir + "/" + fPendingFile.getName());
+			String tgtFileName = fPendingFile.getName();
+			if (targetFilenameUnparsed != null && targetFilenameUnparsed.length() > 0) {
+			    CompositeParameters parser = new CompositeParameters(false)
+				    .add("date", new DateParameters()).add("msg", new MessageParameters(msg))
+				    .add("rand", new RandomParameters());
+			    tgtFileName = ParameterParser.parse(targetFilenameUnparsed, parser);
+			}
+			tgtFile = new File(tgtDir + "/" + tgtFileName);
 			tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false);
 			isMoved = true;
 
@@ -739,7 +747,7 @@ public class AS2Util {
 		    } catch (IOException iose) {
 			msg.setLogMsg("Error moving file to " + tgtDir + " : "
 				+ org.openas2.logging.Log.getExceptionMsg(iose));
-			logger.error(msg,iose);
+			logger.error(msg, iose);
 		    }
 		}
 
