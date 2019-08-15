@@ -1,3 +1,13 @@
+Version 2.9.2 - 2019-08-16
+This is a an enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fixed error where DB tracking module was not logging fields to database.
+  2. Added a script to connect to the H2 database from the command line.
+  3. Simplified the default config.xml for changing ports by using properties.
+  4. Added support for location of the config.xml using an environment variable in the start-openas2.sh file
+  5. Document stored_sent_filename and stored_error_filename as well as provide more examples for setting errordir and sentdir using extended dynamic variables
+
 Version 2.9.1 - 2019-08-03
 This is a an enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading

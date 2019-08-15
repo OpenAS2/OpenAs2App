@@ -1,25 +1,22 @@
 #              OpenAS2 Server
-#              Version 2.9.1
+#              Version 2.9.2
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.2
 
-The release download file is: OpenAS2Server-2.9.1.zip
+The release download file is: OpenAS2Server-2.9.2.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.9.1 - 2019-08-03
+Version 2.9.2 - 2019-08-16
 This is a an enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
-  1. Support additional filters on logging to support reduced email logger errors flagging interface errors due to exernal access attemopts to AS2 server..
-  2. Fixed error where DB tracking module was not logging fields to database.
-  3. Documented additional logging filters.
-  4. Support for dynamic variables in sentDir and errorDir attributes in the config.
-  5. Enhanced the remote command processor to support text output format.
-  6. Updarted remote command processor documentation.
-  7. Added a script to run the remote command interface from the command line.
-  8. Included the remote socket command processor app jar into the release package to allow use without a separate effort to set up.
+  1. Fixed error where DB tracking module was not logging fields to database.
+  2. Added a script to connect to the H2 database from the command line.
+  3. Simplified the default config.xml for changing ports by using properties.
+  4. Added support for location of the config.xml using an environment variable in the start-openas2.sh file
+  5. Document stored_sent_filename and stored_error_filename as well as provide more examples for setting errordir and sentdir using extended dynamic variables
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

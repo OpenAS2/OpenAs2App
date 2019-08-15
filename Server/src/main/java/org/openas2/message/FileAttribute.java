@@ -8,5 +8,7 @@ public interface FileAttribute {
 	public static final String MA_PENDINGFILE = "pendingfilename";
 	public static final String MA_STATUS = "status";
 	public static final String MA_ERROR_DIR = "errordir";
+	public static final String MA_ERROR_FILENAME = "errorfilename";
 	public static final String MA_SENT_DIR = "sentdir";
+	public static final String MA_SENT_FILENAME = "sentfilename";
 }

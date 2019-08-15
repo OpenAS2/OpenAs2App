@@ -139,8 +139,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 					else appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt, meta.getColumnType(i + 1));
 				else if (isUpdate)
 				{
-					// Only write unchanged field values
-					String mapVal = map.get(colName.toUpperCase());
+					/* Only write unchanged field values.
+					 * Map is field names in LOWER case so convert in case DB server returns column names in uppercase
+					 */
+					String mapVal = map.get(colName.toLowerCase());
 					if (mapVal == null)
 					{
 						continue;

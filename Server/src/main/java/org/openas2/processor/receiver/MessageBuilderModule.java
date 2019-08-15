@@ -38,7 +38,9 @@ import org.openas2.util.AS2Util;
 public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     public static final String PARAM_ERROR_DIRECTORY = "errordir";
+    public static final String PARAM_ERROR_FILENAME = "stored_error_filename";
     public static final String PARAM_SENT_DIRECTORY = "sentdir";
+    public static final String PARAM_SENT_FILENAME = "stored_sent_filename";
 
     public static final String PARAM_FORMAT = "format";
     public static final String PARAM_DELIMITERS = "delimiters";
@@ -234,11 +236,14 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 	// receiver ID
 	String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
 	msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
-	CompositeParameters parser = createParser(msg);
+	CompositeParameters parser = new CompositeParameters(false).add("date", new DateParameters())
+		.add("msg", new MessageParameters(msg)).add("rand", new RandomParameters());
 	msg.setAttribute(FileAttribute.MA_ERROR_DIR, ParameterParser.parse(getParameter(PARAM_ERROR_DIRECTORY, true), parser));
-	if (getParameter(PARAM_SENT_DIRECTORY, false) != null)
+	msg.setAttribute(FileAttribute.MA_ERROR_FILENAME, getParameter(PARAM_ERROR_FILENAME, false));
+	if (getParameter(PARAM_SENT_DIRECTORY, false) != null) {
 	    msg.setAttribute(FileAttribute.MA_SENT_DIR, ParameterParser.parse(getParameter(PARAM_SENT_DIRECTORY, false), parser));
-
+	    msg.setAttribute(FileAttribute.MA_SENT_FILENAME, getParameter(PARAM_SENT_FILENAME, false));
+	}
 	return msg;
 
     }
