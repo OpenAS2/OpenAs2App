@@ -1,23 +1,20 @@
 #              OpenAS2 Server
-#              Version 2.9.2
+#              Version 2.9.3
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.3
 
-The release download file is: OpenAS2Server-2.9.2.zip
+The release download file is: OpenAS2Server-2.9.3.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.9.2 - 2019-08-16
-This is a an enhancement and bugfix release:
+Version 2.9.3 - 2019-09-05
+This is a minior enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
-  1. Fixed error where DB tracking module was not logging fields to database.
-  2. Added a script to connect to the H2 database from the command line.
-  3. Simplified the default config.xml for changing ports by using properties.
-  4. Added support for location of the config.xml using an environment variable in the start-openas2.sh file
-  5. Document stored_sent_filename and stored_error_filename as well as provide more examples for setting errordir and sentdir using extended dynamic variables
-
+  1. Allowed defining a custom fallback file name for received fiels where partner does not send file name. See section 6.3 of the OpenAS2HowTo and the as2_receive_message_filename_fallback attribute.
+  2. Upgraded BouncyCastle libraries to 1.62 to support Java 12
+ 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
  Below are some specific things to focus on depending on which version you are upgrading from.
