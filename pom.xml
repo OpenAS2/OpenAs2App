@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sf.openas2</groupId>
 	<artifactId>OpenAS2</artifactId>
-	<version>2.9.2</version>
+	<version>2.9.3</version>
 	<name>OpenAS2</name>
 	<packaging>pom</packaging>
 
@@ -50,17 +50,27 @@
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcmail-jdk15on</artifactId>
-				<version>1.59</version>
+				<version>1.62</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcpkix-jdk15on</artifactId>
-				<version>1.59</version>
+				<version>1.62</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcprov-jdk15on</artifactId>
-				<version>1.59</version>
+				<version>1.62</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-ext-jdk15on</artifactId>
+				<version>1.62</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpg-jdk15on</artifactId>
+				<version>1.62</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -91,11 +101,6 @@
 				<groupId>com.h2database</groupId>
 				<artifactId>h2</artifactId>
 				<version>1.4.197</version>
-			</dependency>
-			<dependency>
-				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcpg-jdk15on</artifactId>
-				<version>1.54</version>
 			</dependency>
 			<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
 			<dependency>
