@@ -42,7 +42,7 @@ public class TestUtils {
                 }
             }
         }
-        throw new FileNotFoundException(fileFilter.toString());
+        throw new FileNotFoundException(parent.getAbsolutePath() + ": " + fileFilter.toString());
     }
 
     /**

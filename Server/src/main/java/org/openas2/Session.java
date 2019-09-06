@@ -21,6 +21,7 @@ import org.openas2.processor.Processor;
 public interface Session {
 
     String DEFAULT_CONTENT_TRANSFER_ENCODING = "binary";
+    String LOG_LEVEL_OVERRIDE_KEY = "logging.level.override";
 
     /**
      * Lifecycle control method.

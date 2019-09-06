@@ -5,11 +5,10 @@ import java.util.Map;
 
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
-import org.openas2.lib.partner.IPartnership;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
-import org.openas2.partner.AS2Partnership;
+import org.openas2.partner.Partnership;
 import org.openas2.processor.BaseProcessorModule;
 import org.openas2.processor.resender.ResenderModule;
 
@@ -59,19 +58,19 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
     		map.put(FIELDS.RESEND_COUNT, (String) options.get(ResenderModule.OPTION_RETRIES));
     	}
     	//map.put(FIELDS.RESEND_COUNT, );
-    	String sender = msg.getPartnership().getSenderID(AS2Partnership.PID_AS2);
-    	if (sender == null) sender = mdn.getPartnership().getSenderID(AS2Partnership.PID_AS2);
+    	String sender = msg.getPartnership().getSenderID(Partnership.PID_AS2);
+    	if (sender == null) sender = mdn.getPartnership().getSenderID(Partnership.PID_AS2);
     	map.put(FIELDS.SENDER_ID, sender);
-       	String receiver = msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2);
-    	if (receiver == null) receiver = mdn.getPartnership().getReceiverID(AS2Partnership.PID_AS2);
+       	String receiver = msg.getPartnership().getReceiverID(Partnership.PID_AS2);
+    	if (receiver == null) receiver = mdn.getPartnership().getReceiverID(Partnership.PID_AS2);
     	map.put(FIELDS.RECEIVER_ID, receiver);
     	map.put(FIELDS.STATUS, msg.getStatus());
     	String state = (String) options.get("STATE");
     	map.put(FIELDS.STATE,  state);
         map.put(FIELDS.STATE_MSG, Message.STATE_MSGS.get(state));
-        map.put(FIELDS.SIGNATURE_ALGORITHM, msg.getPartnership().getAttribute(IPartnership.ATTRIBUTE_SIGNATURE_ALGORITHM));
-    	map.put(FIELDS.ENCRYPTION_ALGORITHM, msg.getPartnership().getAttribute(IPartnership.ATTRIBUTE_ENCRYPTION_ALGORITHM));
-    	map.put(FIELDS.COMPRESSION, msg.getPartnership().getAttribute(IPartnership.ATTRIBUTE_COMPRESSION_TYPE));
+        map.put(FIELDS.SIGNATURE_ALGORITHM, msg.getPartnership().getAttribute(Partnership.PA_SIGNATURE_ALGORITHM));
+    	map.put(FIELDS.ENCRYPTION_ALGORITHM, msg.getPartnership().getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM));
+    	map.put(FIELDS.COMPRESSION, msg.getPartnership().getAttribute(Partnership.PA_COMPRESSION_TYPE));
     	map.put(FIELDS.FILE_NAME, msg.getPayloadFilename());
     	map.put(FIELDS.CONTENT_TYPE, msg.getContentType());
     	map.put(FIELDS.CONTENT_TRANSFER_ENCODING, msg.getHeader("Content-Transfer-Encoding"));

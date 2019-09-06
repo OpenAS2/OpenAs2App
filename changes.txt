@@ -1,10 +1,92 @@
+Version 2.6.4 - 2019-02-01
+This is a minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Change the "Reporting-UA" MDN attribute to use the "http.user.agent" property value instead of the OpenAS2 application version if set.
+  2. Enhance documentation to show how to configure with multiple partners.
+
+
+Version 2.6.3 - 2018-11-14
+This is a minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
+
+  1. Make Async MDN sender use the "no_chunked_max_size" attribute to switch between chinked and Content-Length modes of sending
+  2. Add "sentdir" attribute to documentation for saving sent files on DirectoryPollingModule.
+
+Version 2.6.2 - 2018-09-26
+This is a minor enhancement and bgufix:
+       IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Provide ability to use restricted headers in HTTP with partnership level overrides for the "Content-Transfer-Encoding" header
+  2. Allow unsigned MDN to be sent using the "none" keyword for the "as2_mdn_options" attribute
+  3. Use a Java 7 compatible method call for a Map class method that required Java 8
+
+
+Version 2.6.1 - 2018-09-09
+This is a minor enhancement:
+       IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Allow MDN subject to use filename parsing functionality to set the text.
+ 
+Version 2.6.0 - 2018-08-31
+This is an enhancement and bugfix release:
+       IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support for deploying as a Windows service - see OpenAS2HowTo.pdf for details
+  2. Allow all components in the config.xml to use the attribute enhancer feature.
+  3. Fix possibility of logs getting cleared
+  4. Fix the DB logging module not being able to use the "tcp_server_start" parameter is always true in previous versions.
+  5. Optimise the move file method
+  6. Optimise the HTTP client handler
+  7. Rationalise the PID environment variable name to match between service script and startup script
+
+Version 2.5.0 - 2018-07-02
+This is an enhancement and bugfix release:
+       IMPORTANT NOTE: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Supports Java 7 and up. Java 6 (Java 1.6) is no longer supported.
+  2. Provide "log" command to dynamically alter logging levels in real time without restarting the application.
+  3. Rationalize MDN sending so that Synchronous and Asynchronous are processed by a single module. NB See upgrade notes for class name change.
+  4. Move HTTP header folding removal to HTTPUtils for centralised management
+  5. Make the HTTP "User-Agent" header configurable via a property.
+  6. Default "Message-Id" format complies with https://www.ietf.org/rfc/rfc2822.txt section 3.6.4.
+  7. Provide ability to configure emails for successfully received and sent files.
+  8. Upgrade libraries to the latest release.
+  9. Support using system environment variables in config.xml
+  10. Change attribute name for overriding Message-ID format at partnership level to match name at system level. NB See upgrade notes for attribute name change.
+  11. Allow modules to have scheduled tasks using the HasSchedule implementation.
+  12. Add scheduled task to detect failed sent messages where files are not cleaned up. (Fixes https://sourceforge.net/p/openas2/tickets/5/)
+  13. Allow attributes in partnership element to reference other partnership elements and resolve the references at load time.
+  14. Default sample in partnerships.xml for "as2_mdn_options" to use the "sign" attribute value for the micalg value.
+  15. Support AS2 ID with spaces in the value.
+
+
+Version 2.4.3 - 2017-10-20
+This is a minor bugfix release:
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
+
+  1. Fix EXIT command not working when executed from remote socket command processor.
+
+Version 2.4.2 - 2017-10-12
+This is a minor bugfix and documentation enhancement release:
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
+
+  1. Fix using a Java 1.8 call to ensure 1.6 compatibility
+  2. Enhance documentation around certificate creation and deployment.
+
+Version 2.4.1 - 2017-09-28
+This is a minor enhancement release:
+       IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
+
+  1. Enhance health check module to test all active modules. All modules now require implementing a healthcheck() method for self test.
+
 Version 2.4.0 - 2017-09-25
 This is a minor enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
 
   1. Add initial basic health check listener on HTTP port for load balancer/high availability deployment
-  2. Enhance POM to deploy code base to central maven repository 
- 
+  2. Enhance POM to deploy code base to central maven repository
+
 Version 2.3.2 - 2017-08-17
 This is a minor enhancement release:
        IMPORTANT NOTE: Please review upgrade notes below if you are upgrading
@@ -27,7 +109,7 @@ This is a minor enhancement release:
   9. Add support for Sentry logger for exceptions
   10. Enhanced documentation on logging system
   11. Change default log file name to use international date format
- 
+
 Version 2.3.0 - 2017-05-04
 This is an enhancement and minor bugfix release:
        IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
@@ -50,7 +132,7 @@ Version 2.2.1 - 2017-03-03
 This is a minor bugfix release:
        IMPORTANT NOTE: Please review ALL release notes for intermediate versions if you are upgrading
 
-  1. Remove the encapsulating "<" and ">" from the generated message ID as windows no longer allows that in file names 
+  1. Remove the encapsulating "<" and ">" from the generated message ID as windows no longer allows that in file names
   2. Minor update to documentation on handling SSL certificate issues
 
 Version 2.2.0 - 2017-02-01
@@ -66,7 +148,7 @@ This is an enhancement and minor bugfix release:
   8. Enhance error handling when using HTTPS and certificate checker class to facilitate debugging SSL certificate issues
   9. Reworked initialization structure to provide OSGi functionality to deploy as a standard OSGi bundle (OSGi deployment should be available in next release)
   10. Updated documentation relating to the enhancements including troubleshooting information.
-  
+
 Version 2.1.3 - 2016-11-09
 This release is a bugfix release:
   1. Revert to default for allowing restricted HTTP headers (see OpenAS2HowTo for discussion on this issue)
@@ -156,7 +238,7 @@ Version 1.1.0  - 2015-08-03
      are defined in the config.xml file. These parameters define 
      timeout values in milliseconds for each respective function.  
      The parameters are optional and the default value for each is 
-     30000.       
+     30000.
 
 2009-10-18  Corrections
 
@@ -171,7 +253,7 @@ Version 1.1.0  - 2015-08-03
 
 Added the Apache Group commons logging library to allow the
 use of other logging packages like log4j and Sun's Java logging
-implentation, along with the OpenAS2 logging.  
+implementation, along with the OpenAS2 logging.
 
 Side effects -
 	1. These changes required replacing all log requests to use the 
@@ -181,7 +263,7 @@ Side effects -
     2. If you continue to use the OpenAS2 logging package you must 
     include  -Dorg.apache.commons.logging.Log=org.openas2.logging.Log 
     in your startup call or as a property in the commons-logging.properties 
-    file.  See http://commons.apache.org/logging/guide.html#commons-logging-api.jar
+    file. See http://commons.apache.org/logging/guide.html#commons-logging-api.jar
     for more information.
 
     3.  If you use any other logging package you MUST remove the 
@@ -190,12 +272,12 @@ Side effects -
 
 2009-05-07 - Update and Corrections
 
-Both Sender classes now accpet all 200 HTTP response codes from 
+Both Sender classes now accept all 200 HTTP response codes from 
 receiver.
 
 2009-04-28 - Update and Corrections
 
-Placed the unstable code into the stable code.  We all have been using this code
+Placed the unstable code into the stable code. We all have been using this code
 for sometime now so it must be stable.
 
 Corrected the start-openas2 scripts in the sample-setup.
@@ -203,26 +285,26 @@ Corrected the start-openas2 scripts in the sample-setup.
 Note - you may want to try the new BC mail and provider classes available at BouncyCastle.org.
 As of today BC is version 143.
 
-Added a new attribute to the parntership node to allow specifying Content-Transfer-Encoding.
+Added a new attribute to the partnership node to allow specifying Content-Transfer-Encoding.
 
 
 Corrected the following bugs
- 2716888  	remove folding from HTTP headers
- 2660947 	OpenAS2 uses incorrect RFC2822 date format
- 2615775 	OpenAS2 allows malicious sender to overwrite files
- 2609279 	Poor parsing of mic's
+ 2716888	remove folding from HTTP headers
+ 2660947	OpenAS2 uses incorrect RFC2822 date format
+ 2615775	OpenAS2 allows malicious sender to overwrite files
+ 2609279	Poor parsing of mic's
 
 Applied the following patches
- 2727470  	Optional extraction of encoded message content with headers
- 2723552 	$msg.content-disposition.filename$ has incorrect filename
- 2715448 	Compatibility with nuBridges e-commerce AS2
- 2662179 	Outbound Async MDN's are saved but not sync MDN's
- 2656852 	Saved MDN format puts text first. Last would be better
- 2616405 	CompositeParameters exposes itself
- 2615919 	Get rid of some little used code
- 2612760 	Cope with Transfer-Encoding: chunked
- 2593257 	allow setting of Content-Type from attributes
- 2593214  	Allow per-partneship definition of message-id  
+ 2727470	Optional extraction of encoded message content with headers
+ 2723552	$msg.content-disposition.filename$ has incorrect filename
+ 2715448	Compatibility with nuBridges e-commerce AS2
+ 2662179	Outbound Async MDN's are saved but not sync MDN's
+ 2656852	Saved MDN format puts text first. Last would be better
+ 2616405	CompositeParameters exposes itself
+ 2615919	Get rid of some little used code
+ 2612760	Cope with Transfer-Encoding: chunked
+ 2593257	allow setting of Content-Type from attributes
+ 2593214	Allow per-partnership definition of message-id  
 
 2009-01-09 - Updates and Corrections
 
@@ -230,7 +312,7 @@ Fix problem w/ CYCLONE MDN responses.
   
 2008-06-13 - Updates and Corrections
 
-Corrected message header date reporting.  
+Corrected message header date reporting.
 
 AS2ReceiverHandler not appending new line character.
 
@@ -248,7 +330,7 @@ Replaced use of StringTokenizer with CommandTokenizer.
 Added a logging statement so that incoming message ids can be 
 associated with the stored file name.
 
-Corrected stored file naming issue.  
+Corrected stored file naming issue.
 
     Allows the use of the content-disposition filename to be used in
     the stored filename specification in config.xml MessageFileModule
@@ -258,14 +340,13 @@ Corrected stored file naming issue.
       
 	In 2007-03-31 release if content-disposition contained the filename
 	this filename was used to create the stored filename ignoring the 
-	filename specification in the config.xml file.   
+	filename specification in the config.xml file.
 
 
 2008-01-08 - OpenAS2 With A Web Front-End 
 
-This release contain the final changes to set up a web-based front end 
-to OpenAS2.  The underlying AS2 engine has not changed, only the 
-commands and setup files.
+This release contain the final changes to set up a web-based front end to OpenAS2.
+The underlying AS2 engine has not changed, only the commands and setup files.
 
 A SocketLoggerClass has been added and an entry must be present
 in the config.xml. The logger entry is a subnode of the loggers node.
@@ -273,12 +354,11 @@ The ipaddr/portid is the address where the OpenAS2Server sends logging
 information.  Note: If using the web front end the servlet listens 
 here.  For more information see the OpenAS2 Remote package.
 		<logger classname="org.openas2.logging.SocketLogger"
-		    ipaddr="127.0.0.1"
-			portid="999"/>	
+			ipaddr="127.0.0.1"
+			portid="999"/>
 
-As noted below, the SocketCommandProcessor entry in the config.xml file 
-has changed.  Two new nodes are added (userid and password).  See 
-example below:
+As noted below, the SocketCommandProcessor entry in the config.xml file has 
+changed. Two new nodes are added (userid and password). See example below:
 	<commandProcessors>
 	  <commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
 	  <commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"  portId="4321"
@@ -313,9 +393,9 @@ out one of the commandProcessor nodes - most likely the
 SocketCommandProcessor.
 
 	<commandProcessors>
-	  <commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
-	  <commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"  portId="4321"
-	    userid="useridhere" password="anotsocrypticpassword"/>
+		<commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
+		<commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"
+			portId="4321" userid="useridhere" password="anotsocrypticpassword"/>
 	</commandProcessors>
 
 Also, commandProcessors have been changed to be running as a thread 
@@ -345,16 +425,14 @@ changes to the partnership.xml file.
 	</multicommand>
 	
 3.  A new "external" package org.openas2.remote has been added. 
-Eventually the package will be the front-end to the web-based 
-application.  Presently it contains a simple interface to pass commands 
-to the SocketCommandProcessor. 	
- 
+Eventually the package will be the front-end to the web-based application.
+Presently it contains a simple interface to pass commands to the SocketCommandProcessor.
+
     Refer to the source program CommandLine for more information.
-    
+
 4.  About the SocketCommandProcessor messages are sent as single lines 
 via a predefined port.  The format of the messages are: 
 	<command id="useridhere" password="anotsocrypticpassword">cert list</command>
-	
 
 5.  Several modules in the org.openas2.app package have been moved to a 
 new package named org.openas2.cmd.
@@ -370,10 +448,10 @@ new package named org.openas2.cmd.
     "true" will be considered false.
       	<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
 			outboxdir="%home%\toAny"
-			errordir="%home%\toAny\error"			
-			interval="5"			
+			errordir="%home%\toAny\error"
+			interval="5"
 			delimiters="-."
-			format="sender.as2_id, receiver.as2_id, attributes.fileid"			
+			format="sender.as2_id, receiver.as2_id, attributes.fileid"
 			mimetype="application/EDI-X12"
 			sendFileName="true"/>
 
@@ -382,10 +460,10 @@ new package named org.openas2.cmd.
       org.openas2.processor.storage.BaseStorageModule
       org.openas2.processor.storage.MessageFileModule
       
-2.  Used the Eclipse UI to eliminate unused Java imports. Too many 
-	affected modules to list.
+2.  Used the Eclipse UI to eliminate unused Java imports. Too many affected 
+modules to list.
 
-3.  Structure of download package changed.  Removed samples-setup. 
+3.  Structure of download package changed.  Removed samples-setup.
 
 ---
 
@@ -418,28 +496,28 @@ Several changes:
     1.a  New attribute in partnership node, to specify url to your 
     server receives asynchronous MDN responses.
     
-      ex:     <attribute name="as2_receipt_option" value="http://xxxxxxx:10081"/>
+      ex:  <attribute name="as2_receipt_option" value="http://xxxxxxx:10081"/>
       
   2.  Changes to config.xml file.
   
     2.a  New attributes to processor node, specifies file system 
     directories where your server stores pending asynchronous MDN 
-    responses.  When your trading partner returns the asynch mdn the 
+    responses.  When your trading partner returns the asynch MDN the 
     server uses file stored in these directories to verify MDN 
     response.
     
-    ex:	    pendingMDN="%home%/pendingMDN3"
-    	    pendingMDNinfo="%home%/pendinginfoMDN3">
-    	    
-    2.b  New module node which hangs off of the processor node.  
+    ex:
+    		pendingMDN="%home%/pendingMDN3"
+    		pendingMDNinfo="%home%/pendinginfoMDN3">
+    
+    2.b  New module node which hangs off of the processor node.
     Specifies the class and port number that handles incoming 
     Asynchronous MDN responses.
     
-    ex:	<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"			
+    ex:	<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
           port="10081"/>
           
   3.  Source code changes.
   
-     Too many to list.  But primarily new classes added to handle 
-     outgoing and incoming Asynchronous MDNs.
- 
+     Too many to list. But primarily new classes added to handle outgoing and 
+     incoming Asynchronous MDNs.

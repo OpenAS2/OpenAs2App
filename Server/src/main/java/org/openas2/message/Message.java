@@ -52,20 +52,20 @@ public interface Message extends Serializable {
 			put(MSG_STATE_SEND_FAIL, "Message sending failed.");
 			put(MSG_STATE_SEND_FAIL_RESEND_QUEUED, "Message failed to send and resend will be attempted using a different message ID");
 			put(MSG_STATE_RECEIVE_START, "Message receiving started");
-			put(MSG_STATE_RECEIVE_EXCEPTION, "Processing exception occurred receiving message. Resend queued");
+			put(MSG_STATE_RECEIVE_EXCEPTION, "Processing exception occurred receiving message. Disposition exception thrown.");
 			put(MSG_STATE_RECEIVE_FAIL, "Failed to receive inbound message successfully.");
 			put(MSG_STATE_MDN_ERROR_RESPONSE_START,
 					"Error processing received message. Sending MDN error response to partner");
 			put(MSG_STATE_MDN_SENDING_EXCEPTION, "Processing exception sending MDN. Resend queued");
 			put(MSG_STATE_MDN_RECEIVING_EXCEPTION, "Processing exception receiving MDN. Resend queued");
-			put(MSG_STATE_MDN_SEND_START, "Message recieved. MDN sending started");
+			put(MSG_STATE_MDN_SEND_START, "Message received. MDN sending started");
 			put(MSG_STATE_MDN_RECEIVE_START, "Message sent. MDN receiving started");
 			put(MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR,
 					"Message sent. Message MDN received indicates an error. Resend queued");
 			put(MSG_STATE_MSG_SENT_MDN_RECEIVED_OK, "Message sent. Message MDN success response received.");
 			put(MSG_STATE_MSG_RXD_MDN_SENDING_FAIL,
 					"Message was received but failed to successfully send an MDN response to partner");
-			put(MSG_STATE_MSG_RXD_MDN_SENT_OK, "Message received and MDN sent succesfully.");
+			put(MSG_STATE_MSG_RXD_MDN_SENT_OK, "Message received and MDN sent successfully.");
 		}
 	};
 

@@ -7,6 +7,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -285,6 +286,43 @@ public class DbTrackingModule extends BaseMsgTrackingModule
 			return;
 
 		dbHandler.stop();
+	}
+
+	@Override
+	public boolean healthcheck(List<String> failures)
+	{
+		Connection conn = null;
+		try
+		{
+			if (useEmbeddedDB)
+				conn = dbHandler.getConnection();
+			else
+			{
+				conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+			}
+			Statement s = conn.createStatement();
+			ResultSet rs = s.executeQuery(
+					"select count(*) from msg_metadata");
+		} catch (Exception e)
+		{
+			failures.add(this.getClass().getSimpleName()
+					+ " - Failed to check DB tracking module connection to DB: " + e.getMessage()
+					+ " :: Connect String: " + jdbcConnectString);
+			return false;
+		} finally
+		{
+			if (conn != null)
+			{
+				try
+				{
+					conn.close();
+				} catch (Exception e)
+				{
+				}
+			}
+		}
+
+		return true;
 	}
 
 }

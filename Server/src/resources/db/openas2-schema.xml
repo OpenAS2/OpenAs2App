@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database xmlns="http://db.apache.org/ddlutils/schema/1.1" name="openas2_db">
+<table name="msg_metadata">
+<column name="ID" primaryKey="true" required="true" type="INTEGER" autoIncrement="true"/>
+<column name="MSG_ID" type="LONGVARCHAR" required="true"/>
+<column name="PRIOR_MSG_ID" type="LONGVARCHAR" required="false"/>
+<column name="MDN_ID" type="LONGVARCHAR"/>
+<column name="DIRECTION" type="VARCHAR" size="25"  />
+<column name="IS_RESEND" type="VARCHAR" size="1"  DEFAULT="N"/>
+<column name="RESEND_COUNT" type="INTEGER" DEFAULT="0"/>
+<column name="SENDER_ID" type="VARCHAR" size="255"  required="true"/>
+<column name="RECEIVER_ID" type="VARCHAR" size="255"  required="true"/>
+<column name="STATUS" type="VARCHAR" size="255" />
+<column name="STATE" type="VARCHAR" size="255" />
+<column name="SIGNATURE_ALGORITHM" type="VARCHAR" size="255" />
+<column name="ENCRYPTION_ALGORITHM" type="VARCHAR" size="255" />
+<column name="COMPRESSION" type="VARCHAR" size="255" />
+<column name="FILE_NAME" type="VARCHAR" size="255" />
+<column name="CONTENT_TYPE" type="VARCHAR" size="255" />
+<column name="CONTENT_TRANSFER_ENCODING" type="VARCHAR" size="255" />
+<column name="MDN_MODE" type="VARCHAR" size="255" />
+<column name="MDN_RESPONSE" type="LONGVARCHAR"/>
+<column name="STATE_MSG" type="LONGVARCHAR"/>
+<column name="CREATE_DT" type="TIMESTAMP" DEFAULT="CURRENT_TIMESTAMP"/>
+<column name="UPDATE_DT" type="TIMESTAMP"/>
+  
+<unique name="MSG_ID_UNIQUE">
+  <unique-column name="MSG_ID"/>
+</unique>
+</table>
+</database>
+

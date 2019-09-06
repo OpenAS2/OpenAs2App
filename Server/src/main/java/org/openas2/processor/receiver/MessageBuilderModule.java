@@ -27,7 +27,6 @@ import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
-import org.openas2.partner.AS2Partnership;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
@@ -111,11 +110,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			fis = null;
 			doc = null;
 		}
-		String customHeaderList = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
+		String customHeaderList = msg.getPartnership().getAttribute(Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
 		if (customHeaderList != null && customHeaderList.length() > 0)
 		{
 			String[] headerNames = customHeaderList.split("\\s*,\\s*");
-			String delimiters = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAME_DELIMITERS_IN_FILENAME);
+			String delimiters = msg.getPartnership().getAttribute(Partnership.PA_CUSTOM_MIME_HEADER_NAME_DELIMITERS_IN_FILENAME);
 			if (logger.isTraceEnabled()) logger.trace("Adding custom headers based on message file name to custom headers map. Delimeters: " + delimiters + msg.getLogMsgID());
 			if (delimiters != null)
 			{
@@ -139,7 +138,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 			}
 			else
 			{
-				String regex = msg.getPartnership().getAttribute(AS2Partnership.PA_CUSTOM_MIME_HEADER_NAMES_REGEX_ON_FILENAME);
+				String regex = msg.getPartnership().getAttribute(Partnership.PA_CUSTOM_MIME_HEADER_NAMES_REGEX_ON_FILENAME);
 				if (regex != null)
 				{
 				    Pattern p = Pattern.compile(regex);
@@ -169,7 +168,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		if (logger.isTraceEnabled())
 			logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());
 		// Retry count - first try on partnership then directory polling module
-		String maxRetryCnt = msg.getPartnership().getAttribute(AS2Partnership.PA_RESEND_MAX_RETRIES);
+		String maxRetryCnt = msg.getPartnership().getAttribute(Partnership.PA_RESEND_MAX_RETRIES);
 		if (maxRetryCnt == null || maxRetryCnt.length() < 1)
 		{
 			maxRetryCnt = getSession().getProcessor().getParameters().get(PARAM_RESEND_MAX_RETRIES);
@@ -234,8 +233,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		getSession().getPartnershipFactory().updatePartnership(msg, true);
 		msg.updateMessageID();
 		// Set the sender and receiver in the Message object headers
-		msg.setHeader("AS2-To", msg.getPartnership().getReceiverID(AS2Partnership.PID_AS2));
-		msg.setHeader("AS2-From", msg.getPartnership().getSenderID(AS2Partnership.PID_AS2));
+		msg.setHeader("AS2-To", msg.getPartnership().getReceiverID(Partnership.PID_AS2));
+		msg.setHeader("AS2-From", msg.getPartnership().getSenderID(Partnership.PID_AS2));
 		// Now build the filename since it is by default dependent on having sender and receiver ID
 		String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
 		msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
@@ -254,7 +253,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 		try
 		{
 			//byte[] data = IOUtilOld.getFileBytes(file);
-			String contentType = getParameter(PARAM_MIMETYPE, false);
+			// Allow Content-Type to be overridden at partnership level or as property
+			String contentType = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TYPE, null);
+			if (contentType == null) contentType = getParameter(PARAM_MIMETYPE, false);
 			if (contentType == null)
 			{
 				contentType = "application/octet-stream";

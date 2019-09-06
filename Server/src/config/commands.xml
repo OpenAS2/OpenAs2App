@@ -24,5 +24,9 @@
 		<command classname="org.openas2.app.partner.StorePartnershipsCommand"/>
 		<command classname="org.openas2.app.partner.ViewPartnershipCommand"/>
 	</multicommand>
-
+	<multicommand name="log"
+		description="Logging Levels commands">
+		<command classname="org.openas2.app.logging.SetLogLevelCommand"/>
+	</multicommand>
+	
 </commands>

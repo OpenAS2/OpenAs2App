@@ -1,169 +1,189 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>net.sf.openas2</groupId>
-        <artifactId>OpenAS2</artifactId>
-        <version>2.4.0</version>
-    </parent>
+	<parent>
+		<groupId>net.sf.openas2</groupId>
+		<artifactId>OpenAS2</artifactId>
+		<version>2.6.4</version>
+	</parent>
 
-    <artifactId>openas2-server</artifactId>
+	<artifactId>openas2-server</artifactId>
 
-    <name>OpenAS2 Server</name>
-    <description>
+	<name>OpenAS2 Server</name>
+	<description>
         Open source implementation of the AS2 standard for signed encrypted and compressed document transfer
     </description>
 
-    <properties>
-        <mainClass>org.openas2.app.OpenAS2Server</mainClass>
-        <project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
-        <release.notes>${project.basedir}/../RELEASE-NOTES.txt</release.notes>
-        <release.history>${project.basedir}/../changes.txt</release.history>
-    </properties>
+	<properties>
+		<mainClass>org.openas2.app.OpenAS2Server</mainClass>
+		<project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
+		<release.notes>${project.basedir}/../RELEASE-NOTES.md</release.notes>
+		<release.history>${project.basedir}/../changes.txt</release.history>
+	</properties>
 
-    <distributionManagement>
-        <site>
-            <id>openas2.sf.net</id>
-            <name>openas2.sf.net</name>
-            <url>sftp://web.sourceforge.net/home/project-web/openas2/htdocs/test</url>
-        </site>
-    </distributionManagement>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-cli</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <copy todir="${project.build.directory}/dist/bin" verbose="true">
-                                    <fileset dir="${project.basedir}/src/bin"/>
-                                </copy>
-                                <!--Copy config directory to assembly directory -->
-                                <copy todir="${project.build.directory}/dist/config" verbose="true">
-                                    <fileset dir="${project.basedir}/src/config"/>
-                                </copy>
-                                <!--Copy resources directory to assembly directory -->
-                                <copy todir="${project.build.directory}/dist/resources" verbose="true">
-                                    <fileset dir="${project.basedir}/src/resources"/>
-                                </copy>
-                                <!--Copy artifact to build lib dicetory -->
-                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      todir="${project.build.directory}/dist/lib" verbose="true"/>
-                                <!-- Add the help PDF version to the distro -->
-                                <copy file="${help.file.src}" todir="${project.build.directory}/dist" verbose="true"/>
-                                <!-- Add the release notes files -->
-                                <copy file="${release.notes}" todir="${project.build.directory}/dist" verbose="true"/>
-                                <copy file="${release.history}" todir="${project.build.directory}/dist" verbose="true"/>
-                                <!-- create distribution package -->
-                                <zip destfile="${project.basedir}/dist/${project.dist.package.name}"
-                                     basedir="${project.build.directory}/dist"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <inputDirectory>${project.basedir}/../docs</inputDirectory>
-                    <chmod>false</chmod>
-                    <generateReports>false</generateReports>
-                    <generatedSiteDirectory>false</generatedSiteDirectory>
-                    <generateSitemap>false</generateSitemap>
-                    <generateProjectInfo>false</generateProjectInfo>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcmail-jdk15on</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpg-jdk15on</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>findbugs</artifactId>
-            <version>3.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.sentry</groupId>
-            <artifactId>sentry</artifactId>
-            <version>1.2.2</version>
-        </dependency>
-    </dependencies>
+	<distributionManagement>
+		<site>
+			<id>openas2.sf.net</id>
+			<name>openas2.sf.net</name>
+			<url>sftp://web.sourceforge.net/home/project-web/openas2/htdocs/test</url>
+		</site>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<copy todir="${project.build.directory}/dist/bin"
+									verbose="true">
+									<fileset dir="${project.basedir}/src/bin" />
+								</copy>
+								<!--Copy config directory to assembly directory -->
+								<copy todir="${project.build.directory}/dist/config"
+									verbose="true">
+									<fileset dir="${project.basedir}/src/config" />
+								</copy>
+								<!--Copy resources directory to assembly directory -->
+								<copy todir="${project.build.directory}/dist/resources"
+									verbose="true">
+									<fileset dir="${project.basedir}/src/resources" />
+								</copy>
+								<!--Copy artifact to build lib dicetory -->
+								<copy
+									file="${project.build.directory}/${project.build.finalName}.jar"
+									todir="${project.build.directory}/dist/lib" verbose="true" />
+								<!-- Add the help PDF version to the distro -->
+								<copy file="${help.file.src}"
+									todir="${project.build.directory}/dist" verbose="true" />
+								<!-- Add the release notes files -->
+								<copy file="${release.notes}"
+									todir="${project.build.directory}/dist" verbose="true" />
+								<copy file="${release.history}"
+									todir="${project.build.directory}/dist" verbose="true" />
+								<!-- create distribution package -->
+								<zip
+									destfile="${project.basedir}/dist/${project.dist.package.name}"
+									basedir="${project.build.directory}/dist" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<configuration>
+					<inputDirectory>${project.basedir}/../docs</inputDirectory>
+					<chmod>false</chmod>
+					<generateReports>false</generateReports>
+					<generatedSiteDirectory>false</generatedSiteDirectory>
+					<generateSitemap>false</generateSitemap>
+					<generateProjectInfo>false</generateProjectInfo>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcmail-jdk15on</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpg-jdk15on</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>findbugs</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.sentry</groupId>
+			<artifactId>sentry</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+	</dependencies>
 </project>

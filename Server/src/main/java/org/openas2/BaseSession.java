@@ -7,8 +7,10 @@ import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
 
 import org.openas2.cert.CertificateFactory;
+import org.openas2.lib.message.AS2Standards;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
+import org.openas2.util.Properties;
 
 
 public abstract class BaseSession implements Session {
@@ -108,7 +110,7 @@ public abstract class BaseSession implements Session {
     {
         MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
         mc.addMailcap(
-                "message/disposition-notification;; x-java-content-handler=org.openas2.util.DispositionDataContentHandler");
+                AS2Standards.DISPOSITION_TYPE + ";; x-java-content-handler=org.openas2.lib.util.javamail.DispositionDataContentHandler");
         CommandMap.setDefaultCommandMap(mc);
     }
 
@@ -120,6 +122,7 @@ public abstract class BaseSession implements Session {
     void setBaseDirectory(String dir)
     {
         baseDirectory = dir;
+        Properties.setProperty(Properties.APP_BASE_DIR_PROP, baseDirectory);
     }
 
 }

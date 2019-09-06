@@ -2,15 +2,15 @@ package org.openas2.processor.receiver;
 
 import org.openas2.message.NetAttribute;
 import org.openas2.params.MessageParameters;
-import org.openas2.partner.AS2Partnership;
+import org.openas2.partner.Partnership;
 
 
 public class AS2ReceiverModule extends NetModule {
     //	Macros for responses
     public static final String MSG_SENDER = "$" + MessageParameters.KEY_SENDER + "." +
-        AS2Partnership.PID_AS2 + "$";
+        Partnership.PID_AS2 + "$";
     public static final String MSG_RECEIVER = "$" + MessageParameters.KEY_RECEIVER + "." +
-        AS2Partnership.PID_AS2 + "$";
+        Partnership.PID_AS2 + "$";
     public static final String MSG_DATE = "$" + MessageParameters.KEY_HEADERS + ".date" + "$";
     public static final String MSG_SUBJECT = "$" + MessageParameters.KEY_HEADERS + ".subject" + "$";
     public static final String MSG_SOURCE_ADDRESS = "$" + MessageParameters.KEY_ATTRIBUTES + "." +
@@ -41,8 +41,13 @@ public class AS2ReceiverModule extends NetModule {
     public static final String DISP_SUCCESS = DP_VERIFIED +
         "There is no guarantee however that the EDI Interchange was syntactically correct, or was received by the EDI application/translator.";
     
-    protected NetModuleHandler getHandler() {
-        return new AS2ReceiverHandler(this);
+	private NetModuleHandler module;
+
+    
+    protected NetModuleHandler getHandler()
+    {
+       module = new AS2ReceiverHandler(this);
+       return module;
     }
 
  

@@ -14,7 +14,8 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -41,8 +42,11 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     private SSLServerSocket sslserversocket = null;
     private String userid, password;
 
+    private Log logger = LogFactory.getLog(SocketCommandProcessor.class.getSimpleName());
+
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception
     {
+    	super.init(session, parameters);
         String p = parameters.get("portid");
         try
         {
@@ -99,16 +103,16 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     public void processCommand() throws OpenAS2Exception
     {
 
-        SSLSocket socket = null;
-        try
+        try (SSLSocket socket =  (SSLSocket) sslserversocket.accept())
         {
-            socket = (SSLSocket) sslserversocket.accept();
             socket.setSoTimeout(2000);
             rdr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             wrtr = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
             String line;
             line = rdr.readLine();
+            if (logger.isTraceEnabled())
+            	logger.trace("Socket command processor received command: " + line);
 
             parser.parse(line);
 
@@ -135,7 +139,11 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
 
                     if (commandName.equals(StreamCommandProcessor.EXIT_COMMAND))
                     {
-                        terminate();
+                    	wrtr.write("Server terminating...");
+                    	wrtr.flush();
+                    	rdr.close();
+                    	wrtr.close();
+                    	terminate();
                     } else
                     {
                         List<String> params = new ArrayList<String>();
@@ -190,9 +198,6 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
         } catch (Exception e)
         {
             //nothing
-        } finally
-        {
-            IOUtils.closeQuietly(socket);
         }
 
     }
@@ -200,7 +205,9 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     @Override
     public void destroy() throws Exception
     {
-        IOUtils.closeQuietly(sslserversocket);  // closes remote session
+    	if (logger.isTraceEnabled())
+    			logger.trace("SocketCommandProcessor.destroy called...");
+        sslserversocket.close();  // closes remote session
         super.destroy();
 
     }
