@@ -7,3 +7,5 @@
 .classpath
 pom.xml.versionsBackup
 */dist/*
+/Bundle/target/
+/Remote/target/

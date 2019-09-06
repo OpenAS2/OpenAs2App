@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Created-By: 1.7.0_06 (Oracle Corporation)
+Name: org/openas2/
+Specification-Title: CirrusAS2 Integration Server
+Specification-Version: 1.2
+Specification-Vendor: Datatrans Solutions, Inc.
+Implementation-Title: Cirrus.as2 
+Implementation-Version: 2.4.0 Build57
+Implementation-Vendor: Datatrans Solutions, Inc.

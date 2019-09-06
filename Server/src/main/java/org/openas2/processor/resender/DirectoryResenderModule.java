@@ -29,7 +29,7 @@ import org.openas2.util.IOUtilOld;
 public class DirectoryResenderModule extends BaseResenderModule {
 	public static final String PARAM_RESEND_DIRECTORY = "resenddir";
 	public static final String PARAM_ERROR_DIRECTORY = "errordir";
-    public static final String PARAM_RESEND_DELAY = "resenddelay"; // in seconds
+        public static final String PARAM_RESEND_DELAY = "resenddelay"; // in seconds
 
 	// TODO Resend set to 15 minutes. Implement a scaling resend time with eventual permanent failure of transmission    
 	public static final long DEFAULT_RESEND_DELAY = 15 * 60 * 1000; // 15 minutes

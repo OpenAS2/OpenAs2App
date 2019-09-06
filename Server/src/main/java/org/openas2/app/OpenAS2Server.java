@@ -54,7 +54,7 @@ public class OpenAS2Server {
             same.terminate();
         }
 
-        LOGGER.info("OpenAS2 has shut down\r\n");
+        LOGGER.info(session.getAppTitle() +" has shut down\r\n");
     }
 
     public static class Builder {
