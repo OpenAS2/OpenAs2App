@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,227 +17,233 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.processor.DefaultProcessor;
+import org.openas2.schedule.HasSchedule;
+import org.openas2.schedule.SchedulerComponent;
 import org.openas2.util.IOUtil;
 
-public abstract class DirectoryPollingModule extends PollingModule
-{
-	public static final String PARAM_OUTBOX_DIRECTORY = "outboxdir";
-	public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
-	private Map<String, Long> trackedFiles;
-	private String outboxDir;
-	private String errorDir;
-	private String sentDir = null;
+public abstract class DirectoryPollingModule extends PollingModule implements HasSchedule {
 
-	private Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
+    public static final String PARAM_OUTBOX_DIRECTORY = "outboxdir";
+    public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
+    public static final String PARAM_TEMP_DIRECTORY = "tempdir";
+    private Map<String, Long> trackedFiles;
+    private String outboxDir;
+    private String errorDir;
+    private String sentDir = null;
+    private String tempDir;
+    private int waterLevel = 60;
+    private static final Void VOID = null;
+    private ScheduledExecutorService executor;
 
-	public void init(Session session, Map<String, String> options) throws OpenAS2Exception
-	{
-		super.init(session, options);
-		// Check all the directories are configured and actually exist on the file system
-		try
-		{
-			outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
-			IOUtil.getDirectoryFile(outboxDir);
-			errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
-			IOUtil.getDirectoryFile(errorDir);
-			sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
-			if (sentDir != null)
-				IOUtil.getDirectoryFile(sentDir);
+    private Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
+
+    public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
+        super.init(session, options);
+        // Check all the directories are configured and actually exist on the file system
+        try {
+            outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
+            IOUtil.getDirectoryFile(outboxDir);
+            tempDir = getParameter(PARAM_TEMP_DIRECTORY, (new File(outboxDir).getAbsolutePath()) + File.separator + "temp");
+            IOUtil.getDirectoryFile(tempDir);
+            errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
+            IOUtil.getDirectoryFile(errorDir);
+            sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
+            if (sentDir != null) {
+                IOUtil.getDirectoryFile(sentDir);
+            }
             String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
             IOUtil.getDirectoryFile(pendingInfoFolder);
             String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
             IOUtil.getDirectoryFile(pendingFolder);
 
-		} catch (IOException e)
-		{
-			throw new OpenAS2Exception("Failed to initialise directory poller.", e);
-		}
-	}
+        } catch (IOException e) {
+            throw new OpenAS2Exception("Failed to initialise directory poller.", e);
+        }
+    }
 
     @Override
-	public boolean healthcheck(List<String> failures)
-	{
-    	try
-		{
-			IOUtil.getDirectoryFile(outboxDir);
-		} catch (IOException e)
-		{
-			failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
-			return false;
-		}
-    	return true;
-	}
-
-	public void poll()
-	{
-		try
-		{
-			// update tracking info. if a file is ready, process it
-			updateTracking();
-
-			// scan the directory for new files
-			scanDirectory(outboxDir);
-		} catch (OpenAS2Exception oae)
-		{
-			oae.terminate();
-		} catch (Exception e)
-		{
-			logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
-		}
-	}
-
-	protected void scanDirectory(String directory) throws IOException, InvalidParameterException
-	{
-		File dir = IOUtil.getDirectoryFile(directory);
-		String extensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
-
-		// get a list of entries in the directory
-		File[] files = extensionFilter.length() > 0 ? IOUtil.getFiles(dir, extensionFilter) : dir.listFiles();
-		if (files == null)
-		{
-			throw new InvalidParameterException("Error getting list of files in directory", this,
-					PARAM_OUTBOX_DIRECTORY, dir.getAbsolutePath());
-		}
-
-		// iterator through each entry, and start tracking new files
-		if (files.length > 0)
-		{
-			for (int i = 0; i < files.length; i++)
-			{
-				File currentFile = files[i];
-
-				if (checkFile(currentFile))
-				{
-					// start watching the file's size if it's not already being
-					// watched
-					trackFile(currentFile);
-				}
-			}
-		}
-	}
-
-	protected boolean checkFile(File file)
-	{
-		if (file.exists() && file.isFile())
-		{
-			try
-			{
-				// check for a write-lock on file, will skip file if it's write
-				// locked
-				FileOutputStream fOut = new FileOutputStream(file, true);
-				fOut.close();
-				return true;
-			} catch (IOException ioe)
-			{
-				// a sharing violation occurred, ignore the file for now
-				if (logger.isDebugEnabled())
-				{
-					try
-					{
-						logger.debug("Directory poller detected a non-writable file and will be ignored: " + file.getCanonicalPath());
-					} catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-    private void trackFile(File file)
-    {
-		Map<String, Long> trackedFiles = getTrackedFiles();
-		String filePath = file.getAbsolutePath();
-		if (trackedFiles.get(filePath) == null)
-		{
-            trackedFiles.put(filePath, file.length());
+    public boolean healthcheck(List<String> failures) {
+        try {
+            IOUtil.getDirectoryFile(outboxDir);
+        } catch (IOException e) {
+            failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
+            return false;
         }
-	}
+        return true;
+    }
 
-    private void updateTracking()
-    {
-		// clone the trackedFiles map, iterator through the clone and modify the
-		// original to avoid iterator exceptions
-		// is there a better way to do this?
-		Map<String, Long> trackedFiles = getTrackedFiles();
-		Map<String, Long> trackedFilesClone = new HashMap<String, Long>(trackedFiles);
+    public void poll() {
+        try {
+            // update tracking info. if a file is ready, process it
+            updateTracking();
 
-        for (Map.Entry<String, Long> fileEntry : trackedFilesClone.entrySet())
-        {
+            // scan the directory for new files
+            scanDirectory(outboxDir);
+        } catch (OpenAS2Exception oae) {
+            oae.terminate();
+        } catch (Exception e) {
+            logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
+        }
+    }
+
+    protected void scanDirectory(String directory) throws IOException, InvalidParameterException {
+        File dir = IOUtil.getDirectoryFile(directory);
+        String extensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
+
+        // get a list of entries in the directory
+        File[] files = extensionFilter.length() > 0 ? IOUtil.getFiles(dir, extensionFilter) : dir.listFiles();
+        if (files == null) {
+            throw new InvalidParameterException("Error getting list of files in directory", this,
+                    PARAM_OUTBOX_DIRECTORY, dir.getAbsolutePath());
+        }
+
+        // iterator through each entry, and start tracking new files
+        if (files.length > 0) {
+            for (int i = 0; i < files.length; i++) {
+                File currentFile = files[i];
+                if ((getTrackedFiles().size() < waterLevel) && checkFile(currentFile)) {
+                    // start watching the file's size if it's not already being
+                    // watched
+                    trackFile(currentFile);
+                }
+            }
+        }
+    }
+
+    protected boolean checkFile(File file) {
+        if (file.exists() && file.isFile()) {
+            try {
+                // check for a write-lock on file, will skip file if it's write
+                // locked
+                FileOutputStream fOut = new FileOutputStream(file, true);
+                fOut.close();
+                return true;
+            } catch (IOException ioe) {
+                // a sharing violation occurred, ignore the file for now
+                if (logger.isDebugEnabled()) {
+                    try {
+                        logger.debug("Directory poller detected a non-writable file and will be ignored: " + file.getCanonicalPath());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void trackFile(File file) {
+        String filePath = file.getAbsolutePath();
+        if (getTrackedFiles().get(filePath) == null) {
+            addTrackedFile(filePath, file.length());
+        }
+    }
+
+    private void updateTracking() {
+        // clone the trackedFiles map, iterator through the clone and modify the
+        // original to avoid iterator exceptions
+        // is there a better way to do this?
+        //Map<String, Long> trackedFiles = getTrackedFiles();
+        Map<String, Long> trackedFilesClone = getTrackedFiles();
+
+        for (Map.Entry<String, Long> fileEntry : trackedFilesClone.entrySet()) {
             // get the file and it's stored length
             File file = new File(fileEntry.getKey());
             long fileLength = fileEntry.getValue().longValue();
 
-			// if the file no longer exists, remove it from the tracker
-            if (!checkFile(file))
-            {
-                trackedFiles.remove(fileEntry.getKey());
-            } else
-            {
+            // if the file no longer exists, remove it from the tracker
+            if (!checkFile(file)) {
+                removeTrackedFile(fileEntry.getKey());
+            } else {
                 // if the file length has changed, update the tracker
-		long newLength = file.length();
-                if (newLength != fileLength)
-                {
-                    trackedFiles.put(fileEntry.getKey(), Long.valueOf(newLength));
-                } else
-                {
+                long newLength = file.length();
+                if (newLength != fileLength) {
+                    addTrackedFile(fileEntry.getKey(), Long.valueOf(newLength));
+                } else {
                     // if the file length has stayed the same, process the file
-					// and stop tracking it
-                    try
-                    {
-                        processFile(file);
-                    } catch (OpenAS2Exception e)
-                    {
-                        e.terminate();
-                        try
-                        {
+                    // and stop tracking it
+                    try {
+                        final File locked = new File(tempDir + File.separator + file.getName());
+                        if (!file.renameTo(locked)) {
+                            throw new OpenAS2Exception("Unable to rename the file " + file.getAbsolutePath() + " to file " + locked.getAbsolutePath());
+                        }
+                        // We schedule a processing Thread so we can send files in parallel and not crash the
+                        // server if there is an error
+                        this.executor.schedule(new Callable<Void>() {
+                            @Override
+                            public Void call() throws Exception {
+                                if (isRunning()) {
+                                    // update tracking info. if a file is ready, process it
+                                    try {
+                                        processFile(locked);
+                                    } catch (OpenAS2Exception e) {
+                                        //e.terminate();  // Don't crash the server if there is an file problem
+                                        try {
+                                            IOUtil.handleError(locked, errorDir);
+                                        } catch (OpenAS2Exception e1) {
+                                            logger.error("Error handling file error for file: " + locked.getAbsolutePath(), e1);
+                                            //forceStop(e1);
+                                        }
+                                    }
+                                }
+                                return VOID;
+                            }
+                        }, 0, TimeUnit.SECONDS);
+                    } catch (OpenAS2Exception e) {
+                        //e.terminate();
+                        try {
                             IOUtil.handleError(file, errorDir);
-                        } catch (OpenAS2Exception e1)
-                        {
+                        } catch (OpenAS2Exception e1) {
                             logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
-							forceStop(e1);
-							return;
-						}
-                    } finally
-                    {
-                        trackedFiles.remove(fileEntry.getKey());
-					}
-				}
-			}
-		}
-	}
+                            forceStop(e1);
+                            return;
+                        }
+                    } finally {
+                        removeTrackedFile(fileEntry.getKey());
+                    }
+                }
+            }
+        }
+    }
 
-	protected void processFile(File file) throws OpenAS2Exception
-	{
+    protected void processFile(File file) throws OpenAS2Exception {
 
-		if (logger.isInfoEnabled())
-			logger.info("processing " + file.getAbsolutePath());
+        if (logger.isInfoEnabled()) {
+            logger.info("processing " + file.getAbsolutePath());
+        }
 
-		try (FileInputStream in = new FileInputStream(file))
-		{
-			processDocument(in, file.getName());
-			try
-			{
-				IOUtil.deleteFile(file);
-			} catch (IOException e)
-			{
-				throw new OpenAS2Exception("Failed to delete file handed off for processing:" + file.getAbsolutePath(), e);
-			}
-		} catch (IOException e)
-		{
-			throw new OpenAS2Exception("Failed to process file:" + file.getAbsolutePath(), e);
-		}
-	}
+        try (FileInputStream in = new FileInputStream(file)) {
+            processDocument(in, file.getName());
+            try {
+                IOUtil.deleteFile(file);
+            } catch (IOException e) {
+                throw new OpenAS2Exception("Failed to delete file handed off for processing:" + file.getAbsolutePath(), e);
+            }
+        } catch (IOException e) {
+            throw new OpenAS2Exception("Failed to process file:" + file.getAbsolutePath(), e);
+        }
+    }
 
-	protected abstract Message createMessage();
+    protected abstract Message createMessage();
 
-    private Map<String, Long> getTrackedFiles()
-    {
-		if (trackedFiles == null)
-		{
-			trackedFiles = new HashMap<String, Long>();
-		}
-		return trackedFiles;
-	}
+    public Map<String, Long> getTrackedFiles() {
+        if (trackedFiles == null) {
+            trackedFiles = new HashMap<String, Long>();
+        }
+        return new HashMap<String, Long>(trackedFiles); // Return a clone
+    }
+    
+    public synchronized void addTrackedFile(String key,long value) {
+        trackedFiles.put(key, value);
+    }
+    public synchronized void removeTrackedFile(String key) {
+        trackedFiles.remove(key);
+    }
+
+    @Override
+    public void schedule(ScheduledExecutorService executor) throws OpenAS2Exception {
+        this.executor=executor;
+    }
+    
 }

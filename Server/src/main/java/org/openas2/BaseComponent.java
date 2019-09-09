@@ -73,7 +73,18 @@ public class BaseComponent implements Component {
 
         return 0;
     }
+    public float getParameterFloat(String key,boolean required)
+            throws InvalidParameterException
+    {
+        String value = getParameter(key, required);
 
+        if (value != null)
+        {
+            return Float.parseFloat(value);
+        }
+
+        return 0f;
+    }
     public Map<String, String> getParameters()
     {
         if (parameters == null)
