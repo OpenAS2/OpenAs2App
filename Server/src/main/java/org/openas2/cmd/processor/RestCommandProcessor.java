@@ -42,14 +42,14 @@ public class RestCommandProcessor extends BaseCommandProcessor {
     @Override
     public void processCommand() throws Exception {
         //throw new UnsupportedOperationException("Not supported yet."); 
-        //logger.info("Rest API Ready");
+        logger.info("Rest API Ready");
     }
 
     public CommandResult feedCommand(String commandText, List<String> params) throws WrappedException, Exception {
         CommandResult result = null;
         if (commandText != null && commandText.length() > 0) {
             String commandName = commandText.toLowerCase();
-            if (commandName.equals(StreamCommandProcessor.EXIT_COMMAND)) {
+            if (commandName.equals(StreamCommandProcessor.SERVER_EXIT_COMMAND)) {
                 terminate();
             } else {
                 Command cmd = getCommand(commandName);
@@ -77,33 +77,28 @@ public class RestCommandProcessor extends BaseCommandProcessor {
 
     @Override
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
-        super.init(session, parameters);
-        logger.info(this.getName() + " initialized...");
-        // create a resource config that scans for JAX-RS resources and providers
-        // in com.example.rest package
-        final ResourceConfig rc = new ResourceConfig();//.packages("org.openas2.cmd.processor.restapi");
-        rc.register(new AuthenticationFilter(
-                parameters.getOrDefault("userid","userid"),
-                parameters.getOrDefault("password","pWd")
-        )).register(new ControlResource(this));
-        URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
-
-        /**
-         *
-         *
-         * return secure;
-         *
-         */
-        // create and start a new instance of grizzly http server
-        // exposing the Jersey application at BASE_URI
         try {
+            super.init(session, parameters);
+            logger.info(this.getName() + " initialized...");
+            // create a resource config that scans for JAX-RS resources and providers
+            // in com.example.rest package
+            final ResourceConfig rc = new ResourceConfig();//.packages("org.openas2.cmd.processor.restapi");
+            rc.register(new AuthenticationFilter(
+                    parameters.getOrDefault("userid","userid"),
+                    parameters.getOrDefault("password","pWd")
+            )).register(new ControlResource(this));
+            URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
+            
+            
+            logger.info("Creating and starting a new instance of grizzly http server");
+            logger.info("Exposing the Jersey application at "+BASE_URI);
             if (baseUri.getScheme().equalsIgnoreCase("https")) {
                 //Secure Server
                 SSLContextConfigurator sslCon = new SSLContextConfigurator();
-
+                
                 sslCon.setKeyStoreFile(parameters.get("ssl_keystore"));
                 sslCon.setKeyStorePass(parameters.getOrDefault("ssl_keystore_password", ""));
-
+                
                 GrizzlyHttpContainer container = (GrizzlyHttpContainer) ContainerFactory.createContainer(GrizzlyHttpContainer.class, rc);
                 SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslCon, false, false, false);
                 server = GrizzlyHttpServerFactory.createHttpServer(baseUri, container, true, sslEngineConfigurator, true);
@@ -113,6 +108,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             server.start();
         } catch (IOException ex) {
             Logger.getLogger(RestCommandProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            throw new OpenAS2Exception(ex);
         }
     }
 

@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -27,6 +26,7 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.support.FileMonitorAdapter;
+import org.openas2.util.AS2Util;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -84,10 +84,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
     void refresh() throws OpenAS2Exception
     {
-        FileInputStream inputStream = null;
-        try
+        try (FileInputStream inputStream = new FileInputStream(getFilename()))
         {
-            inputStream = new FileInputStream(getFilename());
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder parser = factory.newDocumentBuilder();
@@ -123,9 +121,6 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         } catch (Exception e)
         {
             throw new WrappedException(e);
-        } finally
-        {
-            IOUtils.closeQuietly(inputStream);
         }
     }
 
@@ -134,6 +129,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     {
         Map<String, String> nodes = XMLUtil.mapAttributeNodes(node.getChildNodes(), "attribute", "name", "value");
 
+        AS2Util.attributeEnhancer(nodes);
         partnership.getAttributes().putAll(nodes);
     }
 
@@ -161,7 +157,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
         if (partnerNode == null)
         {
-            throw new OpenAS2Exception("Partnership " + partnershipName + " is missing sender");
+            throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing sender");
         }
 
         Map<String, String> partnerAttr = XMLUtil.mapAttributes(partnerNode);

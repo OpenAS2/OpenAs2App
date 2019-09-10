@@ -3,8 +3,6 @@ package org.openas2.processor.receiver;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.mail.internet.ContentType;
@@ -17,7 +15,7 @@ import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
-import org.openas2.partner.AS2Partnership;
+import org.openas2.partner.Partnership;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.HTTPUtil;
@@ -58,6 +56,29 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 		try
 		{
 			data = HTTPUtil.readData(s.getInputStream(), s.getOutputStream(), msg);
+			if (data == null)
+			{
+				if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck")))
+				{
+					if (logger.isInfoEnabled())
+						logger.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]"
+								+ msg.getLogMsgID());
+					return;
+				}
+				else
+				{
+					try
+					{
+						HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
+					} catch (IOException e1)
+					{
+					}
+					OpenAS2Exception oe = new OpenAS2Exception("Missing data in MDN response message");
+					msg.setLogMsg("Error receiving asynchronous MDN. There is no data.");
+					logger.error(msg, oe);
+					return;
+				}
+			}
 			// check if the requested URL is defined in attribute "as2_receipt_option"
 			// in one of partnerships, if yes, then process incoming AsyncMDN
 			if (logger.isInfoEnabled())
@@ -81,9 +102,9 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 			String to = msg.getHeader("AS2-To");
 			msg.setHeader("AS2-To", msg.getHeader("AS2-From"));
 			msg.setHeader("AS2-From", to);
-	        msg.getPartnership().setSenderID(AS2Partnership.PID_AS2, msg.getHeader("AS2-From"));
-	        msg.getPartnership().setReceiverID(AS2Partnership.PID_AS2, msg.getHeader("AS2-To"));
-	        getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
+			msg.getPartnership().setSenderID(Partnership.PID_AS2, msg.getHeader("AS2-From"));
+			msg.getPartnership().setReceiverID(Partnership.PID_AS2, msg.getHeader("AS2-To"));
+			getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
 			
 			// Create a MessageMDN
 			MessageMDN mdn = new AS2MessageMDN(msg, true);
@@ -113,7 +134,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 				 */
 				try
 				{
-					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, false);
+					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
 				} catch (IOException e1)
 				{
 				}
@@ -130,7 +151,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
 				// Must have received MDN successfully so must respond with OK
 				try
 				{
-					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, false);
+					HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, null);
 				} catch (IOException e1)
 				{ // What to do .... 
 				}

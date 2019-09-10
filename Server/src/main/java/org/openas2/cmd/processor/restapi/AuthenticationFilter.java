@@ -20,6 +20,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 
 /**
@@ -40,7 +42,7 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
             .entity("Access blocked for all users !!").build();
     private String adminUsername;
     private String adminPassword;
-
+    private Log logger = LogFactory.getLog(AuthenticationFilter.class.getSimpleName());
     public AuthenticationFilter(String adminUsername, String adminPassword) {
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
@@ -81,8 +83,12 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
             final String password = tokenizer.nextToken();
 
             //Verifying Username and password
-            System.out.println(username);
-            System.out.println(password);
+            logger.info("Username: "+username);
+            if(password.length() > 0 ) {
+                logger.info("password: "+new String(new char[password.length()]).replace("\0", "*")); 
+            }else{
+                logger.info("password: <none>");
+            }
 
             //Verify user access
             if (method.isAnnotationPresent(RolesAllowed.class)) {

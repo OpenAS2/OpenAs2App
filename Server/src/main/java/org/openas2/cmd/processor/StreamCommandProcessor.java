@@ -8,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
@@ -26,7 +25,7 @@ import org.openas2.util.CommandTokenizer;
 public class StreamCommandProcessor extends BaseCommandProcessor {
     public static final String COMMAND_NOT_FOUND = "Error: command not found";
     public static final String COMMAND_ERROR = "Error executing command";
-    public static final String EXIT_COMMAND = "exit";
+    public static final String SERVER_EXIT_COMMAND = "exit";
     public static final String PROMPT = "#>";
     private BufferedReader reader = null;
     private BufferedWriter writer = null;
@@ -62,7 +61,7 @@ public class StreamCommandProcessor extends BaseCommandProcessor {
                 {
                     String commandName = strTkn.nextToken().toLowerCase();
 
-                    if (commandName.equals(EXIT_COMMAND))
+                    if (commandName.equals(SERVER_EXIT_COMMAND))
                     {
                         terminate();
                     } else
@@ -95,7 +94,7 @@ public class StreamCommandProcessor extends BaseCommandProcessor {
                             writeLine(COMMAND_NOT_FOUND + "> " + commandName);
                             List<Command> l = getCommands();
                             writeLine("List of commands:");
-                            writeLine(EXIT_COMMAND);
+                            writeLine(SERVER_EXIT_COMMAND);
                             for (int i = 0; i < l.size(); i++)
                             {
                                 cmd = l.get(i);
@@ -146,7 +145,7 @@ public class StreamCommandProcessor extends BaseCommandProcessor {
     @Override
     public void destroy() throws Exception
     {
-        IOUtils.closeQuietly(reader); // stops terminal
+        reader = null; // Cannot close System.in
         super.destroy();
     }
 }

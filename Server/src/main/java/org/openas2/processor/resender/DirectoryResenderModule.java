@@ -23,13 +23,15 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
-import org.openas2.util.IOUtilOld;
+import org.openas2.util.IOUtil;
 
 
 public class DirectoryResenderModule extends BaseResenderModule {
 	public static final String PARAM_RESEND_DIRECTORY = "resenddir";
 	public static final String PARAM_ERROR_DIRECTORY = "errordir";
     public static final String PARAM_RESEND_DELAY = "resenddelay"; // in seconds
+    
+	private String resendDirPath;
 
 	// TODO Resend set to 15 minutes. Implement a scaling resend time with eventual permanent failure of transmission    
 	public static final long DEFAULT_RESEND_DELAY = 15 * 60 * 1000; // 15 minutes
@@ -45,8 +47,8 @@ public class DirectoryResenderModule extends BaseResenderModule {
 		throws OpenAS2Exception {
 		ObjectOutputStream oos = null;
 		try {                        
-			File resendDir = IOUtilOld.getDirectoryFile(getParameter(PARAM_RESEND_DIRECTORY, true));
-			File resendFile = IOUtilOld.getUnique(resendDir, getFilename());
+			File resendDir = IOUtil.getDirectoryFile(resendDirPath);
+			File resendFile = IOUtil.getUnique(resendDir, getFilename());
 			oos = new ObjectOutputStream(new FileOutputStream(resendFile));
 			String method = (String) options.get (ResenderModule.OPTION_RESEND_METHOD);
 			if (method == null) method = SenderModule.DO_SEND;
@@ -66,6 +68,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     				    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
     				    + "\n      Content-Disposition in MSG getData() MIMEPART: "
     				    + msg.getData().getContentType()
+    					+ "\n        Attributes: " + msg.getAttributes()
     					+msg.getLogMsgID()	);
     			} catch (Exception e){}
 		} catch (IOException ioe) {
@@ -84,7 +87,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     
 	public void init(Session session, Map<String,String> options) throws OpenAS2Exception {
 		super.init(session, options);
-		getParameter(PARAM_RESEND_DIRECTORY, true);
+		resendDirPath = getParameter(PARAM_RESEND_DIRECTORY, true);
 		getParameter(PARAM_ERROR_DIRECTORY, true);        
 	}
 
@@ -111,12 +114,27 @@ public class DirectoryResenderModule extends BaseResenderModule {
 		}
 	}
 
+    @Override
+	public boolean healthcheck(List<String> failures)
+	{
+    	try
+		{
+        	IOUtil.getDirectoryFile(resendDirPath);
+		} catch (IOException e)
+		{
+			failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + resendDirPath);
+			return false;
+		}
+    	return true;
+	}
+
 	protected String getFilename() throws InvalidParameterException {		
         long resendDelay;
-        if (getParameter(PARAM_RESEND_DELAY, false) == null) {
+        String cfgResendDelay = getParameter(PARAM_RESEND_DELAY, false);
+        if (cfgResendDelay == null) {
             resendDelay = DEFAULT_RESEND_DELAY;
         } else {
-            resendDelay = getParameterInt(PARAM_RESEND_DELAY, false) * 1000;
+            resendDelay = Integer.parseInt(cfgResendDelay) * 1000;
         }
 		long resendTime = new Date().getTime() + resendDelay;
 
@@ -158,11 +176,18 @@ public class DirectoryResenderModule extends BaseResenderModule {
 						    + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
 						    + "\n      Content-Disposition in MSG getData() MIMEPART: "
 						    + msg.getData().getContentType()
-							+msg.getLogMsgID()	);
+						    + "\n      ATTRIBUTES : " + msg.getAttributes()
+							+ msg.getLogMsgID()
+							);
 					} catch (Exception e){}
                 msg.setOption(SenderModule.SOPT_RETRIES, retries);
                 msg.setStatus(Message.MSG_STATUS_MSG_RESEND);
-				getSession().getProcessor().handle(method, msg, msg.getOptions());
+				try {
+					getSession().getProcessor().handle(method, msg, msg.getOptions());
+				} catch (OpenAS2Exception e) {
+					// Just log and ignore since it will have been handled upstream
+					logger.error("Error resending message", e);
+				}
                 
 				if (!file.delete()) { // Delete the file, sender will re-queue if the transmission fails again
 					throw new OpenAS2Exception("File was successfully sent but not deleted: " +
@@ -179,12 +204,12 @@ public class DirectoryResenderModule extends BaseResenderModule {
 			oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
 			oae.addSource(OpenAS2Exception.SOURCE_FILE, file);
 			oae.terminate();
-			IOUtilOld.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
+			IOUtil.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
 		}
 	}
 
 	protected List<File> scanDirectory() throws OpenAS2Exception, IOException {
-		File resendDir = IOUtilOld.getDirectoryFile(getParameter(PARAM_RESEND_DIRECTORY, true));
+		File resendDir = IOUtil.getDirectoryFile(getParameter(PARAM_RESEND_DIRECTORY, true));
 		List<File> sendFiles = new ArrayList<File>();
 
 		File[] files = resendDir.listFiles();

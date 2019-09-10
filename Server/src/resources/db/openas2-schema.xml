@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database xmlns="http://db.apache.org/ddlutils/schema/1.1" name="openas2_db">
+	<table name="msg_metadata">
+		<column name="id" primaryKey="true" required="true" type="INTEGER"
+			autoIncrement="true" />
+		<column name="msg_id" type="LONGVARCHAR" required="true" />
+		<column name="prior_msg_id" type="LONGVARCHAR" required="false" />
+		<column name="mdn_id" type="LONGVARCHAR" />
+		<column name="direction" type="VARCHAR" size="25" />
+		<column name="is_resend" type="VARCHAR" size="1" DEFAULT="N" />
+		<column name="resend_count" type="INTEGER" DEFAULT="0" />
+		<column name="sender_id" type="VARCHAR" size="255" required="true" />
+		<column name="receiver_id" type="VARCHAR" size="255" required="true" />
+		<column name="status" type="VARCHAR" size="255" />
+		<column name="state" type="VARCHAR" size="255" />
+		<column name="signature_algorithm" type="VARCHAR" size="255" />
+		<column name="encryption_algorithm" type="VARCHAR" size="255" />
+		<column name="compression" type="VARCHAR" size="255" />
+		<column name="file_name" type="VARCHAR" size="255" />
+		<column name="sent_file_name" type="VARCHAR" size="255" />
+		<column name="content_type" type="VARCHAR" size="255" />
+		<column name="content_transfer_encoding" type="VARCHAR" size="255" />
+		<column name="mdn_mode" type="VARCHAR" size="255" />
+		<column name="mdn_response" type="LONGVARCHAR" />
+		<column name="state_msg" type="LONGVARCHAR" />
+		<column name="create_dt" type="TIMESTAMP" DEFAULT="CURRENT_TIMESTAMP" />
+		<column name="update_dt" type="TIMESTAMP" />
+
+		<unique name="msg_id_unique">
+			<unique-column name="msg_id" />
+		</unique>
+	</table>
+</database>

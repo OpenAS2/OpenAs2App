@@ -13,6 +13,7 @@ import org.openas2.Component;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.processor.ProcessorModule;
 
 /**
  * Scheduler module for periodic tasks.
@@ -32,6 +33,7 @@ public class SchedulerComponent extends BaseComponent {
         super.init(session, parameters);
         createExecutor();
         scheduleComponentsTasks(session);
+        scheduleModuleTasks(session);
     }
 
     private void createExecutor() throws InvalidParameterException
@@ -52,7 +54,20 @@ public class SchedulerComponent extends BaseComponent {
         {
             if (HasSchedule.class.isAssignableFrom(component.getClass()))
             {
+            	//logger.trace("Loading scheduling for component: " + component.getName());
                 HasSchedule.class.cast(component).schedule(executorService);
+            }
+        }
+    }
+
+    private void scheduleModuleTasks(Session session) throws OpenAS2Exception
+    {
+        for (ProcessorModule module : session.getProcessor().getModules())
+        {
+            if (HasSchedule.class.isAssignableFrom(module.getClass()))
+            {
+            	//logger.trace("Loading scheduling for module: " + module.getName());
+                HasSchedule.class.cast(module).schedule(executorService);
             }
         }
     }

@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sf.openas2</groupId>
 	<artifactId>OpenAS2</artifactId>
-	<version>2.4.0</version>
+	<version>2.9.3</version>
 	<name>OpenAS2</name>
 	<packaging>pom</packaging>
 
@@ -26,13 +26,13 @@
 	</licenses>
 
 	<modules>
-		<module>Server</module>
 		<module>Remote</module>
+		<module>Server</module>
 		<module>Bundle</module>
 	</modules>
 
 	<properties>
-		<java.version>1.6</java.version>
+		<java.version>1.7</java.version>
 	</properties>
 
 	<dependencyManagement>
@@ -45,27 +45,42 @@
 			<dependency>
 				<groupId>org.dom4j</groupId>
 				<artifactId>dom4j</artifactId>
-				<version>2.0.0</version>
+				<version>2.1.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcmail-jdk15on</artifactId>
-				<version>1.54</version>
+				<version>1.62</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcpkix-jdk15on</artifactId>
-				<version>1.54</version>
+				<version>1.62</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcprov-jdk15on</artifactId>
-				<version>1.54</version>
+				<version>1.62</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-ext-jdk15on</artifactId>
+				<version>1.62</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpg-jdk15on</artifactId>
+				<version>1.62</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.4</version>
+				<version>3.7</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-cli</groupId>
+				<artifactId>commons-cli</artifactId>
+				<version>1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>
@@ -74,18 +89,30 @@
 			</dependency>
 			<dependency>
 				<groupId>javax.mail</groupId>
-				<artifactId>mail</artifactId>
-				<version>1.4.7</version>
+				<artifactId>javax.mail-api</artifactId>
+				<version>1.6.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.mail</groupId>
+				<artifactId>javax.mail</artifactId>
+				<version>1.6.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.h2database</groupId>
 				<artifactId>h2</artifactId>
-				<version>1.4.193</version>
+				<version>1.4.197</version>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
 			<dependency>
-				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcpg-jdk15on</artifactId>
-				<version>1.54</version>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpcore</artifactId>
+				<version>4.4.9</version>
+			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>4.5.5</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.findbugs</groupId>
@@ -105,16 +132,18 @@
 				<version>1.3</version>
 				<scope>test</scope>
 			</dependency>
+			<!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
 			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>1.10.19</version>
-				<scope>test</scope>
+    				<groupId>org.mockito</groupId>
+    				<artifactId>mockito-core</artifactId>
+    				<version>2.18.3</version>
+    				<scope>test</scope>
 			</dependency>
+			
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.5</version>
+				<version>2.6</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -130,21 +159,21 @@
 		</repository>
 	</distributionManagement>
 
-    <scm>
-        <url>git@github.com:OpenAS2/OpenAs2App.git</url>
-        <connection>scm:git:git@github.com:OpenAS2/OpenAs2App.git</connection>
-        <developerConnection>scm:git:git@github.com:OpenAS2/OpenAs2App.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
+	<scm>
+		<url>git@github.com:OpenAS2/OpenAs2App.git</url>
+		<connection>scm:git:git@github.com:OpenAS2/OpenAs2App.git</connection>
+		<developerConnection>scm:git:git@github.com:OpenAS2/OpenAs2App.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 
-    <developers>
-            <developer>
-                    <id>uhurusurfa</id>
-                    <name>Christopher Broderick</name>
-                    <email>uhurusurfa@users.sf.net</email>
-            </developer>
-    </developers>
-    
+	<developers>
+		<developer>
+			<id>uhurusurfa</id>
+			<name>Christopher Broderick</name>
+			<email>uhurusurfa@users.sf.net</email>
+		</developer>
+	</developers>
+
 	<build>
 		<pluginManagement>
 			<plugins>

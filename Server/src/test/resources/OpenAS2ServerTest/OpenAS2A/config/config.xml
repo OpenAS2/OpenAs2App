@@ -26,10 +26,10 @@
             smtppwd="mySmtpPwd"
             subject="$exception.name$: $exception.message$"
             bodytemplate="%home%/emailtemplate.txt"/>
-        -->
 
         <logger classname="org.openas2.logging.FileLogger"
                 filename="%home%/../logs/log-$date.MMddyyyy$.txt"/>
+        -->
         <!-- Remove this comment to enable socket logging			
 <logger classname="org.openas2.logging.SocketLogger"
     ipaddr="127.0.0.1"
@@ -55,7 +55,7 @@
         <module classname="org.openas2.processor.sender.AS2SenderModule">
         </module>
 
-        <module classname="org.openas2.processor.sender.AsynchMDNSenderModule">
+        <module classname="org.openas2.processor.sender.MDNSenderModule">
         </module>
 
         <!-- This will parse the filename to get a sender and receiver. For instance a file

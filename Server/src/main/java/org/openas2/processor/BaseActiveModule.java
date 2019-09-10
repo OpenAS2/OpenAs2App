@@ -1,5 +1,6 @@
 package org.openas2.processor;
 
+import java.util.List;
 import java.util.Map;
 
 import org.openas2.OpenAS2Exception;
@@ -16,6 +17,8 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
 	public abstract void doStart() throws OpenAS2Exception;
 
 	public abstract void doStop() throws OpenAS2Exception;
+
+	public abstract boolean healthcheck(List<String> failures);
 
 	public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
 		return false;

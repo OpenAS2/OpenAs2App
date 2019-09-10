@@ -1,49 +1,40 @@
 <partnerships>
-	<partner name="OpenAS2A"
-		as2_id="OpenAS2A_OID"
-		x509_alias="openas2a"
-		email="as2msgs@openas2a.com"/>	
-	<partner name="OpenAS2B"
-		as2_id="OpenAS2B_OID"
-		x509_alias="openas2b"
-		email="as2msgs@openas2b.com"/>	
+    <partner name="MyCompany"
+             as2_id="MyCompany_OID"
+             x509_alias="mycompany"
+             email="as2msgs@openas2.com"/>
 
-	<partnership name="OpenAS2A-to-OpenAS2B">
-		<sender name="OpenAS2A"/>
-		<receiver name="OpenAS2B"/>
-		<attribute name="protocol" value="as2"/>
-		<attribute name="content_transfer_encoding" value="8bit"/>
-		<attribute name="compression_type" value="ZLIB"/>
-		<attribute name="subject" value="From OpenAS2A to OpenAS2B"/>
-		<attribute name="mdnsubject" value="Your requested MDN response from $receiver.as2_id$"/>
-		<attribute name="as2_url" value="http://localhost:10080"/>
-		<attribute name="as2_mdn_to" value="edi@openas2b.org"/>
-		<!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
-		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256"/>
-		<attribute name="encrypt" value="3DES"/>
-		<attribute name="sign" value="SHA1"/>
-		<attribute name="resend_max_retries" value="3"/>
-		<attribute name="prevent_canonicalization_for_mic" value="false"/>
-		<attribute name="no_set_transfer_encoding_for_signing" value="false"/>
-		<attribute name="no_set_transfer_encoding_for_encryption" value="false"/>
-		<attribute name="rename_digest_to_old_name" value="false"/>
-		<attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
-	</partnership>
-	
-	<partnership name="OpenAS2B-to-OpenAS2A">
-		<sender name="OpenAS2B"/>
-		<receiver name="OpenAS2A"/>
-		<attribute name="protocol" value="as2"/>
-		<attribute name="content_transfer_encoding" value="8bit"/>
-		<attribute name="subject" value="From OpenAS2B to OpenAS2A"/>
-		<attribute name="as2_url" value="http://localhost:10080"/>
-		<attribute name="as2_mdn_to" value="edi@openas2a.org"/>
-		<!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
-		<attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA256"/>
-		<attribute name="encrypt" value="3DES"/>
-		<attribute name="sign" value="SHA256"/>
-		<attribute name="prevent_canonicalization_for_mic" value="false"/>
-		<attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+    <partner name="PartnerA"
+             as2_id="PartnerA_OID"
+             x509_alias="partnera"
+             email="as2msgs@partnera.com"/>
+
+    <partner name="PartnerB"
+             as2_id="PartnerB_OID"
+             x509_alias="partnerb"
+             email="as2msgs@partnerb.com"/>
+
+    <partnership name="MyCompany-to-PartnerA">
+        <sender name="MyCompany"/>
+        <receiver name="PartnerA"/>
+        <attribute name="protocol" value="as2"/>
+        <attribute name="content_transfer_encoding" value="binary"/>
+        <attribute name="compression_type" value="ZLIB"/>
+        <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
+        <attribute name="as2_url" value="http://localhost:10080"/>
+        <attribute name="as2_mdn_to" value="edi@myCompany.com"/>
+        <attribute name="as2_mdn_options"
+                   value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        <!--  For enabling ASYNC MDN uncomment this attribute and set this to the URL partner must send MDN back to.
+              Example below uses a property from the config.xml to facilitate centralised management of the URL
+            <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
+         -->
+        <attribute name="encrypt" value="3DES"/>
+        <attribute name="sign" value="SHA256"/>
+        <attribute name="resend_max_retries" value="3"/>
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="false"/>
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
 		<!--
 		Example for adding static custom headers to Mime body part and additionally add to HTTP
 		<attribute name="custom_mime_headers" value="X-CustomHeader: shift-shape ; X-CustomShape: oblong"/>
@@ -62,7 +53,38 @@
         <attribute name="attribute_names_from_filename" value="P-DynamicParm1,P-DynamicParm2"/>
         <attribute name="attribute_values_regex_on_filename" value="([A-Za-z]*)([^.]*).edi"/>
 		-->
-	</partnership>
+    </partnership>
+    <partnership name="PartnerA-to-MyCompany">
+        <sender name="PartnerA"/>
+        <receiver name="MyCompany"/>
+    </partnership>
+
+    <partnership name="MyCompany-to-PartnerB">
+        <sender name="MyCompany"/>
+        <receiver name="PartnerB"/>
+        <attribute name="protocol" value="as2"/>
+        <attribute name="content_transfer_encoding" value="8bit"/>
+        <attribute name="compression_type" value="ZLIB"/>
+        <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
+        <attribute name="as2_url" value="https://as2.partnerb.com:8443"/>
+        <attribute name="as2_mdn_to" value="edi@myCompany.org"/>
+        <attribute name="as2_mdn_options"
+                   value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        <!--  For enabling ASYNC MDN uncomment this attribute and set this to the URL partner must send MDN back to.
+              Example below uses a property from the config.xml to facilitate centralised management of the URL
+            <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
+         -->
+        <attribute name="encrypt" value="3DES"/>
+        <attribute name="sign" value="SHA1"/>
+        <attribute name="resend_max_retries" value="3"/>
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="false"/>
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+    </partnership>
+    <partnership name="PartnerB-to-MyCompany">
+        <sender name="PartnerB"/>
+        <receiver name="MyCompany"/>
+    </partnership>
+
 
 </partnerships>
-

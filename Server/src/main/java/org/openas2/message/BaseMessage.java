@@ -289,6 +289,14 @@ public abstract class BaseMessage implements Message {
 		this.rxdMsgWasEncrypted = rxdMsgWasEncrypted;
 	}
 
+	public String getXForwardedFor() {
+		return getHeader("X-Forwarded-For");
+	}
+
+	public String getXRealIP() {
+		return getHeader("X-Real-IP");
+	}
+
     public void addHeader(String key, String value) {
         getHeaders().addHeader(key, value);
     }
@@ -356,6 +364,8 @@ public abstract class BaseMessage implements Message {
         if (MDN != null) {
             MDN.setMessage(this);
         }
+        
+        customOuterMimeHeaders = new HashMap<String, String>();
     }
 
     private void writeObject(java.io.ObjectOutputStream out)

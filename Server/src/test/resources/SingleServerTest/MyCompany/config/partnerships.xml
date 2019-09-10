@@ -1,0 +1,94 @@
+<partnerships>
+    <partner name="MyCompany"
+             as2_id="MyCompany_OID"
+             x509_alias="mycompany"
+             email="as2msgs@openas2.com"/>
+
+    <partner name="PartnerA"
+             as2_id="PartnerA_OID"
+             x509_alias="partnera"
+             email="as2msgs@partnera.com"/>
+
+    <partner name="PartnerB"
+             as2_id="PartnerB_OID"
+             x509_alias="partnerb"
+             email="as2msgs@partnerb.com"/>
+
+    <partnership name="MyCompany-to-PartnerA">
+        <sender name="MyCompany"/>
+        <receiver name="PartnerA"/>
+        <attribute name="protocol" value="as2"/>
+        <attribute name="content_transfer_encoding" value="binary"/>
+        <attribute name="compression_type" value="ZLIB"/>
+        <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
+        <attribute name="as2_url" value="http://as2.partnera.com:4080"/>
+        <attribute name="as2_mdn_to" value="edi@myCompany.com"/>
+        <attribute name="as2_mdn_options"
+                   value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        <attribute name="encrypt" value="3DES"/>
+        <attribute name="sign" value="SHA256"/>
+        <attribute name="resend_max_retries" value="3"/>
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="false"/>
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+    </partnership>
+    <partnership name="PartnerA-to-MyCompany">
+        <sender name="PartnerA"/>
+        <receiver name="MyCompany"/>
+        <attribute name="protocol" value="as2"/>
+        <attribute name="content_transfer_encoding" value="binary"/>
+        <attribute name="compression_type" value="ZLIB"/>
+        <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
+        <attribute name="as2_url" value="http://localhost:10080"/>
+        <attribute name="as2_mdn_to" value="edi@parnera.com"/>
+        <attribute name="as2_mdn_options"
+                   value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        <attribute name="encrypt" value="3DES"/>
+        <attribute name="sign" value="SHA256"/>
+        <attribute name="resend_max_retries" value="3"/>
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="false"/>
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+    </partnership>
+
+    <partnership name="MyCompany-to-PartnerB">
+        <sender name="MyCompany"/>
+        <receiver name="PartnerB"/>
+        <attribute name="protocol" value="as2"/>
+        <attribute name="content_transfer_encoding" value="8bit"/>
+        <attribute name="compression_type" value="ZLIB"/>
+        <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
+        <attribute name="as2_url" value="https://as2.partnerb.com:8443"/>
+        <attribute name="as2_mdn_to" value="edi@myCompany.org"/>
+        <attribute name="as2_mdn_options"
+                   value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        <attribute name="encrypt" value="3DES"/>
+        <attribute name="sign" value="SHA1"/>
+        <attribute name="resend_max_retries" value="3"/>
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="false"/>
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+    </partnership>
+    <partnership name="PartnerB-to-MyCompany">
+        <sender name="PartnerB"/>
+        <receiver name="MyCompany"/>
+        <attribute name="protocol" value="as2"/>
+        <attribute name="content_transfer_encoding" value="8bit"/>
+        <attribute name="compression_type" value="ZLIB"/>
+        <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
+        <attribute name="as2_url" value="http://localhost:10080"/>
+        <attribute name="as2_mdn_to" value="edi@partnerb.com"/>
+        <attribute name="as2_receipt_option" value="https://as2.partnerb.com:8444"/>
+        <attribute name="as2_mdn_options"
+                   value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        <attribute name="encrypt" value="3DES"/>
+        <attribute name="sign" value="SHA256"/>
+        <attribute name="resend_max_retries" value="3"/>
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+        <attribute name="rename_digest_to_old_name" value="false"/>
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+    </partnership>
+
+
+</partnerships>
+

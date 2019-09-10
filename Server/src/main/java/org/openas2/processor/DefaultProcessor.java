@@ -105,7 +105,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                 throw e;
             }
         }
-        logger.info(activeModules.size() + " active module(s) started.");
+        if (logger.isInfoEnabled()) logger.info(activeModules.size() + " active module(s) started.");
     }
 
     public void stopActiveModules()
@@ -121,7 +121,8 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         		{
         			activeModule.stop();
         			stopCnt++;
-                    logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " stopped.");
+        			if (logger.isInfoEnabled()) 
+        				logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " stopped.");
         		}
             } catch (OpenAS2Exception e)
             {
@@ -135,6 +136,52 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         	else logger.info("No active module(s) are running.");
         }
     }
+
+	public boolean checkActiveModules(List<String> failures)
+	{
+		boolean isHealthy = true;
+		List<ActiveModule> activeModules = getActiveModules();
+		for (ActiveModule activeModule : activeModules)
+		{
+			if (logger.isTraceEnabled())
+				logger.trace("Checking health of module: " + ClassUtils.getSimpleName(activeModule.getClass()));
+			if (!activeModule.healthcheck(failures))
+			{
+				isHealthy =  false;
+				if (logger.isTraceEnabled())
+					logger.trace(ClassUtils.getSimpleName(activeModule.getClass()) + " healthcheck failed.");
+			}
+			if (!activeModule.isRunning())
+			{
+				isHealthy =  false;
+				String msg = ClassUtils.getSimpleName(activeModule.getClass()) + " is active but not running.";
+				failures.add(msg);
+				if (logger.isTraceEnabled())
+					logger.trace(msg);
+			}
+		}
+		if (logger.isTraceEnabled())
+			logger.trace(activeModules.size() + " active module(s) heathy? " + isHealthy);
+		return isHealthy;
+	}
+
+	/*
+	 * Find all active modules that are an instance of the given class
+	 * @param clazz The class of interest
+	 * @returns A list of active modules that match the requested class
+	 */
+	public List<ActiveModule> getActiveModulesByClass(Class<?> clazz)
+	{
+		List<ActiveModule> classModuleInstances = new ArrayList<ActiveModule>();
+		List<ActiveModule> activeModules = getActiveModules();
+		for (ActiveModule activeModule : activeModules)
+		{
+			if (clazz.isInstance(activeModule)) {
+			    classModuleInstances.add(activeModule);
+			}
+		}
+		return classModuleInstances;
+	}
 
     @Override
     public void destroy() throws Exception
