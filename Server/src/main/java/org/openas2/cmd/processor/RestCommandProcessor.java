@@ -70,9 +70,14 @@ public class RestCommandProcessor extends BaseCommandProcessor {
 
     @Override
     public void destroy() throws Exception {
-        super.destroy();
-        server.shutdown();
-        logger.info(this.getName() + " destroyed...");
+        try {
+            super.destroy();
+            server.shutdown();
+            logger.info(this.getName() + " destroyed...");
+        }catch(Exception e) {
+            logger.error("failed to cleanup command processor", e);
+            throw e;
+        }
     }
 
     @Override

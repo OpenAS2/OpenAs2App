@@ -144,8 +144,8 @@ public class ControlResource {
     @HEAD
     @Path("/{resource}{action:(/[^/]+?)?}{id:(/[^/]+?)?}")
     public Response headCommand(@PathParam("param") String command) {
-        String output = "HEAD:Jersey say : " + command;
-        return Response.status(200).entity(output).build();
+        // Just an Empty response
+        return Response.status(200).build();
     }
 
     

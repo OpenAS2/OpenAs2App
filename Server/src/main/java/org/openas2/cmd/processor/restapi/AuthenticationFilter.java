@@ -82,7 +82,7 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
             final String username = tokenizer.nextToken();
             final String password = tokenizer.nextToken();
 
-            //Verifying Username and password
+            //Log Username and password for verification
             logger.info("Username: "+username);
             if(password.length() > 0 ) {
                 logger.info("password: "+new String(new char[password.length()]).replace("\0", "*")); 
