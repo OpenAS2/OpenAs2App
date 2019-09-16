@@ -167,3 +167,97 @@
 		
 	</processor>
 </openas2>
+			errordir="$properties.storageBaseDir$/toAny/error/$msg.sender.as2_id$-$msg.receiver.as2_id"
+			interval="5"
+			delimiters="-"
+			mergeextratokens="true"
+			sendfilename="true"
+			format="sender.as2_id, receiver.as2_id, attributes.filename"
+			mimetype="application/EDI-X12" />
+
+		<!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
+		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+			outboxdir="$properties.storageBaseDir$/toPartnerA/"
+			errordir="$properties.storageBaseDir$/toPartnerA/error/$date.YYYY$/$date.MM$"
+			stored_error_filename="$msg.attributes.filename$-$date.YYYY$-$date.MM$-$msg.headers.message-id$"
+			sentdir="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id/sent/$date.YYYY$/$date.MM$"
+			stored_sent_filename="$msg.attributes.filename$-$msg.headers.message-id$"
+			interval="5"
+			defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerA_OID"
+			sendfilename="true"
+			mimetype="application/EDI-X12"/>
+
+		<!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
+		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+			outboxdir="$properties.storageBaseDir$/toPartnerB"
+			errordir="$properties.storageBaseDir$/toPartnerB/error"
+			interval="5"
+			defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerB_OID"
+			sendfilename="true"
+			mimetype="application/EDI-X12"/>
+
+		<module classname="org.openas2.processor.msgtracking.DbTrackingModule"
+			use_embedded_db="true"
+			force_load_jdbc_driver="false"
+			db_user="sa"
+			db_pwd="OpenAS2"
+			db_name="openas2"
+			table_name="msg_metadata"
+			db_directory="%home%/DB"
+			jdbc_driver="org.h2.Driver"
+			jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
+			sql_escape_character="'"
+			tcp_server_start="true"
+			tcp_server_port="9092"
+			tcp_server_password="openas2"
+		/>
+
+		<module classname="org.openas2.processor.storage.MDNFileModule"
+			filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
+			protocol="as2"
+			tempdir="$properties.storageBaseDir$/temp"/>
+
+		<module classname="org.openas2.processor.storage.MessageFileModule"
+			filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
+			header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
+			protocol="as2"
+			tempdir="$properties.storageBaseDir$/temp"/>
+
+		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"
+			port="10080"
+			errordir="$properties.storageBaseDir$/inbox/error"
+			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
+		<!-- Example HTTPS configuration
+		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"
+			port="10443"
+			protocol="https"
+			ssl_protocol="TLS"
+			ssl_keystore="%home%/ssl_certs.jks"
+			ssl_keystore_password="testas2"
+			errordir="$properties.storageBaseDir$/inbox/error"
+			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
+			-->
+		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
+			port="10081"/>
+		<!-- Example HTTPS configuration
+		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
+			port="10444"
+			protocol="https"
+			ssl_protocol="TLS"
+			ssl_keystore="%home%/ssl_certs.jks"
+			ssl_keystore_password="testas2"
+			/>
+		-->
+
+		<module classname="org.openas2.processor.resender.DirectoryResenderModule"
+			resenddir="$properties.storageBaseDir$/resend"
+			errordir="$properties.storageBaseDir$/resend/error"
+			resenddelay="60"/>
+		<!--
+		<module classname="org.openas2.processor.receiver.HealthCheckModule"
+			port="10099"/>
+		-->
+		
+		
+	</processor>
+</openas2>
