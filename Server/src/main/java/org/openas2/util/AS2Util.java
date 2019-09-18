@@ -736,6 +736,7 @@ public class AS2Util {
 				    .add("rand", new RandomParameters());
 			    tgtFileName = ParameterParser.parse(targetFilenameUnparsed, parser);
 			}
+			tgtFileName = IOUtil.cleanFilename(tgtFileName);
 			tgtFile = new File(tgtDir + "/" + tgtFileName);
 			tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false);
 			isMoved = true;
