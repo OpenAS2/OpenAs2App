@@ -1,3 +1,9 @@
+Version 2.9.4 - 2019-09-18
+This is a minior bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Clean sent/error file names for file system compatibility
+
 Version 2.9.3 - 2019-09-05
 This is a minior enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
