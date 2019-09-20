@@ -1,8 +1,6 @@
 language: java
 before_install:
   - sudo apt-get update
-before_script:
-  - java -version
 notifications:
   email: false
 env:
@@ -24,4 +22,5 @@ matrix:
       before_install:
         - choco install openjdk
         - choco install maven
+        - export JAVA_HOME="C:\Program Files\OpenJDK"
       script: export JAVA_HOME="C:\Program Files\OpenJDK" && ./mvnw test
