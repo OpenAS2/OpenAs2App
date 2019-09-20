@@ -15,8 +15,8 @@ matrix:
       language: java
       before_install:
         - sudo apt-get update
-        - sudo apt-get -y install openjdk8
         - sudo apt list | grep jdk
+        - sudo apt-get -y install openjdk8
       script: ./mvnw.cmd test
     - os: windows
       language: shell
