@@ -20,4 +20,6 @@ matrix:
         - choco install openjdk
         - choco install maven
         - export JAVA_HOME="C:\Program Files\OpenJDK"
+        - ls -l $JAVA_HOME
+        - ls -l $JAVA_HOME/bin
       script: export JAVA_HOME="C:\Program Files\OpenJDK" && ./mvnw test
