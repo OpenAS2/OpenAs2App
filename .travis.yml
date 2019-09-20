@@ -24,4 +24,4 @@ matrix:
       before_install:
         - choco install openjdk
         - choco install maven
-      script: ./mvnw.cmd test
+      script: ./mvnw test
