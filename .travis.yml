@@ -16,7 +16,8 @@ matrix:
       before_install:
         - sudo apt-get update
         - sudo apt list | grep jdk
-        - sudo apt-get -y install openjdk8
+        - sudo apt-get -y install openjdk-8-jdk-headless
+        - sudo update-alternatives --display java
       script: ./mvnw.cmd test
     - os: windows
       language: shell
