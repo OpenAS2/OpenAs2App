@@ -1,19 +1,18 @@
 #              OpenAS2 Server
-#              Version 2.9.3
+#              Version 2.9.4
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.3
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.4
 
-The release download file is: OpenAS2Server-2.9.3.zip
+The release download file is: OpenAS2Server-2.9.4.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.9.3 - 2019-09-05
-This is a minior enhancement release:
+Version 2.9.4 - 2019-09-18
+This is a minior bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
 
-  1. Allowed defining a custom fallback file name for received fiels where partner does not send file name. See section 6.3 of the OpenAS2HowTo and the as2_receive_message_filename_fallback attribute.
-  2. Upgraded BouncyCastle libraries to 1.62 to support Java 12
+  1. Clean sent/error file names for file system compatibility
  
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
