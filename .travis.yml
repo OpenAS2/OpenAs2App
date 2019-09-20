@@ -24,4 +24,4 @@ matrix:
       before_install:
         - choco install openjdk
         - choco install maven
-      script: ./mvnw test
+      script: export JAVA_HOME="C:\Program Files\OpenJDK" && ./mvnw test
