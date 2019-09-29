@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
 		<groupId>net.sf.openas2</groupId>
 		<artifactId>OpenAS2</artifactId>
-		<version>2.9.3</version>
+		<version>2.9.4</version>
 	</parent>
 
 	<artifactId>openas2-server</artifactId>
@@ -191,7 +191,7 @@
 			<artifactId>sentry</artifactId>
 			<version>1.2.2</version>
 		</dependency>
-	 <dependency>
+    <dependency>
 	  <groupId>org.glassfish.jersey.containers</groupId>
 	  <artifactId>jersey-container-grizzly2-http</artifactId>
 	  <version>2.25</version>
