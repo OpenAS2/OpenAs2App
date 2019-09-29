@@ -1,3 +1,10 @@
+Version 2.10.0 - 2019-09-29
+This is a minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Components in the config.xml file are now enabled and disabled by an "enabled" attribute on the component. See the documentation in the section 6 "Application Configuration" on how this works.
+  2. Support using a custom properties file to override properties in the config.xml file. See the documentation in the section 6.1 "System Properties" on how this works.
+
 Version 2.9.4 - 2019-09-18
 This is a minior bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
