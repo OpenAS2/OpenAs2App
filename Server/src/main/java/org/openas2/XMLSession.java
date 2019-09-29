@@ -2,18 +2,22 @@ package org.openas2;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.xml.transform.TransformerException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -138,6 +142,35 @@ public class XMLSession extends BaseSession {
 	properties.put(Properties.APP_TITLE_PROP, getAppTitle());
 	properties.put(Properties.APP_VERSION_PROP, getAppVersion());
 	Properties.setProperties(properties);
+	String appPropsFile = System.getProperty("openas2.properties.file");
+        if (appPropsFile != null && appPropsFile.length() > 1)
+        {
+            java.util.Properties appProps = new java.util.Properties();
+            FileInputStream fis = null;
+            try {
+        	fis = new FileInputStream(appPropsFile);
+		appProps.load(fis);
+		Enumeration enuKeys = appProps.keys();
+		while (enuKeys.hasMoreElements()) {
+		    String key = (String) enuKeys.nextElement();
+		    Properties.setProperty(key, appProps.getProperty(key));
+		}
+		
+	    } catch (FileNotFoundException e) {
+		LOGGER.warn("Custom properties file specified but cannot be located:" + appPropsFile);
+	    } catch (IOException e) {
+		LOGGER.warn("Custom properties file load failed:" + appPropsFile, e);
+	    }
+            finally {
+        	if (fis != null)
+		    try {
+			fis.close();
+		    } catch (IOException e) {
+			// TODO Auto-generated catch block
+			LOGGER.warn("Failed to close properties fiel input stream.", e);
+		    }
+            }
+        }
     }
 
     private void loadCertificates(Node rootNode) throws OpenAS2Exception {
@@ -170,7 +203,11 @@ public class XMLSession extends BaseSession {
 	    logger = loggers.item(i);
 
 	    if (logger.getNodeName().equals("logger")) {
-		loadLogger(manager, logger);
+		if ("true".equalsIgnoreCase(XMLUtil.getNodeAttributeValue(logger, "enabled", true)))
+		    loadLogger(manager, logger);
+		else {
+		    LOGGER.info("Logger is disabled ... ignoring: " + XMLUtil.getNodeAttributeValue(logger, "classname", false));
+		}
 	    }
 	}
     }
@@ -192,7 +229,11 @@ public class XMLSession extends BaseSession {
 	    processor = cmdProcessor.item(i);
 
 	    if (processor.getNodeName().equals("commandProcessor")) {
-		loadCommandProcessor(cmdManager, processor);
+		if ("true".equalsIgnoreCase(XMLUtil.getNodeAttributeValue(processor, "enabled", true)))
+		    loadCommandProcessor(cmdManager, processor);
+		else {
+		    LOGGER.info("Command porcessor is disabled ... ignoring: " + XMLUtil.getNodeAttributeValue(processor, "classname", false));
+		}
 	    }
 	}
     }
@@ -224,7 +265,18 @@ public class XMLSession extends BaseSession {
 	    module = modules.item(i);
 
 	    if (module.getNodeName().equals("module")) {
-		loadProcessorModule(proc, module);
+		// Allow no enabled attrib to default to "true"
+		String enabledFlag = XMLUtil.getNodeAttributeValue(module, "enabled", true);
+		if (enabledFlag == null || "true".equalsIgnoreCase(enabledFlag))
+		    loadProcessorModule(proc, module);
+		else {
+		    try {
+			LOGGER.info("Module is disabled ... ignoring: " + XMLUtil.toString(module, true));
+		    } catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		    }
+		}
 	    }
 	}
     }
