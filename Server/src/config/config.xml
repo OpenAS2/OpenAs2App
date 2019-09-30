@@ -47,16 +47,16 @@
 		filename="%home%/commands.xml"/>
 
 	<commandProcessors>
-                <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
-                        baseuri="http://localhost:8080" 
-                        userid="userID" 
-                        password="pWd" />
 		<commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
 		<commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"
 			portId="14321"
 			userid="userID"
 			password="pWd"
 			response_format="xml"/>
+    <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
+                        baseuri="http://localhost:8080" 
+                        userid="userID" 
+                        password="pWd" />
 	</commandProcessors>
 	<processor classname="org.openas2.processor.DefaultProcessor"
 		pendingMDN="$properties.storageBaseDir$/pendingMDN3"
