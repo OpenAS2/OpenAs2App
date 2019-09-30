@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.mail.Header;
@@ -81,9 +83,15 @@ public class RestApiTest {
     public void shouldRespondWithVersion() throws Exception {
         String url = "http://127.0.0.1:8080/api";
         InternetHeaders headers = new InternetHeaders();
+        Map<String,String> options = new  HashMap<String,String>();
+        options.put(HTTPUtil.PARAM_CONNECT_TIMEOUT, "15");
+        options.put(HTTPUtil.PARAM_READ_TIMEOUT, "5");
+        options.put(HTTPUtil.PARAM_SOCKET_TIMEOUT,"5");
+        options.put(HTTPUtil.PARAM_HTTP_USER, "userID");
+        options.put(HTTPUtil.PARAM_HTTP_PWD, "pWd");
         byte[] buffer=new byte[1024];
         ByteArrayInputStream inputStream = new ByteArrayInputStream(buffer);
-        HTTPUtil.execRequest("GET", url, headers.getAllHeaders(), null, inputStream, null, 0);
+        HTTPUtil.execRequest("GET", url, headers.getAllHeaders(), null, inputStream, options, 0);
         assertThat("Getting API version and server info", new String(buffer), containsString(serverInstance.getSession().getAppTitle()));
     }
 }
