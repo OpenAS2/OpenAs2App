@@ -84,9 +84,9 @@ public class RestApiTest {
         String url = "http://127.0.0.1:8080/api";
         InternetHeaders headers = new InternetHeaders();
         Map<String,String> options = new  HashMap<String,String>();
-        options.put(HTTPUtil.PARAM_CONNECT_TIMEOUT, "15");
-        options.put(HTTPUtil.PARAM_READ_TIMEOUT, "5");
-        options.put(HTTPUtil.PARAM_SOCKET_TIMEOUT,"5");
+        options.put(HTTPUtil.PARAM_CONNECT_TIMEOUT, "35");
+        options.put(HTTPUtil.PARAM_READ_TIMEOUT, "15");
+        options.put(HTTPUtil.PARAM_SOCKET_TIMEOUT,"15");
         options.put(HTTPUtil.PARAM_HTTP_USER, "userID");
         options.put(HTTPUtil.PARAM_HTTP_PWD, "pWd");
         byte[] buffer=new byte[1024];
