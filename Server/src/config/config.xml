@@ -1,173 +1,3 @@
-<<<<<<< HEAD
-<openas2>
-	<properties
-		storageBaseDir="%home%/../data"
-		log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
-		sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
-		as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
-		as2_async_mdn_url="http://localhost:10081"
-		as2_receive_message_filename_fallback="$rand.shortUUID$"
-	/>
-	<certificates classname="org.openas2.cert.PKCS12CertificateFactory"
-		filename="%home%/as2_certs.p12"
-		password="testas2"
-		interval="300"/>
-
-	<partnerships classname="org.openas2.partner.XMLPartnershipFactory"
-		filename="%home%/partnerships.xml"
-		interval="120"/>
-
-	<loggers>
-		<logger classname="org.openas2.logging.ConsoleLogger"/>
-
-		<!-- Remove this comment to enable emailing of exceptions
-		<logger classname="org.openas2.logging.EmailLogger"
-			only_active_msg_transfer_errors="false"
-			log_exception_trace="false"
-			javax.mail.properties.file="%home%/java.mail.properties"
-			from="openas2"
-			to="your email address"
-			smtpserver="your smtp server"
-			smtpport="your smtp server port"
-			smtpauth="true"
-			smtpuser="mySmtpUserId"
-			smtppwd="mySmtpPwd"
-			subject="$exception.name$: $exception.message$"
-			bodytemplate="%home%/emailtemplate.txt"/>
-		-->
-
-		<logger classname="org.openas2.logging.FileLogger"
-			filename="%home%/../logs/log-$date.yyyyMMdd$.txt"/>
-		<!-- Remove this comment to enable socket logging
-		<logger classname="org.openas2.logging.SocketLogger"
-			ipaddr="127.0.0.1"
-			portid="19999"/>
-		-->
-	</loggers>
-	<commands classname="org.openas2.cmd.XMLCommandRegistry"
-		filename="%home%/commands.xml"/>
-
-	<commandProcessors>
-		<commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"/>
-		<commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"
-			portId="14321"
-			userid="userID"
-			password="pWd"
-			response_format="xml"/>
-                <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
-                        baseuri="https://localhost:8443" 
-                        userid="userID" 
-                        password="pWd" />
-	</commandProcessors>
-	<processor classname="org.openas2.processor.DefaultProcessor"
-		pendingMDN="$properties.storageBaseDir$/pendingMDN3"
-		pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"
-	>
-		<module classname="org.openas2.processor.sender.AS2SenderModule"
-			retries="5"/>
-
-		<module classname="org.openas2.processor.sender.MDNSenderModule"
-			retries="3"/>
-
-		<!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
-		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
-		     The name of the file sent to the partner will be "OrderID-745634.edi" -->
-		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="$properties.storageBaseDir$/toAny"
-			errordir="$properties.storageBaseDir$/toAny/error/$msg.sender.as2_id$-$msg.receiver.as2_id$"
-			interval="5"
-			delimiters="-"
-			mergeextratokens="true"
-			sendfilename="true"
-			format="sender.as2_id, receiver.as2_id, attributes.filename"
-			mimetype="application/EDI-X12" />
-
-		<!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
-		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="$properties.storageBaseDir$/toPartnerA/"
-			errordir="$properties.storageBaseDir$/toPartnerA/error/$date.YYYY$/$date.MM$"
-			stored_error_filename="$msg.attributes.filename$-$date.YYYY$-$date.MM$-$msg.headers.message-id$"
-			sentdir="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/sent/$date.YYYY$/$date.MM$"
-			stored_sent_filename="$msg.attributes.filename$-$msg.headers.message-id$"
-			interval="5"
-			defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerA_OID"
-			sendfilename="true"
-			mimetype="application/EDI-X12"/>
-
-		<!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
-		<module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-			outboxdir="$properties.storageBaseDir$/toPartnerB"
-			errordir="$properties.storageBaseDir$/toPartnerB/error"
-			interval="5"
-			defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerB_OID"
-			sendfilename="true"
-			mimetype="application/EDI-X12"/>
-
-		<module classname="org.openas2.processor.msgtracking.DbTrackingModule"
-			use_embedded_db="true"
-			force_load_jdbc_driver="false"
-			db_user="sa"
-			db_pwd="OpenAS2"
-			db_name="openas2"
-			table_name="msg_metadata"
-			db_directory="%home%/DB"
-			jdbc_driver="org.h2.Driver"
-			jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
-			sql_escape_character="'"
-			tcp_server_start="true"
-			tcp_server_port="9092"
-			tcp_server_password="openas2"
-		/>
-
-		<module classname="org.openas2.processor.storage.MDNFileModule"
-			filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
-			protocol="as2"
-			tempdir="$properties.storageBaseDir$/temp"/>
-
-		<module classname="org.openas2.processor.storage.MessageFileModule"
-			filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
-			header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
-			protocol="as2"
-			tempdir="$properties.storageBaseDir$/temp"/>
-
-		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"
-			port="10080"
-			errordir="$properties.storageBaseDir$/inbox/error"
-			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
-		<!-- Example HTTPS configuration
-		<module classname="org.openas2.processor.receiver.AS2ReceiverModule"
-			port="10443"
-			protocol="https"
-			ssl_protocol="TLS"
-			ssl_keystore="%home%/ssl_certs.jks"
-			ssl_keystore_password="testas2"
-			errordir="$properties.storageBaseDir$/inbox/error"
-			errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
-			-->
-		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
-			port="10081"/>
-		<!-- Example HTTPS configuration
-		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
-			port="10444"
-			protocol="https"
-			ssl_protocol="TLS"
-			ssl_keystore="%home%/ssl_certs.jks"
-			ssl_keystore_password="testas2"
-			/>
-		-->
-
-		<module classname="org.openas2.processor.resender.DirectoryResenderModule"
-			resenddir="$properties.storageBaseDir$/resend"
-			errordir="$properties.storageBaseDir$/resend/error"
-			resenddelay="60"/>
-		<!--
-		<module classname="org.openas2.processor.receiver.HealthCheckModule"
-			port="10099"/>
-		-->
-		
-		
-	</processor>
-=======
 <?xml version="1.0" encoding="UTF-8"?>
 <openas2>
    <properties storageBaseDir="%home%/../data"
@@ -182,6 +12,7 @@
                email.logger.enabled="false"
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
+               restapi.command.procesor.enabled="false"
                module.AS2SenderModule.enabled="true"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
@@ -230,13 +61,18 @@
              filename="%home%/commands.xml"/>
    <commandProcessors>
       <commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"
-                        enabled="$properties.console_command_processor.enabled"/>
+                        enabled="$properties.console_command_processor.enabled$"/>
       <commandProcessor enabled="$properties.socket.command.processor.enabled$"
                         classname="org.openas2.cmd.processor.SocketCommandProcessor"
                         portId="14321"
                         userid="userID"
                         password="pWd"
                         response_format="xml"/>
+      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
+                        enabled="$properties.restapi_command_processor.enabled$"
+                        baseuri="https://localhost:8443" 
+                        userid="userID" 
+                        password="pWd" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
               pendingMDN="$properties.storageBaseDir$/pendingMDN3"
@@ -337,5 +173,4 @@
               classname="org.openas2.processor.receiver.HealthCheckModule"
               port="10099"/>
    </processor>
->>>>>>> origin/master
 </openas2>

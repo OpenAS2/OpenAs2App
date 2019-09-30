@@ -27,6 +27,7 @@ import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.restapi.AuthenticationFilter;
+import org.openas2.cmd.processor.restapi.CORSResponseFilter;
 import org.openas2.cmd.processor.restapi.ControlResource;
 
 /**
@@ -41,8 +42,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
 
     @Override
     public void processCommand() throws Exception {
-        //throw new UnsupportedOperationException("Not supported yet."); 
-        logger.info("Rest API Ready");
+        //throw new UnsupportedOperationException("Commands received by HTTP Server thread"); 
     }
 
     public CommandResult feedCommand(String commandText, List<String> params) throws WrappedException, Exception {
@@ -75,7 +75,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             server.shutdown();
             logger.info(this.getName() + " destroyed...");
         }catch(Exception e) {
-            logger.error("failed to cleanup command processor", e);
+            logger.error("failed to cleanup RestAPI command processor", e);
             throw e;
         }
     }
@@ -86,17 +86,17 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             super.init(session, parameters);
             logger.info(this.getName() + " initialized...");
             // create a resource config that scans for JAX-RS resources and providers
-            // in com.example.rest package
-            final ResourceConfig rc = new ResourceConfig();//.packages("org.openas2.cmd.processor.restapi");
+            final ResourceConfig rc = new ResourceConfig();
             rc.register(new AuthenticationFilter(
                     parameters.getOrDefault("userid","userid"),
                     parameters.getOrDefault("password","pWd")
-            )).register(new ControlResource(this));
+            )).register(new ControlResource(this))
+            .register(new CORSResponseFilter());
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
             
             
             logger.info("Creating and starting a new instance of grizzly http server");
-            logger.info("Exposing the Jersey application at "+BASE_URI);
+            logger.info("Exposing the Jersey application at "+baseUri);
             if (baseUri.getScheme().equalsIgnoreCase("https")) {
                 //Secure Server
                 SSLContextConfigurator sslCon = new SSLContextConfigurator();

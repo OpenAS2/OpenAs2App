@@ -20,6 +20,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
@@ -35,7 +36,7 @@ import org.openas2.cmd.processor.RestCommandProcessor;
  *
  * @author javier
  */
-@Path("control")
+@Path("api")
 public class ControlResource {
     private final RestCommandProcessor processor;
     @Context UriInfo ui;
@@ -56,7 +57,13 @@ public class ControlResource {
     public String getVersion() {
         return processor.getSession().getAppTitle();
     }
-    
+    @PermitAll
+    @OPTIONS
+    @Path("{path:(.*)}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getCorsOptions() {
+        return Response.ok().build();
+    }
     @RolesAllowed("ADMIN")
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
