@@ -37,13 +37,13 @@ import org.openas2.cmd.processor.RestCommandProcessor;
  * @author javier
  */
 @Path("api")
-public class ControlResource {
+public class ApiResource {
     private final RestCommandProcessor processor;
     @Context UriInfo ui;
     @Context Request request;
     private final ObjectMapper mapper;
     
-    public ControlResource(RestCommandProcessor processor) {
+    public ApiResource(RestCommandProcessor processor) {
         this.processor = processor;
         // create the mapper
         mapper = new ObjectMapper();
@@ -87,7 +87,7 @@ public class ControlResource {
             CommandResult output = processor.feedCommand(resource,params);
             return output;
         } catch (Exception ex) {
-            Logger.getLogger(ControlResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
             throw ex;
            // return Response.status(506).entity( ex.getMessage()).build();
         }
@@ -124,7 +124,7 @@ public class ControlResource {
             CommandResult output = processor.feedCommand(resource,params);
             return output;
         } catch (Exception ex) {
-            Logger.getLogger(ControlResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
             throw ex;
            // return Response.status(506).entity( ex.getMessage()).build();
         }

@@ -29,7 +29,7 @@ import org.bouncycastle.util.encoders.Base64;
  * @author javier
  */
 @Provider
-public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequestFilter {
+public class AuthenticationRequestFilter implements javax.ws.rs.container.ContainerRequestFilter {
 
     @Context
     private ResourceInfo resourceInfo;
@@ -42,8 +42,8 @@ public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequ
             .entity("Access blocked for all users !!").build();
     private String adminUsername;
     private String adminPassword;
-    private Log logger = LogFactory.getLog(AuthenticationFilter.class.getSimpleName());
-    public AuthenticationFilter(String adminUsername, String adminPassword) {
+    private Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
+    public AuthenticationRequestFilter(String adminUsername, String adminPassword) {
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
     }

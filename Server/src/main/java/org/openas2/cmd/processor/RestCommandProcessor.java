@@ -26,9 +26,10 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
-import org.openas2.cmd.processor.restapi.AuthenticationFilter;
+import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
 import org.openas2.cmd.processor.restapi.CORSResponseFilter;
-import org.openas2.cmd.processor.restapi.ControlResource;
+import org.openas2.cmd.processor.restapi.ApiResource;
+import org.openas2.cmd.processor.restapi.LoggerRequestFilter;
 
 /**
  *
@@ -87,11 +88,13 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             logger.info(this.getName() + " initialized...");
             // create a resource config that scans for JAX-RS resources and providers
             final ResourceConfig rc = new ResourceConfig();
-            rc.register(new AuthenticationFilter(
+            rc.register(new LoggerRequestFilter(logger))
+                .register(new AuthenticationRequestFilter(
                     parameters.getOrDefault("userid","userid"),
                     parameters.getOrDefault("password","pWd")
-            )).register(new ControlResource(this))
-            .register(new CORSResponseFilter());
+                ))
+                .register(new ApiResource(this))
+                .register(new CORSResponseFilter());
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
             
             
@@ -100,9 +103,13 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             if (baseUri.getScheme().equalsIgnoreCase("https")) {
                 //Secure Server
                 SSLContextConfigurator sslCon = new SSLContextConfigurator();
-                
-                sslCon.setKeyStoreFile(parameters.get("ssl_keystore"));
+                String keystore = parameters.get("ssl_keystore");
+                if(null == keystore) {
+                    throw new RuntimeException("Missing SSL Keystore parameter in the configuration. You cannot use SSL without a Certificate");
+                }
+                sslCon.setKeyStoreFile(keystore);
                 sslCon.setKeyStorePass(parameters.getOrDefault("ssl_keystore_password", ""));
+                sslCon.setSecurityProtocol(parameters.getOrDefault("ssl_protocol", "TLS"));
                 
                 GrizzlyHttpContainer container = (GrizzlyHttpContainer) ContainerFactory.createContainer(GrizzlyHttpContainer.class, rc);
                 SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslCon, false, false, false);
@@ -112,6 +119,9 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             }
             server.start();
         } catch (IOException ex) {
+            Logger.getLogger(RestCommandProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            throw new OpenAS2Exception(ex);
+        } catch (RuntimeException ex) {
             Logger.getLogger(RestCommandProcessor.class.getName()).log(Level.SEVERE, null, ex);
             throw new OpenAS2Exception(ex);
         }
