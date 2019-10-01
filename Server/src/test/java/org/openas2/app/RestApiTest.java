@@ -122,11 +122,11 @@ public class RestApiTest {
         buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/partner/list"),false);
         assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
         
-        buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/partnership/list"),false);
-        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
-        
-        buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/cert/list"),false);
-        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
+//        buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/partnership/list"),false);
+//        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
+//        
+//        buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/cert/list"),false);
+//        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
         
 //        buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/partner/list"),true);
 //        assertThat("Getting Partners API ", buffer, containsString("\"type\":\"OK\""));
