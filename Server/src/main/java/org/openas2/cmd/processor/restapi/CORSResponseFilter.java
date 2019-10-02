@@ -21,8 +21,8 @@ implements ContainerResponseFilter {
 		MultivaluedMap<String, Object> headers = responseContext.getHeaders();
                 
 		headers.add("Access-Control-Allow-Origin", requestContext.getHeaderString("Origin")); // for now, allows CORS requests coming from any source
-		headers.add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");			
-		headers.add("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+		headers.add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");			
+		headers.add("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization");
                 headers.add("Access-Control-Allow-Credentials", true);
                 headers.add("Access-Control-Max-Age", 86400);
                 headers.add("Vary", "Accept-Encoding, Origin");

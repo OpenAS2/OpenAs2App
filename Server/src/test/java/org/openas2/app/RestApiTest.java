@@ -1,5 +1,6 @@
 package org.openas2.app;
 
+import com.sun.xml.internal.messaging.saaj.util.Base64;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -90,14 +92,10 @@ public class RestApiTest {
 
     protected String doRequest(HttpRequestBase request,boolean withAuth) throws IOException {
         String buffer="";
-        HttpClientContext context = HttpClientContext.create();
         if(withAuth) {
-            UsernamePasswordCredentials creds = new UsernamePasswordCredentials("userID", "pWd");
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(AuthScope.ANY, creds);
-            context.setCredentialsProvider(credsProvider);
+           request.addHeader(new BasicHeader("Authorization","Basic "  + new String(Base64.encode("userID:pWd".getBytes()))  ));
         }
-        CloseableHttpResponse response = RestApiTest.httpclient.execute(request,context);
+        CloseableHttpResponse response = RestApiTest.httpclient.execute(request);
         try {
             
             HttpEntity entity = response.getEntity();
@@ -118,25 +116,31 @@ public class RestApiTest {
     public void shouldRespondWithVersion() throws Exception {
         String buffer=this.doRequest(new HttpGet("http://127.0.0.1:8080/api/"), false);
         assertThat("Getting API version and server info", buffer, containsString(serverInstance.getSession().getAppTitle()));
-        
-        buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/partner/list"),false);
+    }
+    @Test
+    public void shouldRespondWithAccessDenied() throws Exception {
+        String buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/partner/list"),false);
         assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
         
-//        buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/partnership/list"),false);
-//        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
-//        
-//        buffer = this.doRequest(new HttpPost("http://127.0.0.1:8080/api/cert/list"),false);
-//        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
+        buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/partnership/list"),false);
+        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
         
-//        buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/partner/list"),true);
-//        assertThat("Getting Partners API ", buffer, containsString("\"type\":\"OK\""));
-//        
-//        buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/partnership/list"),true);
-//        assertThat("Getting Partnership API ", buffer, containsString("\"type\":\"OK\""));
-//        
-//        buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/cert/list"),true);
-//        assertThat("Getting Certs API ", buffer, containsString("\"type\":\"OK\""));
-        
-        
+        buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/cert/list"),false);
+        assertThat("Getting API without user/pass", buffer, containsString("You cannot access this resource"));
+    }
+    @Test
+    public void shouldRespondWithPartners() throws Exception {
+        String buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/partner/list"),true);
+        assertThat("Getting Partners API ", buffer, containsString("\"type\":\"OK\""));
+    }
+    @Test
+    public void shouldRespondWithPartnerships() throws Exception {
+        String buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/partnership/list"),true);
+        assertThat("Getting Partnership API ", buffer, containsString("\"type\":\"OK\""));
+    }
+    @Test
+    public void shouldRespondWithCerts() throws Exception {    
+        String buffer = this.doRequest(new HttpGet("http://127.0.0.1:8080/api/cert/list"),true);
+        assertThat("Getting Certs API ", buffer, containsString("\"type\":\"OK\""));
     }
 }

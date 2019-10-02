@@ -36,10 +36,6 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
 
     private static final String AUTHORIZATION_PROPERTY = "Authorization";
     private static final String AUTHENTICATION_SCHEME = "Basic";
-    private static final Response ACCESS_DENIED = Response.status(Response.Status.UNAUTHORIZED)
-            .entity("You cannot access this resource").build();
-    private static final Response ACCESS_FORBIDDEN = Response.status(Response.Status.FORBIDDEN)
-            .entity("Access blocked for all users !!").build();
     private String adminUsername;
     private String adminPassword;
     private Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
@@ -55,7 +51,9 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
         if (!method.isAnnotationPresent(PermitAll.class)) {
             //Access denied for all
             if (method.isAnnotationPresent(DenyAll.class)) {
-                requestContext.abortWith(ACCESS_FORBIDDEN);
+                requestContext.abortWith( 
+                        Response.status(Response.Status.FORBIDDEN)
+                                .entity("Access blocked for all users !!").build());
                 return;
             }
 
@@ -67,7 +65,11 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
 
             //If no authorization information present; block access
             if (authorization == null || authorization.isEmpty()) {
-                requestContext.abortWith(ACCESS_DENIED);
+   
+                requestContext.abortWith(Response.status(
+                        Response.Status.UNAUTHORIZED)
+                                .entity("You cannot access this resource").build()
+                );
                 return;
             }
 
@@ -97,7 +99,9 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
 
                 //Is user valid?
                 if (!isUserAllowed(username, password, rolesSet)) {
-                    requestContext.abortWith(ACCESS_DENIED);
+                    requestContext.abortWith(Response.status(
+                            Response.Status.UNAUTHORIZED)
+                                .entity("You cannot access this resource").build());
                     return;
                 }
             }

@@ -57,13 +57,15 @@ public class ApiResource {
     public String getVersion() {
         return processor.getSession().getAppTitle();
     }
+    
     @PermitAll
     @OPTIONS
-    @Path("{path:(.*)}")
+    @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getCorsOptions() {
         return Response.ok().build();
     }
+    
     @RolesAllowed("ADMIN")
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
