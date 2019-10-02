@@ -1,21 +1,14 @@
 package org.openas2.app;
 
-import com.sun.xml.internal.messaging.saaj.util.Base64;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
@@ -93,7 +86,7 @@ public class RestApiTest {
     protected String doRequest(HttpRequestBase request,boolean withAuth) throws IOException {
         String buffer="";
         if(withAuth) {
-           request.addHeader(new BasicHeader("Authorization","Basic "  + new String(Base64.encode("userID:pWd".getBytes()))  ));
+           request.addHeader(new BasicHeader("Authorization","Basic dXNlcklEOnBXZA=="));
         }
         CloseableHttpResponse response = RestApiTest.httpclient.execute(request);
         try {
