@@ -324,7 +324,7 @@ public class HTTPUtil {
 	 * @param inputStream
 	 *            Source stream for retrieving request data
 	 * @param options
-	 *            Any additional options for affecting request behaviour. Can be null.
+	 *            Any additional options for affecting request behaviour. Can NOT be null.
 	 * @param noChunkMaxSize
 	 *            The maximum size before chunking would need to be utilised. 0 disables check for chunking
 	 * @return ResponseWrapper

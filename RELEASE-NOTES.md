@@ -1,24 +1,35 @@
 #              OpenAS2 Server
-#              Version 2.9.4
+#              Version 2.10.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.9.4
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.10.0
 
-The release download file is: OpenAS2Server-2.9.4.zip
+The release download file is: OpenAS2Server-2.10.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.9.4 - 2019-09-18
-This is a minior bugfix release:
-       **IMPORTANT NOTE**: Please review upgrade notes if you are upgrading
+Version 2.10.0 - 2019-09-29
+This is a minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-  1. Clean sent/error file names for file system compatibility
- 
+  1. Components in the config.xml file are now enabled and disabled by an "enabled" attribute on the component. See the documentation in the section 6 "Application Configuration" on how this works.
+  2. Support using a custom properties file to override properties in the config.xml file. See the documentation in the section 6.1 "System Properties" on how this works.
+  3. If upgrading please see the upgrade notes to convert your config.xml
+
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
+
+### If upgrading from versions older than 2.9.4:
+      1. There is a script in the "upgrade" folder : <installDir>/bin/upgrade/config_transform.sh.
+         This script can be run without parameters to get usage message.
+         The simplest way to run it is to open a terminal in the upgrade folder and run:
+            config_transform.sh <path to old config.xml file>
+          This will produce a file named config.xml.new in the upgrade folder. Copy this file to the config.xml in the new OpenAS2 version.
+          Windows user can use the new Linux shell to run the above script or run this command from within the upgrade folder:
+         java -jar lib/saxon9he.jar -xsl:config.xslt  -o:config.xml.new -s:<path to old config.xml file>
 
 ### If upgrading from versions older than 2.9.0:
       1. Run the schema upgrade process as defined in the Appendix for the relevant database you are tracking messages in.

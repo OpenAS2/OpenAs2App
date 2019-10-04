@@ -19,7 +19,13 @@ public class CommandResult {
 		this.type = type;
 		getResults().add(msg);	
 	}
-	
+        
+	public CommandResult(String type, Object item) {
+		super();
+		this.type = type;
+		getResults().add(item);	
+	}
+        
 	public CommandResult(String type) {
 		super();
 		this.type = type;
