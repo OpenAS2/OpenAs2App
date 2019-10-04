@@ -23,6 +23,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
+import org.openas2.cmd.CommandResult;
 
 /**
  *
@@ -36,6 +37,8 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
 
     private static final String AUTHORIZATION_PROPERTY = "Authorization";
     private static final String AUTHENTICATION_SCHEME = "Basic";
+    private static final CommandResult ERROR_ACCESS_DENIED = new CommandResult(CommandResult.TYPE_ERROR, "You cannot access this resource");
+    private static final CommandResult ERROR_ACCESS_FORBIDDEN = new CommandResult(CommandResult.TYPE_ERROR,"Access blocked for all users !!");
     private String adminUsername;
     private String adminPassword;
     private Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
@@ -53,7 +56,7 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
             if (method.isAnnotationPresent(DenyAll.class)) {
                 requestContext.abortWith( 
                         Response.status(Response.Status.FORBIDDEN)
-                                .entity("Access blocked for all users !!").build());
+                                .entity(AuthenticationRequestFilter.ERROR_ACCESS_FORBIDDEN).build());
                 return;
             }
 
@@ -68,7 +71,7 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
    
                 requestContext.abortWith(Response.status(
                         Response.Status.UNAUTHORIZED)
-                                .entity("You cannot access this resource").build()
+                                .entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build()
                 );
                 return;
             }
@@ -101,7 +104,7 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
                 if (!isUserAllowed(username, password, rolesSet)) {
                     requestContext.abortWith(Response.status(
                             Response.Status.UNAUTHORIZED)
-                                .entity("You cannot access this resource").build());
+                                .entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
                     return;
                 }
             }

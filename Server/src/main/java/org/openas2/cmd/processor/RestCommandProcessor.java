@@ -27,7 +27,7 @@ import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
-import org.openas2.cmd.processor.restapi.CORSResponseFilter;
+import org.openas2.cmd.processor.restapi.CORSFilter;
 import org.openas2.cmd.processor.restapi.ApiResource;
 import org.openas2.cmd.processor.restapi.LoggerRequestFilter;
 
@@ -94,7 +94,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
                     parameters.getOrDefault("password","pWd")
                 ))
                 .register(new ApiResource(this))
-                .register(new CORSResponseFilter());
+                .register(new CORSFilter());
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
             
             

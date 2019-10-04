@@ -51,21 +51,13 @@ public class ApiResource {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
     
-    @PermitAll
+    @RolesAllowed("ADMIN")
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String getVersion() {
-        return processor.getSession().getAppTitle();
+    @Produces(MediaType.APPLICATION_JSON)
+    public CommandResult getVersion() {
+        return new CommandResult(CommandResult.TYPE_OK, processor.getSession().getAppTitle());
     }
-    
-    @PermitAll
-    @OPTIONS
-    @Path("/{resource}/{action}{id:(/[^/]+?)?}")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response getCorsOptions() {
-        return Response.ok().build();
-    }
-    
+
     @RolesAllowed("ADMIN")
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
