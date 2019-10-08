@@ -37,7 +37,7 @@ public class ViewCertCommand extends AliasedCertCommand {
 
 			Certificate cert = certFx.getCertificate(alias);
 
-			return new CommandResult(CommandResult.TYPE_OK, cert.toString());
+			return new CommandResult(CommandResult.TYPE_OK, cert);
 
 		}
 	}

@@ -107,7 +107,7 @@ public class RestApiTest {
     }
     @Test
     public void shouldRespondWithVersion() throws Exception {
-        String buffer=this.doRequest(new HttpGet("http://127.0.0.1:8080/api/"), false);
+        String buffer=this.doRequest(new HttpGet("http://127.0.0.1:8080/api/"), true);
         assertThat("Getting API version and server info", buffer, containsString(serverInstance.getSession().getAppTitle()));
     }
     @Test

@@ -42,6 +42,7 @@ public class CORSFilter
 
             headers.add("Access-Control-Max-Age", 86400);
             headers.add("Vary", "Accept-Encoding, Origin");
+            responseContext.setStatus(200);
         }
     }
 
