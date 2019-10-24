@@ -51,10 +51,12 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -385,9 +387,12 @@ public class HTTPUtil {
 		    new UsernamePasswordCredentials(httpUser, httpPwd));
 		httpBuilder.setDefaultCredentialsProvider(credentialsProvider);		
 	    }
-	    try (CloseableHttpClient httpClient = httpBuilder.build()) {
+            BasicHttpContext localcontext = new BasicHttpContext();
+            BasicScheme basicAuth = new BasicScheme();
+            localcontext.setAttribute("preemptive-auth", basicAuth);
+            try (CloseableHttpClient httpClient = httpBuilder.build()) {
 	        ProfilerStub transferStub = Profiler.startProfile();
-	        try (CloseableHttpResponse response = httpClient.execute(request)) {
+	        try (CloseableHttpResponse response = httpClient.execute(request, localcontext)) {
 	            ResponseWrapper resp = new ResponseWrapper(response);
 	            Profiler.endProfile(transferStub);
 	            resp.setTransferTimeMs( transferStub.getMilliseconds());
