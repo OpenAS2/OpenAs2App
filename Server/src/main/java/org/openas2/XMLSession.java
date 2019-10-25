@@ -232,7 +232,7 @@ public class XMLSession extends BaseSession {
 		if ("true".equalsIgnoreCase(XMLUtil.getNodeAttributeValue(processor, "enabled", true)))
 		    loadCommandProcessor(cmdManager, processor);
 		else {
-		    LOGGER.info("Command porcessor is disabled ... ignoring: " + XMLUtil.getNodeAttributeValue(processor, "classname", false));
+		    LOGGER.info("Command processor is disabled ... ignoring: " + XMLUtil.getNodeAttributeValue(processor, "classname", false));
 		}
 	    }
 	}

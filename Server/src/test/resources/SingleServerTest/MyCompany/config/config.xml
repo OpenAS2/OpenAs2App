@@ -12,6 +12,7 @@
                email.logger.enabled="false"
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
+               restapi.command.processor.enabled="false"
                module.AS2SenderModule.enabled="true"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
@@ -60,13 +61,18 @@
              filename="%home%/commands.xml"/>
    <commandProcessors>
       <commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"
-                        enabled="$properties.console_command_processor.enabled"/>
+                        enabled="$properties.console.command.processor.enabled$"/>
       <commandProcessor enabled="$properties.socket.command.processor.enabled$"
                         classname="org.openas2.cmd.processor.SocketCommandProcessor"
                         portId="14321"
                         userid="userID"
                         password="pWd"
                         response_format="xml"/>
+      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
+                        enabled="$properties.restapi.command.processor.enabled$"
+                        baseuri="http://127.0.0.1:8080" 
+                        userid="userID" 
+                        password="pWd" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
               pendingMDN="$properties.storageBaseDir$/pendingMDN3"
