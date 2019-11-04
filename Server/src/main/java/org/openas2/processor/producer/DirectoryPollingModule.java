@@ -1,4 +1,4 @@
-package org.openas2.processor.receiver;
+package org.openas2.processor.producer;
 
 import java.io.File;
 import java.io.FileInputStream;

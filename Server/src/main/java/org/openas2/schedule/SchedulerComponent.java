@@ -19,7 +19,7 @@ import org.openas2.processor.ProcessorModule;
  * Scheduler module for periodic tasks.
  */
 public class SchedulerComponent extends BaseComponent {
-
+    public static final String COMPID_SCHEDULER = "scheduler";
     public static final String PARAMETER_THREADS = "threads";
     //
     private static final int MIN_AMOUNT_OF_THREADS = 6;

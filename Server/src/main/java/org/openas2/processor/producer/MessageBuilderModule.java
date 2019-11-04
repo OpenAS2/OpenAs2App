@@ -1,4 +1,4 @@
-package org.openas2.processor.receiver;
+package org.openas2.processor.producer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +31,7 @@ import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.receiver.BaseReceiverModule;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;

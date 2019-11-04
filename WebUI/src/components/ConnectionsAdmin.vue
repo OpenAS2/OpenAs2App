@@ -40,17 +40,17 @@ export default {
                     },
                     { 
                         type: "select",
-                        name: "receiverIDs",
-                        label: "Receiving Partner",
-                        placeholder: "Connection's Receiver",
+                        name: "senderIDs",
+                        label: "Sending Partner",
+                        placeholder: "Connection's Sender",
                         list: [],
                         value: ""
                     },
                     { 
                         type: "select",
-                        name: "senderIDs",
-                        label: "Sending Partner",
-                        placeholder: "Connection's Sender",
+                        name: "receiverIDs",
+                        label: "Receiving Partner",
+                        placeholder: "Connection's Receiver",
                         list: [],
                         value: ""
                     },

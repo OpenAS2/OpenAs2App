@@ -86,7 +86,7 @@
       <!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
 		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
 		     The name of the file sent to the partner will be "OrderID-745634.edi" -->
-      <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+      <module classname="org.openas2.processor.producer.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toAny"
               errordir="$properties.storageBaseDir$/toAny/error/$msg.sender.as2_id$-$msg.receiver.as2_id$"
               interval="5"
@@ -96,7 +96,7 @@
               format="sender.as2_id, receiver.as2_id, attributes.filename"
               mimetype="application/EDI-X12"/>
       <!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
-      <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+      <module classname="org.openas2.processor.producer.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toPartnerA/"
               errordir="$properties.storageBaseDir$/toPartnerA/error/$date.YYYY$/$date.MM$"
               stored_error_filename="$msg.attributes.filename$-$date.YYYY$-$date.MM$-$msg.headers.message-id$"
@@ -107,7 +107,7 @@
               sendfilename="true"
               mimetype="application/EDI-X12"/>
       <!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
-      <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+      <module classname="org.openas2.processor.producer.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toPartnerB"
               errordir="$properties.storageBaseDir$/toPartnerB/error"
               interval="5"
@@ -170,7 +170,7 @@
               errordir="$properties.storageBaseDir$/resend/error"
               resenddelay="60"/>
       <module enabled="$properties.module.HealthCheckModule.enabled$"
-              classname="org.openas2.processor.receiver.HealthCheckModule"
+              classname="org.openas2.processor.monitor.HealthCheckModule"
               port="10099"/>
    </processor>
 </openas2>

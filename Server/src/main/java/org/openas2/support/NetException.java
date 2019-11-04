@@ -1,4 +1,4 @@
-package org.openas2.processor.receiver;
+package org.openas2.support;
 
 import java.net.InetAddress;
 

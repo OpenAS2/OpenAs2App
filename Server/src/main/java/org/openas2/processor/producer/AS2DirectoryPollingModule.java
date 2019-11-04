@@ -1,5 +1,5 @@
 
-package org.openas2.processor.receiver;
+package org.openas2.processor.producer;
 
 import org.openas2.message.AS2Message;
 

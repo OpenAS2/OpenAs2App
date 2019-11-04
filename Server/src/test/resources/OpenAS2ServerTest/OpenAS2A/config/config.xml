@@ -72,7 +72,7 @@
       <!-- This will parse the filename to get a sender and receiver. For instance a file
     named OpenAS2A_OID-OpenAS2B_OID.1234 would be sent from OpenAS2A to OpenAS2B. -->
       <module enabled="true"
-              classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+              classname="org.openas2.processor.producer.AS2DirectoryPollingModule"
               outboxdir="%home%/../data/toAny"
               errordir="%home%/../data/toAny/error"
               interval="1"
@@ -81,7 +81,7 @@
               format="sender.as2_id, receiver.as2_id, attributes.fileid"
               mimetype="application/EDI-X12"/>
       <module enabled="true"
-              classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+              classname="org.openas2.processor.producer.AS2DirectoryPollingModule"
               outboxdir="%home%/../data/toOpenAS2A/"
               errordir="%home%/../data/toOpenAS2A/error"
               interval="1"
@@ -89,7 +89,7 @@
               sendfilename="true"
               mimetype="application/EDI-X12"/>
       <module enabled="true"
-              classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+              classname="org.openas2.processor.producer.AS2DirectoryPollingModule"
               outboxdir="%home%/../data/toOpenAS2B"
               errordir="%home%/../data/toOpenAS2B/error"
               interval="1"

@@ -7,7 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.processor.ProcessorModule;
-import org.openas2.processor.receiver.HealthCheckHandler;
+import org.openas2.processor.monitor.HealthCheckHandler;
 
 public class HealthCheck {
 

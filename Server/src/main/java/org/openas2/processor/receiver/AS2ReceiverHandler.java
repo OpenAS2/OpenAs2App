@@ -1,5 +1,7 @@
 package org.openas2.processor.receiver;
 
+import org.openas2.support.NetException;
+import org.openas2.support.NetModuleHandler;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;

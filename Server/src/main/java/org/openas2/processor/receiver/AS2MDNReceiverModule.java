@@ -1,5 +1,7 @@
 package org.openas2.processor.receiver;
 
+import org.openas2.support.NetModuleHandler;
+
 public class AS2MDNReceiverModule extends NetModule {
 	private NetModuleHandler module;
 

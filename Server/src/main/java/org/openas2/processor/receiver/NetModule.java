@@ -1,5 +1,6 @@
 package org.openas2.processor.receiver;
 
+import org.openas2.support.NetModuleHandler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

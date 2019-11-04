@@ -1,5 +1,6 @@
 package org.openas2.processor.receiver;
 
+import org.openas2.support.NetModuleHandler;
 import org.openas2.message.NetAttribute;
 import org.openas2.params.MessageParameters;
 import org.openas2.partner.Partnership;

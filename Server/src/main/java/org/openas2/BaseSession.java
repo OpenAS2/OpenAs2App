@@ -14,8 +14,8 @@ import org.openas2.util.Properties;
 
 
 public abstract class BaseSession implements Session {
-    private Map<String, Component> components = new HashMap<String, Component>();
-    private String baseDirectory;
+    protected Map<String, Component> components = new HashMap<String, Component>();
+    protected String baseDirectory;
 
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
@@ -55,7 +55,7 @@ public abstract class BaseSession implements Session {
      * @param comp        component to register
      * @see Component
      */
-    void setComponent(String componentID, Component comp)
+    protected void setComponent(String componentID, Component comp)
     {
         Map<String, Component> objects = getComponents();
         objects.put(componentID, comp);
@@ -106,7 +106,7 @@ public abstract class BaseSession implements Session {
      *
      * @throws OpenAS2Exception If an error occurs while initializing mime types
      */
-    private void initJavaMail() throws OpenAS2Exception
+    protected void initJavaMail() throws OpenAS2Exception
     {
         MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
         mc.addMailcap(
@@ -119,7 +119,7 @@ public abstract class BaseSession implements Session {
         return baseDirectory;
     }
 
-    void setBaseDirectory(String dir)
+    protected void setBaseDirectory(String dir)
     {
         baseDirectory = dir;
         Properties.setProperty(Properties.APP_BASE_DIR_PROP, baseDirectory);

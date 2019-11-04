@@ -1,5 +1,5 @@
 
-package org.openas2.processor.receiver;
+package org.openas2.processor.producer;
 
 import java.util.Map;
 import java.util.Timer;
