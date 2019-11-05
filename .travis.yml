@@ -19,9 +19,9 @@ matrix:
       before_install:
         - choco install openjdk
         - choco install maven
+        - proj_dir=$(pwd)
         - cd "C:\Program Files\OpenJDK"
         - cd $(ls)
         - export JAVA_HOME=$(pwd)
-        - ls -l "$JAVA_HOME"
-        - ls -l "$JAVA_HOME/bin"
+        - cd $proj_dir
       script: ./mvnw test
