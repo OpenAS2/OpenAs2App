@@ -19,7 +19,8 @@ matrix:
       before_install:
         - choco install openjdk
         - choco install maven
-        - cd C:\\Program\ Files\\OpenJDK\\*
+        - cd "C:\Program Files\OpenJDK"
+        - cd $(ls)
         - export JAVA_HOME=$(pwd)
         - ls -l "$JAVA_HOME"
         - ls -l "$JAVA_HOME/bin"
