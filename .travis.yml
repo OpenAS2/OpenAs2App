@@ -21,6 +21,7 @@ matrix:
         - choco install maven
         - export JAVA_HOME="C:\Program Files\OpenJDK\jdk-13"
         - ls -l "C:\Program Files\OpenJDK"
+        - ls -l "C:\Program Files\OpenJDK"
         - ls -l "$JAVA_HOME"
         - ls -l "$JAVA_HOME/bin"
       script: export JAVA_HOME="C:\Program Files\OpenJDK\jdk-13" && ./mvnw test
