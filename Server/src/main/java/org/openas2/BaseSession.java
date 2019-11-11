@@ -55,7 +55,7 @@ public abstract class BaseSession implements Session {
      * @param comp        component to register
      * @see Component
      */
-    void setComponent(String componentID, Component comp)
+    public void setComponent(String componentID, Component comp)
     {
         Map<String, Component> objects = getComponents();
         objects.put(componentID, comp);
