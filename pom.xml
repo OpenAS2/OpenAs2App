@@ -29,6 +29,7 @@
 		<module>Remote</module>
 		<module>Server</module>
 		<module>Bundle</module>
+                <module>Plugins-MQ</module>
 	</modules>
 
 	<properties>
