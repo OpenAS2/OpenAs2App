@@ -55,7 +55,7 @@ public class OpenAS2Server {
                 .run(args);
     }
 
-    private void start() throws Exception
+    protected void start() throws Exception
     {
         LOGGER.info("Starting " + session.getAppTitle() + "...");
         session.start();
