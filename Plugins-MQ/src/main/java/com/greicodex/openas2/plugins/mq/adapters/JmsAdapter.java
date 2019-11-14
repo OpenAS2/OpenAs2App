@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class JmsAdapter implements MessageListener, ExceptionListener, MessageBrokerAdapter {
 
+    public final static String JNDI_FACTORY_PARAM ="jms_factory_jndi";
     ConnectionFactory jmsFactory;
     Connection jmsConnection;
     MessageConsumer jmsMessageConsumer;
@@ -58,10 +59,10 @@ public class JmsAdapter implements MessageListener, ExceptionListener, MessageBr
             throw new RuntimeException("Failed to initialize JNDI Context", ex);
         }
         try {
-            jmsFactory = (ConnectionFactory) ctx.lookup(parameters.get("jms_factory_jndi"));
+            jmsFactory = (ConnectionFactory) ctx.lookup(parameters.get(JmsAdapter.JNDI_FACTORY_PARAM));
         } catch (NamingException ex) {
             Logger.getLogger(JmsAdapter.class.getName()).log(Level.SEVERE, null, ex);
-            throw new RuntimeException("Unable to lookup JMS connection factory from JNDI: "+parameters.get("jms_factory_jndi"), ex);
+            throw new RuntimeException("Unable to lookup JMS connection factory from JNDI: "+parameters.get(JmsAdapter.JNDI_FACTORY_PARAM), ex);
         }
         try {
             //jmsContext = jmsFactory.createContext(JMSContext.CLIENT_ACKNOWLEDGE);
