@@ -8,21 +8,26 @@ package com.greicodex.openas2.plugins.mq.adapters;
 import com.greicodex.openas2.plugins.mq.MQConnector;
 import com.greicodex.openas2.plugins.mq.ConsumerCallback;
 import com.greicodex.openas2.plugins.mq.MessageBrokerAdapter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,50 +48,20 @@ public class JmsAdapter implements MessageListener, ExceptionListener, MessageBr
     ConsumerCallback messageCallback;
     private Log logger = LogFactory.getLog(MQConnector.class.getSimpleName());
 
-    public JmsAdapter(String jmsFactoryClass) throws ClassNotFoundException {
-        try {
-
-            JmsClass = Class.forName(jmsFactoryClass);
-
-        } catch (ClassNotFoundException | IllegalArgumentException ex) {
-            logger.error("Unable to create JMS connection factory", ex);
-            throw ex;
-        }
-
-    }
-
     @Override
     public void connect(Map<String, String> parameters) {
-        java.lang.reflect.Method[] list = JmsClass.getDeclaredMethods();
-        logger.info("Creating instance of " + JmsClass.getName());
+        javax.naming.Context ctx = null;
         try {
-            jmsFactory = (ConnectionFactory) JmsClass.newInstance();
-        } catch (InstantiationException ex) {
-            logger.error("Error creating JMS instance", ex);
-            throw new RuntimeException("Error creating JMS instance", ex);
-        } catch (IllegalAccessException ex) {
-            logger.error("Error creating JMS instance", ex);
-            throw new RuntimeException("Error creating JMS instance", ex);
+            ctx = new InitialContext();
+        } catch (NamingException ex) {
+            Logger.getLogger(JmsAdapter.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException("Failed to initialize JNDI Context", ex);
         }
-        logger.info("Configuring instance " + JmsClass.getName());
-        for (java.lang.reflect.Method m : list) {
-            if (!(m.getName().substring(0, 3).equalsIgnoreCase("set")
-                    && m.getParameterCount() == 1
-                    && m.getParameterTypes()[0].equals(String.class))) {
-                continue;
-            }
-            String paramName = m.getName().substring(3).toLowerCase();
-            logger.info("Checking config " + paramName);
-            if (!parameters.containsKey(paramName)) {
-                continue;
-            }
-            String paramValue = parameters.get(paramName);
-            logger.info("Setting config " + paramName + "=" + paramValue);
-            try {
-                m.invoke(jmsFactory, paramValue);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                logger.error("Error configuring JMS instance", ex);
-            }
+        try {
+            jmsFactory = (ConnectionFactory) ctx.lookup(parameters.get("jms_factory_jndi"));
+        } catch (NamingException ex) {
+            Logger.getLogger(JmsAdapter.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException("Unable to lookup JMS connection factory from JNDI: "+parameters.get("jms_factory_jndi"), ex);
         }
         try {
             //jmsContext = jmsFactory.createContext(JMSContext.CLIENT_ACKNOWLEDGE);
@@ -94,7 +69,7 @@ public class JmsAdapter implements MessageListener, ExceptionListener, MessageBr
             jmsSession = jmsConnection.createSession(true, JMSContext.CLIENT_ACKNOWLEDGE);
             jmsConnection.setExceptionListener(this);
         } catch (JMSException ex) {
-            logger.error("Unable to create JMS connection factory", ex);
+            logger.error("Unable to create JMS connection ", ex);
             throw new RuntimeException("Unable to create JMS connection factory", ex);
         }
     }
@@ -190,11 +165,39 @@ public class JmsAdapter implements MessageListener, ExceptionListener, MessageBr
 
     @Override
     public void sendMessage(InputStream rawInputStream, Map<String, String> headers) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            jmsMessageProducer.send(createJmsMessage(rawInputStream,headers));
+        } catch (JMSException ex) {
+            Logger.getLogger(JmsAdapter.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public void sendEvent(InputStream rawInputStream, Map<String, String> headers) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            jmsEventProducer.send(createJmsMessage(rawInputStream,headers));
+        } catch (JMSException ex) {
+            Logger.getLogger(JmsAdapter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private Message createJmsMessage(InputStream rawInputStream, Map<String, String> headers) throws JMSException {
+        BytesMessage msg = jmsSession.createBytesMessage();
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        try {
+            IOUtils.copyLarge(rawInputStream, result);
+        } catch (IOException ex) {
+            Logger.getLogger(RMQAdapter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        msg.writeBytes(result.toByteArray());
+        headers.forEach((t, u) -> {
+            try {
+                msg.setStringProperty(t, u);
+            } catch (JMSException ex) {
+                Logger.getLogger(JmsAdapter.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        return msg;
+        
     }
 }

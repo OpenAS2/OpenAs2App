@@ -40,6 +40,8 @@ import org.apache.commons.logging.LogFactory;
  * @author javier
  */
 public class RMQAdapter implements  MessageBrokerAdapter {
+    final static String RMQ_URI_PARAM="uri";
+    final static String RMQ_VHOST_PARAM="virtualhost";
     ConnectionFactory factory;
     Connection connection;
     String eventProducer;
@@ -51,10 +53,16 @@ public class RMQAdapter implements  MessageBrokerAdapter {
     
     @Override
     public void connect(Map<String, String> parameters) {
+        if(!parameters.containsKey(RMQAdapter.RMQ_URI_PARAM)) {
+            throw new RuntimeException(RMQAdapter.class.getSimpleName() + " requires parameter: "+RMQAdapter.RMQ_URI_PARAM);
+        }
+        if(!parameters.containsKey(RMQAdapter.RMQ_VHOST_PARAM)) {
+            throw new RuntimeException(RMQAdapter.class.getSimpleName() + " requires parameter: "+RMQAdapter.RMQ_VHOST_PARAM);
+        }
         factory = new ConnectionFactory();
         try {
-            factory.setUri(parameters.get("uri"));
-            factory.setVirtualHost("/");
+            factory.setUri(parameters.get(RMQAdapter.RMQ_URI_PARAM));
+            factory.setVirtualHost(parameters.get(RMQAdapter.RMQ_VHOST_PARAM));
             factory.setRequestedHeartbeat(1);
             factory.setConnectionTimeout(5000);
             factory.setAutomaticRecoveryEnabled(true);
@@ -65,6 +73,7 @@ public class RMQAdapter implements  MessageBrokerAdapter {
             throw new RuntimeException("Error setting uri",ex);
         }
         try {
+            logger.info("Creating connection to uri" + parameters.get(RMQAdapter.RMQ_URI_PARAM) + parameters.get(RMQAdapter.RMQ_VHOST_PARAM));
             connection=factory.newConnection();
             connection.addShutdownListener(new ShutdownListener() {
                 @Override

@@ -18,8 +18,8 @@
         <project.dist.package.name>${project.parent.artifactId}-plugin-mq-${project.version}.zip</project.dist.package.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lib.dir>${project.basedir}/lib</lib.dir>
-        <help.filename>OpenAS2HowTo.pdf</help.filename>
-        <help.file.src>../docs/${help.filename}</help.file.src>
+        <help.filename>PluginMQHowTo.md</help.filename>
+        <help.file.src>${project.basedir}/docs/${help.filename}</help.file.src>
         <dist.dir>${project.basedir}/dist</dist.dir>
     </properties>
     
@@ -96,7 +96,6 @@
             <groupId>net.sf.openas2</groupId>
             <artifactId>openas2-server</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 

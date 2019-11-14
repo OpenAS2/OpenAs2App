@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openas2>
+   
+   <!-- ... Import your settings from your original config.xml file -->
+   <processor classname="org.openas2.processor.DefaultProcessor"
+              pendingMDN="$properties.storageBaseDir$/pendingMDN3"
+              pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3">
+      <!-- ... Original Config.xml module entries ... -->
+      <!-- 
+        The position of the module declaration corresponds to the order
+        in which is going to be executed 
+      -->
+      
+      <!-- 
+        This module listens for DO_STORE, DO_STOREMDN &  DO_TRACK_MSG events
+        it is recomended to defined it after the DbTrackingModule and MessageFileModule
+        to ensure the messages have been stored in the disk before publishing into MQ
+       -->
+      <module classname="com.greicodex.openas2.plugins.mq.MQConnector"
+                uri="amqp://username:password@rabbitmq.host:5672/"
+                virtualhost="/"
+                adapter="com.greicodex.openas2.plugins.mq.adapters.RMQAdapter"
+                parameters="123=123"
+                msg_topic="msgTopic"
+                msg_queue="msgQueue"
+                evt_topic="eventTopic"
+                errordir="$properties.storageBaseDir$/error/$date.YYYY$/$date.MM$"
+      >    
+      </module>
+      <!--  ... Continue with Original config.xml ..  -->
+   </processor>
+</openas2>

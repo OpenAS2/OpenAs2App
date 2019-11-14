@@ -33,14 +33,12 @@ import org.openas2.processor.sender.SenderModule;
  */
 public class MQConnector extends BaseActiveModule implements ResenderModule, TrackingModule, StorageModule, ConsumerCallback {
 
-    public static final String PARAM_JMS_DRIVER = "jms_driver";
-    public static final String PARAM_JMS_PARAMS = "jms_parameters";
-    public static final String PARAM_JMS_MSG_PRODUCER_TOPIC = "msg_topic";
-    public static final String PARAM_JMS_MSG_CONSUMER_QUEUE = "msg_queue";
-    public static final String PARAM_JMS_EVT_PRODUCER_TOPIC = "evt_topic";
+    public static final String PARAM_MQ_ADAPTER = "adapter";
+    public static final String PARAM_MQ_MSG_PRODUCER_TOPIC = "msg_topic";
+    public static final String PARAM_MQ_MSG_CONSUMER_QUEUE = "msg_queue";
+    public static final String PARAM_MQ_EVT_PRODUCER_TOPIC = "evt_topic";
 
-    protected String mqBrokerUri;
-    protected String mqFactoryClass;
+    protected String mqAdapterFactoryClass;
     protected int resendRetries;
     protected String messageReceivedTopic;
     protected String messageSendQueue;
@@ -146,17 +144,17 @@ public class MQConnector extends BaseActiveModule implements ResenderModule, Tra
     protected void initMQ(Map<String, String> parameters) throws OpenAS2Exception {
 
         try {
-            mqFactoryClass = getParameter(MQConnector.PARAM_JMS_DRIVER, true);
-            messageReceivedTopic = getParameter(MQConnector.PARAM_JMS_MSG_PRODUCER_TOPIC, true);
-            messageSendQueue = getParameter(MQConnector.PARAM_JMS_MSG_CONSUMER_QUEUE, true);
-            eventTopic = getParameter(MQConnector.PARAM_JMS_EVT_PRODUCER_TOPIC, true);
+            mqAdapterFactoryClass = getParameter(MQConnector.PARAM_MQ_ADAPTER, true);
+            messageReceivedTopic = getParameter(MQConnector.PARAM_MQ_MSG_PRODUCER_TOPIC, true);
+            messageSendQueue = getParameter(MQConnector.PARAM_MQ_MSG_CONSUMER_QUEUE, true);
+            eventTopic = getParameter(MQConnector.PARAM_MQ_EVT_PRODUCER_TOPIC, true);
 
-            broker = (MessageBrokerAdapter) Class.forName(mqFactoryClass).newInstance();
+            broker = (MessageBrokerAdapter) Class.forName(mqAdapterFactoryClass).newInstance();
             broker.connect(parameters);
             broker.createEventMQInterface(eventTopic);
             broker.createMessageMQInterface(messageReceivedTopic, messageSendQueue, this);
         } catch (Exception ex) {
-            logger.error("Unable to create broker interface", ex);
+            logger.error("Unable to create message broker adapter: "+mqAdapterFactoryClass, ex);
             throw new OpenAS2Exception(ex);
         }
 
@@ -199,7 +197,7 @@ public class MQConnector extends BaseActiveModule implements ResenderModule, Tra
         try {
             broker.start();
         } catch (Exception ex) {
-            logger.error("Error starting up JMS listener", ex);
+            logger.error("Error starting up MQ listener", ex);
             throw new OpenAS2Exception(ex);
         }
     }
@@ -209,7 +207,7 @@ public class MQConnector extends BaseActiveModule implements ResenderModule, Tra
         try {
             broker.stop();
         } catch (Exception ex) {
-            logger.error("Error stopping up JMS listener", ex);
+            logger.error("Error stopping up MQ listener", ex);
             throw new OpenAS2Exception(ex);
         }
     }
