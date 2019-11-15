@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>net.sf.openas2</groupId>
+        <artifactId>OpenAS2</artifactId>
+        <version>2.10.0</version>
+    </parent>
+    <artifactId>openas2-plugins-mq</artifactId>
+    <packaging>jar</packaging>
+
+    <name>OpenAS2 Plugins MQ</name>
+    <description>
+        MQ Plugin for OpenAS2
+    </description>
+    
+    <properties>
+        <project.dist.package.name>${project.parent.artifactId}-plugin-mq-${project.version}.zip</project.dist.package.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lib.dir>${project.basedir}/lib</lib.dir>
+        <help.filename>PluginMQHowTo.md</help.filename>
+        <help.file.src>${project.basedir}/docs/${help.filename}</help.file.src>
+        <dist.dir>${project.basedir}/dist</dist.dir>
+    </properties>
+    
+    
+    <build>
+        <plugins>
+            <!--TODO it's not clear how the artifact is distributed-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <!--Copy artifact to build lib dicetory -->
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                      todir="${project.build.directory}/dist/lib" verbose="true"/>
+                                <!-- Add the help PDF version to the distro -->
+                                <copy file="${help.file.src}" todir="${project.build.directory}/dist" verbose="true"/>
+                                <!-- create distribution package -->
+                                <zip destfile="${project.basedir}/dist/${project.dist.package.name}"
+                                     basedir="${project.build.directory}/dist"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+            <version>2.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>5.6.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.openas2</groupId>
+            <artifactId>openas2-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

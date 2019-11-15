@@ -8,3 +8,4 @@
 pom.xml.versionsBackup
 */dist/*
 /Bundle/target/
+/Plugins-MQ/target/
