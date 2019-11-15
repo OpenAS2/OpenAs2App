@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.greicodex.openas2.plugins.mq;
 
 import java.io.ByteArrayInputStream;
@@ -70,10 +65,7 @@ public class MQConnector extends BaseActiveModule implements ResenderModule, Tra
 
         if (action.equalsIgnoreCase(StorageModule.DO_STORE)) {
             try {
-                headers.put("message.id",msg.getMessageID());
-                headers.put("message.class", msg.getClass().getSimpleName());
-                headers.put("sender.as2_id", msg.getPartnership().getSenderID(Partnership.PID_AS2));
-                headers.put("receiver.as2_id", msg.getPartnership().getReceiverID(Partnership.PID_AS2));
+                updateHeaders(msg, headers);
                 body = msg.getData().getRawInputStream();
             } catch (MessagingException ex) {
                 logger.error(ex.getMessage(), ex);
@@ -81,21 +73,16 @@ public class MQConnector extends BaseActiveModule implements ResenderModule, Tra
             broker.sendMessage(body, headers);
         } else if (action.equalsIgnoreCase(StorageModule.DO_STOREMDN)) {
             try {
-                headers.put("message.id",msg.getMessageID());
-                headers.put("message.class", msg.getClass().getSimpleName());
-                headers.put("sender.as2_id", msg.getPartnership().getSenderID(Partnership.PID_AS2));
-                headers.put("receiver.as2_id", msg.getPartnership().getReceiverID(Partnership.PID_AS2));
-                headers.put("CorrelationId", msg.getMessageID());
+                updateHeaders(msg, headers);
                 if (msg.getMDN() != null) {
                     MessageMDN mdn = msg.getMDN();
+                    updateHeaders((Message) mdn, headers);
+                    headers.put("CorrelationId", msg.getMessageID());
+                    
                     mdn.getAttributes().forEach((t, u) -> {
                         String name = "attributes."+ ((String)t).toLowerCase();
                         headers.put(name,(String)u);
                     });
-                    headers.put("message.id",mdn.getMessageID());
-                    headers.put("message.class", mdn.getClass().getSimpleName());
-                    headers.put("sender.as2_id", mdn.getPartnership().getSenderID(Partnership.PID_AS2));
-                    headers.put("receiver.as2_id", mdn.getPartnership().getReceiverID(Partnership.PID_AS2));
                     body = new ByteArrayInputStream(mdn.getText().getBytes());
                 }
             } catch (NullPointerException ex) {
@@ -118,6 +105,12 @@ public class MQConnector extends BaseActiveModule implements ResenderModule, Tra
         }
     }
 
+    private void updateHeaders(Message msg, Map<String,String> headers) {
+        headers.put("message.id",msg.getMessageID());
+        headers.put("message.class", msg.getClass().getSimpleName());
+        headers.put("sender.as2_id", msg.getPartnership().getSenderID(Partnership.PID_AS2));
+        headers.put("receiver.as2_id", msg.getPartnership().getReceiverID(Partnership.PID_AS2));
+    }
     @Override
     public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
         if (action.equalsIgnoreCase(StorageModule.DO_STORE)) {
