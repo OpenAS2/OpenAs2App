@@ -1,11 +1,11 @@
 package org.openas2.processor;
 
-import java.util.List;
-import java.util.Map;
-
 import org.openas2.Component;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
+
+import java.util.List;
+import java.util.Map;
 
 public interface Processor extends Component {
     String COMPID_PROCESSOR = "processor";
@@ -19,8 +19,8 @@ public interface Processor extends Component {
     void stopActiveModules() throws OpenAS2Exception;
 
     List<ActiveModule> getActiveModules();
-    
+
     List<ActiveModule> getActiveModulesByClass(Class<?> clazz);
 
-    public boolean checkActiveModules(List<String> failures);
+    boolean checkActiveModules(List<String> failures);
 }

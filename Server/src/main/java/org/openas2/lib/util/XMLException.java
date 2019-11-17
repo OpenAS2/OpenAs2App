@@ -4,10 +4,10 @@ import org.dom4j.Element;
 
 public class XMLException extends Exception {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private Element element;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private Element element;
 
     public XMLException() {
         super();

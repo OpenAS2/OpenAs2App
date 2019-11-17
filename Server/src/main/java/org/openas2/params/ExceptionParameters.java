@@ -49,14 +49,7 @@ public class ExceptionParameters extends ParameterParser {
         } else if (key.equals(KEY_MESSAGE)) {
             return unwrappedTarget.getMessage();
         } else if (key.equals(KEY_TRACE)) {
-            /*
-        	StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            target.printStackTrace(pw);
-
-            return sw.toString();
-            */
-        	return ExceptionUtils.getStackTrace(target);
+            return ExceptionUtils.getStackTrace(target);
         } else if (key.equals(KEY_TERMINATED)) {
             if (isTerminated()) {
                 return "terminated";

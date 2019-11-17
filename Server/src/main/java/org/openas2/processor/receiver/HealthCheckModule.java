@@ -4,15 +4,14 @@ import java.util.List;
 
 public class HealthCheckModule extends NetModule {
 
-    
-	protected NetModuleHandler getHandler() {
+
+    protected NetModuleHandler getHandler() {
         return new HealthCheckHandler(this);
     }
 
     @Override
-	public boolean healthcheck(List<String> failures)
-	{
-		return true;
-	}
+    public boolean healthcheck(List<String> failures) {
+        return true;
+    }
 
 }

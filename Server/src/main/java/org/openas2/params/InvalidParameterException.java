@@ -5,10 +5,10 @@ import org.openas2.OpenAS2Exception;
 
 public class InvalidParameterException extends OpenAS2Exception {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private Object target;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private Object target;
     private String key;
     private String value;
 
@@ -42,12 +42,12 @@ public class InvalidParameterException extends OpenAS2Exception {
     public String getValue() {
         return value;
     }
+
     public void setValue(String value) {
         this.value = value;
     }
-    
-    public static void checkValue(Object target, String valueName, Object value)
-        throws InvalidParameterException {
+
+    public static void checkValue(Object target, String valueName, Object value) throws InvalidParameterException {
         if (value == null) {
             throw new InvalidParameterException("Missing value for required parameter: " + valueName, target, valueName, null);
         }
@@ -56,5 +56,5 @@ public class InvalidParameterException extends OpenAS2Exception {
     public static String toString(String key, String value) {
         return "Key/Value pair: " + key + "/" + value;
     }
-    
+
 }

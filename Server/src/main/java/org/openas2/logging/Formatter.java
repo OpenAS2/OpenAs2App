@@ -4,14 +4,14 @@ import java.io.OutputStream;
 
 
 public interface Formatter {
-	
-	public String format(Level level, String msg);
-	
-	public String format(Throwable t, boolean terminated);
-	
-	public void format(Level level, String msg, OutputStream out);
-	
-	public void format(Throwable t, boolean terminated, OutputStream out);
-	
-	public void setDateFormat(String dateFormat);
+
+    String format(Level level, String msg);
+
+    String format(Throwable t, boolean terminated);
+
+    void format(Level level, String msg, OutputStream out);
+
+    void format(Throwable t, boolean terminated, OutputStream out);
+
+    void setDateFormat(String dateFormat);
 }

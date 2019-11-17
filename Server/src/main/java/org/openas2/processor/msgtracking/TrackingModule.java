@@ -1,4 +1,3 @@
-
 package org.openas2.processor.msgtracking;
 
 import org.openas2.processor.ActiveModule;

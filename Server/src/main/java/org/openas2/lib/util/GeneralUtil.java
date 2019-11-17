@@ -11,39 +11,38 @@ public class GeneralUtil {
 
 
     public static String[] convert(Enumeration<String> en) {
-        List<String> list = Collections.list(en);        
+        List<String> list = Collections.list(en);
         return convert(list);
     }
 
-    static String[] convert(List<String> list)
-    {
+    static String[] convert(List<String> list) {
         String[] values = new String[0];
         return list.toArray(values);
     }
-    
+
     public static String[] convertKeys(Map<?, Object> map) {
         String[] keys = new String[0];
         return map.keySet().toArray(keys);
     }
-    
-    public static String convert(Map<?, ?> map, String valueDelimiter, String pairDelimiter) {
-		StringBuffer strBuf = new StringBuffer();
-		Iterator<?> it = map.entrySet().iterator();
-		Map.Entry<Object,Object> entry;
-		while (it.hasNext()) {
-			entry = (Entry<Object, Object>) it.next();
-			strBuf.append(entry.getKey().toString()).append(valueDelimiter);
-			strBuf.append(entry.getValue().toString());
-			if (it.hasNext()) {
-			    strBuf.append(pairDelimiter);
-			}
-		}
-		return strBuf.toString();
-	}
 
-    public static Object getKey(Map<?,Object> map, Object value) {
+    public static String convert(Map<?, ?> map, String valueDelimiter, String pairDelimiter) {
+        StringBuffer strBuf = new StringBuffer();
         Iterator<?> it = map.entrySet().iterator();
-        Map.Entry<Object,Object> entry;
+        Map.Entry<Object, Object> entry;
+        while (it.hasNext()) {
+            entry = (Entry<Object, Object>) it.next();
+            strBuf.append(entry.getKey().toString()).append(valueDelimiter);
+            strBuf.append(entry.getValue().toString());
+            if (it.hasNext()) {
+                strBuf.append(pairDelimiter);
+            }
+        }
+        return strBuf.toString();
+    }
+
+    public static Object getKey(Map<?, Object> map, Object value) {
+        Iterator<?> it = map.entrySet().iterator();
+        Map.Entry<Object, Object> entry;
         Object currentValue;
         while (it.hasNext()) {
             entry = (Entry<Object, Object>) it.next();

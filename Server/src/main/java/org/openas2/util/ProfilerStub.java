@@ -18,26 +18,27 @@ public class ProfilerStub {
     public Date getEndStamp() {
         return endStamp;
     }
-	
-	public long getDifference() {
-		return getEndStamp().getTime() - getStartStamp().getTime();
-	}
-    public String getMilliseconds() {        
-        return Long.toString(getDifference()) + " milliseconds";
+
+    public long getDifference() {
+        return getEndStamp().getTime() - getStartStamp().getTime();
+    }
+
+    public String getMilliseconds() {
+        return getDifference() + " milliseconds";
     }
 
     public String getSeconds() {
         long diff = getDifference() / 1000;
-        
-        return Long.toString(diff) + " seconds";
+
+        return diff + " seconds";
     }
-	
-	public String getCombined() {
-		long diff = getDifference();
-		
-		return Long.toString(diff / 1000) + "." + Long.toString(diff % 1000) + " seconds";	
-	}
-	
+
+    public String getCombined() {
+        long diff = getDifference();
+
+        return diff / 1000 + "." + diff % 1000 + " seconds";
+    }
+
     public void setStartStamp(Date date) {
         startStamp = date;
     }

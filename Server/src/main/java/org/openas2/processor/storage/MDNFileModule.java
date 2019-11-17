@@ -1,13 +1,5 @@
 package org.openas2.processor.storage;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.message.Message;
@@ -18,6 +10,14 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
 
 public class MDNFileModule extends BaseStorageModule {
 
@@ -46,11 +46,8 @@ public class MDNFileModule extends BaseStorageModule {
      */
     protected String getFilename(Message msg, String fileParam, String action) throws InvalidParameterException {
         MessageMDN mdn = msg.getMDN();
-        CompositeParameters compParams = new CompositeParameters(false)
-        	.add("date", new DateParameters())
-        	.add("mdn", new MessageMDNParameters(mdn))
-        	.add("rand", new RandomParameters());
-        	
+        CompositeParameters compParams = new CompositeParameters(false).add("date", new DateParameters()).add("mdn", new MessageMDNParameters(mdn)).add("rand", new RandomParameters());
+
         return ParameterParser.parse(fileParam, compParams);
     }
 
@@ -73,7 +70,7 @@ public class MDNFileModule extends BaseStorageModule {
         // write attributes to the string buffer
         mdnBuf.append("Attributes:" + System.getProperty("line.separator"));
 
-        Iterator<Map.Entry<String,String>> attrIt = mdn.getAttributes().entrySet().iterator();
+        Iterator<Map.Entry<String, String>> attrIt = mdn.getAttributes().entrySet().iterator();
         Map.Entry<?, String> attrEntry;
 
         while (attrIt.hasNext()) {
@@ -81,10 +78,10 @@ public class MDNFileModule extends BaseStorageModule {
             mdnBuf.append(attrEntry.getKey()).append(": ");
             mdnBuf.append(attrEntry.getValue()).append(System.getProperty("line.separator"));
         }
-     // finaly, write the MDN text
+        // finaly, write the MDN text
         mdnBuf.append("Text:" + System.getProperty("line.separator"));
         mdnBuf.append(mdn.getText());
-        
+
         return new ByteArrayInputStream(mdnBuf.toString().getBytes());
     }
 }

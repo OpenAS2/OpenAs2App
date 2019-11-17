@@ -1,16 +1,16 @@
 package org.openas2.message;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.ParseException;
-
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
+
+import javax.mail.internet.InternetHeaders;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.ParseException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public interface Message extends Serializable {
 
@@ -45,32 +45,27 @@ public interface Message extends Serializable {
     String MSG_STATE_MIC_MISMATCH = "msg_sent_mdn_received_mic_mismatch";
 
     Map<String, String> STATE_MSGS = new HashMap<String, String>() {
-	private static final long serialVersionUID = 5L;
+        private static final long serialVersionUID = 5L;
 
-	{
-	    put(MSG_STATE_SEND_START, "Message sending started");
-	    put(MSG_STATE_SEND_EXCEPTION, "Message sending exception occurred. Resend queued");
-	    put(MSG_STATE_SEND_FAIL, "Message sending failed.");
-	    put(MSG_STATE_SEND_FAIL_RESEND_QUEUED,
-		    "Message failed to send and resend will be attempted using a different message ID");
-	    put(MSG_STATE_RECEIVE_START, "Message receiving started");
-	    put(MSG_STATE_RECEIVE_EXCEPTION,
-		    "Processing exception occurred receiving message. Disposition exception thrown.");
-	    put(MSG_STATE_RECEIVE_FAIL, "Failed to receive inbound message successfully.");
-	    put(MSG_STATE_MDN_ERROR_RESPONSE_START,
-		    "Error processing received message. Sending MDN error response to partner");
-	    put(MSG_STATE_MDN_SENDING_EXCEPTION, "Processing exception sending MDN. Resend queued");
-	    put(MSG_STATE_MDN_RECEIVING_EXCEPTION, "Processing exception receiving MDN. Resend queued");
-	    put(MSG_STATE_MDN_ASYNC_RECEIVE_FAIL, "Detected sent message with no Async MDN received. Sent file was cleaned up but no guarantee the partner received the file.");
-	    put(MSG_STATE_MDN_SEND_START, "Message received. MDN sending started");
-	    put(MSG_STATE_MDN_RECEIVE_START, "Message sent. MDN receiving started");
-	    put(MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR,
-		    "Message sent. Message MDN received indicates an error. Resend queued");
-	    put(MSG_STATE_MSG_SENT_MDN_RECEIVED_OK, "Message sent. Message MDN success response received.");
-	    put(MSG_STATE_MSG_RXD_MDN_SENDING_FAIL,
-		    "Message was received but failed to successfully send an MDN response to partner");
-	    put(MSG_STATE_MSG_RXD_MDN_SENT_OK, "Message received and MDN sent successfully.");
-	}
+        {
+            put(MSG_STATE_SEND_START, "Message sending started");
+            put(MSG_STATE_SEND_EXCEPTION, "Message sending exception occurred. Resend queued");
+            put(MSG_STATE_SEND_FAIL, "Message sending failed.");
+            put(MSG_STATE_SEND_FAIL_RESEND_QUEUED, "Message failed to send and resend will be attempted using a different message ID");
+            put(MSG_STATE_RECEIVE_START, "Message receiving started");
+            put(MSG_STATE_RECEIVE_EXCEPTION, "Processing exception occurred receiving message. Disposition exception thrown.");
+            put(MSG_STATE_RECEIVE_FAIL, "Failed to receive inbound message successfully.");
+            put(MSG_STATE_MDN_ERROR_RESPONSE_START, "Error processing received message. Sending MDN error response to partner");
+            put(MSG_STATE_MDN_SENDING_EXCEPTION, "Processing exception sending MDN. Resend queued");
+            put(MSG_STATE_MDN_RECEIVING_EXCEPTION, "Processing exception receiving MDN. Resend queued");
+            put(MSG_STATE_MDN_ASYNC_RECEIVE_FAIL, "Detected sent message with no Async MDN received. Sent file was cleaned up but no guarantee the partner received the file.");
+            put(MSG_STATE_MDN_SEND_START, "Message received. MDN sending started");
+            put(MSG_STATE_MDN_RECEIVE_START, "Message sent. MDN receiving started");
+            put(MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR, "Message sent. Message MDN received indicates an error. Resend queued");
+            put(MSG_STATE_MSG_SENT_MDN_RECEIVED_OK, "Message sent. Message MDN success response received.");
+            put(MSG_STATE_MSG_RXD_MDN_SENDING_FAIL, "Message was received but failed to successfully send an MDN response to partner");
+            put(MSG_STATE_MSG_RXD_MDN_SENT_OK, "Message received and MDN sent successfully.");
+        }
     };
 
     String SMIME_TYPE_COMPRESSED_DATA = "smime-type=compressed-data";

@@ -1,11 +1,6 @@
 package org.openas2.lib.util.javamail;
 
-import java.awt.datatransfer.DataFlavor;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import org.openas2.lib.message.AS2Standards;
 
 import javax.activation.ActivationDataFlavor;
 import javax.activation.DataContentHandler;
@@ -13,8 +8,12 @@ import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
-
-import org.openas2.lib.message.AS2Standards;
+import java.awt.datatransfer.DataFlavor;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 
 public class DispositionDataContentHandler implements DataContentHandler {
@@ -22,9 +21,8 @@ public class DispositionDataContentHandler implements DataContentHandler {
     private static final DataFlavor[] ADFs;
 
     static {
-        ADF1 = new ActivationDataFlavor(MimeBodyPart.class, AS2Standards.DISPOSITION_TYPE,
-                "Disposition Notification");
-        ADFs = new DataFlavor[] { ADF1 };
+        ADF1 = new ActivationDataFlavor(MimeBodyPart.class, AS2Standards.DISPOSITION_TYPE, "Disposition Notification");
+        ADFs = new DataFlavor[]{ADF1};
     }
 
     public DispositionDataContentHandler() {
@@ -49,20 +47,18 @@ public class DispositionDataContentHandler implements DataContentHandler {
         return baOut.toByteArray();
     }
 
-    public Object getTransferData(DataFlavor df, DataSource ds)
-        throws IOException {
+    public Object getTransferData(DataFlavor df, DataSource ds) throws IOException {
         if (ADF1.equals(df)) {
             return getContent(ds);
-        } 
-        return null;        
+        }
+        return null;
     }
 
     public DataFlavor[] getTransferDataFlavors() {
         return ADFs;
     }
 
-    public void writeTo(Object obj, String mimeType, OutputStream os)
-        throws IOException {
+    public void writeTo(Object obj, String mimeType, OutputStream os) throws IOException {
         if (obj instanceof MimeBodyPart) {
             try {
                 ((MimeBodyPart) obj).writeTo(os);

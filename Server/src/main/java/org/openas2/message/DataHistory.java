@@ -1,19 +1,18 @@
 package org.openas2.message;
 
+import javax.mail.internet.ContentType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.mail.internet.ContentType;
-
 
 public class DataHistory implements Serializable {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private List<DataHistoryItem> items;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private List<DataHistoryItem> items;
 
     public List<DataHistoryItem> getItems() {
         if (items == null) {

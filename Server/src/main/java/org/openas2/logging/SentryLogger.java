@@ -1,11 +1,11 @@
 package org.openas2.logging;
 
-import java.util.Map;
-
+import io.sentry.Sentry;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
-import io.sentry.Sentry;
+
+import java.util.Map;
 
 
 public class SentryLogger extends BaseLogger {

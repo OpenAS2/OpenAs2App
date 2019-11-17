@@ -1,19 +1,18 @@
 package org.openas2.message;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import org.openas2.params.InvalidParameterException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import org.openas2.partner.Partnership;
 
 import javax.annotation.Nonnull;
 import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
-
-import org.openas2.partner.Partnership;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public abstract class BaseMessageMDN implements MessageMDN {
@@ -30,8 +29,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
     private MimeBodyPart data;
     private String text;
 
-    public BaseMessageMDN(@Nonnull Message msg)
-    {
+    public BaseMessageMDN(@Nonnull Message msg) {
         super();
         this.message = msg;
         msg.setMDN(this);
@@ -53,8 +51,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return attributes;
     }
 
-    public void setAttributes(Map<String, String> attributes)
-    {
+    public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
 
@@ -62,8 +59,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return data;
     }
 
-    public void setData(MimeBodyPart data)
-    {
+    public void setData(MimeBodyPart data) {
         this.data = data;
     }
 
@@ -87,8 +83,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return headers;
     }
 
-    public void setHeaders(InternetHeaders headers)
-    {
+    public void setHeaders(InternetHeaders headers) {
         this.headers = headers;
     }
 
@@ -106,8 +101,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
     }
 
     @Override
-    public void setMessage(@Nonnull Message message)
-    {
+    public void setMessage(@Nonnull Message message) {
         this.message = message;
     }
 
@@ -115,8 +109,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return getHeader("Message-ID");
     }
 
-    public void setMessageID(String messageID)
-    {
+    public void setMessageID(String messageID) {
         setHeader("Message-ID", messageID);
     }
 
@@ -128,8 +121,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return partnership;
     }
 
-    public void setPartnership(Partnership partnership)
-    {
+    public void setPartnership(Partnership partnership) {
         this.partnership = partnership;
     }
 
@@ -137,8 +129,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return text;
     }
 
-    public void setText(String text)
-    {
+    public void setText(String text) {
         this.text = text;
     }
 
@@ -156,8 +147,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         return history;
     }
 
-    public void setHistory(DataHistory history)
-    {
+    public void setHistory(DataHistory history) {
         this.history = history;
     }
 
@@ -190,9 +180,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         setMessageID(generateMessageID());
     }
 
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException
-    {
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         // read in partnership
         partnership = (Partnership) in.readObject();
 
@@ -217,9 +205,7 @@ public abstract class BaseMessageMDN implements MessageMDN {
         }
     }
 
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException
-    {
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         // write partnership info
         out.writeObject(partnership);
 

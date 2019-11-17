@@ -1,15 +1,15 @@
 package org.openas2.util;
 
+import javax.activation.DataSource;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.activation.DataSource;
-
 
 public class ByteArrayDataSource implements DataSource {
+
     String contentType;
     String name;
     byte[] bytes;
@@ -43,12 +43,7 @@ public class ByteArrayDataSource implements DataSource {
     }
 
     public InputStream getInputStream() {
-        // remove the final CR/LF
-        int len = bytes.length;
-        /*if (len > 1 && new String(bytes, len-2, 2).equals("\r\n")) {
-        	len -= 2;
-        }*/
-        return new ByteArrayInputStream(bytes, 0, len);
+        return new ByteArrayInputStream(bytes, 0, bytes.length);
     }
 
     public void setName(String name) {
