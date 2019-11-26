@@ -1,20 +1,19 @@
 package org.openas2.message;
 
+import javax.mail.internet.ContentType;
+import javax.mail.internet.ParseException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.mail.internet.ContentType;
-import javax.mail.internet.ParseException;
-
 
 public class DataHistoryItem implements Serializable {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private ContentType contentType;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private ContentType contentType;
     private Map<String, String> attributes;
 
     public DataHistoryItem(ContentType type) {
@@ -47,15 +46,13 @@ public class DataHistoryItem implements Serializable {
         return contentType;
     }
 
-    private void readObject(java.io.ObjectInputStream in)
-        throws ParseException, IOException, ClassNotFoundException {
+    private void readObject(java.io.ObjectInputStream in) throws ParseException, IOException, ClassNotFoundException {
         contentType = new ContentType((String) in.readObject());
 
         attributes = (Map<String, String>) in.readObject();
     }
 
-    private void writeObject(java.io.ObjectOutputStream out)
-        throws IOException {
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.writeObject(contentType.toString());
         out.writeObject(attributes);
     }

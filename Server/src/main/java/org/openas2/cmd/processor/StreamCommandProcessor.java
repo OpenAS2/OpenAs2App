@@ -1,5 +1,10 @@
 package org.openas2.cmd.processor;
 
+import org.openas2.WrappedException;
+import org.openas2.cmd.Command;
+import org.openas2.cmd.CommandResult;
+import org.openas2.util.CommandTokenizer;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -7,11 +12,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.openas2.WrappedException;
-import org.openas2.cmd.Command;
-import org.openas2.cmd.CommandResult;
-import org.openas2.util.CommandTokenizer;
 
 /**
  * original author unknown
@@ -30,73 +30,57 @@ public class StreamCommandProcessor extends BaseCommandProcessor {
     private BufferedReader reader = null;
     private BufferedWriter writer = null;
 
-    public StreamCommandProcessor()
-    {
+    public StreamCommandProcessor() {
         reader = new BufferedReader(new InputStreamReader(System.in));
         writer = new BufferedWriter(new OutputStreamWriter(System.out));
     }
 
-    public BufferedReader getReader()
-    {
+    public BufferedReader getReader() {
         return reader;
     }
 
-    public BufferedWriter getWriter()
-    {
+    public BufferedWriter getWriter() {
         return writer;
     }
 
-    public void processCommand() throws Exception
-    {
-        try
-        {
+    public void processCommand() throws Exception {
+        try {
 
             String str = readLine();
 
-            if (str != null)
-            {
+            if (str != null) {
                 CommandTokenizer strTkn = new CommandTokenizer(str);
 
-                if (strTkn.hasMoreTokens())
-                {
+                if (strTkn.hasMoreTokens()) {
                     String commandName = strTkn.nextToken().toLowerCase();
 
-                    if (commandName.equals(SERVER_EXIT_COMMAND))
-                    {
+                    if (commandName.equals(SERVER_EXIT_COMMAND)) {
                         terminate();
-                    } else
-                    {
+                    } else {
                         List<String> params = new ArrayList<String>();
 
-                        while (strTkn.hasMoreTokens())
-                        {
+                        while (strTkn.hasMoreTokens()) {
 
                             params.add(strTkn.nextToken());
                         }
 
                         Command cmd = getCommand(commandName);
 
-                        if (cmd != null)
-                        {
-                            CommandResult result = cmd
-                                    .execute(params.toArray());
+                        if (cmd != null) {
+                            CommandResult result = cmd.execute(params.toArray());
 
-                            if (result.getType() == CommandResult.TYPE_OK)
-                            {
+                            if (result.getType() == CommandResult.TYPE_OK) {
                                 writeLine(result.toString());
-                            } else
-                            {
+                            } else {
                                 writeLine(COMMAND_ERROR);
                                 writeLine(result.getResult());
                             }
-                        } else
-                        {
+                        } else {
                             writeLine(COMMAND_NOT_FOUND + "> " + commandName);
                             List<Command> l = getCommands();
                             writeLine("List of commands:");
                             writeLine(SERVER_EXIT_COMMAND);
-                            for (int i = 0; i < l.size(); i++)
-                            {
+                            for (int i = 0; i < l.size(); i++) {
                                 cmd = l.get(i);
                                 writeLine(cmd.getName());
                             }
@@ -105,46 +89,38 @@ public class StreamCommandProcessor extends BaseCommandProcessor {
                 }
 
                 write(PROMPT);
-            } else
-            {
-                try
-                {
+            } else {
+                try {
                     Thread.sleep(100);
-                } catch (InterruptedException e)
-                {
+                } catch (InterruptedException e) {
                 }
             }
 
-        } catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             throw new WrappedException(ioe);
         }
     }
 
-    public String readLine() throws java.io.IOException
-    {
+    public String readLine() throws java.io.IOException {
         BufferedReader rd = getReader();
 
         return rd.readLine().trim();
     }
 
-    public void write(String text) throws java.io.IOException
-    {
+    public void write(String text) throws java.io.IOException {
         BufferedWriter wr = getWriter();
         wr.write(text);
         wr.flush();
     }
 
-    public void writeLine(String line) throws java.io.IOException
-    {
+    public void writeLine(String line) throws java.io.IOException {
         BufferedWriter wr = getWriter();
         wr.write(line + "\r\n");
         wr.flush();
     }
 
     @Override
-    public void destroy() throws Exception
-    {
+    public void destroy() throws Exception {
         reader = null; // Cannot close System.in
         super.destroy();
     }

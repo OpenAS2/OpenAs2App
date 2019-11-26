@@ -1,8 +1,5 @@
 package org.openas2.support.config;
 
-import java.io.File;
-import java.util.Date;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
@@ -14,6 +11,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openas2.support.FileMonitor;
 import org.openas2.support.FileMonitorListener;
+
+import java.io.File;
+import java.util.Date;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -33,8 +33,7 @@ public class FileMonitorTest {
     private FileMonitorListener listener;
 
     @Test
-    public void shouldTriggerListenersWhenFileChanged() throws Exception
-    {
+    public void shouldTriggerListenersWhenFileChanged() throws Exception {
         File fileToObserve = Mockito.spy(temp.newFile());
 
         FileMonitor fileMonitor = new FileMonitor(fileToObserve, listener);

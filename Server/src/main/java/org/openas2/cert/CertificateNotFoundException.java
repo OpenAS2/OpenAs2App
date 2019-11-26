@@ -1,16 +1,16 @@
 package org.openas2.cert;
 
-import java.security.cert.X509Certificate;
-
 import org.openas2.OpenAS2Exception;
+
+import java.security.cert.X509Certificate;
 
 
 public class CertificateNotFoundException extends OpenAS2Exception {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private String alias;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private String alias;
     private String partnershipType;
 
     public CertificateNotFoundException(String partnershipType, String alias) {

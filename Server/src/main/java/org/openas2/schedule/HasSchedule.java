@@ -1,8 +1,8 @@
 package org.openas2.schedule;
 
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.openas2.OpenAS2Exception;
+
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * An optional extension of {@link org.openas2.Component} which allow to schedule tasks on scheduler.

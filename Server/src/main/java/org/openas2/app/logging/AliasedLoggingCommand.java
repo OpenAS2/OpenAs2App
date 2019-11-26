@@ -12,13 +12,11 @@ public abstract class AliasedLoggingCommand extends BaseCommand {
 
         try {
             Log logger = LogFactory.getLog(this.getClass().getName());
-            if (logger instanceof org.openas2.logging.Log)
-            {
-        	return execute(logger, params);
+            if (logger instanceof org.openas2.logging.Log) {
+                return execute(logger, params);
             }
             // Add support for other logging packages here as necessary
-            return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED,
-                    "Not supported by current logging factory");
+            return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current logging factory");
         } catch (OpenAS2Exception oae) {
             oae.terminate();
 

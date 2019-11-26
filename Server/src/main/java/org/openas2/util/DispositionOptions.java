@@ -1,9 +1,9 @@
 package org.openas2.util;
 
+import org.openas2.OpenAS2Exception;
+
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-
-import org.openas2.OpenAS2Exception;
 
 
 public class DispositionOptions {
@@ -52,9 +52,8 @@ public class DispositionOptions {
     public String makeOptions() {
         StringBuffer options = new StringBuffer();
 
-        if ((getProtocolImportance() == null) && (getProtocol() == null) &&
-                (getMicalgImportance() == null) && (getMicalg() == null)) {
-            return new String("");
+        if ((getProtocolImportance() == null) && (getProtocol() == null) && (getMicalgImportance() == null) && (getMicalg() == null)) {
+            return "";
         }
 
         options.append("signed-receipt-protocol=").append(getProtocolImportance());
@@ -70,28 +69,28 @@ public class DispositionOptions {
         setProtocol(null);
         setMicalgImportance(null);
         setMicalg(null);
-		if (options != null) {
-		
-		// TODO: This parsing is far too rigid and will likely fail. The RFC specifies that each parameter can have multiple values
-		// See section 7.3 of https://www.ietf.org/rfc/rfc4130.txt
-		
-        try {
-            StringTokenizer optionTokens = new StringTokenizer(options, "=,;", false);
-            if (optionTokens.countTokens() > 5) {
-            
-            optionTokens.nextToken();
-            setProtocolImportance(optionTokens.nextToken().trim());       
-                setProtocol(optionTokens.nextToken().trim());
-            optionTokens.nextToken();
-            setMicalgImportance(optionTokens.nextToken().trim()); 
-            setMicalg(optionTokens.nextToken().trim());
-               
-            
+        if (options != null) {
+
+            // TODO: This parsing is far too rigid and will likely fail. The RFC specifies that each parameter can have multiple values
+            // See section 7.3 of https://www.ietf.org/rfc/rfc4130.txt
+
+            try {
+                StringTokenizer optionTokens = new StringTokenizer(options, "=,;", false);
+                if (optionTokens.countTokens() > 5) {
+
+                    optionTokens.nextToken();
+                    setProtocolImportance(optionTokens.nextToken().trim());
+                    setProtocol(optionTokens.nextToken().trim());
+                    optionTokens.nextToken();
+                    setMicalgImportance(optionTokens.nextToken().trim());
+                    setMicalg(optionTokens.nextToken().trim());
+
+
+                }
+            } catch (NoSuchElementException nsee) {
+                throw new OpenAS2Exception("Invalid disposition options format: " + options);
             }
-        } catch (NoSuchElementException nsee) {
-            throw new OpenAS2Exception("Invalid disposition options format: " + options);
         }
-		}
     }
 
     public String toString() {

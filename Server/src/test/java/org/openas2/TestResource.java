@@ -1,11 +1,11 @@
 package org.openas2;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * A helper class for locating files and directories on the file systems.
@@ -18,25 +18,20 @@ public class TestResource {
      */
     private final String pathPrefix;
 
-    private TestResource(String clazzSimpleName)
-    {
-        try
-        {
+    private TestResource(String clazzSimpleName) {
+        try {
             URL resource = Thread.currentThread().getContextClassLoader().getResource(".");
             this.pathPrefix = new File(resource.toURI()).getAbsolutePath() + File.separator + clazzSimpleName;
-        } catch (URISyntaxException e)
-        {
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static TestResource forClass(Class<?> clazz)
-    {
+    public static TestResource forClass(Class<?> clazz) {
         return new TestResource(clazz.getSimpleName());
     }
 
-    public static TestResource forGroup(String group)
-    {
+    public static TestResource forGroup(String group) {
         return new TestResource(group);
     }
 
@@ -47,11 +42,9 @@ public class TestResource {
      * @param child    a children name
      * @return a file
      */
-    public File get(String fileName, String... child) throws FileNotFoundException
-    {
+    public File get(String fileName, String... child) throws FileNotFoundException {
         File file = new File(pathPrefix + File.separator + fileName + File.separator + StringUtils.join(child, File.separator));
-        if (!file.exists())
-        {
+        if (!file.exists()) {
             throw new FileNotFoundException(file.getAbsolutePath());
         }
         return file;

@@ -16,8 +16,7 @@ public abstract class AliasedCertCommand extends BaseCommand {
             if (certFx instanceof AliasedCertificateFactory) {
                 return execute((AliasedCertificateFactory) certFx, params);
             }
-            return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED,
-                    "Not supported by current certificate store");
+            return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current certificate store");
         } catch (OpenAS2Exception oae) {
             oae.terminate();
 

@@ -2,77 +2,83 @@ package org.openas2.util;
 
 import org.openas2.WrappedException;
 
-/** emulates StringTokenizer 
- * 
- * @author joseph mcverry
+/**
+ * emulates StringTokenizer
  *
+ * @author joseph mcverry
  */
 public class CommandTokenizer {
 
-	String workString;
-	int pos = 0;
-	int len = -1;
-	/**
-	 * constructor
-	 * @param inString the string to parse
-	 */
-	public CommandTokenizer(String inString) {
-		workString = inString;
-		len = workString.length();
-	}
+    String workString;
+    int pos = 0;
+    int len = -1;
 
-	/**
-	 * any more tokens in String
-	 * @return true if there are any more tokens 
-	 * @throws WrappedException - internally handled error
-	 */
-	public boolean hasMoreTokens() throws WrappedException {
-		try {
-			while (pos < len - 1 && workString.charAt(pos) == ' ')
-				pos++;
+    /**
+     * constructor
+     *
+     * @param inString the string to parse
+     */
+    public CommandTokenizer(String inString) {
+        workString = inString;
+        len = workString.length();
+    }
 
-			if (pos < len)
-				return true;
+    /**
+     * any more tokens in String
+     *
+     * @return true if there are any more tokens
+     * @throws WrappedException - internally handled error
+     */
+    public boolean hasMoreTokens() throws WrappedException {
+        try {
+            while (pos < len - 1 && workString.charAt(pos) == ' ') {
+                pos++;
+            }
 
-			return false;
-		} catch (Exception e) {
-			throw new WrappedException(e);
-		}
-	}
+            if (pos < len) {
+                return true;
+            }
 
-	/**
-	 * returns the next token, this handles spaces and quotes
-	 * @return a string
-	 * @throws WrappedException  - internally handled error
-	 * 
-	 */
-	public String nextToken() throws WrappedException {
+            return false;
+        } catch (Exception e) {
+            throw new WrappedException(e);
+        }
+    }
 
-		try {
-			while (pos < len - 1 && workString.charAt(pos) == ' ')
-				pos++;
+    /**
+     * returns the next token, this handles spaces and quotes
+     *
+     * @return a string
+     * @throws WrappedException - internally handled error
+     */
+    public String nextToken() throws WrappedException {
 
-			StringBuffer sb = new StringBuffer();
+        try {
+            while (pos < len - 1 && workString.charAt(pos) == ' ') {
+                pos++;
+            }
 
-			while (pos < len && workString.charAt(pos) != ' ') {
+            StringBuffer sb = new StringBuffer();
 
-				if (workString.charAt(pos) == '"') {
-					pos++;
-					while (pos < len && workString.charAt(pos) != '"') {
-						sb.append(workString.charAt(pos));
-						pos++;
-					}
-					pos++;
-					return sb.toString();
-				}
-				sb.append(workString.charAt(pos));
-				pos++;
-			}
+            while (pos < len && workString.charAt(pos) != ' ') {
 
-			return sb.toString();
-		} catch (Exception e) {
-			throw new WrappedException(e);
-		}
+                if (workString.charAt(pos) == '"') {
+                    pos++;
+                    while (pos < len && workString.charAt(pos) != '"') {
+                        sb.append(workString.charAt(pos));
+                        pos++;
+                    }
+                    pos++;
+                    return sb.toString();
+                }
+                sb.append(workString.charAt(pos));
+                pos++;
+            }
 
-	}
+            return sb.toString();
+        } catch (Exception e) {
+            throw new WrappedException(e);
+        }
+
+    }
 }

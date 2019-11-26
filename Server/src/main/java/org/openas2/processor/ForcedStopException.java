@@ -4,12 +4,12 @@ import org.openas2.WrappedException;
 
 
 public class ForcedStopException extends WrappedException {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	public ForcedStopException(Exception source) {
-		super(source);
-	}
+    public ForcedStopException(Exception source) {
+        super(source);
+    }
 }

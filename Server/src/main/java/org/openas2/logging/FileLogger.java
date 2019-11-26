@@ -1,10 +1,5 @@
 package org.openas2.logging;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Map;
-
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
@@ -12,9 +7,14 @@ import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.ParameterParser;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Map;
+
 public class FileLogger extends BaseLogger {
     public static final String PARAM_FILENAME = "filename";
-    
+
     private final Object fileWriteLock = new Object();
 
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
@@ -28,16 +28,16 @@ public class FileLogger extends BaseLogger {
     }
 
     protected void appendToFile(String text) {
-    	
-    	final byte[] msg = text.getBytes();
-    	// one thread might have to wait a long time (several seconds) if it is busy.
-    	synchronized(fileWriteLock) { 
-    		try (FileOutputStream fos = new FileOutputStream(getLogFile(), true)) {
-    			fos.write(msg);
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    		}
-    	}
+
+        final byte[] msg = text.getBytes();
+        // one thread might have to wait a long time (several seconds) if it is busy.
+        synchronized (fileWriteLock) {
+            try (FileOutputStream fos = new FileOutputStream(getLogFile(), true)) {
+                fos.write(msg);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     protected File getLogFile() throws OpenAS2Exception {
@@ -52,20 +52,17 @@ public class FileLogger extends BaseLogger {
             File parentDir = logFile.getParentFile();
             if (!parentDir.exists()) {
                 if (!parentDir.mkdirs()) {
-                    String msg = "Could not create log directories for file \"" + logFile.getAbsolutePath()
-                            + "\" for log file parameter \"" + filename + "\"";
+                    String msg = "Could not create log directories for file \"" + logFile.getAbsolutePath() + "\" for log file parameter \"" + filename + "\"";
                     throw new OpenAS2Exception(msg);
                 }
             }
             try {
                 if (!logFile.createNewFile()) {
-                    String msg = "Could not create log file \"" + logFile.getAbsolutePath()
-                            + "\" for log file parameter \"" + filename + "\"";
+                    String msg = "Could not create log file \"" + logFile.getAbsolutePath() + "\" for log file parameter \"" + filename + "\"";
                     throw new OpenAS2Exception(msg);
                 }
             } catch (IOException ioe) {
-                String msg = "Could not create log file \"" + logFile.getAbsolutePath()
-                        + "\" for log file parameter \"" + filename + "\": " + ioe.getMessage();
+                String msg = "Could not create log file \"" + logFile.getAbsolutePath() + "\" for log file parameter \"" + filename + "\": " + ioe.getMessage();
                 throw new OpenAS2Exception(msg, ioe);
             }
         }
@@ -85,7 +82,7 @@ public class FileLogger extends BaseLogger {
     }
 
     public void doLog(Level level, String msgText, Message as2Msg) {
-        appendToFile(getFormatter().format(level, msgText + (as2Msg == null?"":as2Msg.getLogMsgID())));
+        appendToFile(getFormatter().format(level, msgText + (as2Msg == null ? "" : as2Msg.getLogMsgID())));
     }
 
 }

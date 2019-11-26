@@ -2,11 +2,11 @@ package org.openas2;
 
 public class WrappedException extends OpenAS2Exception {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	public WrappedException() {
+    public WrappedException() {
         super();
     }
 

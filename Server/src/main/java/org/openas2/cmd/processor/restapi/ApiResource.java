@@ -7,13 +7,10 @@ package org.openas2.cmd.processor.restapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.openas2.cert.AliasedCertificateFactory;
+import org.openas2.cmd.CommandResult;
+import org.openas2.cmd.processor.RestCommandProcessor;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,22 +21,25 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.openas2.cmd.CommandResult;
-import org.openas2.cmd.processor.RestCommandProcessor;
+import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Base64;
-import org.openas2.cert.AliasedCertificateFactory;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
  * @author javier
  */
 @Path("api")
@@ -91,8 +91,7 @@ public class ApiResource {
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
-    public CommandResult getCommand(@PathParam("resource") String resource,
-            @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId) throws Exception {
+    public CommandResult getCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId) throws Exception {
         try {
             // TODO: Figure out a better way to return proper JSON objects instead of this hack
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert") && (itemId != null && itemId.length() > 1)) {
@@ -126,8 +125,7 @@ public class ApiResource {
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public CommandResult postCommand(@PathParam("resource") String resource,
-            @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
+    public CommandResult postCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         try {
             // TODO: Figure out a better way to return proper JSON objects instead of this hack
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert")) {
@@ -206,7 +204,7 @@ public class ApiResource {
             ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(payload));
 
             java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");
-            CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK,"Certificate(s) imported successfully");
+            CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK, "Certificate(s) imported successfully");
 
             while (bais.available() > 0) {
                 Certificate cert = cf.generateCertificate(bais);
@@ -217,7 +215,7 @@ public class ApiResource {
                     return cmdRes;
                 }
             }
-            return new CommandResult(CommandResult.TYPE_ERROR,"No valid X509 certificates found");
+            return new CommandResult(CommandResult.TYPE_ERROR, "No valid X509 certificates found");
         } catch (Exception ex) {
             Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
             throw ex;

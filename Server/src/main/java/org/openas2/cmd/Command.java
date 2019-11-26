@@ -5,19 +5,19 @@ import org.openas2.Session;
 
 
 public interface Command extends Component {
-    public void setDescription(String desc);
+    void setDescription(String desc);
 
-    public String getDescription();
+    String getDescription();
 
-    public void setName(String name);
+    void setName(String name);
 
-    public String getName();
+    String getName();
 
-    public Session getSession();
+    Session getSession();
 
-    public void setUsage(String usage);
+    void setUsage(String usage);
 
-    public String getUsage();
+    String getUsage();
 
-    public CommandResult execute(Object[] params);
+    CommandResult execute(Object[] params);
 }

@@ -1,63 +1,62 @@
 package org.openas2.message;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
-
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
+import javax.mail.internet.InternetHeaders;
+import javax.mail.internet.MimeBodyPart;
+import java.io.Serializable;
+import java.util.Map;
+
 
 public interface MessageMDN extends Serializable {
-    public void setAttribute(String key, String value);
+    void setAttribute(String key, String value);
 
-    public String getAttribute(String key);
+    String getAttribute(String key);
 
-    public void setAttributes(Map<String, String> attributes);
+    void setAttributes(Map<String, String> attributes);
 
-    public Map<String, String> getAttributes();
+    Map<String, String> getAttributes();
 
-    public void setData(MimeBodyPart data);
+    void setData(MimeBodyPart data);
 
-    public MimeBodyPart getData();
+    MimeBodyPart getData();
 
-    public void setHeader(String key, String value);
+    void setHeader(String key, String value);
 
-    public String getHeader(String key);
+    String getHeader(String key);
 
-    public String getHeader(String key, String delimiter);
+    String getHeader(String key, String delimiter);
 
-    public void setHeaders(InternetHeaders headers);
+    void setHeaders(InternetHeaders headers);
 
-    public void copyHeaders(InternetHeaders srcHeaders);
-    
-    public InternetHeaders getHeaders();
+    void copyHeaders(InternetHeaders srcHeaders);
 
-    public void setHistory(DataHistory history);
+    InternetHeaders getHeaders();
 
-    public DataHistory getHistory();
+    void setHistory(DataHistory history);
 
-    public void setMessage(Message message);
+    DataHistory getHistory();
 
-    public Message getMessage();
-    
-    public void setMessageID(String messageID);
+    void setMessage(Message message);
 
-    public String getMessageID();
-    
-    public void setPartnership(Partnership partnership);
+    Message getMessage();
 
-    public Partnership getPartnership();
+    void setMessageID(String messageID);
 
-    public void setText(String text);
+    String getMessageID();
 
-    public String getText();
-    
-    public void addHeader(String key, String value);
+    void setPartnership(Partnership partnership);
 
-    public String generateMessageID() throws InvalidParameterException;
+    Partnership getPartnership();
 
-    public void updateMessageID() throws InvalidParameterException;
+    void setText(String text);
+
+    String getText();
+
+    void addHeader(String key, String value);
+
+    String generateMessageID() throws InvalidParameterException;
+
+    void updateMessageID() throws InvalidParameterException;
 }

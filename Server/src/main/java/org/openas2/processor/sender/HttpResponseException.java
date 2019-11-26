@@ -4,15 +4,15 @@ import org.openas2.OpenAS2Exception;
 
 public class HttpResponseException extends OpenAS2Exception {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private String message;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private String message;
     private String url;
     private int code;
 
     public HttpResponseException(String url, int code, String message) {
-        super("Http Response from " + url + ": " + Integer.toString(code) + " - " + message);
+        super("Http Response from " + url + ": " + code + " - " + message);
         this.code = code;
         this.message = message;
         this.url = url;

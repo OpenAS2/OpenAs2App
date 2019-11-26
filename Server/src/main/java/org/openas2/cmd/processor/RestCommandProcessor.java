@@ -5,34 +5,32 @@
  */
 package org.openas2.cmd.processor;
 
-import java.io.IOException;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.server.ResourceConfig;
-
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ContainerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
-import org.openas2.WrappedException;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
+import org.openas2.cmd.processor.restapi.ApiResource;
 import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
 import org.openas2.cmd.processor.restapi.CORSFilter;
-import org.openas2.cmd.processor.restapi.ApiResource;
 import org.openas2.cmd.processor.restapi.LoggerRequestFilter;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- *
  * @author javier
  */
 public class RestCommandProcessor extends BaseCommandProcessor {
@@ -46,7 +44,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
         //throw new UnsupportedOperationException("Commands received by HTTP Server thread"); 
     }
 
-    public CommandResult feedCommand(String commandText, List<String> params) throws WrappedException, Exception {
+    public CommandResult feedCommand(String commandText, List<String> params) throws Exception {
         CommandResult result = null;
         if (commandText != null && commandText.length() > 0) {
             String commandName = commandText.toLowerCase();
@@ -75,7 +73,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             super.destroy();
             server.shutdown();
             logger.info(this.getName() + " destroyed...");
-        }catch(Exception e) {
+        } catch (Exception e) {
             logger.error("failed to cleanup RestAPI command processor", e);
             throw e;
         }
@@ -87,31 +85,30 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             super.init(session, parameters);
             logger.info(this.getName() + " initialized...");
             // create a resource config that scans for JAX-RS resources and providers
+            final String userId = parameters.getOrDefault("userid", "userid");
+            final String password = parameters.getOrDefault("password", "pWd");
             final ResourceConfig rc = new ResourceConfig();
             rc.register(new LoggerRequestFilter(logger))
-                .register(new AuthenticationRequestFilter(
-                    parameters.getOrDefault("userid","userid"),
-                    parameters.getOrDefault("password","pWd")
-                ))
-                .register(new ApiResource(this))
-                .register(new CORSFilter());
+              .register(new AuthenticationRequestFilter(userId, password))
+              .register(new ApiResource(this))
+              .register(new CORSFilter());
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
-            
-            
+
+
             logger.info("Creating and starting a new instance of grizzly http server");
-            logger.info("Exposing the Jersey application at "+baseUri);
+            logger.info("Exposing the Jersey application at " + baseUri);
             if (baseUri.getScheme().equalsIgnoreCase("https")) {
                 //Secure Server
                 SSLContextConfigurator sslCon = new SSLContextConfigurator();
                 String keystore = parameters.get("ssl_keystore");
-                if(null == keystore) {
+                if (null == keystore) {
                     throw new RuntimeException("Missing SSL Keystore parameter in the configuration. You cannot use SSL without a Certificate");
                 }
                 sslCon.setKeyStoreFile(keystore);
                 sslCon.setKeyStorePass(parameters.getOrDefault("ssl_keystore_password", ""));
                 sslCon.setSecurityProtocol(parameters.getOrDefault("ssl_protocol", "TLS"));
-                
-                GrizzlyHttpContainer container = (GrizzlyHttpContainer) ContainerFactory.createContainer(GrizzlyHttpContainer.class, rc);
+
+                GrizzlyHttpContainer container = ContainerFactory.createContainer(GrizzlyHttpContainer.class, rc);
                 SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslCon, false, false, false);
                 server = GrizzlyHttpServerFactory.createHttpServer(baseUri, container, true, sslEngineConfigurator, true);
             } else {

@@ -1,5 +1,22 @@
 package org.openas2.partner;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
+import org.openas2.WrappedException;
+import org.openas2.params.InvalidParameterException;
+import org.openas2.schedule.HasSchedule;
+import org.openas2.support.FileMonitorAdapter;
+import org.openas2.util.AS2Util;
+import org.openas2.util.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,24 +32,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openas2.OpenAS2Exception;
-import org.openas2.schedule.HasSchedule;
-import org.openas2.Session;
-import org.openas2.WrappedException;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.support.FileMonitorAdapter;
-import org.openas2.util.AS2Util;
-import org.openas2.util.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 
 /**
  * original author unknown
@@ -42,6 +41,7 @@ import org.w3c.dom.NodeList;
  * @author joseph mcverry
  */
 public class XMLPartnershipFactory extends BasePartnershipFactory implements HasSchedule {
+
     public static final String PARAM_FILENAME = "filename";
     public static final String PARAM_INTERVAL = "interval";
 
@@ -50,42 +50,34 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     private Log logger = LogFactory.getLog(XMLPartnershipFactory.class.getSimpleName());
 
 
-    private int getRefreshInterval() throws InvalidParameterException
-    {
+    private int getRefreshInterval() throws InvalidParameterException {
         return getParameterInt(PARAM_INTERVAL, false);
     }
 
-    String getFilename() throws InvalidParameterException
-    {
+    String getFilename() throws InvalidParameterException {
         return getParameter(PARAM_FILENAME, true);
     }
 
-    public Map<String, Object> getPartners()
-    {
-        if (partners == null)
-        {
+    public Map<String, Object> getPartners() {
+        if (partners == null) {
             partners = new HashMap<String, Object>();
         }
 
         return partners;
     }
 
-    private void setPartners(Map<String, Object> map)
-    {
+    private void setPartners(Map<String, Object> map) {
         partners = map;
     }
 
-    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception
-    {
+    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         super.init(session, parameters);
 
         refresh();
     }
 
-    void refresh() throws OpenAS2Exception
-    {
-        try (FileInputStream inputStream = new FileInputStream(getFilename()))
-        {
+    void refresh() throws OpenAS2Exception {
+        try (FileInputStream inputStream = new FileInputStream(getFilename())) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder parser = factory.newDocumentBuilder();
@@ -98,51 +90,41 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             Map<String, Object> newPartners = new HashMap<String, Object>();
             List<Partnership> newPartnerships = new ArrayList<Partnership>();
 
-            for (int i = 0; i < rootNodes.getLength(); i++)
-            {
+            for (int i = 0; i < rootNodes.getLength(); i++) {
                 rootNode = rootNodes.item(i);
 
                 nodeName = rootNode.getNodeName();
 
-                if (nodeName.equals("partner"))
-                {
+                if (nodeName.equals("partner")) {
                     loadPartner(newPartners, rootNode);
-                } else if (nodeName.equals("partnership"))
-                {
+                } else if (nodeName.equals("partnership")) {
                     loadPartnership(newPartners, newPartnerships, rootNode);
                 }
             }
 
-            synchronized (this)
-            {
+            synchronized (this) {
                 setPartners(newPartners);
                 setPartnerships(newPartnerships);
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new WrappedException(e);
         }
     }
 
-    private void loadAttributes(Node node, Partnership partnership)
-            throws OpenAS2Exception
-    {
+    private void loadAttributes(Node node, Partnership partnership) throws OpenAS2Exception {
         Map<String, String> nodes = XMLUtil.mapAttributeNodes(node.getChildNodes(), "attribute", "name", "value");
 
         AS2Util.attributeEnhancer(nodes);
         partnership.getAttributes().putAll(nodes);
     }
 
-    public void loadPartner(Map<String, Object> partners, Node node)
-            throws OpenAS2Exception
-    {
+    public void loadPartner(Map<String, Object> partners, Node node) throws OpenAS2Exception {
         String[] requiredAttributes = {"name"};
 
         Map<String, String> newPartner = XMLUtil.mapAttributes(node, requiredAttributes);
         String name = newPartner.get("name");
 
-        if (partners.get(name) != null)
-        {
+        if (partners.get(name) != null) {
             throw new OpenAS2Exception("Partner is defined more than once: " + name);
         }
 
@@ -150,13 +132,10 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
 
-    private void loadPartnerIDs(Map<String, Object> partners, String partnershipName, Node partnershipNode,
-                                String partnerType, Map<String, Object> idMap) throws OpenAS2Exception
-    {
+    private void loadPartnerIDs(Map<String, Object> partners, String partnershipName, Node partnershipNode, String partnerType, Map<String, Object> idMap) throws OpenAS2Exception {
         Node partnerNode = XMLUtil.findChildNode(partnershipNode, partnerType);
 
-        if (partnerNode == null)
-        {
+        if (partnerNode == null) {
             throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing sender");
         }
 
@@ -165,35 +144,29 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         // check for a partner name, and look up in partners list if one is found
         String partnerName = partnerAttr.get("name");
 
-        if (partnerName != null)
-        {
+        if (partnerName != null) {
             Map<String, Object> map = (Map<String, Object>) partners.get(partnerName);
             Map<String, Object> partner = map;
 
-            if (partner == null)
-            {
-                throw new OpenAS2Exception("Partnership " + partnershipName + " has an undefined " +
-                        partnerType + ": " + partnerName);
+            if (partner == null) {
+                throw new OpenAS2Exception("Partnership " + partnershipName + " has an undefined " + partnerType + ": " + partnerName);
             }
 
             idMap.putAll(partner);
         }
 
-        // copy all other attributes to the partner id map		
+        // copy all other attributes to the partner id map
         idMap.putAll(partnerAttr);
     }
 
-    public void loadPartnership(Map<String, Object> partners, List<Partnership> partnerships, Node node)
-            throws OpenAS2Exception
-    {
+    public void loadPartnership(Map<String, Object> partners, List<Partnership> partnerships, Node node) throws OpenAS2Exception {
         Partnership partnership = new Partnership();
         String[] requiredAttributes = {"name"};
 
         Map<String, String> psAttributes = XMLUtil.mapAttributes(node, requiredAttributes);
         String name = psAttributes.get("name");
 
-        if (getPartnership(partnerships, name) != null)
-        {
+        if (getPartnership(partnerships, name) != null) {
             throw new OpenAS2Exception("Partnership is defined more than once: " + name);
         }
 
@@ -210,20 +183,16 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         partnerships.add(partnership);
     }
 
-    public void storePartnership()
-            throws OpenAS2Exception
-    {
+    public void storePartnership() throws OpenAS2Exception {
         String fn = getFilename();
 
 
         DecimalFormat df = new DecimalFormat("0000000");
         long l = 0;
         File f = null;
-        while (true)
-        {
+        while (true) {
             f = new File(fn + '.' + df.format(l));
-            if (f.exists() == false)
-            {
+            if (f.exists() == false) {
                 break;
             }
             l++;
@@ -234,26 +203,22 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         File fr = new File(fn);
         fr.renameTo(f);
 
-        try
-        {
+        try {
             PrintWriter pw = new PrintWriter(new FileOutputStream(fn));
 
 
             Map<String, Object> partner = partners;
             pw.println("<partnerships>");
             Iterator<Map.Entry<String, Object>> partnerIt = partner.entrySet().iterator();
-            while (partnerIt.hasNext())
-            {
+            while (partnerIt.hasNext()) {
                 Map.Entry<String, Object> ptrnData = partnerIt.next();
                 HashMap<String, Object> partnerMap = (HashMap<String, Object>) ptrnData.getValue();
                 pw.print("  <partner ");
                 Iterator<Map.Entry<String, Object>> attrIt = partnerMap.entrySet().iterator();
-                while (attrIt.hasNext())
-                {
+                while (attrIt.hasNext()) {
                     Map.Entry<String, Object> attribute = attrIt.next();
                     pw.print(attribute.getKey() + "=\"" + attribute.getValue() + "\"");
-                    if (attrIt.hasNext())
-                    {
+                    if (attrIt.hasNext()) {
                         pw.print("\n           ");
                     }
                 }
@@ -261,8 +226,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             }
             List<Partnership> partnerShips = getPartnerships();
             ListIterator<Partnership> partnerLIt = partnerShips.listIterator();
-            while (partnerLIt.hasNext())
-            {
+            while (partnerLIt.hasNext()) {
                 Partnership partnership = partnerLIt.next();
                 pw.println("  <partnership name=\"" + partnership.getName() + "\">");
                 pw.println("    <sender name=\"" + partnership.getSenderIDs().get("name") + "\"/>");
@@ -270,8 +234,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 Map<String, String> partnershipMap = partnership.getAttributes();
 
                 Iterator<Map.Entry<String, String>> partnershipIt = partnershipMap.entrySet().iterator();
-                while (partnershipIt.hasNext())
-                {
+                while (partnershipIt.hasNext()) {
                     Map.Entry<String, String> partnershipData = partnershipIt.next();
                     pw.println("    <attribute name=\"" + partnershipData.getKey() + "\" value=\"" + partnershipData.getValue() + "\"/>");
 
@@ -281,19 +244,16 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             pw.println("</partnerships>");
             pw.flush();
             pw.close();
-        } catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             throw new WrappedException(e);
         }
     }
 
     @Override
-    public void schedule(ScheduledExecutorService executor) throws OpenAS2Exception
-    {
+    public void schedule(ScheduledExecutorService executor) throws OpenAS2Exception {
         new FileMonitorAdapter() {
             @Override
-            public void onConfigFileChanged() throws OpenAS2Exception
-            {
+            public void onConfigFileChanged() throws OpenAS2Exception {
                 refresh();
                 logger.debug("- Partnerships Reloaded -");
             }

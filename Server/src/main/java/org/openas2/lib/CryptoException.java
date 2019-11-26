@@ -2,11 +2,11 @@ package org.openas2.lib;
 
 public class CryptoException extends OpenAS2Exception {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	public CryptoException() {
+    public CryptoException() {
         super();
     }
 

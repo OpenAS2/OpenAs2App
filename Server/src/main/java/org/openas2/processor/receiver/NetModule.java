@@ -1,5 +1,27 @@
 package org.openas2.processor.receiver;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
+import org.openas2.WrappedException;
+import org.openas2.message.InvalidMessageException;
+import org.openas2.message.Message;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.DateParameters;
+import org.openas2.params.InvalidParameterException;
+import org.openas2.params.MessageParameters;
+import org.openas2.util.HTTPUtil;
+import org.openas2.util.IOUtil;
+import org.openas2.util.Properties;
+import org.openas2.util.ResponseWrapper;
+
+import javax.annotation.Nullable;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,29 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.Nullable;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openas2.OpenAS2Exception;
-import org.openas2.Session;
-import org.openas2.WrappedException;
-import org.openas2.message.InvalidMessageException;
-import org.openas2.message.Message;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageParameters;
-import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtil;
-import org.openas2.util.Properties;
-import org.openas2.util.ResponseWrapper;
-
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
 
@@ -60,97 +59,79 @@ public abstract class NetModule extends BaseReceiverModule {
     private HTTPServerThread mainThread;
     private Log logger = LogFactory.getLog(NetModule.class.getSimpleName());
 
-    public void doStart() throws OpenAS2Exception
-    {
-        try
-        {
+    public void doStart() throws OpenAS2Exception {
+        try {
             mainThread = new HTTPServerThread(this, getParameter(PARAM_ADDRESS, false), getParameterInt(PARAM_PORT, true));
             mainThread.start();
-        } catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             String host = getParameter(PARAM_ADDRESS, false);
-            if (host == null || host.length() < 1)
-            {
+            if (host == null || host.length() < 1) {
                 host = "localhost";
             }
-            logger.error("Error in HTTP connection starting server thread on host::port: "
-                    + host + "::"
-                    + getParameterInt(PARAM_PORT, true), ioe);
+            logger.error("Error in HTTP connection starting server thread on host::port: " + host + "::" + getParameterInt(PARAM_PORT, true), ioe);
             throw new WrappedException(ioe);
         }
     }
 
-    public void doStop() throws OpenAS2Exception
-    {
-        if (mainThread != null)
-        {
+    public void doStop() throws OpenAS2Exception {
+        if (mainThread != null) {
             mainThread.terminate();
             mainThread = null;
         }
     }
 
-    public void init(Session session, Map<String, String> options) throws OpenAS2Exception
-    {
+    public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
         getParameter(PARAM_PORT, true);
         // Override the password if it was passed as a system property
         String pwd = System.getProperty("org.openas2.ssl.Password");
-        if (pwd != null)
-        {
+        if (pwd != null) {
             setParameter(PARAM_SSL_KEYSTORE_PASSWORD, pwd);
         }
 
     }
 
     @Override
-	public boolean healthcheck(List<String> failures)
-	{
-    	try
-		{
-			String hcHost = getParameter(PARAM_ADDRESS, Properties.getProperty("ssl_host_name", "localhost"));
-			String hcPort = getParameter(PARAM_PORT, true);
-	    	String hcProtocol = getParameter(PARAM_PROTOCOL, "http");
-	    	String urlString = hcProtocol + "://" + hcHost + ":" + hcPort + "/" + Properties.getProperty("health_check_uri", "healthcheck");
+    public boolean healthcheck(List<String> failures) {
+        try {
+            String hcHost = getParameter(PARAM_ADDRESS, Properties.getProperty("ssl_host_name", "localhost"));
+            String hcPort = getParameter(PARAM_PORT, true);
+            String hcProtocol = getParameter(PARAM_PROTOCOL, "http");
+            String urlString = hcProtocol + "://" + hcHost + ":" + hcPort + "/" + Properties.getProperty("health_check_uri", "healthcheck");
 
-	    	if (logger.isTraceEnabled())
-	    		logger.trace("Helthcheck about to try URL: " + urlString);
-	    	Map<String, String> options = new HashMap<String, String>();
-	    	options.put(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS, "true");
-			ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options, 0L);
-	    	if (200 != rw.getStatusCode())
-	    	{
-	    		failures.add(this.getClass().getSimpleName()
-	    				+ " - Error making HTTP connection. Response code: "
-	    				+ rw.getStatusCode() + " " + rw.getStatusPhrase());
-				return false;
-	    	}
-		} catch (Exception e)
-		{
-			logger.error("Failed to execute healthcheck.", e);
-			failures.add(this.getClass().getSimpleName() + " - Failed to execute HTTP connection to listener: " + e.getMessage());
-			return false;
-		}
-		return true;
-	}
-    
+            if (logger.isTraceEnabled()) {
+                logger.trace("Helthcheck about to try URL: " + urlString);
+            }
+            Map<String, String> options = new HashMap<String, String>();
+            options.put(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS, "true");
+            ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options, 0L);
+            if (200 != rw.getStatusCode()) {
+                failures.add(this.getClass().getSimpleName() + " - Error making HTTP connection. Response code: " + rw.getStatusCode() + " " + rw.getStatusPhrase());
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to execute healthcheck.", e);
+            failures.add(this.getClass().getSimpleName() + " - Failed to execute HTTP connection to listener: " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
     protected abstract NetModuleHandler getHandler();
 
-    protected void handleError(Message msg, OpenAS2Exception oae)
-    {
+    protected void handleError(Message msg, OpenAS2Exception oae) {
         oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
         oae.terminate();
 
-        try
-        {
+        try {
             CompositeParameters params = new CompositeParameters(false).
-                    add("date", new DateParameters()).
-                    add("msg", new MessageParameters(msg));
+                add("date", new DateParameters()).
+                add("msg", new MessageParameters(msg));
 
             String name = params.format(getParameter(PARAM_ERRORS, DEFAULT_ERRORS));
             String directory = getParameter(PARAM_ERROR_DIRECTORY, true);
 
-            File msgFile = IOUtil.getUnique(IOUtil.getDirectoryFile(directory),
-                    IOUtil.cleanFilename(name));
+            File msgFile = IOUtil.getUnique(IOUtil.getDirectoryFile(directory), IOUtil.cleanFilename(name));
             String msgText = msg.toString();
             FileOutputStream fOut = new FileOutputStream(msgFile);
 
@@ -158,15 +139,12 @@ public abstract class NetModule extends BaseReceiverModule {
             fOut.close();
 
             // make sure an error of this event is logged
-            InvalidMessageException im = new InvalidMessageException("Stored invalid message to " +
-                    msgFile.getAbsolutePath());
+            InvalidMessageException im = new InvalidMessageException("Stored invalid message to " + msgFile.getAbsolutePath());
             im.terminate();
-        } catch (OpenAS2Exception oae2)
-        {
+        } catch (OpenAS2Exception oae2) {
             oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             oae2.terminate();
-        } catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             WrappedException we = new WrappedException(ioe);
             we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             we.terminate();
@@ -177,25 +155,21 @@ public abstract class NetModule extends BaseReceiverModule {
         private final NetModule owner;
         private final Socket socket;
 
-        public ConnectionHandler(NetModule owner, Socket socket)
-        {
+        public ConnectionHandler(NetModule owner, Socket socket) {
             this.owner = owner;
             this.socket = socket;
         }
 
-        public NetModule getOwner()
-        {
+        public NetModule getOwner() {
             return owner;
         }
 
-        public Socket getSocket()
-        {
+        public Socket getSocket() {
             return socket;
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             Socket s = getSocket();
 
             try {
@@ -216,166 +190,128 @@ public abstract class NetModule extends BaseReceiverModule {
         private final ExecutorService connectionThreads;
         private final AtomicBoolean terminated = new AtomicBoolean();
 
-        HTTPServerThread(NetModule owner, @Nullable String address, int port)
-                throws IOException
-        {
+        HTTPServerThread(NetModule owner, @Nullable String address, int port) throws IOException {
             super(ClassUtils.getSimpleName(HTTPServerThread.class) + " (" + defaultIfBlank(address, "0.0.0.0") + ":" + port + ")");
             this.owner = owner;
             String protocol = "http";
             String sslProtocol = "TLS";
-            try
-            {
+            try {
                 protocol = owner.getParameter(PARAM_PROTOCOL, "http");
                 sslProtocol = owner.getParameter(PARAM_SSL_PROTOCOL, "TLS");
-            } catch (InvalidParameterException e)
-            {
+            } catch (InvalidParameterException e) {
                 // Do nothing
             }
-            if ("https".equalsIgnoreCase(protocol))
-            {
+            if ("https".equalsIgnoreCase(protocol)) {
                 String ksName;
                 char[] ksPass;
-                try
-                {
+                try {
                     ksName = owner.getParameter(PARAM_SSL_KEYSTORE, true);
                     ksPass = owner.getParameter(PARAM_SSL_KEYSTORE_PASSWORD, true).toCharArray();
-                } catch (InvalidParameterException e)
-                {
+                } catch (InvalidParameterException e) {
                     logger.error("Required SSL parameter missing.", e);
                     throw new IOException("Failed to retireve require SSL parameters. Check config XML");
                 }
                 KeyStore ks;
-                try
-                {
+                try {
                     ks = KeyStore.getInstance("JKS");
-                } catch (KeyStoreException e)
-                {
+                } catch (KeyStoreException e) {
                     logger.error("Failed to initialise SSL keystore.", e);
                     throw new IOException("Error initialising SSL keystore");
                 }
-                try
-                {
+                try {
                     ks.load(new FileInputStream(ksName), ksPass);
-                } catch (NoSuchAlgorithmException e)
-                {
+                } catch (NoSuchAlgorithmException e) {
                     logger.error("Failed to load keystore: " + ksName, e);
                     throw new IOException("Error loading SSL keystore");
-                } catch (CertificateException e)
-                {
+                } catch (CertificateException e) {
                     logger.error("Failed to load SSL certificate: " + ksName, e);
                     throw new IOException("Error loading SSL certificate");
                 }
                 KeyManagerFactory kmf;
-                try
-                {
+                try {
                     kmf = KeyManagerFactory.getInstance("SunX509");
-                } catch (NoSuchAlgorithmException e)
-                {
+                } catch (NoSuchAlgorithmException e) {
                     logger.error("Failed to create key manager instance", e);
                     throw new IOException("Error creating SSL key manager instance");
                 }
-                try
-                {
+                try {
                     kmf.init(ks, ksPass);
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     logger.error("Failed to initialise key manager instance", e);
                     throw new IOException("Error initialising SSL key manager instance");
                 }
                 // setup the trust manager factory
                 TrustManagerFactory tmf;
-                try
-                {
+                try {
                     tmf = TrustManagerFactory.getInstance("SunX509");
                     tmf.init(ks);
-                } catch (Exception e1)
-                {
+                } catch (Exception e1) {
                     logger.error("Failed to create trust manager instance", e1);
                     throw new IOException("Error creating SSL trust manager instance");
                 }
                 SSLContext sc;
-                try
-                {
+                try {
                     sc = SSLContext.getInstance(sslProtocol);
-                } catch (NoSuchAlgorithmException e)
-                {
+                } catch (NoSuchAlgorithmException e) {
                     logger.error("Failed to create SSL context instance", e);
                     throw new IOException("Error creating SSL context instance");
                 }
-                try
-                {
+                try {
                     sc.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-                } catch (KeyManagementException e)
-                {
+                } catch (KeyManagementException e) {
                     logger.error("Failed to initialise SSL context instance", e);
                     throw new IOException("Error initialising SSL context instance");
                 }
                 SSLServerSocketFactory ssf = sc.getServerSocketFactory();
-                if (address != null)
-                {
+                if (address != null) {
                     socket = ssf.createServerSocket(port, 0, InetAddress.getByName(address));
-                } else
-                {
+                } else {
                     socket = ssf.createServerSocket(port);
                 }
-            } else
-            {
+            } else {
                 socket = new ServerSocket();
-                if (address != null)
-                {
+                if (address != null) {
                     socket.bind(new InetSocketAddress(address, port));
-                } else
-                {
+                } else {
                     socket.bind(new InetSocketAddress(port));
                 }
             }
             connectionThreads = Executors.newCachedThreadPool();
         }
 
-        NetModule getOwner()
-        {
+        NetModule getOwner() {
             return owner;
         }
 
-        public ServerSocket getSocket()
-        {
+        public ServerSocket getSocket() {
             return socket;
         }
 
-        public boolean isTerminated()
-        {
+        public boolean isTerminated() {
             return terminated.get();
         }
 
-        public void terminate()
-        {
+        public void terminate() {
             if (!terminated.compareAndSet(false, true) || socket == null) {
                 return;
             }
-            try
-            {
+            try {
                 socket.close();
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 owner.forceStop(e);
             }
             connectionThreads.shutdown();
         }
 
         @Override
-        public void run()
-        {
-            while (!isTerminated())
-            {
-                try
-                {
+        public void run() {
+            while (!isTerminated()) {
+                try {
                     Socket conn = socket.accept();
                     conn.setSoLinger(true, 60);
                     connectionThreads.execute(new ConnectionHandler(getOwner(), conn));
-                } catch (IOException e)
-                {
-                    if (!isTerminated())
-                    {
+                } catch (IOException e) {
+                    if (!isTerminated()) {
                         owner.forceStop(e);
                     }
                 }

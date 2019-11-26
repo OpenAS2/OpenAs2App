@@ -1,11 +1,11 @@
 package org.openas2.cmd;
 
-import java.util.Map;
-
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
+
+import java.util.Map;
 
 
 public abstract class BaseCommand extends BaseComponent implements Command {
@@ -13,68 +13,52 @@ public abstract class BaseCommand extends BaseComponent implements Command {
     public static final String PARAM_DESCRIPTION = "description";
     public static final String PARAM_USAGE = "usage";
 
-    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception
-    {
+    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         super.init(session, parameters);
-        if (getName() == null)
-        {
+        if (getName() == null) {
             setName(getDefaultName());
         }
-        if (getDescription() == null)
-        {
+        if (getDescription() == null) {
             setDescription(getDefaultDescription());
         }
-        if (getUsage() == null)
-        {
+        if (getUsage() == null) {
             setUsage(getDefaultUsage());
         }
     }
 
-    public String getDescription()
-    {
-        try
-        {
+    public String getDescription() {
+        try {
             return getParameter(PARAM_DESCRIPTION, false);
-        } catch (InvalidParameterException e)
-        {
+        } catch (InvalidParameterException e) {
             return null;
         }
     }
 
-    public void setDescription(String desc)
-    {
+    public void setDescription(String desc) {
         setParameter(PARAM_DESCRIPTION, desc);
     }
 
-    public String getName()
-    {
-        try
-        {
+    public String getName() {
+        try {
             return getParameter(PARAM_NAME, false);
-        } catch (InvalidParameterException e)
-        {
+        } catch (InvalidParameterException e) {
             return null;
         }
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         setParameter(PARAM_NAME, name);
     }
 
-    public String getUsage()
-    {
-        try
-        {
+    public String getUsage() {
+        try {
             return getParameter(PARAM_USAGE, false);
-        } catch (InvalidParameterException e)
-        {
+        } catch (InvalidParameterException e) {
             return null;
         }
     }
 
-    public void setUsage(String usage)
-    {
+    public void setUsage(String usage) {
         setParameter(PARAM_USAGE, usage);
     }
 

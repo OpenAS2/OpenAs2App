@@ -1,12 +1,11 @@
 package org.openas2.lib.util.javamail;
 
+import javax.activation.DataSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import javax.activation.DataSource;
 
 
 public class ByteArrayDataSource implements DataSource {
@@ -57,7 +56,7 @@ public class ByteArrayDataSource implements DataSource {
     public OutputStream getOutputStream() throws IOException {
         return new WrappedOutputStream(this);
     }
-    
+
     private class WrappedOutputStream extends ByteArrayOutputStream {
         private ByteArrayDataSource owner;
 

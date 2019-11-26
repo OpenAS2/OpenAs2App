@@ -1,10 +1,10 @@
 package org.openas2;
 
-import java.util.Map;
-
 import org.openas2.cert.CertificateFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
+
+import java.util.Map;
 
 
 /**
@@ -42,7 +42,7 @@ public interface Session {
      *
      * @return the currently registered <code>CertificateFactory</code> component
      * @throws ComponentNotFoundException If a <code>CertificateFactory</code> component has not been
-     *                           registered
+     *                                    registered
      * @see CertificateFactory
      * @see Component
      */

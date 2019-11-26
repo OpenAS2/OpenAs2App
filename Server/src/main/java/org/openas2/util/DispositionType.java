@@ -1,10 +1,10 @@
 package org.openas2.util;
 
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
+
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 
 
 public class DispositionType {
@@ -14,8 +14,7 @@ public class DispositionType {
     private String statusDescription;
     private String statusModifier;
 
-    public DispositionType(String action, String mdnAction, String status, String statusModifier,
-        String statusDescription) {
+    public DispositionType(String action, String mdnAction, String status, String statusModifier, String statusDescription) {
         super();
         this.action = action;
         this.mdnAction = mdnAction;
@@ -125,8 +124,7 @@ public class DispositionType {
         return dispBuf.toString();
     }
 
-    protected void parseDisposition(String disposition)
-        throws OpenAS2Exception {
+    protected void parseDisposition(String disposition) throws OpenAS2Exception {
         StringTokenizer dispTokens = new StringTokenizer(disposition, "/;:", false);
 
         try {

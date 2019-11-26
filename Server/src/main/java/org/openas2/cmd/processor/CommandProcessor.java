@@ -1,10 +1,10 @@
 package org.openas2.cmd.processor;
 
 
-import java.util.List;
-
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandRegistry;
+
+import java.util.List;
 
 
 public interface CommandProcessor {

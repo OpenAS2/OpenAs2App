@@ -23,7 +23,7 @@ public interface Component {
      *
      * @return name of the component
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns the parameters used to initialize this Component, and can also be used
@@ -31,7 +31,7 @@ public interface Component {
      *
      * @return map of parameter name to parameter value
      */
-    public Map<String, String> getParameters();
+    Map<String, String> getParameters();
 
     /**
      * Returns the Session used to initialize this Component. The
@@ -39,7 +39,7 @@ public interface Component {
      *
      * @return this component's session
      */
-    public Session getSession();
+    Session getSession();
 
     /**
      * Component lifecycle hook. After creating a Component object, this method should be called to set any
@@ -48,10 +48,10 @@ public interface Component {
      *
      * @param session    the component uses this object to access other components
      * @param parameters configuration values for the component
-     * @throws OpenAS2Exception          If an error occurs while initializing the component
+     * @throws OpenAS2Exception If an error occurs while initializing the component
      * @see Session
      */
-    public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception;
+    void init(Session session, Map<String, String> parameters) throws OpenAS2Exception;
 
     /**
      * Component lifecycle hook. If lifecycle of {@link Component} requires a destroy function this method can be used.

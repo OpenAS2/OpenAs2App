@@ -1,13 +1,13 @@
 package org.openas2;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 
 /**
  * Utilities for tests
@@ -24,20 +24,15 @@ public class TestUtils {
      * @return a file
      * @throws FileNotFoundException
      */
-    public static File waitForFile(File parent, IOFileFilter fileFilter, int timeout, TimeUnit unit) throws FileNotFoundException
-    {
+    public static File waitForFile(File parent, IOFileFilter fileFilter, int timeout, TimeUnit unit) throws FileNotFoundException {
         long finishAt = System.currentTimeMillis() + unit.toMillis(timeout);
         waitForFile(parent, timeout, unit);
-        while (finishAt - System.currentTimeMillis() > 0)
-        {
+        while (finishAt - System.currentTimeMillis() > 0) {
             Collection<File> files = FileUtils.listFiles(parent, fileFilter, TrueFileFilter.INSTANCE);
-            if (!files.isEmpty())
-            {
-                if (files.size() > 1)
-                {
+            if (!files.isEmpty()) {
+                if (files.size() > 1) {
                     throw new IllegalStateException("Result is not unique.");
-                } else
-                {
+                } else {
                     return files.iterator().next();
                 }
             }
@@ -52,8 +47,7 @@ public class TestUtils {
      * @param timeout an amount of time units to wait
      * @param unit    a time unit
      */
-    public static void waitForFile(File file, int timeout, TimeUnit unit)
-    {
+    public static void waitForFile(File file, int timeout, TimeUnit unit) {
         FileUtils.waitFor(file, Long.valueOf(unit.toSeconds(timeout)).intValue());
     }
 

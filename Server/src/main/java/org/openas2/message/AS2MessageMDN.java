@@ -14,11 +14,9 @@ public class AS2MessageMDN extends BaseMessageMDN {
      */
     private static final long serialVersionUID = 1L;
 
-    public AS2MessageMDN(AS2Message msg, boolean copyMsgHeaders)
-    {
+    public AS2MessageMDN(AS2Message msg, boolean copyMsgHeaders) {
         super(msg);
-        if (copyMsgHeaders)
-        {
+        if (copyMsgHeaders) {
             copyHeaders(msg.getHeaders());
         }
         setHeader("AS2-To", msg.getHeader("AS2-From"));
@@ -32,8 +30,7 @@ public class AS2MessageMDN extends BaseMessageMDN {
      * @throws InvalidParameterException - the message ID generator could not identfy a parameter in the ID format string
      */
     @Override
-    public String generateMessageID() throws InvalidParameterException
-    {
+    public String generateMessageID() throws InvalidParameterException {
         return org.openas2.util.AS2Util.generateMessageID(getMessage(), true);
     }
 

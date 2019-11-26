@@ -1,12 +1,5 @@
 package org.openas2.partner;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.FileAttribute;
@@ -15,6 +8,13 @@ import org.openas2.message.MessageMDN;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public abstract class BasePartnershipFactory extends BaseComponent implements PartnershipFactory {
     private List<Partnership> partnerships;
 
@@ -22,10 +22,11 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());
 
         if (ps == null) {
-        	if (reverseLookup)
-            	ps = getPartnership(p.getReceiverIDs(), p.getSenderIDs());
-            else
-            	ps = getPartnership(p.getSenderIDs(), p.getReceiverIDs());
+            if (reverseLookup) {
+                ps = getPartnership(p.getReceiverIDs(), p.getSenderIDs());
+            } else {
+                ps = getPartnership(p.getSenderIDs(), p.getReceiverIDs());
+            }
         }
 
         if (ps == null) {
@@ -47,8 +48,7 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         return partnerships;
     }
 
-    public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception
-    {
+    public void updatePartnership(Message msg, boolean overwrite) throws OpenAS2Exception {
         // Fill in any available partnership information
         Partnership partnership = getPartnership(msg.getPartnership(), false);
         msg.getPartnership().copy(partnership);
@@ -64,43 +64,44 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         }
     }
 
-	public void processFilenameBasedAttribs(Message msg) throws OpenAS2Exception {
-		// Now set dynamic parms based on file name if configured to
-		String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
-		if (filename == null) {
-			// If invoked processing an MDN might be somewhere else... 
-			filename = msg.getPayloadFilename();
-			if (filename == null)  return;
-		}
-		String filenameToParmsList = msg.getPartnership().getAttribute(Partnership.PAIB_NAMES_FROM_FILENAME);
-		if (filenameToParmsList == null || filenameToParmsList.length() < 1)
-			return;
-		String regex = msg.getPartnership().getAttribute(Partnership.PAIB_VALUES_REGEX_ON_FILENAME);
-		if (regex == null)
-			return;
+    public void processFilenameBasedAttribs(Message msg) throws OpenAS2Exception {
+        // Now set dynamic parms based on file name if configured to
+        String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
+        if (filename == null) {
+            // If invoked processing an MDN might be somewhere else...
+            filename = msg.getPayloadFilename();
+            if (filename == null) {
+                return;
+            }
+        }
+        String filenameToParmsList = msg.getPartnership().getAttribute(Partnership.PAIB_NAMES_FROM_FILENAME);
+        if (filenameToParmsList == null || filenameToParmsList.length() < 1) {
+            return;
+        }
+        String regex = msg.getPartnership().getAttribute(Partnership.PAIB_VALUES_REGEX_ON_FILENAME);
+        if (regex == null) {
+            return;
+        }
 
-		String[] headerNames = filenameToParmsList.split("\\s*,\\s*");
-		Pattern p = Pattern.compile(regex);
-		Matcher m = p.matcher(filename);
-		if (!m.find() || m.groupCount() != headerNames.length) {
-			throw new OpenAS2Exception("Could not match filename (" + filename
-					+ ") to parameters required using the regex provided (" + regex + "): "
-					+ (m.find()
-							? ("Mismatch in parameter count to extracted group count: " + headerNames.length + "::"
-									+ m.groupCount())
-							: "No match found in filename"));
-		}
-		for (int i = 0; i < headerNames.length; i++) {
-			msg.setAttribute(headerNames[i], m.group(i + 1));
-		}
-	}
+        String[] headerNames = filenameToParmsList.split("\\s*,\\s*");
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(filename);
+        if (!m.find() || m.groupCount() != headerNames.length) {
+            throw new OpenAS2Exception("Could not match filename (" + filename + ") to parameters required using the regex provided (" + regex + "): " + (m.find() ? ("Mismatch in parameter count to extracted group count: " + headerNames.length + "::" + m.groupCount()) : "No match found in filename"));
+        }
+        for (int i = 0; i < headerNames.length; i++) {
+            msg.setAttribute(headerNames[i], m.group(i + 1));
+        }
+    }
 
     public void updatePartnership(MessageMDN mdn, boolean processFilenameAttribs) throws OpenAS2Exception {
         // Fill in any available partnership information
         // the MDN partnership should be the one used to send original message hence reverse lookup
         Partnership partnership = getPartnership(mdn.getPartnership(), true);
         mdn.getPartnership().copy(partnership);
-        if (processFilenameAttribs) processFilenameBasedAttribs(mdn.getMessage());
+        if (processFilenameAttribs) {
+            processFilenameBasedAttribs(mdn.getMessage());
+        }
     }
 
     protected Partnership getPartnership(Map<String, Object> senderIDs, Map<String, Object> receiverIDs) {
@@ -110,7 +111,7 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         Map<String, Object> currentRids;
 
         while (psIt.hasNext()) {
-            currentPs = (Partnership) psIt.next();
+            currentPs = psIt.next();
             currentSids = currentPs.getSenderIDs();
             currentRids = currentPs.getReceiverIDs();
 
@@ -151,14 +152,14 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
             return false;
         }
 
-        Map.Entry<String,Object> searchEntry;
+        Map.Entry<String, Object> searchEntry;
         String searchKey;
         Object searchValue;
         Object partnerValue;
 
         while (searchIt.hasNext()) {
-            searchEntry = (Map.Entry<String, Object>) searchIt.next();
-            searchKey = (String) searchEntry.getKey();
+            searchEntry = searchIt.next();
+            searchKey = searchEntry.getKey();
             searchValue = searchEntry.getValue();
             partnerValue = partnerIds.get(searchKey);
 

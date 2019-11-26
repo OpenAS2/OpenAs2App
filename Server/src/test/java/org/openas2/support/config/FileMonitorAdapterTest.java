@@ -1,10 +1,5 @@
 package org.openas2.support.config;
 
-import java.io.File;
-import java.util.Date;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,6 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openas2.OpenAS2Exception;
 import org.openas2.support.FileMonitorAdapter;
+
+import java.io.File;
+import java.util.Date;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -41,13 +41,11 @@ public class FileMonitorAdapterTest {
     private FileMonitorAdapter adapter;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         configFile = spy(tmp.newFile());
         adapter = spy(new FileMonitorAdapter() {
             @Override
-            public void onConfigFileChanged() throws OpenAS2Exception
-            {
+            public void onConfigFileChanged() throws OpenAS2Exception {
 
             }
         });
@@ -55,16 +53,14 @@ public class FileMonitorAdapterTest {
     }
 
     @Test
-    public void shouldNotScheduleRefreshWhenIntervalNotConfigured() throws Exception
-    {
+    public void shouldNotScheduleRefreshWhenIntervalNotConfigured() throws Exception {
         adapter.scheduleIfNeed(executorService, configFile, 0, TimeUnit.SECONDS);
 
         verifyZeroInteractions(executorService);
     }
 
     @Test
-    public void shouldScheduleConfigRefresh() throws Exception
-    {
+    public void shouldScheduleConfigRefresh() throws Exception {
 
         int refreshInterval = RandomUtils.nextInt(1, 10);
 
