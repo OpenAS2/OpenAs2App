@@ -14,6 +14,7 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cmd.Command;
@@ -41,7 +42,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
 
     @Override
     public void processCommand() throws Exception {
-        //throw new UnsupportedOperationException("Commands received by HTTP Server thread"); 
+        //throw new UnsupportedOperationException("Commands received by HTTP Server thread");
     }
 
     public CommandResult feedCommand(String commandText, List<String> params) throws Exception {
@@ -91,7 +92,8 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             rc.register(new LoggerRequestFilter(logger))
               .register(new AuthenticationRequestFilter(userId, password))
               .register(new ApiResource(this))
-              .register(new CORSFilter());
+              .register(new CORSFilter())
+              .register(new JacksonFeature());
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
 
 
