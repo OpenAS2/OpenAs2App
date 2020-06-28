@@ -73,8 +73,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     }
 
     public void handle(NetModule owner, Socket s) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info("incoming connection" + getClientInfo(s));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("incoming connection" + getClientInfo(s));
         }
 
         AS2Message msg = createMessage(s);
@@ -110,8 +110,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             String mic = null;
             if (data == null) {
                 if ("true".equalsIgnoreCase(msg.getAttribute("isHealthCheck"))) {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Healthcheck ping detected" + " [" + getClientInfo(s) + "]" + msg.getLogMsgID());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Healthcheck ping detected" + " [" + getClientInfo(s) + "]" + msg.getLogMsgID());
                     }
                     return;
                 } else {
