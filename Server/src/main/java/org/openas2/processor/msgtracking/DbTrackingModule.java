@@ -66,7 +66,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         jdbcDriver = getParameter(PARAM_JDBC_DRIVER, false);
         sqlEscapeChar = getParameter(PARAM_SQL_ESCAPE_CHARACTER, "'");
         useEmbeddedDB = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "true"));
-        forceLoadJdbcDriver = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "false"));
+        forceLoadJdbcDriver = "true".equals(getParameter(PARAM_FORCE_LOAD_JDBC_DRIVER, "false"));
         tableName = getParameter(PARAM_TABLE_NAME, "msg_metadata");
         if (!useEmbeddedDB && forceLoadJdbcDriver) {
             try {
