@@ -1,3 +1,9 @@
+Version 2.10.1 - 2020-08-16
+This is a minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix a problem authenticating using Basic Authentication causing a NonRepeatableRequestException.
+
 Version 2.10.0 - 2019-09-29
 This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
