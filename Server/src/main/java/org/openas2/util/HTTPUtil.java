@@ -17,6 +17,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.auth.BasicScheme;
@@ -93,7 +94,7 @@ public class HTTPUtil {
     public static final String HEADER_USER_AGENT = "User-Agent";
     public static final String HEADER_CONNECTION = "Connection";
 
-    public static abstract class Method {
+    public abstract static class Method {
         public static final String GET = "GET";
         public static final String HEAD = "HEAD";
         public static final String POST = "POST";
@@ -356,6 +357,14 @@ public class HTTPUtil {
         setProxyConfig(httpBuilder, rcBuilder, urlObj.getProtocol());
         rb.setConfig(rcBuilder.build());
 
+        String httpUser = options.get(HTTPUtil.PARAM_HTTP_USER);
+        String httpPwd = options.get(HTTPUtil.PARAM_HTTP_PWD);
+        if (httpUser != null) {
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(httpUser, httpPwd));
+            httpBuilder.setDefaultCredentialsProvider(credentialsProvider);
+        }
+
         if (inputStream != null) {
             if (noChunkMaxSize > 0L) {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -367,18 +376,16 @@ public class HTTPUtil {
                 rb.setEntity(bae);
             } else {
                 InputStreamEntity ise = new InputStreamEntity(inputStream);
-                rb.setEntity(ise);
+                // Use a BufferedEntity for BasicAuth connections to avoid the NonRepeatableRequestExceotion
+                if (httpUser != null) {
+                    rb.setEntity(new BufferedHttpEntity(ise));
+                } else {
+                    rb.setEntity(ise);
+                }
             }
         }
         final HttpUriRequest request = rb.build();
 
-        String httpUser = options.get(HTTPUtil.PARAM_HTTP_USER);
-        String httpPwd = options.get(HTTPUtil.PARAM_HTTP_PWD);
-        if (httpUser != null) {
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(httpUser, httpPwd));
-            httpBuilder.setDefaultCredentialsProvider(credentialsProvider);
-        }
         BasicHttpContext localcontext = new BasicHttpContext();
         BasicScheme basicAuth = new BasicScheme();
         localcontext.setAttribute("preemptive-auth", basicAuth);
