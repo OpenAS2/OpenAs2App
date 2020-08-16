@@ -1,20 +1,19 @@
 #              OpenAS2 Server
-#              Version 2.10.0
+#              Version 2.10.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.10.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.10.1
 
-The release download file is: OpenAS2Server-2.10.0.zip
+The release download file is: OpenAS2Server-2.10.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.10.0 - 2019-09-29
-This is a minor enhancement release:
-       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+Version 2.10.1 - 2020-08-16
+This is a minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Components in the config.xml file are now enabled and disabled by an "enabled" attribute on the component. See the documentation in the section 6 "Application Configuration" on how this works.
-  2. Support using a custom properties file to override properties in the config.xml file. See the documentation in the section 6.1 "System Properties" on how this works.
-  3. If upgrading please see the upgrade notes to convert your config.xml
+  1. Fix a problem authenticating using Basic Authentication causing a NonRepeatableRequestException.
+
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
