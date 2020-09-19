@@ -130,10 +130,21 @@ public class XMLSession extends BaseSession {
         cmdManager.registerCommands(commandRegistry);
     }
 
+    /**
+     * First retrieves all properties specified in the <properties> element of the config.xml file (propNode param)
+     * Then loads system properties into the OpenAS2 properties container.
+     * Then adds the application title and version.
+     * Finally checks if an additional property file was provided and loads those.
+     * 
+     * @param propNode - the "properties" element of the configuration file containing property values
+     */
     private void loadProperties(Node propNode) {
         LOGGER.info("Loading properties...");
 
         Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        Map<String, String> sysProps = (Map)System.getProperties();
+        properties.putAll(sysProps);
         // Make key things accessible via static object for things that do not have
         // accesss to session object
         properties.put(Properties.APP_TITLE_PROP, getAppTitle());
