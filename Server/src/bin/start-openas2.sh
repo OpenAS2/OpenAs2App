@@ -4,7 +4,9 @@ set -e
 x=`basename $0`
 
 binDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-keyStorePwd=$1
+
+EXTRA_PARMS="$@"
+
 PWD_OVERRIDE=""
 
 # Backwards compatibility: use value from pid_file if pid_file has a value and openas2_pid has no value.
@@ -20,7 +22,7 @@ fi
 # Set some of the base system properties for the Java environment and logging
 # remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package
 #
-EXTRA_PARMS="-Xms32m -Xmx384m -Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
+EXTRA_PARMS="$EXTRA_PARMS -Xms32m -Xmx384m -Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
 
 # Set the config file location
 if [ -z $OPENAS2_CONFIG_FILE ]; then
@@ -42,9 +44,6 @@ EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${OPENAS2_CONFIG_FILE}"
 #EXTRA_PARMS="$EXTRA_PARMS -DlogRxdMdnMimeBodyParts=true"
 #EXTRA_PARMS="$EXTRA_PARMS -Djavax.net.debug=SSL"
 
-if [  ! -z $keyStorePwd ]; then
-  PWD_OVERRIDE="-Dorg.openas2.cert.Password=$keyStorePwd"
-fi
 if [ -z $JAVA_HOME ]; then
   OS=$(uname -s)
 
