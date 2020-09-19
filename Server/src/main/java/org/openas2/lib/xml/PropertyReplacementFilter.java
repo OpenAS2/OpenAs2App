@@ -6,10 +6,16 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import java.util.Properties;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+/**
+ * Supports replacing XML element properties with system environment variables.
+ * Support for system properties is provided in the AS2Util.attributeEnhancer method
+ *
+ */
 public class PropertyReplacementFilter extends XMLFilterImpl {
 
     @Override
@@ -17,21 +23,26 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
         super.endElement(uri, localName, qName);
     }
 
-    private static final Pattern PATTERN = Pattern.compile("\\$ENV\\{([^\\}]++)\\}");
-    private final Properties properties;
+    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$ENV\\{([^\\}]++)\\}");
+    private final Map<String, String> env_vars;
 
     public PropertyReplacementFilter() {
         super();
-        this.properties = System.getProperties();
+        this.env_vars = System.getenv();
+    }
+
+    public PropertyReplacementFilter(Map<String, String> env_vars) {
+        super();
+        this.env_vars = env_vars;
     }
 
     public PropertyReplacementFilter(XMLReader parent) {
-        this(parent, System.getProperties());
+        this(parent, System.getenv());
     }
 
-    public PropertyReplacementFilter(XMLReader parent, Properties properties) {
+    public PropertyReplacementFilter(XMLReader parent, Map<String, String> env_vars) {
         super(parent);
-        this.properties = properties;
+        this.env_vars = env_vars;
     }
 
     /**
@@ -65,13 +76,13 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
 
     private String replace(String input) throws SAXException {
         StringBuffer strBuf = new StringBuffer();
-        Matcher matcher = PATTERN.matcher(input);
+        Matcher matcher = ENV_VAR_PATTERN.matcher(input);
         while (matcher.find()) {
             String key = matcher.group(1);
-            String value = properties.getProperty(key);
+            String value = env_vars.get(key);
 
             if (value == null) {
-                throw new SAXException("Missing environment variable for replacement: " + matcher.group());
+                throw new SAXException("Missing environment variable for replacement: " + matcher.group() + " Using key: " + key);
             } else {
                 matcher.appendReplacement(strBuf, Matcher.quoteReplacement(value));
             }
