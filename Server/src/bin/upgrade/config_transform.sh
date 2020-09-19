@@ -16,7 +16,7 @@ scriptDir=`dirname $0`
 configFile=$1
 outFile=$2
 
-if [ "x" == "x$outFile" ]; then
+if [ "x" = "x$outFile" ]; then
 outFile="config.xml.new"
 fi
 xsltFile="$scriptDir/config.xslt"

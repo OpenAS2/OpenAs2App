@@ -54,7 +54,7 @@ fi
 
 read -p "Enter password for keystore:" ksPwd
 
-if [ "${action}" == "replace" ]; then
+if [ "${action}" = "replace" ]; then
     $JAVA_HOME/bin/keytool -delete -alias ${certAlias} -keystore ${tgtStore} -storepass $ksPwd -storetype pkcs12
     if [ "$?" != 0 ]; then
     	echo ""
