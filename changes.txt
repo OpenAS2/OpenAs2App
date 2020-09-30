@@ -1,3 +1,10 @@
+Version 2.11.0 - 2020-09-19
+This is a minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
+
+  1. Provide support for setting configuration values from environment variables. See the section "Passing In Configuration Values" in the OpenAS2HowTo
+  2. Support passing properties on the command line. See the section "Passing In Configuration Values" in the OpenAS2HowTo
+
 Version 2.10.1 - 2020-08-16
 This is a minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
