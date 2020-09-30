@@ -9,6 +9,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.TrackingModule;
 import org.openas2.util.Properties;
+import org.openas2.util.IOUtil;
 
 import javax.mail.Header;
 import javax.mail.MessagingException;
@@ -460,31 +461,14 @@ public abstract class BaseMessage implements Message {
                 }
             }
         }
-        // Basic path-traversal protection. java.nio.file.Path requires java 1.7+
         try {
-          java.nio.file.Path tmpPath = java.nio.file.FileSystems.getDefault().getPath(tmpFilename);
-          tmpFilename = tmpPath.getFileName().toString();
-        } catch (java.nio.file.InvalidPathException ipe) {
-          LogFactory.getLog(BaseMessage.class.getSimpleName()).error(this, ipe);
-          // fall back to char-by-char filtering
-          int cpCnt = tmpFilename.length();
-          int[] newStr = new int[cpCnt+1];
-          int i = 0;
-          for (i = 0; i < cpCnt; i++) {
-            int c = tmpFilename.codePointAt(i);
-            if (
-              (c < 0x20 ) || (c == '\'') || (c == '"')
-              || (c == '<') || (c == '>') || (c =='|')
-              || (c == '/') || (c == '\\') || (c ==':')
-              || (c == '*') || (c == '?') || (c ==';')
-            ) {
-              c = '_';
-            } 
-            newStr[i] = c;
-          }
-          newStr[i] = 0;
-          tmpFilename = new String(newStr, 0, newStr.length);
+          tmpFilename = IOUtil.getSafeFilename(tmpFilename);          
+        } catch (OpenAS2Exception oae) {
+          ParseException pe = new ParseException("Unable to extract a usable filename");
+          pe.initCause(oae);
+          throw pe;
         }
         return tmpFilename;
     }
+    
 }
