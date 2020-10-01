@@ -9,6 +9,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.TrackingModule;
 import org.openas2.util.Properties;
+import org.openas2.util.IOUtil;
 
 import javax.mail.Header;
 import javax.mail.MessagingException;
@@ -460,6 +461,14 @@ public abstract class BaseMessage implements Message {
                 }
             }
         }
+        try {
+          tmpFilename = IOUtil.getSafeFilename(tmpFilename);          
+        } catch (OpenAS2Exception oae) {
+          ParseException pe = new ParseException("Unable to extract a usable filename");
+          pe.initCause(oae);
+          throw pe;
+        }
         return tmpFilename;
     }
+    
 }

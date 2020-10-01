@@ -16,6 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.InvalidPathException;
 import java.util.List;
 import java.util.UUID;
 
@@ -107,6 +110,8 @@ public class IOUtil {
             } else {
                 filename = filename.replaceAll("[" + srchReplStr + "]", "");
             }
+            // also remove control characters
+            filename = filename.replaceAll("[\u0000-\u001F]", "");
         }
         return filename;
     }
@@ -244,4 +249,42 @@ public class IOUtil {
             }
         });
     }
+
+    
+    public static String getSafeFilename(String proposedName) throws OpenAS2Exception {
+        String outName = org.openas2.util.IOUtil.cleanFilename(proposedName).trim();
+        /* Rule out a few well-known edge-cases before proceeding with other checks */
+        if (outName.equals(".") || outName.equals("..") || outName.equals("")) {
+            throw new InvalidMessageException("Unable to assign a valid filename for this system using message name <" 
+              + outName + "> (" + proposedName +")" 
+            );
+        }
+        /* Create path from proposed name */
+        Path tmpPath = null;
+        try {
+          tmpPath = FileSystems.getDefault().getPath(outName);
+        } catch (InvalidPathException ipe) {
+            /* Invalid chars cannot be removed, reject filename and abort */
+            String probWhere = "";
+            if (ipe.getIndex() != -1) {
+              probWhere = " Error in name at position " + ipe.getIndex();
+            }
+            InvalidMessageException im = new InvalidMessageException("Unable to assign a valid filename for this system using message name <" 
+              + outName + ">" + probWhere
+            );
+            im.initCause(ipe);
+            throw im;
+        }          
+        /* Check for directory path (e.g. C:\ or ../) embeded in filename */        
+        String bareName = tmpPath.getFileName().toString();
+        if (!bareName.equalsIgnoreCase(outName)) {
+          /* Possible path-traversal attack detected, reject filename and abort */
+          InvalidMessageException im = new InvalidMessageException("Unable to use message filename containing directory path <" 
+            + outName + "> "
+          );
+          throw im;
+        }
+        return outName;
+    }
+    
 }
