@@ -481,16 +481,12 @@ public class HTTPUtil {
 
         String connectTimeOutStr = options.get(PARAM_CONNECT_TIMEOUT);
         String readTimeOutStr = options.get(PARAM_READ_TIMEOUT);
-        String socketTimeOutStr = options.get(PARAM_SOCKET_TIMEOUT);
         RequestConfig.Builder rcBuilder = RequestConfig.custom();
         if (connectTimeOutStr != null) {
             rcBuilder.setConnectTimeout(Integer.parseInt(connectTimeOutStr));
         }
         if (readTimeOutStr != null) {
-            rcBuilder.setConnectionRequestTimeout(Integer.parseInt(readTimeOutStr));
-        }
-        if (socketTimeOutStr != null) {
-            rcBuilder.setSocketTimeout(Integer.parseInt(socketTimeOutStr));
+            rcBuilder.setSocketTimeout(Integer.parseInt(readTimeOutStr));
         }
         return rcBuilder;
     }
