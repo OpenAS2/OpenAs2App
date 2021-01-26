@@ -1,46 +1,5 @@
 package org.openas2.util;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpHost;
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.entity.BufferedHttpEntity;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.ssl.SSLContexts;
-import org.openas2.OpenAS2Exception;
-import org.openas2.WrappedException;
-import org.openas2.message.Message;
-
-import javax.mail.Header;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetHeaders;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -71,6 +30,48 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import javax.mail.Header;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetHeaders;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpHost;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.BufferedHttpEntity;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.ssl.SSLContexts;
+import org.openas2.OpenAS2Exception;
+import org.openas2.WrappedException;
+import org.openas2.message.Message;
 
 
 /**
@@ -480,14 +481,10 @@ public class HTTPUtil {
     private static RequestConfig.Builder buildRequestConfig(Map<String, String> options) {
 
         String connectTimeOutStr = options.get(PARAM_CONNECT_TIMEOUT);
-        String readTimeOutStr = options.get(PARAM_READ_TIMEOUT);
         String socketTimeOutStr = options.get(PARAM_SOCKET_TIMEOUT);
         RequestConfig.Builder rcBuilder = RequestConfig.custom();
         if (connectTimeOutStr != null) {
             rcBuilder.setConnectTimeout(Integer.parseInt(connectTimeOutStr));
-        }
-        if (readTimeOutStr != null) {
-            rcBuilder.setConnectionRequestTimeout(Integer.parseInt(readTimeOutStr));
         }
         if (socketTimeOutStr != null) {
             rcBuilder.setSocketTimeout(Integer.parseInt(socketTimeOutStr));
