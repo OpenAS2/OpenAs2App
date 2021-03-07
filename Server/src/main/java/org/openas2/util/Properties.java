@@ -16,6 +16,8 @@ public class Properties {
 
     public static final String AS2_MDN_RESP_MAX_WAIT_SECS = "as2_mdn_response_max_wait_seconds";
 
+    public static final String LOG_INVALID_HTTP_REQUEST = "log_invalid_http_request";
+
     private static final Map<String, String> _properties = new HashMap<String, String>();
 
     public static void setProperties(Map<String, String> map) {

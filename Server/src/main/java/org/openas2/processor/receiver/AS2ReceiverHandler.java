@@ -121,7 +121,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     }
                     OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
                     msg.setLogMsg("Error receiving message for inbound AS2 request. There is no data.");
-                    LOG.error(msg, oe);
+                    if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
+                        LOG.info(msg, oe);
+                    }
                     return;
                 }
             } else {
