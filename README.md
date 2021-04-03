@@ -15,6 +15,13 @@ Maven is used as a build. Therefore in order to build a snapshot the following c
 
 `./mvnw versions:set -DnewVersion=2.3.0-SNAPSHOT`
 
+## Version iMangement
+Checking if there are newer versions
+./mvnw versions:display-dependency-updates:
+
+Updating POM's to newest release version
+./mvnw versions:use-latest-releases
+
 ## Deploy to Maven Central
 To deploy the released artifacts requires user ID and password for Sonatype. See developer guide for details:
 `./mvnw clean deploy -P release` - will require manual closing and release in Sonatype
