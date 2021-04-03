@@ -245,8 +245,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                                 if (LOG.isWarnEnabled()) {
                                     LOG.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
                                 }
-                            }
-                            else {
+                            } else {
                                 msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
                                 msg.trackMsgState(getModule().getSession());
                             }
