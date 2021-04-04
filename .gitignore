@@ -1,6 +1,7 @@
 /bin/
 /classes/
 /tests/
+/lib/
 *.iml
 .idea/*
 .project
