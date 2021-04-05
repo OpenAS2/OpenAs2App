@@ -1,9 +1,9 @@
 Version 2.12.0 - 2021-04-04
-This is a minor enhancement release:
+This is a minor enhancement release and bugfix:
        **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
 
-  1. Register successfully sent MDN in DB tracking.
-  2. Switch logging to use a wrapper allowing any SLF4J compatible logging system to be plugged in.
+  1. Upgrade libraries to latest release versions (IMPORTANT: See release notes for this upgrade)
+  2. Register successfully sent MDN in DB tracking.
 
 Version 2.11.0 - 2020-09-19
 This is a minor enhancement release:
