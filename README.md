@@ -8,15 +8,34 @@ More detailed information is available in the DeveloperGuide.odt in the docs fol
 
 ## Build
 
-Maven is used as a build. Therefore in order to build a snapshot the following command should be used:
+Maven is used as a build tool.
+
+To initialise the packages:
+
+`./mvnw clean install -U`
+
+Create an installer package:
 
 `./mvnw clean package`
 
+Change the version of the app to a new version:
 
-`./mvnw versions:set -DnewVersion=2.3.0-SNAPSHOT`
+`./mvnw versions:set -DnewVersion=2.12.0-SNAPSHOT`
+
+## Version iMangement
+Checking if there are newer versions
+
+`./mvnw versions:display-dependency-updates`
+
+Updating POM's to newest release version:
+
+`./mvnw versions:use-latest-releases`
 
 ## Deploy to Maven Central
 To deploy the released artifacts requires user ID and password for Sonatype. See developer guide for details:
+
 `./mvnw clean deploy -P release` - will require manual closing and release in Sonatype
+
 `./mvnw release:perform`
+
 `./mvnw nexus-staging:release -Ddescription="Some release comment here"`

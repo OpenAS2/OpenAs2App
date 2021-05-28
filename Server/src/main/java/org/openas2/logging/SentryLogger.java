@@ -26,6 +26,6 @@ public class SentryLogger extends BaseLogger {
     }
 
     protected void doLog(Throwable t, boolean terminated) {
-        Sentry.capture(t);
+        Sentry.captureException(t);
     }
 }
