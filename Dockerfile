@@ -1,6 +1,8 @@
 FROM openjdk:11 AS builder
 COPY . /usr/src/openas2
 WORKDIR /usr/src/openas2
+# To test Locally builder environment:
+# docker run --rm -it -v $(pwd):/usr/src/openas2 openjdk:11 bash
 RUN rm -f Server/dist/*
 RUN rm -f Remote/dist/*
 RUN rm -f Bundle/dist/*
@@ -13,8 +15,17 @@ RUN cd /usr/src/openas2/Runtime/bin && \
     cd /usr/src/openas2/Runtime && \
     mv config config_template
 
-FROM openjdk:11-jre-slim
-COPY --from=builder /usr/src/openas2/Runtime /opt/openas2
-WORKDIR /opt/openas2
-ENTRYPOINT /opt/openas2/bin/start-container.sh
+
+FROM openjdk:11-jre-slim 
+ENV OPENAS2_BASE=/opt/openas2/
+ENV OPENAS2_HOME=/opt/openas2/
+ENV OPENAS2_TMPDIR=/opt/openas2/temp
+COPY --from=builder /usr/src/openas2/Runtime/bin $OPENAS2_BASE
+COPY --from=builder /usr/src/openas2/Runtime/lib $OPENAS2_BASE
+COPY --from=builder /usr/src/openas2/Runtime/resources $OPENAS2_BASE
+COPY --from=builder /usr/src/openas2/Runtime/config_template $OPENAS2_HOME
+WORKDIR $OPENAS2_HOME
+ENTRYPOINT $OPENAS2_BASE/bin/start-container.sh
+
+
 
