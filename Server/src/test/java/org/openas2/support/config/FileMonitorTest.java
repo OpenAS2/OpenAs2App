@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Created by nick on 08.04.17.
@@ -37,10 +37,10 @@ public class FileMonitorTest {
         File fileToObserve = Mockito.spy(temp.newFile());
 
         FileMonitor fileMonitor = new FileMonitor(fileToObserve, listener);
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
 
         fileMonitor.run();
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
 
         FileUtils.write(fileToObserve, RandomStringUtils.randomAlphanumeric(1024), "UTF-8");
         doReturn(new Date().getTime() + 3).when(fileToObserve).lastModified();
@@ -50,7 +50,7 @@ public class FileMonitorTest {
         reset(listener);
 
         fileMonitor.run();
-        verifyZeroInteractions(listener);
+        verifyNoMoreInteractions(listener);
 
     }
 }

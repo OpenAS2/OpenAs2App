@@ -1,19 +1,19 @@
 #              OpenAS2 Server
-#              Version 2.11.0
+#              Version 2.12.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.11.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.12.0
 
-The release download file is: OpenAS2Server-2.11.0.zip
+The release download file is: OpenAS2Server-2.12.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 
-Version 2.11.0 - 2020-09-19
-This is a minor enhancement release:
+Version 2.12.0 - 2021-04-04
+This is a minor enhancement release and bugfix:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Provide support for setting configuration values from environment variables. See the section "Passing In Configuration Values" in the OpenAS2HowTo
-  2. Support passing properties on the command line. See the section "Passing In Configuration Values" in the OpenAS2HowTo
+  1. Upgrade libraries to latest release versions (IMPORTANT: See release notes below for this upgrade)
+  2. Register successfully sent MDN in DB tracking.
 
 
 ##Upgrade Notes
@@ -22,11 +22,15 @@ This is a minor enhancement release:
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
 
+### If upgrading from versions older than 2.12.0:
+      1. If you are using the DB tracking module with the default H2 database then you will need to follow the DB upgrade steps "Appendix: Updating database structure" defined in the OpenAS2HowTo.pdf to ensure you do not lose your existing data because the new H2 version has issues with old databases.
+
+
 ### If you have been passing the password for the certificate file on the command line in a shell script (no change to the Windows .bat file):
-      1. The mechanism to pas the password on the command line has changes. You must now use this format:
+      1. The mechanism to pass the password on the command line has changes. You must now use this format:
           -./start_openas2.sh -Dorg.openas2.cert.Password=<keyStorePwd>
           where <keyStorePwd> is either a reference to an environment variable or  the actual paasword itself.
-          Since passing the p[assword n the command line does not provide for any additional security, it is recommended you use the new environment variable option described in the docs.
+          Since passing the password in the command line does not provide for any additional security, it is recommended you use the new environment variable option described in the docs.
 
 ### If upgrading from versions older than 2.9.4:
       1. There is a script in the "upgrade" folder : <installDir>/bin/upgrade/config_transform.sh.
