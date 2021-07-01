@@ -1,4 +1,5 @@
 <template>
+<v-app>
   <div id="app" class="container-fluid">
     <div v-if="is_logged">
       <admin-layout/>
@@ -8,6 +9,7 @@
       <login-screen />
     </div>
   </div>
+</v-app>
 </template>
 
 <script>
