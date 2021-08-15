@@ -17,15 +17,15 @@ RUN cd /usr/src/openas2/Runtime/bin && \
 
 
 FROM openjdk:11-jre-slim 
-ENV OPENAS2_BASE=/opt/openas2/
-ENV OPENAS2_HOME=/opt/openas2/
+ENV OPENAS2_BASE=/opt/openas2
+ENV OPENAS2_HOME=/opt/openas2
 ENV OPENAS2_TMPDIR=/opt/openas2/temp
-COPY --from=builder /usr/src/openas2/Runtime/bin $OPENAS2_BASE
-COPY --from=builder /usr/src/openas2/Runtime/lib $OPENAS2_BASE
-COPY --from=builder /usr/src/openas2/Runtime/resources $OPENAS2_BASE
-COPY --from=builder /usr/src/openas2/Runtime/config_template $OPENAS2_HOME
+COPY --from=builder /usr/src/openas2/Runtime/bin ${OPENAS2_BASE}/bin
+COPY --from=builder /usr/src/openas2/Runtime/lib ${OPENAS2_BASE}/lib
+COPY --from=builder /usr/src/openas2/Runtime/resources ${OPENAS2_BASE}/resources
+COPY --from=builder /usr/src/openas2/Runtime/config_template ${OPENAS2_HOME}/config_template
 WORKDIR $OPENAS2_HOME
-ENTRYPOINT $OPENAS2_BASE/bin/start-container.sh
+ENTRYPOINT ${OPENAS2_BASE}/bin/start-container.sh
 
 
 
