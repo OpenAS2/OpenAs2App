@@ -12,37 +12,16 @@ import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.lib.util.MimeUtil;
-import org.openas2.message.AS2Message;
-import org.openas2.message.AS2MessageMDN;
-import org.openas2.message.Message;
-import org.openas2.message.MessageMDN;
-import org.openas2.message.NetAttribute;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.message.*;
+import org.openas2.params.*;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
-import org.openas2.util.AS2Util;
-import org.openas2.util.ByteArrayDataSource;
-import org.openas2.util.DateUtil;
-import org.openas2.util.DispositionOptions;
-import org.openas2.util.DispositionType;
-import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtil;
-import org.openas2.util.Profiler;
-import org.openas2.util.ProfilerStub;
-import org.openas2.util.Properties;
+import org.openas2.util.*;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.ParseException;
+import javax.mail.internet.*;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -121,9 +100,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     }
                     OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
                     msg.setLogMsg("Error receiving message for inbound AS2 request. There is no data.");
-                    if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
-                        LOG.info(msg, oe);
-                    }
+                    LOG.error(msg, oe);
                     return;
                 }
             } else {
@@ -247,15 +224,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                                 if (LOG.isWarnEnabled()) {
                                     LOG.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
                                 }
-                            } else {
-                                msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
-                                msg.trackMsgState(getModule().getSession());
                             }
                         } else {
                             HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
                             out.flush();
-                            msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED);
-                            msg.trackMsgState(getModule().getSession());
                             LOG.info("Msg received, no MDN requested. Sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
                         }
                     } catch (Exception e) {
@@ -538,7 +510,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         DispositionOptions dispOptions = new DispositionOptions(msg.getHeader("Disposition-Notification-Options"));
 
         mdn.setAttribute(AS2MessageMDN.MDNA_MIC, mic);
+
+        System.out.println("******* prima");
         createMDNData(session, mdn, dispOptions.getMicalg(), dispOptions.getProtocol());
+        System.out.println("******* dopo");
 
         mdn.updateMessageID();
 
@@ -628,6 +603,18 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         if ("true".equalsIgnoreCase(Properties.getProperty("remove_http_header_folding", "true"))) {
             headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
         }
+
+        // Claudio Degioanni claudio.degioanni@bmeweb.it 2020 - Start
+        // escape su content type by partnership
+        String escapeContentType = mdn.getPartnership().getAttribute("escape_content_type");
+
+        // escape su content type messaggio per problemi di compatibilità
+        if("true".equalsIgnoreCase(escapeContentType)) {
+            headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
+        }
+
+        // Claudio Degioanni claudio.degioanni@bmeweb.it - Start
+
         mdn.setHeader("Content-Type", headerContentType);
 
         // int size = getSize(data);
