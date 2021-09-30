@@ -4,14 +4,14 @@
 The OpenAS2 application enables you to transmit and receive AS2 messages with EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
 
 
-# Development
-There is a pom.xml in the Server folder to compile and create the jar and build the distribution package using Maven
-The current version of the application is extracted from the POM and instered into the MANIFEST.MF at build time.
-More detailed information is available in the DeveloperGuide.odt in the docs folder in Github
+## Development
+There is a pom.xml in the Server folder to compile and create the jar and build the distribution package using Maven.
+The current version of the application is extracted from the POM and inserted into the MANIFEST.MF at build time.
+More detailed information is available in the DeveloperGuide.odt in the docs folder in Github.
 
 ## Build
 
-Maven is used as a build. Therefore in order to build a snapshot the following command should be used:
+Maven is used as a build tool. Therefore in order to build a snapshot the following command should be used:
 
 `./mvnw clean package`
 
@@ -24,7 +24,23 @@ To deploy the released artifacts requires user ID and password for Sonatype. See
 `./mvnw release:perform`
 `./mvnw nexus-staging:release -Ddescription="Some release comment here"`
 
-# How to use this image.
+## How to create docker image
+
+To create docker image ,use the Dockerfile in the project.
+In terminal, open the folder where Dockerfile is located.
+Use below command to login to your dockerhub account through terminal. 
+
+```console
+$ docker login
+```
+
+Run below command to create image with name and tag.
+
+```console
+$ docker build -t openas2:latest .
+```
+
+## How to use this image.
 
 Run the default OpenAS2 server:
 
