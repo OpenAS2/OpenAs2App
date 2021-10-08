@@ -618,9 +618,16 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         // Update the MDN headers with content information
         MimeBodyPart data = mdn.getData();
         String headerContentType = data.getContentType();
-        if ("true".equalsIgnoreCase(Properties.getProperty("remove_http_header_folding", "true"))) {
+        // Remove content folding unless configured not to do so
+        String removeHeaderFolding = mdn.getPartnership().getAttribute("remove_http_header_folding");
+        if (removeHeaderFolding == null) {
+            // Not configured at partnership level so use system level
+            removeHeaderFolding = Properties.getProperty("remove_http_header_folding", "true");
+        }
+        if ("true".equalsIgnoreCase(removeHeaderFolding)) {
             headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
         }
+
         mdn.setHeader("Content-Type", headerContentType);
 
         // int size = getSize(data);
