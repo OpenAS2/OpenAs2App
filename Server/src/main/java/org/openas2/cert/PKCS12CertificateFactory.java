@@ -145,13 +145,13 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
             alias = ks.getCertificateAlias(cert);
 
             if (alias == null) {
-                throw new KeyNotFoundException(cert, "-- alias null from getCertificateAlias(cert) call");
+                throw new KeyNotFoundException(cert, "-- alias null from getCertificateAlias(cert) call. Check that the x509_alias attribute is set correctly in the partnership.");
             }
 
             PrivateKey key = (PrivateKey) ks.getKey(alias, getPassword());
 
             if (key == null) {
-                throw new KeyNotFoundException(cert, "-- key null from getKey(" + alias + ") call");
+                throw new KeyNotFoundException(cert, "-- key null from getKey(" + alias + ") call. Check that the private key has been added to the keystore for the alias: " + alias);
             }
 
             return key;
