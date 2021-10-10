@@ -1,32 +1,17 @@
 package org.openas2.util;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.Rule;
-import org.junit.runner.RunWith;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
-import org.mockito.Mock;
-import org.mockito.exceptions.misusing.InvalidUseOfMatchersException;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-import org.openas2.partner.Partnership;
-import org.openas2.util.Properties;
-import org.openas2.util.IOUtil;
 import org.apache.commons.lang3.SystemUtils;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.InvalidMessageException;
 import org.junit.rules.ExpectedException;
     
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 //@RunWith(MockitoJUnitRunner.class)
 public class FilenameSafetyTest {
