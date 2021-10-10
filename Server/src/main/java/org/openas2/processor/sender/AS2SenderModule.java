@@ -20,6 +20,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.util.AS2Util;
@@ -65,8 +66,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             logger.info("message sender invoked" + msg.getLogMsgID());
         }
         boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
-        options.put("DIRECTION", "SEND");
-        options.put("IS_RESEND", isResend ? "Y" : "N");
+        options.put(FIELDS.DIRECTION, "SEND");
+        options.put(FIELDS.IS_RESEND, isResend ? "Y" : "N");
         if (!(msg instanceof AS2Message)) {
             throw new OpenAS2Exception("Can't send non-AS2 message");
         }

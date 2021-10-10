@@ -23,6 +23,7 @@ import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
@@ -82,7 +83,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         byte[] data = null;
         BufferedOutputStream out;
 
-        msg.setOption("DIRECTION", "RECEIVE");
+        msg.setOption(FIELDS.DIRECTION, "RECEIVE");
 
         try {
             out = new BufferedOutputStream(s.getOutputStream());
@@ -240,11 +241,16 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                             msg.trackMsgState(getModule().getSession());
                             boolean sentMDN = sendResponse(msg, out, new DispositionType("automatic-action", "MDN-sent-automatically", "processed"), mic, AS2ReceiverModule.DISP_SUCCESS);
                             if (!sentMDN) {
-                                // Not sure what to do here as the AS2 spec does not specify so log warning for
-                                // now
+                                // Not sure what to do here as the AS2 spec does not specify so log warning for now
+                                msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
+                                msg.trackMsgState(getModule().getSession());
+
                                 if (LOG.isWarnEnabled()) {
                                     LOG.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
                                 }
+                            } else {
+                                msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
+                                msg.trackMsgState(getModule().getSession());
                             }
                         } else {
                             HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);

@@ -8,6 +8,7 @@ import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.HTTPUtil;
@@ -47,7 +48,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
         AS2Message msg = new AS2Message();
 
 
-        msg.setOption("DIRECTION", "SEND");
+        msg.setOption(FIELDS.DIRECTION, "SEND");
 
         byte[] data = null;
 
