@@ -194,7 +194,7 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
             Certificate[] certChain = ks.getCertificateChain(alias);
             if (certChain == null) {
                 X509Certificate x509cert = (X509Certificate) ks.getCertificate(alias);
-                if (x509cert.getSubjectDN().equals(x509cert.getIssuerDN())) {
+                if (x509cert.getSubjectX500Principal().equals(x509cert.getIssuerX500Principal())) {
                     // Trust chain is to itself
                     certChain = new X509Certificate[]{x509cert, x509cert};
                     if (logger.isInfoEnabled()) {

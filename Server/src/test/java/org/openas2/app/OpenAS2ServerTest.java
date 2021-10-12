@@ -197,7 +197,8 @@ public class OpenAS2ServerTest {
 
     }
 
-    private static void getPartnership() throws Exception {
+    @SuppressWarnings("unused")
+	private static void getPartnership() throws Exception {
         // Set Partner B to request ASYNC MDN
         PartnershipFactory pf = serverA.getSession().getPartnershipFactory();
         Partnership p = new Partnership();

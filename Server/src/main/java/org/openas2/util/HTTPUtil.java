@@ -830,7 +830,7 @@ public class HTTPUtil {
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
             if (chain.length == 1) {
                 // Only ignore the check for self signed certs where CN (Canonical Name) matches
-                String dn = chain[0].getIssuerDN().getName();
+                String dn = chain[0].getIssuerX500Principal().getName();
                 for (int i = 0; i < trustCN.length; i++) {
                     if (dn.contains("CN=" + trustCN[i])) {
                         return;
