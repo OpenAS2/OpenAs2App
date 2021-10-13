@@ -9,3 +9,5 @@ pom.xml.versionsBackup
 */dist/*
 **/target/**/*
 /Bundle/target/
+/lib/
+Server/src/logs
