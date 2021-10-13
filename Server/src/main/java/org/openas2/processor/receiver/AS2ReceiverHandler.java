@@ -24,6 +24,7 @@ import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
+import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
@@ -248,9 +249,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                                 if (LOG.isWarnEnabled()) {
                                     LOG.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
                                 }
-                            } else {
-                                msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
-                                msg.trackMsgState(getModule().getSession());
                             }
                         } else {
                             HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
@@ -469,15 +467,13 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 return false;
             }
             try {
-                Map<Object, Object> options = new HashMap<Object, Object>();
+                Map<String, Object> options = new HashMap<String, Object>();
                 options.put("buffered_output_stream", out);
-
+                // Set up retry counts in case this partner uses Async MDN responses
+                int maxResendCount = AS2Util.getMaxResendCount(getModule().getSession(), msg);
+                msg.setOption(ResenderModule.OPTION_MAX_RETRY_COUNT, maxResendCount);
+                options.put(ResenderModule.OPTION_RETRIES, 0);
                 getModule().getSession().getProcessor().handle(SenderModule.DO_SENDMDN, msg, options);
-
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
-                }
-
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);

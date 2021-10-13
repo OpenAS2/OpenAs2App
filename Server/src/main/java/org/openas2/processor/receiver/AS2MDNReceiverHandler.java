@@ -111,7 +111,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
             options.put("STATE_MSG", "MDN response received. Message processing started.");
             msg.trackMsgState(getModule().getSession(), options);
             */
-            AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this);
+            AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this.getClass());
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
             msg.trackMsgState(getModule().getSession());

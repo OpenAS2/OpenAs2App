@@ -1,7 +1,6 @@
 package org.openas2.util;
 
 import org.junit.Test;
-import org.junit.Rule;
 import org.junit.Assert;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;

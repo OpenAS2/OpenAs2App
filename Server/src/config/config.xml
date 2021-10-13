@@ -79,13 +79,12 @@
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
               pendingMDN="$properties.storageBaseDir$/pendingMDN3"
-              pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3">
+              pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"
+              resend_max_retries="5">
       <module enabled="$properties.module.AS2SenderModule.enabled$"
-              classname="org.openas2.processor.sender.AS2SenderModule"
-              retries="5"/>
+              classname="org.openas2.processor.sender.AS2SenderModule"/>
       <module enabled="$properties.module.MDNSenderModule.enabled$"
-              classname="org.openas2.processor.sender.MDNSenderModule"
-              retries="3"/>
+              classname="org.openas2.processor.sender.MDNSenderModule"/>
       <!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
 		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
 		     The name of the file sent to the partner will be "OrderID-745634.edi" -->

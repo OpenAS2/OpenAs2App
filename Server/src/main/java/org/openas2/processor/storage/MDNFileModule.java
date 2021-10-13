@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class MDNFileModule extends BaseStorageModule {
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         // store mdn data
         if (msg.getMDN() == null) {
             throw new OpenAS2Exception("Message has no MDN");
