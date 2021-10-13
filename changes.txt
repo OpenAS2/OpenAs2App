@@ -1,3 +1,14 @@
+Version 2.12.0 - 2021-10-17
+This is a minor enhancement release, bug fixes and library upgrades:
+       **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix resend tracking in the tracking DB and add missing columns (https://github.com/OpenAS2/OpenAs2App/issues/195)
+  2. Changed error message to info message and support not rendering the error message when an invalid HTTP request is detected.
+  3. Support overriding the "remove_http_header_folding" property at partnership level. See OpenAS2HowTo section on "Header Folding" for details. (contributed by Claudio Degioanni claudio.degioanni@bmeweb.it)
+  4. Fix HTTP timeout configuration - the timeout configuration was  not correctly reading any user specific setting.
+  5. Enhance documentation based on user feedback.
+  6. Register successfully sent MDN in DB tracking.
+
 Version 2.11.0 - 2020-09-19
 This is a minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
