@@ -461,6 +461,9 @@ public abstract class BaseMessage implements Message {
                 }
             }
         }
+        if (tmpFilename == null || tmpFilename.length() < 1) {
+            return null;
+        }
         try {
           tmpFilename = IOUtil.getSafeFilename(tmpFilename);          
         } catch (OpenAS2Exception oae) {

@@ -123,7 +123,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     }
                     OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
                     msg.setLogMsg("Error receiving message for inbound AS2 request. There is no data.");
-                    LOG.error(msg, oe);
+                    if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
+                        LOG.info(msg, oe);
+                    }
                     return;
                 }
             } else {
@@ -249,10 +251,15 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                                 if (LOG.isWarnEnabled()) {
                                     LOG.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
                                 }
+                            } else {
+                                msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
+                                msg.trackMsgState(getModule().getSession());
                             }
                         } else {
                             HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
                             out.flush();
+                            msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED);
+                            msg.trackMsgState(getModule().getSession());
                             LOG.info("Msg received, no MDN requested. Sent HTTP OK" + getClientInfo(s) + msg.getLogMsgID());
                         }
                     } catch (Exception e) {

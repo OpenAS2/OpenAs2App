@@ -44,6 +44,7 @@ public interface Message extends Serializable {
     String MSG_STATE_MSG_SENT_MDN_RECEIVED_OK = "msg_sent_mdn_received_ok";
     String MSG_STATE_MSG_RXD_MDN_SENDING_FAIL = "msg_rxd_mdn_sending_fail";
     String MSG_STATE_MSG_RXD_MDN_SENT_OK = "msg_rxd_mdn_sent_ok";
+    String MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED = "msg_rxd_mdn_not_requested_ok";
     String MSG_STATE_MIC_MISMATCH = "msg_sent_mdn_received_mic_mismatch";
 
     Map<String, String> STATE_MSGS = new HashMap<String, String>() {
@@ -66,7 +67,7 @@ public interface Message extends Serializable {
             put(MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR, "Message sent. Message MDN received indicates an error. Resend queued");
             put(MSG_STATE_MSG_SENT_MDN_RECEIVED_OK, "Message sent. Message MDN success response received.");
             put(MSG_STATE_MSG_RXD_MDN_SENDING_FAIL, "Message was received but failed to successfully send an MDN response to partner");
-            put(MSG_STATE_MSG_RXD_MDN_SENT_OK, "Message received and MDN sent successfully.");
+            put(MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED, "Message received successfully but no MDN requested.");
         }
     };
 
