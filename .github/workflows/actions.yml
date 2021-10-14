@@ -2,7 +2,7 @@ name: Java CI
 on: [pull_request]
 jobs:
   build:
-    runs-on: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -11,10 +11,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up JDK $
+      - name: Set up JDK ${{ matrix.java_version }}
         uses: actions/setup-java@v2
         with:
-          java-version: $
+          java-version: ${{ matrix.java_version }}
       - name: Make Maven Wrapper executable
         if: contains(matrix.os, 'win') == false
         run: chmod +x ./mvnw
