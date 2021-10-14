@@ -7,8 +7,9 @@ The OpenAS2 project is pleased to announce the release of OpenAS2 2.12.0
 The release download file is: OpenAS2Server-2.12.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
+## NOTE: Testing covers Java 12 to 16. The application should work for older versions down to Java 7 but they are not tested working.
 
-Version 2.12.0 - 2020-10-17
+Version 2.12.0 - 2020-10-15
 This is a minor enhancement release and bugfix with library upgrades:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
@@ -18,10 +19,14 @@ This is a minor enhancement release and bugfix with library upgrades:
   4. Fix HTTP timeout configuration - the timeout configuration was  not correctly reading any user specific setting.
   5. Enhance documentation based on user feedback.
   6. Register successfully sent MDN in DB tracking.
+  7. Add a helper script to import certificates from a source keystore to a target keystore (import_alias_from_keystore.sh)
+  8. Change the way the receiver handler finds the private key. backwards compatibility was maintained through the use of a partnership attribute or system property (use_new_certificate_lookup_mode). It defaults to new mode but setting to false reverts the behaviour.
 
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
+      A change to the way the private key is looked up in the receiver handler means that if you have duplicated a certificate in the keystore, some partnerships may start top fail. This fix may fix other strange certificate issues when receiving messages. To fix partnership failures that occur after the upgrade, find the duplicates and remove them making sure the one you leave behind is the one with the correct private key. Alternatively, use the **use_new_certificate_lookup_mode** attribute at partnership level set to **false** and the old mechanism will be used but this is not advised as a long term solution as it will eventually be removed in a future version.
+
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**

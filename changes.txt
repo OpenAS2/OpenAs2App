@@ -1,4 +1,4 @@
-Version 2.12.0 - 2021-10-17
+Version 2.12.0 - 2021-10-15
 This is a minor enhancement release, bug fixes and library upgrades:
        **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
 
@@ -8,6 +8,8 @@ This is a minor enhancement release, bug fixes and library upgrades:
   4. Fix HTTP timeout configuration - the timeout configuration was  not correctly reading any user specific setting.
   5. Enhance documentation based on user feedback.
   6. Register successfully sent MDN in DB tracking.
+  7. Add a helper script to import certificates from a source keystore to a target keystore (import_alias_from_keystore.sh)
+  8. Change the way the receiver handler finds the private key. backwards compatibility was maintained through the use of a partnership attribute or system property (use_new_certificate_lookup_mode). It defaults to new mode but setting to false reverts the behaviour.
 
 Version 2.11.0 - 2020-09-19
 This is a minor enhancement release:
