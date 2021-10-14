@@ -20,10 +20,10 @@ jobs:
         if: contains(matrix.os, 'win') == false
         run: chmod +x ./mvnw
       - name: Build with Maven
-        run: ./mvnw test --file pom.xml --log-file maven.log
+        run: ./mvnw test --file pom.xml --log-file logs/maven-${{ matrix.java_version }}-${{ matrix.os }}.log
       - name: Archive logs
         uses: actions/upload-artifact@v2
         with:
-          name: execution-log-${{ matrix.java_version }}-${{ matrix.os }}s
-          path: maven.log
+          name: execution-logs
+          path: logs
           retention-days: 1
