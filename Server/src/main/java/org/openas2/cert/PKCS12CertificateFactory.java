@@ -50,7 +50,10 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
         }
 
         if (alias == null) {
-            throw new CertificateNotFoundException(partnershipType, null);
+            throw new CertificateNotFoundException(
+                 "Lookup failed for X509 alias for AS2 ID: " + partnership.getReceiverID(Partnership.PID_AS2 + " :: Partnership type: " + partnershipType),
+                 null
+            );
         }
 
         return alias;
@@ -135,6 +138,22 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
 
     public void setPassword(char[] password) {
         getParameters().put(PARAM_PASSWORD, new String(password));
+    }
+
+    public PrivateKey getPrivateKey(String alias) throws OpenAS2Exception {
+        if (alias == null) {
+            throw new OpenAS2Exception("Keystore alias cannot be found for method getPrivateKey(alias) call. Check that the x509_alias attribute is set correctly in the partnership.");
+        }
+        KeyStore ks = getKeyStore();
+        try {
+            PrivateKey key = (PrivateKey) ks.getKey(alias, getPassword());
+            if (key == null) {
+                throw new OpenAS2Exception("The private key was not found for alias. Check that the private key has been added to the keystore for the alias: " + alias);
+            }
+            return key;
+        } catch (GeneralSecurityException e) {
+            throw new OpenAS2Exception("Unexpected error occured fetching private key: " + e.getMessage(), e);
+        }
     }
 
     private PrivateKey getPrivateKey(X509Certificate cert) throws OpenAS2Exception {

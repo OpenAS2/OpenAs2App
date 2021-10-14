@@ -327,8 +327,17 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     LOG.debug("decrypting :::" + msg.getLogMsgID());
                 }
 
-                X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-                PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
+                X509Certificate receiverCert = null;
+                PrivateKey receiverKey = null;
+                boolean useNewMode = "false".equals(msg.getPartnership().getAttributeOrProperty(Partnership.USE_NEW_CERTIFICATE_LOOKUP_MODE, "true"))?false:true;
+                if (useNewMode) {
+                    String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                    receiverCert = certFx.getCertificate(x509_alias);
+                    receiverKey = certFx.getPrivateKey(x509_alias);
+                } else {
+                    receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
+                    receiverKey = certFx.getPrivateKey(msg, receiverCert);
+                }
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
