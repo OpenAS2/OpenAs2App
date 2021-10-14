@@ -2,7 +2,7 @@ name: Java CI
 on: [pull_request]
 jobs:
   build:
-    runs-on: $
+    runs-on: [windows-latest, ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
