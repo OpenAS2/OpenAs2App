@@ -24,6 +24,6 @@ jobs:
       - name: Archive logs
         uses: actions/upload-artifact@v2
         with:
-          name: execution-logs
+          name: execution-log-${{ matrix.java_version }}-${{ matrix.os }}s
           path: maven.log
           retention-days: 1
