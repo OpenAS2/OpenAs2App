@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * Created by nick on 08.04.17.
@@ -37,12 +37,14 @@ public class FileMonitorAdapterTest {
     @Mock
     private ScheduledExecutorService executorService;
     private File configFile;
+    private File tst;
 
     private FileMonitorAdapter adapter;
 
     @Before
     public void setUp() throws Exception {
         configFile = spy(tmp.newFile());
+        tst = tmp.newFile();
         adapter = spy(new FileMonitorAdapter() {
             @Override
             public void onConfigFileChanged() throws OpenAS2Exception {
@@ -56,7 +58,7 @@ public class FileMonitorAdapterTest {
     public void shouldNotScheduleRefreshWhenIntervalNotConfigured() throws Exception {
         adapter.scheduleIfNeed(executorService, configFile, 0, TimeUnit.SECONDS);
 
-        verifyZeroInteractions(executorService);
+        verifyNoInteractions(executorService);
     }
 
     @Test
@@ -64,9 +66,12 @@ public class FileMonitorAdapterTest {
 
         int refreshInterval = RandomUtils.nextInt(1, 10);
 
+        doReturn(true).when(configFile).exists();
+        doReturn(true).when(configFile).isFile();
+        doReturn(new Date().getTime()).when(configFile).lastModified();
         adapter.scheduleIfNeed(executorService, configFile, refreshInterval, TimeUnit.SECONDS);
-
         doReturn(new Date().getTime() + 10).when(configFile).lastModified();
+
         verify(executorService).scheduleAtFixedRate(monitorJob.capture(), eq((long) refreshInterval), eq((long) refreshInterval), eq(TimeUnit.SECONDS));
 
         monitorJob.getValue().run();

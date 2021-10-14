@@ -9,4 +9,8 @@ public interface ResenderModule extends ProcessorModule {
     String OPTION_INITIAL_SENDER = "initial_sender";
     String OPTION_RESEND_METHOD = "resend_method";
     String OPTION_RETRIES = "retries";
+    String OPTION_RETRY_COUNT = "retry_count";
+    String OPTION_MAX_RETRY_COUNT = "max_retry_count";
+
+    int DEFAULT_RETRIES = -1;    // Infinite
 }

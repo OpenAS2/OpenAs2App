@@ -36,7 +36,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         return modules;
     }
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         Iterator<ProcessorModule> moduleIt = getModules().iterator();
         ProcessorModule module;
         ProcessorException pex = null;

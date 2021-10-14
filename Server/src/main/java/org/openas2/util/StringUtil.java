@@ -25,7 +25,7 @@ public class StringUtil {
             if (val instanceof String) {
                 strBuf.append(val);
             } else if (val instanceof List) {
-                listToString((List) val, ",");
+                strBuf.append(listToString((List<String>) val, ","));
             } else {
                 strBuf.append(val.toString());
             }
@@ -34,7 +34,7 @@ public class StringUtil {
         return strBuf.toString();
     }
 
-    public static String listToString(List myList, String entryConcatenator) {
+    public static String listToString(List<String> myList, String entryConcatenator) {
         StringBuffer strBuf = new StringBuffer(10);
         for (int i = 0; i < myList.size() - 1; i++) {
             strBuf.append(myList.get(i)).append(entryConcatenator);
@@ -53,7 +53,7 @@ public class StringUtil {
             if (val instanceof String) {
                 strBuf.append(val);
             } else if (val instanceof List) {
-                listToString((List) val, listConcatenator);
+                listToString((List<String>) val, listConcatenator);
             } else {
                 strBuf.append(val.toString());
             }

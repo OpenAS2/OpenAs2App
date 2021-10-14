@@ -11,11 +11,11 @@ public class NoModuleException extends OpenAS2Exception {
      *
      */
     private static final long serialVersionUID = 1L;
-    private Map<Object, Object> options;
+    private Map<String, Object> options;
     private Message msg;
     private String action;
 
-    public NoModuleException(String action, Message msg, Map<Object, Object> options) {
+    public NoModuleException(String action, Message msg, Map<String, Object> options) {
         super(toString(action, msg, options));
         this.action = action;
         this.msg = msg;
@@ -38,11 +38,11 @@ public class NoModuleException extends OpenAS2Exception {
         return msg;
     }
 
-    public void setOptions(Map<Object, Object> map) {
+    public void setOptions(Map<String, Object> map) {
         options = map;
     }
 
-    public Map<Object, Object> getOptions() {
+    public Map<String, Object> getOptions() {
         return options;
     }
 
@@ -50,7 +50,7 @@ public class NoModuleException extends OpenAS2Exception {
         return toString(getAction(), getMsg(), getOptions());
     }
 
-    protected static String toString(String action, Message msg, Map<Object, Object> options) {
+    protected static String toString(String action, Message msg, Map<String, Object> options) {
         return "NoModuleException: Requested action: " + action + " Message: " + msg + " Options: " + options;
     }
 }

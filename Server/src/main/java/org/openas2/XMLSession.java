@@ -157,7 +157,7 @@ public class XMLSession extends BaseSession {
             try {
                 fis = new FileInputStream(appPropsFile);
                 appProps.load(fis);
-                Enumeration enuKeys = appProps.keys();
+                Enumeration<Object> enuKeys = appProps.keys();
                 while (enuKeys.hasMoreElements()) {
                     String key = (String) enuKeys.nextElement();
                     Properties.setProperty(key, appProps.getProperty(key));

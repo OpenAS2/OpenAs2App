@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface ProcessorModule extends Component {
 
-    boolean canHandle(String action, Message msg, Map<Object, Object> options);
+    boolean canHandle(String action, Message msg, Map<String, Object> options);
 
-    void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception;
+    void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception;
 }

@@ -29,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -160,17 +161,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         if (logger.isTraceEnabled()) {
             logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());
         }
-        // Retry count - first try on partnership then directory polling module
-        String maxRetryCnt = msg.getPartnership().getAttribute(Partnership.PA_RESEND_MAX_RETRIES);
-        if (maxRetryCnt == null || maxRetryCnt.length() < 1) {
-            maxRetryCnt = getSession().getProcessor().getParameters().get(PARAM_RESEND_MAX_RETRIES);
-        }
-        if (logger.isTraceEnabled()) {
-            logger.trace("RESEND COUNT extracted from config: " + maxRetryCnt + msg.getLogMsgID());
-        }
-        Map<Object, Object> options = msg.getOptions();
-        options.put(ResenderModule.OPTION_RETRIES, maxRetryCnt);
-
+        Map<String, Object> options = new HashMap<String, Object>();
+        // Initialise the resend parameters
+        int maxResendCount = AS2Util.getMaxResendCount(getSession(), msg);
+        msg.setOption(ResenderModule.OPTION_MAX_RETRY_COUNT, maxResendCount);
+        options.put(ResenderModule.OPTION_RETRIES, 0);
         if (logger.isTraceEnabled()) {
             try {
 
