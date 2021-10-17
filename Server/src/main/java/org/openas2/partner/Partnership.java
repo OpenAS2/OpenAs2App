@@ -1,5 +1,7 @@
 package org.openas2.partner;
 
+import org.openas2.OpenAS2Exception;
+import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.util.Properties;
 
 import java.io.Serializable;
@@ -45,6 +47,8 @@ public class Partnership implements Serializable {
     public static final String PAIB_NAMES_FROM_FILENAME = "attribute_names_from_filename"; // List of attribute names to be set from parsed filename
     public static final String PAIB_VALUES_REGEX_ON_FILENAME = "attribute_values_regex_on_filename"; // Regex to split filename into values
     public static final String PA_HTTP_NO_CHUNKED_MAX_SIZE = "no_chunked_max_size"; // Disables chunked HTTP transfer when file size is set larger as 0
+    // A hopefully temporary key to maintain backwards compatibility
+    public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
 
     /*
      * If set and an error occurs while processing a document, an error MDN will not be sent. This
@@ -146,6 +150,25 @@ public class Partnership implements Serializable {
             return compareIDs(receiverIDs, getReceiverIDs());
         }
 
+    }
+
+    public String getAlias(String partnershipType) throws OpenAS2Exception {
+        String alias = null;
+
+        if (partnershipType == PTYPE_RECEIVER) {
+            alias = getReceiverID(Partnership.PID_X509_ALIAS);
+        } else if (partnershipType == PTYPE_SENDER) {
+            alias = getSenderID(Partnership.PID_X509_ALIAS);
+        }
+
+        if (alias == null) {
+            throw new CertificateNotFoundException(
+                 "Lookup failed for X509 alias for AS2 ID: " + getReceiverID(Partnership.PID_AS2 + " :: Partnership type: " + partnershipType),
+                 null
+            );
+        }
+
+        return alias;
     }
 
     public String toString() {

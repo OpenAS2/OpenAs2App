@@ -11,7 +11,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.helpers.XMLReaderFactory;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -31,7 +33,9 @@ import java.util.Map.Entry;
 
 public class XMLUtil {
     public static Document parseXML(InputStream in, XMLFilterImpl handler) throws Exception {
-        XMLReader xmlparser = XMLReaderFactory.createXMLReader();
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser parser = factory.newSAXParser();
+        XMLReader xmlparser = parser.getXMLReader();
         handler.setParent(xmlparser);
 
         SAXSource source = new SAXSource(handler, new InputSource(in));
@@ -58,7 +62,7 @@ public class XMLUtil {
                 throw new OpenAS2Exception("Class " + className + " must implement " + Component.class.getName());
             }
 
-            Component obj = (Component) objClass.newInstance();
+            Component obj = (Component) objClass.getDeclaredConstructor().newInstance();
 
             Map<String, String> parameters = XMLUtil.mapAttributes(node);
             AS2Util.attributeEnhancer(parameters);

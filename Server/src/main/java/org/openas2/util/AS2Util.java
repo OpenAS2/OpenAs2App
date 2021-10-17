@@ -2,6 +2,7 @@ package org.openas2.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.ComponentNotFoundException;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
@@ -25,6 +26,7 @@ import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
+import org.openas2.processor.receiver.MessageBuilderModule;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
@@ -271,54 +273,31 @@ public class AS2Util {
         return true;
     }
 
-    // How many times should this message be sent?
-    public static String retries(Map<Object, Object> options, String fallbackRetries) {
-        String left;
-        if (options == null || (left = (String) options.get(SenderModule.SOPT_RETRIES)) == null) {
-            left = fallbackRetries;
-        }
-
-        if (left == null) {
-            left = SenderModule.DEFAULT_RETRIES;
-        }
-        // Verify it is a valid integer
-        try {
-            Integer.parseInt(left);
-        } catch (Exception e) {
-            return SenderModule.DEFAULT_RETRIES;
-        }
-        return left;
-    }
-
     /*
      * @description Attempts to check if a resend should go ahead and if so
      * decrements the resend count and stores the decremented retry count in the
      * options map. If the passed in retry count is null or invalid it will fall
      * back to a system default
      */
-    public static boolean resend(Session session, Object sourceClass, String how, Message msg, OpenAS2Exception cause, String tries, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
+    public static boolean resend(Session session, Class<?> sourceClass, String how, Message msg, OpenAS2Exception cause, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        int retries = (int) msg.getOption(ResenderModule.OPTION_RETRIES);
+        int maxRetryCount = getMaxResendCount(session, msg);
         if (logger.isDebugEnabled()) {
-            logger.debug("RESEND requested.... retries to go: " + tries + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
+            logger.debug("RESEND requested. Retries: " + retries + "Max retries: " + maxRetryCount + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
         }
-
-        int retries = -1;
-        if (tries == null) {
-            tries = SenderModule.DEFAULT_RETRIES;
-        }
-        try {
-            retries = Integer.parseInt(tries);
-        } catch (Exception e) {
-            msg.setLogMsg("The retry count is not a valid integer value: " + tries);
-            logger.error(msg);
-        }
-        if (retries >= 0 && retries-- <= 0) {
-            msg.setLogMsg("Message abandoned after retry limit reached.");
-            logger.error(msg);
-            // Log significant msg state
-            msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
-            msg.trackMsgState(session);
-            throw new OpenAS2Exception("Message abandoned after retry limit reached." + msg.getLogMsgID());
+        if (maxRetryCount > -1) {
+            // Have to resend some fixed number of times so check if we are done
+            if (retries >= maxRetryCount) {
+                msg.setLogMsg("Message abandoned after retry limit reached.");
+                logger.error(msg);
+                // Log significant msg state
+                msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+                msg.trackMsgState(session);
+                throw new OpenAS2Exception("Message abandoned after retry limit reached." + msg.getLogMsgID());
+            }
+            // Going to try again so increment the try count
+            retries++;
         }
 
         if (useOriginalMsgObject) {
@@ -357,7 +336,7 @@ public class AS2Util {
             originalMsg.setAttribute(FileAttribute.MA_PENDINGINFO, msg.getAttribute(FileAttribute.MA_PENDINGINFO));
             if (!keepOriginalData) {
                 originalMsg.setMessageID(msg.getMessageID());
-                originalMsg.setOption(ResenderModule.OPTION_RETRIES, tries);
+                originalMsg.setOption(ResenderModule.OPTION_RETRIES, retries);
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Message file extracted from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Message file extracted from original object: " + originalMsg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
@@ -388,8 +367,7 @@ public class AS2Util {
             String newMsgId = msg.generateMessageID();
             // Set new Id in Message object so we can generate new file name
             msg.setMessageID(newMsgId);
-            // msg.setHeader("Original-Message-Id", oldMsgId); // Not sure about this so
-            // lesve out for now
+            // msg.setHeader("Original-Message-Id", oldMsgId); // Not sure about this so leave out for now
             String newPendingInfoFileName = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
             if (logger.isDebugEnabled()) {
                 logger.debug("" + "\n        Old Msg Id: " + oldMsgId + "\n        Old Info File: " + oldPendingInfoFileName + "\n        New Info File: " + newPendingInfoFileName + msg.getLogMsgID());
@@ -413,7 +391,7 @@ public class AS2Util {
                 logger.error(msg, iose);
             }
         }
-        Map<Object, Object> options = new HashMap<Object, Object>();
+        Map<String, Object> options = new HashMap<String, Object>();
         options.put(ResenderModule.OPTION_CAUSE, cause);
         options.put(ResenderModule.OPTION_INITIAL_SENDER, sourceClass);
         options.put(ResenderModule.OPTION_RESEND_METHOD, how);
@@ -434,7 +412,7 @@ public class AS2Util {
      * @throws OpenAS2Exception - an internally handled error has occurred
      * @throws IOException      - the IO system has a problem
      */
-    public static void processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Object sourceClass) throws OpenAS2Exception, IOException {
+    public static void processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 
         // Create a MessageMDN and copy HTTP headers
@@ -473,8 +451,6 @@ public class AS2Util {
             getMetaData(msg, session);
         }
 
-        String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
-
         msg.setStatus(Message.MSG_STATUS_MDN_VERIFY);
         if (logger.isTraceEnabled()) {
             logger.trace("MDN parsed. \n\tPayload file name: " + msg.getPayloadFilename() + "\n\tChecking MDN report..." + msg.getLogMsgID());
@@ -504,7 +480,7 @@ public class AS2Util {
             }
             // Hmmmm... Error may require manual intervention but keep
             // trying.... possibly change retry count to 1 or just fail????
-            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, retries, true, false);
+            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
             return;
@@ -516,7 +492,7 @@ public class AS2Util {
             OpenAS2Exception oae2 = new OpenAS2Exception("Message was sent but an error occured while receiving the MDN: " + org.openas2.logging.Log.getExceptionMsg(oae), oae);
             oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             oae2.terminate();
-            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true, false);
+            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
             return;
@@ -608,7 +584,7 @@ public class AS2Util {
             msg.setCalculatedMIC((String) pifois.readObject());
             // Get the retry count for number of resends to go from the second line of
             // pending information file
-            String retries = (String) pifois.readObject();
+            int retries = Integer.parseInt((String) pifois.readObject());
             if (logger.isTraceEnabled()) {
                 logger.trace("RETRY COUNT from pending info file: " + retries);
             }
@@ -780,4 +756,13 @@ public class AS2Util {
 
     }
 
+    public static int getMaxResendCount(Session session, Message msg) throws ComponentNotFoundException {
+        // Retry count - first try on partnership then on the processor
+        String maxRetryCntStr = msg.getPartnership().getAttribute(Partnership.PA_RESEND_MAX_RETRIES);
+        if (maxRetryCntStr == null || maxRetryCntStr.length() < 1) {
+            maxRetryCntStr = session.getProcessor().getParameters().get(MessageBuilderModule.PARAM_RESEND_MAX_RETRIES);
+        }
+        int maxResendCount = (maxRetryCntStr != null && maxRetryCntStr.length() > 0)?Integer.parseInt(maxRetryCntStr):ResenderModule.DEFAULT_RETRIES;
+        return maxResendCount;
+    }
 }

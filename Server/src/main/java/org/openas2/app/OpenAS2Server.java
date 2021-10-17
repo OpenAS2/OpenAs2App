@@ -80,7 +80,7 @@ public class OpenAS2Server {
             }
             File cfg = new File(configFile);
             if (!cfg.exists()) {
-                LOGGER.error("No config file found: " + configFile);
+                LOGGER.error("No config file found: " + configFile + " :: Path: " + cfg.getAbsolutePath());
                 LOGGER.error("Pass as the first paramter on the command line or set the system property \"openas2.config.file\" to identify the configuration file to start OpenAS2");
                 throw new Exception("Missing configuration file");
             }

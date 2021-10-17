@@ -19,7 +19,7 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
     public static final String PARAM_PROTOCOL = "protocol";
     public static final String PARAM_TEMPDIR = "tempdir";
 
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
+    public boolean canHandle(String action, Message msg, Map<String, Object> options) {
         try {
             if (!action.equals(getModuleAction())) {
                 return false;

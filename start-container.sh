@@ -3,7 +3,6 @@
 if [ ! -e /opt/openas2/config/config.xml ]
     then
         echo "The config folder is empty, it will be populated by the template..."
-        cd config_template
         cp -a config_template/* config/
         echo "Done!"
 fi

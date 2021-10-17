@@ -20,7 +20,7 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
 
     public abstract boolean healthcheck(List<String> failures);
 
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
+    public boolean canHandle(String action, Message msg, Map<String, Object> options) {
         return false;
     }
 
@@ -38,7 +38,7 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
         }
     }
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         throw new UnsupportedException("Active modules don't handle anything by default");
     }
 

@@ -1,7 +1,5 @@
 package org.openas2.support.config;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -19,7 +17,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * Created by nick on 08.04.17.
@@ -35,14 +33,16 @@ public class FileMonitorTest {
     @Test
     public void shouldTriggerListenersWhenFileChanged() throws Exception {
         File fileToObserve = Mockito.spy(temp.newFile());
+        doReturn(true).when(fileToObserve).exists();
+        doReturn(true).when(fileToObserve).isFile();
+        doReturn(new Date().getTime()).when(fileToObserve).lastModified();
 
         FileMonitor fileMonitor = new FileMonitor(fileToObserve, listener);
-        verifyNoMoreInteractions(listener);
+        verifyNoInteractions(listener);
 
         fileMonitor.run();
-        verifyNoMoreInteractions(listener);
+        verifyNoInteractions(listener);
 
-        FileUtils.write(fileToObserve, RandomStringUtils.randomAlphanumeric(1024), "UTF-8");
         doReturn(new Date().getTime() + 3).when(fileToObserve).lastModified();
         fileMonitor.run();
 
@@ -50,7 +50,6 @@ public class FileMonitorTest {
         reset(listener);
 
         fileMonitor.run();
-        verifyNoMoreInteractions(listener);
-
+        verifyNoInteractions(listener);
     }
 }

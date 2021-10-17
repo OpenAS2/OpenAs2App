@@ -11,7 +11,7 @@ import org.openas2.util.HTTPUtil;
 import javax.mail.internet.InternetHeaders;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 

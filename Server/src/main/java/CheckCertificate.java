@@ -214,7 +214,7 @@ public class CheckCertificate {
             OutputStream out = new FileOutputStream(targetKeyStore);
             ks.store(out, passphrase);
             out.close();
-            System.out.println("Installed certificate as trusted: " + cert.getIssuerDN() + "::" + cert.getSigAlgName());
+            System.out.println("Installed certificate as trusted: " + cert.getIssuerX500Principal() + "::" + cert.getSigAlgName());
         }
         return 0;
     }
@@ -244,7 +244,7 @@ public class CheckCertificate {
             return;
         }
 
-        String rootCertDN = rootCert.getIssuerDN().getName();
+        String rootCertDN = rootCert.getIssuerX500Principal().getName();
         String org = getDNField("O", rootCertDN).toLowerCase();
         String org1StWord = org.replaceAll("(\\S*)[^$]*", "$1").toLowerCase();
         System.out.println("Looking for matches to root certificate DN:\n\t" + rootCertDN + "\n\t\tReference certificate signing algorthim: " + rootCert.getSigAlgName() + "\n\n\tTrusted certificate(s) most closely matching \"O\" field of root certificate DN:");
@@ -255,7 +255,7 @@ public class CheckCertificate {
             TrustAnchor ta = (TrustAnchor) it.next();
             // Get certificate
             X509Certificate cert = ta.getTrustedCert();
-            String dn = cert.getIssuerDN().getName();
+            String dn = cert.getIssuerX500Principal().getName();
             String lcDN = dn.toLowerCase();
             if (lcDN.contains(org) || lcDN.contains(org1StWord)) {
                 found = true;
