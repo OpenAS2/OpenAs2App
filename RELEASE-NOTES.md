@@ -1,31 +1,27 @@
 #              OpenAS2 Server
-#              Version 2.12.0
+#              Version 2.13.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.12.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.13.0
 
 The release download file is: OpenAS2Server-2.12.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
-## NOTE: Testing covers Java 12 to 16. The application should work for older versions down to Java 7 but they are not tested working.
+## NOTE: Testing covers Java 12 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 2.12.0 - 2020-10-15
-This is a minor enhancement release and bugfix with library upgrades:
+Version 2.13.0 - 2021-10-21
+This is a minor enhancement release and windows bat files bugfix:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Fix resend tracking in the tracking DB and add missing columns (https://github.com/OpenAS2/OpenAs2App/issues/195)
-  2. Changed error message to info message and support not rendering the error message when an invalid HTTP request is detected.
-  3. Support overriding the "remove_http_header_folding" property at partnership level. See OpenAS2HowTo section on "Header Folding" for details. (contributed by Claudio Degioanni claudio.degioanni@bmeweb.it)
-  4. Fix HTTP timeout configuration - the timeout configuration was  not correctly reading any user specific setting.
-  5. Enhance documentation based on user feedback.
-  6. Register successfully sent MDN in DB tracking.
-  7. Add a helper script to import certificates from a source keystore to a target keystore (import_alias_from_keystore.sh)
-  8. Change the way the receiver handler finds the private key. backwards compatibility was maintained through the use of a partnership attribute or system property (use_new_certificate_lookup_mode). It defaults to new mode but setting to false reverts the behaviour.
+  1. Enhance the directory polling module to use the NIO library.
+  2. Fix the startup.bat file for Windows where in newer versions of Java the JAVA environment variable is set with quotes surrounding it.
+  3. Fix the windows service installer bat file so that it reliably installs a service that can start.
 
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
-      A change to the way the private key is looked up in the receiver handler means that if you have duplicated a certificate in the keystore, some partnerships may start top fail. This fix may fix other strange certificate issues when receiving messages. To fix partnership failures that occur after the upgrade, find the duplicates and remove them making sure the one you leave behind is the one with the correct private key. Alternatively, use the **use_new_certificate_lookup_mode** attribute at partnership level set to **false** and the old mechanism will be used but this is not advised as a long term solution as it will eventually be removed in a future version.
+ 
+ There are no specific notes for this upgrade.
 
  Below are some specific things to focus on depending on which version you are upgrading from.
 
@@ -33,6 +29,7 @@ This is a minor enhancement release and bugfix with library upgrades:
 
 ### If upgrading from versions older than 2.12.0:
       1. If you are using the DB tracking module with the default H2 database then you will need to follow the DB upgrade steps "Appendix: Updating database structure" defined in the OpenAS2HowTo.pdf to ensure you do not lose your existing data because the new H2 version has issues with old databases.
+      2. A change to the way the private key is looked up in the receiver handler means that if you have duplicated a certificate in the keystore, some partnerships may start to fail. This fix may fix other strange certificate issues when receiving messages. To fix partnership failures that occur after the upgrade, find the duplicates and remove them making sure the one you leave behind is the one with the correct private key. Alternatively, use the **use_new_certificate_lookup_mode** attribute at partnership level set to **false** and the old mechanism will be used but this is not advised as a long term solution as it will eventually be removed in a future version.
 
 
 ### If you have been passing the password for the certificate file on the command line in a shell script (no change to the Windows .bat file):
