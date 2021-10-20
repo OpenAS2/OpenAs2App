@@ -30,6 +30,9 @@ rem set EXTRA_PARMS=%EXTRA_PARMS% -Djavax.net.debug=SSL
 rem  set EXTRA_PARMS=%EXTRA_PARMS% -DCmdProcessorSocketCipher=SSL_DH_anon_WITH_RC4_128_MD5
 
 rem Setup the Java Virtual Machine
+rem Remove any quotes around the JAVA env var to avoid failures in the script
+set JAVA=%JAVA:"=%
+
 if not "%JAVA%" == "" goto :Check_JAVA_END
     if not "%JAVA_HOME%" == "" goto :TryJDKEnd
         call :warn JAVA_HOME not set; results may vary
