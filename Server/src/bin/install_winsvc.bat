@@ -57,7 +57,7 @@ REM  Add the below line into the install command if using a specific JVM
 REM  --JavaHome="%JAVA_HOME%" ^
 
 REM Make the folder accessible to the "Local Service" user running the servioce
-icacls "%OPENAS2_BASE_DIR%s" /grant *S-1-5-19:(OI)(CI)(M)
+icacls "%OPENAS2_BASE_DIR%" /grant *S-1-5-19:(OI)(CI)(M)
 
 REM Install service
 "%PR_INSTALL%" //IS/%SERVICE_NAME% ^
