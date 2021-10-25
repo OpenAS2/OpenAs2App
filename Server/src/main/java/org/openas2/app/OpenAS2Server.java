@@ -10,6 +10,13 @@ import org.openas2.lib.helper.ICryptoHelper;
 import javax.annotation.Nonnull;
 import javax.crypto.Cipher;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 
 /**
@@ -18,6 +25,12 @@ import java.io.File;
  * in this release added ability to have multiple command processors
  */
 public class OpenAS2Server {
+    public static final String MANIFEST_VENDOR_ID_ATTRIB = "Implementation-Vendor-Id";
+    public static final String MANIFEST_VERSION_ATTRIB = "Implementation-Version";
+    public static final String MANIFEST_TITLE_ATTRIB = "Implementation-Title";
+    public static final String VENDOR_ID = "net.sf.openas2";
+    public static final String PROJECT_NAME = "OpenAS2 Server";
+
     private static final Log LOGGER = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
 
     @Nonnull
@@ -46,6 +59,16 @@ public class OpenAS2Server {
 
 
     public static void main(String[] args) throws Exception {
+        if (args != null && args.length > 0 && "--version".equals(args[0])) {
+            Attributes manifestAttribs = getManifestAttributes();
+            if (manifestAttribs == null) {
+                System.out.println("No manifest found  and cannot determine the app version.");
+                System.exit(1);
+            } else {
+                System.out.println("OpenAS2 Version: " + getAppVersion(manifestAttribs));
+                System.exit(0);
+            }
+        }
         new OpenAS2Server.Builder().registerShutdownHook().run(args);
     }
 
@@ -64,6 +87,64 @@ public class OpenAS2Server {
         }
 
         LOGGER.info("OpenAS2 has shut down\r\n");
+    }
+
+    public static Attributes getManifestAttributes() {
+        Enumeration<?> resEnum;
+        URL openAS2Manifest = null;
+        Attributes manifestAttributes = null;
+        try {
+            resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
+            while (resEnum.hasMoreElements()) {
+                try {
+                    URL url = (URL) resEnum.nextElement();
+                    InputStream is = url.openStream();
+                    if (is != null) {
+                        Manifest manifest = new Manifest(is);
+                        manifestAttributes = manifest.getMainAttributes();
+                        is.close();
+                        String vendor = manifestAttributes.getValue(MANIFEST_VENDOR_ID_ATTRIB);
+                        if (vendor != null && VENDOR_ID.equals(vendor)) {
+                            // We have an OpenAS2 jar at least - check the project name
+                            String project = manifestAttributes.getValue(MANIFEST_TITLE_ATTRIB);
+                            if (project != null && PROJECT_NAME.equals(project)) {
+                                if (openAS2Manifest != null) {
+                                    // A duplicate detected
+                                    throw new OpenAS2Exception("Duplicate manifests detected: " + openAS2Manifest.getPath() + " ::: " + url.getPath());
+                                }
+                                openAS2Manifest = url;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    // Silently ignore wrong manifests on classpath?
+                }
+            }
+        } catch (IOException e1) {
+            // Silently ignore wrong manifests on classpath?
+        }
+        if (openAS2Manifest == null) {
+            LOGGER.warn("Failed to find a MANIFEST.MF with the desired vendor and project name.");
+        } else {
+            LOGGER.info("Using MANIFEST " + openAS2Manifest.getPath());
+        }
+        return manifestAttributes;
+    }
+
+    public static String getManifestAttribValue(@Nonnull String attrib, Attributes manifestAttributes) {
+        if (manifestAttributes != null) {
+            return manifestAttributes.getValue(attrib);
+        }
+        return "NO MANIFEST";
+    }
+
+    public static String getAppVersion(Attributes manifestAttributes) {
+        String version =  getManifestAttribValue(OpenAS2Server.MANIFEST_VERSION_ATTRIB, manifestAttributes);
+        return version;
+    }
+
+    public static String getAppTitle(Attributes manifestAttributes) {
+            return getManifestAttribValue(OpenAS2Server.MANIFEST_TITLE_ATTRIB, manifestAttributes) + " v" + getAppVersion(manifestAttributes);
     }
 
     public static class Builder {

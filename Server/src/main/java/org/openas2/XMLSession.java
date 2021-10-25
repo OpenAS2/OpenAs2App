@@ -2,6 +2,7 @@ package org.openas2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
@@ -20,21 +21,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 /**
  * original author unknown
@@ -56,11 +52,6 @@ public class XMLSession extends BaseSession {
     private CommandRegistry commandRegistry;
     private CommandManager cmdManager = new CommandManager();
 
-    private static final String MANIFEST_VENDOR_ID_ATTRIB = "Implementation-Vendor-Id";
-    private static final String MANIFEST_VERSION_ATTRIB = "Implementation-Version";
-    private static final String MANIFEST_TITLE_ATTRIB = "Implementation-Title";
-    private static final String VENDOR_ID = "net.sf.openas2";
-    private static final String PROJECT_NAME = "OpenAS2 Server";
     private Attributes manifestAttributes = null;
     private String VERSION;
     private String TITLE;
@@ -293,59 +284,14 @@ public class XMLSession extends BaseSession {
     }
 
     private void getManifestAttributes() throws OpenAS2Exception {
-        Enumeration<?> resEnum;
-        URL openAS2Manifest = null;
-        try {
-            resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
-            while (resEnum.hasMoreElements()) {
-                try {
-                    URL url = (URL) resEnum.nextElement();
-                    InputStream is = url.openStream();
-                    if (is != null) {
-                        Manifest manifest = new Manifest(is);
-                        Attributes mainAttribs = manifest.getMainAttributes();
-                        is.close();
-                        String vendor = mainAttribs.getValue(MANIFEST_VENDOR_ID_ATTRIB);
-                        if (vendor != null && VENDOR_ID.equals(vendor)) {
-                            // We have an OpenAS2 jar at least - check the project name
-                            String project = mainAttribs.getValue(MANIFEST_TITLE_ATTRIB);
-                            if (project != null && PROJECT_NAME.equals(project)) {
-                                if (openAS2Manifest != null) {
-                                    // A duplicate detected
-                                    throw new OpenAS2Exception("|Duplicate manifests detected: " + openAS2Manifest.getPath() + " ::: " + url.getPath());
-                                }
-                                openAS2Manifest = url;
-                                manifestAttributes = mainAttribs;
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    // Silently ignore wrong manifests on classpath?
-                }
-            }
-        } catch (IOException e1) {
-            // Silently ignore wrong manifests on classpath?
-        }
-        if (openAS2Manifest == null) {
-            LOGGER.warn("Failed to find a MANIFEST.MF with the desired vendor and project name.");
-        } else {
-            LOGGER.info("Using MANIFEST " + openAS2Manifest.getPath());
-        }
-    }
-
-    @Nullable
-    private String getManifestAttribValue(@Nonnull String attrib) throws OpenAS2Exception {
-        if (manifestAttributes != null) {
-            return manifestAttributes.getValue(attrib);
-        }
-        return "NO MANIFEST";
+        manifestAttributes = OpenAS2Server.getManifestAttributes();
     }
 
     public String getAppVersion() {
         if (VERSION == null) {
             try {
-                VERSION = getManifestAttribValue(MANIFEST_VERSION_ATTRIB);
-            } catch (OpenAS2Exception e) {
+                VERSION = OpenAS2Server.getAppVersion(manifestAttributes);
+            } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
             }
         }
@@ -355,8 +301,8 @@ public class XMLSession extends BaseSession {
     public String getAppTitle() {
         if (TITLE == null) {
             try {
-                TITLE = getManifestAttribValue(MANIFEST_TITLE_ATTRIB) + " v" + getAppVersion();
-            } catch (OpenAS2Exception e) {
+                TITLE = OpenAS2Server.getAppTitle(manifestAttributes);
+            } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
             }
         }
