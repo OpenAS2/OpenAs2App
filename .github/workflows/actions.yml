@@ -16,7 +16,7 @@ jobs:
         with:
           java-version: ${{ matrix.java_version }}
           distribution: 'adopt'
-      - name: Make Maven Wrapper and Java finder executable
+      - name: Make Maven Wrapper and Java finder executable. Copy cacerts
         if: contains(matrix.os, 'win') == false
         run: |
              chmod +x ./mvnw
@@ -27,7 +27,7 @@ jobs:
         if: contains(matrix.os, 'win') == true
         run: |
              .\Server\src\bin\find_java.bat
-             copy /Y cacerts "%JAVA_HOME%/lib/security/cacerts"
+             copy /Y cacerts "$ENV:JAVA_HOME\lib\security\cacerts"
       - name: Build with Maven
         run: ./mvnw test --file pom.xml --log-file maven.log
       - name: Archive logs
