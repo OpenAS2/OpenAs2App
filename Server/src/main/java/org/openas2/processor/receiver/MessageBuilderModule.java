@@ -165,7 +165,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         // Initialise the resend parameters
         int maxResendCount = AS2Util.getMaxResendCount(getSession(), msg);
         msg.setOption(ResenderModule.OPTION_MAX_RETRY_COUNT, maxResendCount);
-        options.put(ResenderModule.OPTION_RETRIES, 0);
+        msg.setOption(ResenderModule.OPTION_RETRIES, 0);
         if (logger.isTraceEnabled()) {
             try {
 

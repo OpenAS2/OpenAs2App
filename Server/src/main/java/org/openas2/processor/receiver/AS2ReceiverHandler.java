@@ -488,7 +488,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 // Set up retry counts in case this partner uses Async MDN responses
                 int maxResendCount = AS2Util.getMaxResendCount(getModule().getSession(), msg);
                 msg.setOption(ResenderModule.OPTION_MAX_RETRY_COUNT, maxResendCount);
-                options.put(ResenderModule.OPTION_RETRIES, 0);
+                msg.setOption(ResenderModule.OPTION_RETRIES, 0);
                 getModule().getSession().getProcessor().handle(SenderModule.DO_SENDMDN, msg, options);
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);

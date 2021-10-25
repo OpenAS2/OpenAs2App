@@ -55,7 +55,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
         String isResend = (String) options.get(FIELDS.IS_RESEND);
         if (isResend != null) {
             map.put(FIELDS.IS_RESEND, isResend);
-            map.put(FIELDS.RESEND_COUNT, "" + options.get(ResenderModule.OPTION_RETRIES));
+            map.put(FIELDS.RESEND_COUNT, "" + msg.getOption(ResenderModule.OPTION_RETRIES));
         }
         //map.put(FIELDS.RESEND_COUNT, );
         String sender = msg.getPartnership().getSenderID(Partnership.PID_AS2);
