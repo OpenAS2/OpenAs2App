@@ -22,12 +22,14 @@ jobs:
              chmod +x ./mvnw
              chmod +x ./Server/src/bin/find_java
              . ./Server/src/bin/find_java
-             cp -f cacerts $JAVA_HOME/lib/security/cacerts
+             cert_file=$(find $JAVA_HOME -name cacerts)
+             cp -f cacerts $cert_file
+             echo "File at: $cert_file"
       - name: Update the cacerts in the JDK being used because of Maven repo issues
         if: contains(matrix.os, 'win') == true
         run: |
              .\Server\src\bin\find_java.bat
-             copy /Y cacerts "$ENV:JAVA_HOME\lib\security\cacerts"
+             copy cacerts "$ENV:JAVA_HOME\lib\security\cacerts"
       - name: Build with Maven
         run: ./mvnw test --file pom.xml --log-file maven.log
       - name: Archive logs
