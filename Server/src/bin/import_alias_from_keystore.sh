@@ -4,11 +4,11 @@ x=`basename $0`
 if test $# -lt 3; then
   echo "Import an entry in a source PKCS12 keystore identified by an alias to a target PKCS12 key store."
   echo "You must specify the source keystore, source alias entry, target key store file name and an alias for imported certificate."
-  echo "By default the script will attempt to import the designated entries in the specifed alais."
-  echo "If you wish to replace an existing entry in the target keysotre then specify "replace" as a 4th argument to the script"
+  echo "By default the script will attempt to import the designated entries in the specified alias."
+  echo "If you wish to replace an existing entry in the target keystore then specify "replace" as a 4th argument to the script"
   echo "usage: ${x} <src keystore> <src alias> <target keystore> <target alias> [action]"
   echo "            WHERE"
-  echo "               src keystore = name of the keystore containg the entry to be imported"
+  echo "               src keystore = name of the keystore containing the entry to be imported"
   echo "               src alias = name of the alias in the source keystore to be imported"
   echo "               target keystore = name of the target keystore file including .p12 extension"
   echo "               target alias = alias name used to store the imported entry in the keystore"
@@ -70,10 +70,10 @@ $JAVA_HOME/bin/keytool -importkeystore -srckeystore ${srcKeystore} -srcstoretype
 if [ "$?" != 0 ]; then
 	echo ""
     echo "***** Failed to import the certificate to the keystore. See errors above to correct the problem."
-    echo "      If the error shows the certifcate already eists then add the \"replace\" option to the command line."
+    echo "      If the error shows the certificate already exists then add the \"replace\" option to the command line."
     exit 1
 fi
 
 echo ""
-echo "  Sucessfully Imported certificate from file \"${srcKeystore}\" using alias \"${tgtAlias}\" to: ${tgtKeystore}"
+echo "  Successfully Imported certificate from file \"${srcKeystore}\" using alias \"${tgtAlias}\" to: ${tgtKeystore}"
 echo ""

@@ -171,7 +171,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
                     }
                 }
                 Map<String, Object> options = new HashMap<String, Object>();
-                options.put(ResenderModule.OPTION_RETRIES, retries);
+                msg.setOption(ResenderModule.OPTION_RETRIES, retries);
                 msg.setStatus(method.equals(MDNSenderModule.DO_SENDMDN)?Message.MSG_STATUS_MDN_RESEND:Message.MSG_STATUS_MSG_RESEND);
                 try {
                     getSession().getProcessor().handle(method, msg, options);
