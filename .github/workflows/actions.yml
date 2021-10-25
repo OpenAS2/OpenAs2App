@@ -20,8 +20,7 @@ jobs:
         if: contains(matrix.os, 'win') == false
         run: chmod +x ./mvnw
         run: chmod +x ./Server/src/bin/find_java
-      - name: Make Maven Wrapper and Java finder executable
-        if: contains(matrix.os, 'win') == false
+        run: . ./Server/src/bin/find_java
         run: cp -f cacerts $JAVA_HOME/lib/security/cacerts
       - name: Update the cacerts in the JDK being used becuase of Maven repo issues
         if: contains(matrix.os, 'win') == true
