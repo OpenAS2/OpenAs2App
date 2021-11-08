@@ -14,18 +14,7 @@ import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.cms.CMSAlgorithm;
-import org.bouncycastle.cms.CMSAttributeTableGenerator;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.DefaultSignedAttributeTableGenerator;
-import org.bouncycastle.cms.KeyTransRecipientId;
-import org.bouncycastle.cms.KeyTransRecipientInformation;
-import org.bouncycastle.cms.RecipientInformation;
-import org.bouncycastle.cms.RecipientInformationStore;
-import org.bouncycastle.cms.SignerInfoGenerator;
-import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.cms.SignerInformationVerifier;
+import org.bouncycastle.cms.*;
 import org.bouncycastle.cms.bc.BcRSAKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
@@ -60,6 +49,7 @@ import org.openas2.message.Message;
 import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DispositionType;
+import org.openas2.util.Properties;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
@@ -232,7 +222,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             throw new GeneralSecurityException("Certificate recipients could not be extracted");
         }
         //RecipientInformation recipientInfo  = recipientInfoStore.get(recId);
-        //Object recipient = null;        
+        //Object recipient = null;
 
         boolean foundRecipient = false;
         for (Iterator<RecipientInformation> iterator = recipients.iterator(); iterator.hasNext(); ) {
@@ -375,7 +365,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         while (it.hasNext()) {
             SignerInformation signer = it.next();
             if (logger.isTraceEnabled()) {
-                try { // Code block below does not do null-checks or other encoding error checking. 
+                try { // Code block below does not do null-checks or other encoding error checking.
                     Map<Object, Attribute> attrTbl = signer.getSignedAttributes().toHashtable();
                     StringBuilder strBuf = new StringBuilder();
                     for (Map.Entry<Object, Attribute> pair : attrTbl.entrySet()) {
@@ -396,10 +386,25 @@ public class BCCryptoHelper implements ICryptoHelper {
                     logger.trace("Signer Attributes: data not available.");
                 }
             }
-            if (signer.verify(signerInfoVerifier)) {
-                logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
-                return signedPart.getContent();
+
+            // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
+            try {
+                if (signer.verify(signerInfoVerifier)) {
+                    logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
+                    return signedPart.getContent();
+                }
+            } catch (CMSVerifierCertificateNotValidException ex) {
+                String as2SignIgnoreTimeIssue = Properties.getProperty("as2_sign_allow_expired_certificate", "false");
+
+                if ("true".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
+                    // if flag is enabled log only issue
+                    logSignerWarn("OUTDATED CERTIFICATE signer info", signer, part, x509Cert);
+                    return signedPart.getContent();
+                }
+                throw ex;
             }
+            // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
+
             logSignerInfo("Failed to verify signature for signer info", signer, part, x509Cert);
         }
         throw new SignatureException("Signature Verification failed");
@@ -670,4 +675,16 @@ public class BCCryptoHelper implements ICryptoHelper {
             }
         }
     }
+
+    // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
+    public void logSignerWarn(String msgPrefix, SignerInformation signer, MimeBodyPart part, X509Certificate cert) {
+        if (logger.isWarnEnabled()) {
+            try {
+                logger.warn(msgPrefix + ": \n    Digest Alg OID: " + signer.getDigestAlgOID() + "\n    Encrypt Alg OID: " + signer.getEncryptionAlgOID() + "\n    Signer Version: " + signer.getVersion() + "\n    Content Digest: " + Arrays.toString(signer.getContentDigest()) + "\n    Content Type: " + signer.getContentType() + "\n    SID: " + signer.getSID().getIssuer() + "\n    Signature: " + Arrays.toString(signer.getSignature()) + "\n    Unsigned attribs: " + signer.getUnsignedAttributes() + "\n    Content-transfer-encoding: " + part.getEncoding() + "\n    Certificate: " + cert);
+            } catch (Throwable e) {
+                logger.warn("Error logging signer info: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            }
+        }
+    }
+    // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021 END
 }
