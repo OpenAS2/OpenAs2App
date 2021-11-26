@@ -25,6 +25,9 @@
   },
   "eslintConfig": {
     "root": true,
+	"rules":{
+		"no-console":"off"
+	},
     "env": {
       "node": true
     },
