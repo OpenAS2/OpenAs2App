@@ -186,7 +186,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
                             IOUtil.handleError(file, errorDir);
                         } catch (OpenAS2Exception e1) {
                             logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
-                            forceStop(e1);
+                            //forceStop(e1);
                             return;
                         }
                     } finally {

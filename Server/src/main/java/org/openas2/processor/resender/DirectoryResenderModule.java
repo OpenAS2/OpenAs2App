@@ -104,7 +104,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
             }
         } catch (OpenAS2Exception oae) {
             oae.terminate();
-            forceStop(oae);
+            //forceStop(oae);
         }
     }
 
