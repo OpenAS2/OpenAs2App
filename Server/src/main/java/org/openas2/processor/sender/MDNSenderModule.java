@@ -194,7 +194,7 @@ public class MDNSenderModule extends HttpSenderModule {
     protected void resend(Message msg, OpenAS2Exception cause, Map<String, Object> options) throws OpenAS2Exception {
         // Get the resend retry count
         Map<String, Object> msgOptions = msg.getOptions();
-        int tries = (int) msgOptions.get(ResenderModule.OPTION_RETRIES);
+        int tries = Integer.parseInt((String)msgOptions.get(ResenderModule.OPTION_RETRIES));
         int maxRetryCount = AS2Util.getMaxResendCount(getSession(), msg);
         if (logger.isTraceEnabled()) {
             logger.trace("Send MDN retry count: " + tries);
@@ -214,7 +214,7 @@ public class MDNSenderModule extends HttpSenderModule {
         options.put(ResenderModule.OPTION_CAUSE, cause);
         options.put(ResenderModule.OPTION_INITIAL_SENDER, this);
         options.put(ResenderModule.OPTION_RESEND_METHOD, SenderModule.DO_SENDMDN);
-        options.put(ResenderModule.OPTION_RETRIES, tries);
+        options.put(ResenderModule.OPTION_RETRIES, "" + tries);
         try {
             msg.setStatus(Message.MSG_STATUS_MDN_RESEND);
             msg.setOption("STATE", Message.MSG_STATE_MDN_SEND_FAIL_RESEND_QUEUED);

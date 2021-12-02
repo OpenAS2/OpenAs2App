@@ -538,7 +538,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             oos = new ObjectOutputStream(new FileOutputStream(pendingInfoFile));
             oos.writeObject(msg.getCalculatedMIC());
-            int retries = (int) msg.getOption(ResenderModule.OPTION_RETRIES);
+            int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
             oos.writeObject("" + retries);
 
             if (logger.isInfoEnabled()) {
