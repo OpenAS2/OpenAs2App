@@ -55,7 +55,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
             if (method == null) {
                 method = SenderModule.DO_SEND;
             }
-            int retries = (int) options.get(ResenderModule.OPTION_RETRIES);
+            int retries = Integer.parseInt((String)options.get(ResenderModule.OPTION_RETRIES));
             oos.writeObject(method);
             oos.writeObject("" + retries);
             oos.writeObject(msg);
@@ -171,7 +171,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
                     }
                 }
                 Map<String, Object> options = new HashMap<String, Object>();
-                msg.setOption(ResenderModule.OPTION_RETRIES, retries);
+                msg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
                 msg.setStatus(method.equals(MDNSenderModule.DO_SENDMDN)?Message.MSG_STATUS_MDN_RESEND:Message.MSG_STATUS_MSG_RESEND);
                 try {
                     getSession().getProcessor().handle(method, msg, options);

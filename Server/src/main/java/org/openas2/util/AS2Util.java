@@ -281,7 +281,7 @@ public class AS2Util {
      */
     public static boolean resend(Session session, Class<?> sourceClass, String how, Message msg, OpenAS2Exception cause, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
-        int retries = (int) msg.getOption(ResenderModule.OPTION_RETRIES);
+        int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
         int maxRetryCount = getMaxResendCount(session, msg);
         if (logger.isDebugEnabled()) {
             logger.debug("RESEND requested. Retries: " + retries + "Max retries: " + maxRetryCount + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
@@ -336,7 +336,7 @@ public class AS2Util {
             originalMsg.setAttribute(FileAttribute.MA_PENDINGINFO, msg.getAttribute(FileAttribute.MA_PENDINGINFO));
             if (!keepOriginalData) {
                 originalMsg.setMessageID(msg.getMessageID());
-                originalMsg.setOption(ResenderModule.OPTION_RETRIES, retries);
+                originalMsg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Message file extracted from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Message file extracted from original object: " + originalMsg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
@@ -588,7 +588,7 @@ public class AS2Util {
             if (logger.isTraceEnabled()) {
                 logger.trace("RETRY COUNT from pending info file: " + retries);
             }
-            msg.setOption(ResenderModule.OPTION_RETRIES, retries);
+            msg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
             // Get the original source file name from the 3rd line of pending information
             // file
             msg.setPayloadFilename((String) pifois.readObject());
