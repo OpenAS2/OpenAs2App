@@ -1,10 +1,19 @@
+Version 2.13.0 - 2021-12-02
+This is a bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix error when resender is invoked.
+  2. Fix directory polling module dying when specific errors occur that are not caught at source and end up in the module base invocation.
+
 Version 2.13.0 - 2021-10-21
 This is a minor enhancement release and windows bat files bugfix:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
   1. Enhance the directory polling module to use the NIO library.
   2. Fix the startup.bat file for Windows where in newer versions of Java the JAVA environment variable is set with quotes surrounding it.
-  3. Fix the windows service installer bat file so that it reliably installs a service that can start.
+  3. Fix the windows service installer bat file so that it reliably installs as a service that will start.
+  4. Support CI/CD for Java 8 thru 17
+  5. Add Windows bat acript to import files from a source keystore to the main keystore including private key if in the source store.
 
 Version 2.12.0 - 2021-10-15
 This is a minor enhancement release, bug fixes and library upgrades:
