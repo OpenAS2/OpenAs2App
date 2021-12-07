@@ -389,18 +389,24 @@ public class BCCryptoHelper implements ICryptoHelper {
 
             // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
             try {
-                if (signer.verify(signerInfoVerifier)) {
-                    logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
-                    return signedPart.getContent();
-                }
-            } catch (CMSVerifierCertificateNotValidException ex) {
                 String as2SignIgnoreTimeIssue = Properties.getProperty("as2_sign_allow_expired_certificate", "false");
 
-                if ("true".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
+                if ("false".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
+                    // normal check
+                    if (signer.verify(signerInfoVerifier)) {
+                        logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
+                        return signedPart.getContent();
+                    }
+                } else {
+                    signer = new SignerInfoIgnoringExpiredCertificate(signer);
                     // if flag is enabled log only issue
-                    logSignerWarn("OUTDATED CERTIFICATE signer info", signer, part, x509Cert);
-                    return signedPart.getContent();
+                    if (signer.verify(signerInfoVerifier)) {
+                        logSignerWarn("Verified signature for signer info EXCLUDING certificate date verification (OUTDATED CERTIFICATE)", signer, part, x509Cert);
+                        return signedPart.getContent();
+                    }
                 }
+
+            } catch (CMSVerifierCertificateNotValidException ex) {
                 throw ex;
             }
             // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
