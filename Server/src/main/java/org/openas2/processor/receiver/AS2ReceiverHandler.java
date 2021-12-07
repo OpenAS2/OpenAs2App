@@ -23,6 +23,8 @@ import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
+import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.AS2Util;
@@ -82,7 +84,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         byte[] data = null;
         BufferedOutputStream out;
 
-        msg.setOption("DIRECTION", "RECEIVE");
+        msg.setOption(FIELDS.DIRECTION, "RECEIVE");
 
         try {
             out = new BufferedOutputStream(s.getOutputStream());
@@ -242,8 +244,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                             msg.trackMsgState(getModule().getSession());
                             boolean sentMDN = sendResponse(msg, out, new DispositionType("automatic-action", "MDN-sent-automatically", "processed"), mic, AS2ReceiverModule.DISP_SUCCESS);
                             if (!sentMDN) {
-                                // Not sure what to do here as the AS2 spec does not specify so log warning for
-                                // now
+                                // Not sure what to do here as the AS2 spec does not specify so log warning for now
+                                msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
+                                msg.trackMsgState(getModule().getSession());
+
                                 if (LOG.isWarnEnabled()) {
                                     LOG.warn("Received message processed but MDN could not be sent for Message-ID: " + msg.getMessageID());
                                 }
@@ -323,8 +327,17 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     LOG.debug("decrypting :::" + msg.getLogMsgID());
                 }
 
-                X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-                PrivateKey receiverKey = certFx.getPrivateKey(msg, receiverCert);
+                X509Certificate receiverCert = null;
+                PrivateKey receiverKey = null;
+                boolean useNewMode = "false".equals(msg.getPartnership().getAttributeOrProperty(Partnership.USE_NEW_CERTIFICATE_LOOKUP_MODE, "true"))?false:true;
+                if (useNewMode) {
+                    String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                    receiverCert = certFx.getCertificate(x509_alias);
+                    receiverKey = certFx.getPrivateKey(x509_alias);
+                } else {
+                    receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
+                    receiverKey = certFx.getPrivateKey(msg, receiverCert);
+                }
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
@@ -470,15 +483,13 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 return false;
             }
             try {
-                Map<Object, Object> options = new HashMap<Object, Object>();
+                Map<String, Object> options = new HashMap<String, Object>();
                 options.put("buffered_output_stream", out);
-
+                // Set up retry counts in case this partner uses Async MDN responses
+                int maxResendCount = AS2Util.getMaxResendCount(getModule().getSession(), msg);
+                msg.setOption(ResenderModule.OPTION_MAX_RETRY_COUNT, maxResendCount);
+                msg.setOption(ResenderModule.OPTION_RETRIES, "0");
                 getModule().getSession().getProcessor().handle(SenderModule.DO_SENDMDN, msg, options);
-
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
-                }
-
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
@@ -625,9 +636,16 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         // Update the MDN headers with content information
         MimeBodyPart data = mdn.getData();
         String headerContentType = data.getContentType();
-        if ("true".equalsIgnoreCase(Properties.getProperty("remove_http_header_folding", "true"))) {
+        // Remove content folding unless configured not to do so
+        String removeHeaderFolding = mdn.getPartnership().getAttribute("remove_http_header_folding");
+        if (removeHeaderFolding == null) {
+            // Not configured at partnership level so use system level
+            removeHeaderFolding = Properties.getProperty("remove_http_header_folding", "true");
+        }
+        if ("true".equalsIgnoreCase(removeHeaderFolding)) {
             headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
         }
+
         mdn.setHeader("Content-Type", headerContentType);
 
         // int size = getSize(data);

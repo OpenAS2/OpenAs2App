@@ -20,6 +20,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.util.AS2Util;
@@ -51,7 +52,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
     private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
 
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
+    public boolean canHandle(String action, Message msg, Map<String, Object> options) {
         if (!action.equals(SenderModule.DO_SEND)) {
             return false;
         }
@@ -59,14 +60,14 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         return (msg instanceof AS2Message);
     }
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         if (logger.isInfoEnabled()) {
             logger.info("message sender invoked" + msg.getLogMsgID());
         }
         boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
-        options.put("DIRECTION", "SEND");
-        options.put("IS_RESEND", isResend ? "Y" : "N");
+        options.put(FIELDS.DIRECTION, "SEND");
+        options.put(FIELDS.IS_RESEND, isResend ? "Y" : "N");
         if (!(msg instanceof AS2Message)) {
             throw new OpenAS2Exception("Can't send non-AS2 message");
         }
@@ -78,11 +79,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             msg.getOptions().putAll(options);
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("Retry count from options: " + options);
+            logger.trace("Retry count from options: " + msg.getOptions());
         }
-        // Get the resend retry count
-        String retries = AS2Util.retries(options, getParameter(SenderModule.SOPT_RETRIES, false));
-
         // Get any static custom headers
         addCustomHeaders(msg);
         // encrypt and/or sign and/or compress the message if needed
@@ -118,10 +116,10 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             msg.setOption("STATE", Message.MSG_STATE_SEND_START);
             msg.trackMsgState(getSession());
 
-            sendMessage(url, msg, securedData, retries);
+            sendMessage(url, msg, securedData);
         } catch (HttpResponseException hre) {
             // Will have been logged so just resend
-            resend(msg, hre, retries, false);
+            resend(msg, hre, false);
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
             msg.trackMsgState(getSession());
@@ -135,7 +133,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         } catch (Exception e) {
             msg.setLogMsg("Unexpected error sending file: " + org.openas2.logging.Log.getExceptionMsg(e));
             logger.error(msg, e);
-            resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), retries, false);
+            resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), false);
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
             msg.trackMsgState(getSession());
@@ -160,7 +158,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         }
     }
 
-    private void sendMessage(String url, Message msg, MimeBodyPart securedData, String retries) throws Exception {
+    private void sendMessage(String url, Message msg, MimeBodyPart securedData) throws Exception {
         URL urlObj = new URL(url);
         InternetHeaders ih = getHttpHeaders(msg, securedData);
         msg.setAttribute(NetAttribute.MA_DESTINATION_IP, urlObj.getHost());
@@ -214,7 +212,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
             try {
-                AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this);
+                AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
                 msg.trackMsgState(getSession());
@@ -244,8 +242,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         }
     }
 
-    private void resend(Message msg, OpenAS2Exception cause, String tries, boolean keepRestoredData) throws OpenAS2Exception {
-        AS2Util.resend(getSession(), this, SenderModule.DO_SEND, msg, cause, tries, false, keepRestoredData);
+    private void resend(Message msg, OpenAS2Exception cause, boolean keepRestoredData) throws OpenAS2Exception {
+        AS2Util.resend(getSession(), this.getClass(), SenderModule.DO_SEND, msg, cause, false, keepRestoredData);
     }
 
     /**
@@ -540,8 +538,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             oos = new ObjectOutputStream(new FileOutputStream(pendingInfoFile));
             oos.writeObject(msg.getCalculatedMIC());
-            String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
-            oos.writeObject((retries == null ? "" : retries));
+            int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
+            oos.writeObject("" + retries);
 
             if (logger.isInfoEnabled()) {
                 logger.info("Save Original mic & message id information into file: " + pendingInfoFile + msg.getLogMsgID());

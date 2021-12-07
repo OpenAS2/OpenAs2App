@@ -15,7 +15,11 @@ public interface CertificateFactory extends Component {
 
     PrivateKey getPrivateKey(Message msg, X509Certificate cert) throws OpenAS2Exception;
 
+    PrivateKey getPrivateKey(String alias) throws OpenAS2Exception;
+
     X509Certificate getCertificate(MessageMDN msg, String partnershipType) throws OpenAS2Exception;
+
+    X509Certificate getCertificate(String alias) throws OpenAS2Exception;
 
     PrivateKey getPrivateKey(MessageMDN msg, X509Certificate cert) throws OpenAS2Exception;
 }

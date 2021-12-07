@@ -226,6 +226,8 @@ export MAVEN_CMD_LINE_ARGS
 
 WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
 
+#   "-Dcom.sun.security.enableAIAcaIssuers=true" \
+#  "-Djavax.net.debug=ssl:handshake:verbose:keymanager:trustmanager" \
 exec "$JAVACMD" \
   $MAVEN_OPTS \
   -classpath "$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.jar" \

@@ -42,8 +42,10 @@ REM Startup configuration
 set PR_STARTUP=auto
 set PR_STARTMODE=jvm
 set PR_STARTCLASS=org.openas2.app.OpenAS2WindowsService
-REM set PR_STARTMETHOD=start
-set PR_STARTPARAMS=start ++StartParams=%config_file%
+set PR_STARTMETHOD=start
+REM 1 way to add multiple params for some systems where it seems the StartMethod does not work
+REM set PR_STARTPARAMS=start ++StartParams=%config_file%
+set PR_STARTPARAMS=%config_file%
  
 REM Shutdown configuration
 set PR_STOPMODE=jvm
@@ -53,6 +55,10 @@ set PR_STOPPARAMS=stop
  
 REM  Add the below line into the install command if using a specific JVM
 REM  --JavaHome="%JAVA_HOME%" ^
+
+REM Make the folder accessible to the "Local Service" user running the servioce
+icacls "%OPENAS2_BASE_DIR%" /grant *S-1-5-19:(OI)(CI)(M)
+
 REM Install service
 "%PR_INSTALL%" //IS/%SERVICE_NAME% ^
   --DisplayName="%SERVICE_NAME%" ^
@@ -70,6 +76,7 @@ REM Install service
   --JvmOptions="-Dorg.apache.commons.logging.Log=org.openas2.logging.Log" ^
   --Classpath="%PR_CLASSPATH%" ^
   --StartMode="%PR_STARTMODE%" ^
+  --StartMethod="%PR_STARTMETHOD%" ^
   --StartClass="%PR_STARTCLASS%" ^
   --StartParams=%PR_STARTPARAMS% ^
   --StopMode="%PR_STOPMODE%" ^

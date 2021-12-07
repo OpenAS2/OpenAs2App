@@ -1,9 +1,32 @@
-Version 2.12.0 - 2021-04-04
-This is a minor enhancement release and bugfix:
-       **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
+Version 2.13.0 - 2021-12-02
+This is a bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-  1. Upgrade libraries to latest release versions (IMPORTANT: See release notes for this upgrade)
-  2. Register successfully sent MDN in DB tracking.
+  1. Fix error when resender is invoked.
+  2. Fix directory polling module dying when specific errors occur that are not caught at source and end up in the module base invocation.
+
+Version 2.13.0 - 2021-10-21
+This is a minor enhancement release and windows bat files bugfix:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Enhance the directory polling module to use the NIO library.
+  2. Fix the startup.bat file for Windows where in newer versions of Java the JAVA environment variable is set with quotes surrounding it.
+  3. Fix the windows service installer bat file so that it reliably installs as a service that will start.
+  4. Support CI/CD for Java 8 thru 17
+  5. Add Windows bat acript to import files from a source keystore to the main keystore including private key if in the source store.
+
+Version 2.12.0 - 2021-10-15
+This is a minor enhancement release, bug fixes and library upgrades:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix resend tracking in the tracking DB and add missing columns (https://github.com/OpenAS2/OpenAs2App/issues/195)
+  2. Changed error message to info message and support not rendering the error message when an invalid HTTP request is detected.
+  3. Support overriding the "remove_http_header_folding" property at partnership level. See OpenAS2HowTo section on "Header Folding" for details. (contributed by Claudio Degioanni claudio.degioanni@bmeweb.it)
+  4. Fix HTTP timeout configuration - the timeout configuration was  not correctly reading any user specific setting.
+  5. Enhance documentation based on user feedback.
+  6. Register successfully sent MDN in DB tracking.
+  7. Add a helper script to import certificates from a source keystore to a target keystore (import_alias_from_keystore.sh)
+  8. Change the way the receiver handler finds the private key. backwards compatibility was maintained through the use of a partnership attribute or system property (use_new_certificate_lookup_mode). It defaults to new mode but setting to false reverts the behaviour.
 
 Version 2.11.0 - 2020-09-19
 This is a minor enhancement release:

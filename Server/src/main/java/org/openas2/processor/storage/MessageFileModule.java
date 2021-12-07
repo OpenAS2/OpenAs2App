@@ -29,7 +29,7 @@ public class MessageFileModule extends BaseStorageModule {
     private Log logger = LogFactory.getLog(MessageFileModule.class.getSimpleName());
 
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         // store message content
         try {
             File msgFile = getFile(msg, getParameter(PARAM_FILENAME, true), action);

@@ -21,10 +21,9 @@ import org.openas2.TestResource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -35,7 +34,6 @@ import static org.junit.Assert.assertThat;
     private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
-    private static ExecutorService executorService;
     private static TemporaryFolder scratchpad = new TemporaryFolder();
     private static CloseableHttpClient httpclient;
 

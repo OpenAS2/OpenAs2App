@@ -39,7 +39,7 @@ public abstract class BaseMessage implements Message {
     private String compressionType = ICryptoHelper.COMPRESSION_NONE;
     private boolean rxdMsgWasSigned = false;
     private boolean rxdMsgWasEncrypted = false;
-    private Map<Object, Object> options = new HashMap<Object, Object>();
+    private Map<String, Object> options = new HashMap<String, Object>();
     private String calculatedMIC = null;
     private String logMsg = null;
     private String status = MSG_STATUS_MSG_INIT;
@@ -55,9 +55,9 @@ public abstract class BaseMessage implements Message {
         return Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server");
     }
 
-    public Map<Object, Object> getOptions() {
+    public Map<String, Object> getOptions() {
         if (options == null) {
-            options = new HashMap<Object, Object>();
+            options = new HashMap<String, Object>();
         }
         return options;
     }
@@ -83,11 +83,11 @@ public abstract class BaseMessage implements Message {
         this.customOuterMimeHeaders.put(key, value);
     }
 
-    public void setOption(Object key, Object value) {
+    public void setOption(String key, Object value) {
         getOptions().put(key, value);
     }
 
-    public Object getOption(Object key) {
+    public Object getOption(String key) {
         return getOptions().get(key);
     }
 

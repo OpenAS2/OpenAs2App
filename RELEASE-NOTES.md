@@ -1,29 +1,35 @@
 #              OpenAS2 Server
-#              Version 2.12.0
+#              Version 2.13.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.12.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.13.1
 
-The release download file is: OpenAS2Server-2.12.0.zip
+The release download file is: OpenAS2Server-2.13.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
+## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 2.12.0 - 2021-04-04
-This is a minor enhancement release and bugfix:
+Version 2.13.1 - 2021-12-02
+This is a minor enhancement release and windows bat files bugfix:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Upgrade libraries to latest release versions (IMPORTANT: See release notes below for this upgrade)
-  2. Register successfully sent MDN in DB tracking.
+
+  1. Fix error when resender is invoked.
+  2. Fix directory polling module dying when specific errors occur that are not caught at source and end up in the module base invocation.
 
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
+ 
+ There are no specific notes for this upgrade.
+
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
 
 ### If upgrading from versions older than 2.12.0:
       1. If you are using the DB tracking module with the default H2 database then you will need to follow the DB upgrade steps "Appendix: Updating database structure" defined in the OpenAS2HowTo.pdf to ensure you do not lose your existing data because the new H2 version has issues with old databases.
+      2. A change to the way the private key is looked up in the receiver handler means that if you have duplicated a certificate in the keystore, some partnerships may start to fail. This fix may fix other strange certificate issues when receiving messages. To fix partnership failures that occur after the upgrade, find the duplicates and remove them making sure the one you leave behind is the one with the correct private key. Alternatively, use the **use_new_certificate_lookup_mode** attribute at partnership level set to **false** and the old mechanism will be used but this is not advised as a long term solution as it will eventually be removed in a future version.
 
 
 ### If you have been passing the password for the certificate file on the command line in a shell script (no change to the Windows .bat file):

@@ -311,8 +311,9 @@ public abstract class NetModule extends BaseReceiverModule {
                     conn.setSoLinger(true, 60);
                     connectionThreads.execute(new ConnectionHandler(getOwner(), conn));
                 } catch (IOException e) {
+                    logger.error("Failed transferring data over HTTP connection: " + e.getMessage(), e);
                     if (!isTerminated()) {
-                        owner.forceStop(e);
+                        //owner.forceStop(e);
                     }
                 }
             }
