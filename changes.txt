@@ -1,4 +1,11 @@
-Version 2.13.0 - 2021-12-02
+Version 2.14.0 - 2021-12-10
+This is a enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Add an additional way to filter files based on a regular expression. This allows filtering files based on text within the file name and not just the file extension. See the section **Restricting Directory Files By Extension Or Name** in the documentation for details of use.
+  2. Fix directory polling module not releasing file handles and eventually starving the OS of file handles.
+
+Version 2.13.1 - 2021-12-02
 This is a bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
