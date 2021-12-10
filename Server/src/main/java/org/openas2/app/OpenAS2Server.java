@@ -101,23 +101,27 @@ public class OpenAS2Server {
                     InputStream is = url.openStream();
                     if (is != null) {
                         Manifest manifest = new Manifest(is);
-                        manifestAttributes = manifest.getMainAttributes();
+                        Attributes attribs = manifest.getMainAttributes();
                         is.close();
-                        String vendor = manifestAttributes.getValue(MANIFEST_VENDOR_ID_ATTRIB);
+                        String vendor = attribs.getValue(MANIFEST_VENDOR_ID_ATTRIB);
                         if (vendor != null && VENDOR_ID.equals(vendor)) {
                             // We have an OpenAS2 jar at least - check the project name
-                            String project = manifestAttributes.getValue(MANIFEST_TITLE_ATTRIB);
+                            String project = attribs.getValue(MANIFEST_TITLE_ATTRIB);
                             if (project != null && PROJECT_NAME.equals(project)) {
                                 if (openAS2Manifest != null) {
                                     // A duplicate detected
                                     throw new OpenAS2Exception("Duplicate manifests detected: " + openAS2Manifest.getPath() + " ::: " + url.getPath());
                                 }
                                 openAS2Manifest = url;
+                                manifestAttributes = attribs;
                             }
                         }
+                    } else {
+                        LOGGER.warn("MANIFEST input stream not opened for: " + url.toString());
                     }
+                    
                 } catch (Exception e) {
-                    // Silently ignore wrong manifests on classpath?
+                    LOGGER.info("MANIFEST not accessed: " + e.getMessage(), e);
                 }
             }
         } catch (IOException e1) {
