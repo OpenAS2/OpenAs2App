@@ -1,21 +1,23 @@
 #              OpenAS2 Server
-#              Version 2.13.1
+#              Version 2.14.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.13.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 2.14.0
 
-The release download file is: OpenAS2Server-2.13.1.zip
+The release download file is: OpenAS2Server-2.14.0.zip
+
+  <span style="color:red">**IMPORTANT:** If you are currently running 2.13.1 then you should upgrade to this release ASAP</span>
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 2.13.1 - 2021-12-02
-This is a minor enhancement release and windows bat files bugfix:
+Version 2.14.0 - 2021-12-10
+This is a minor enhancement release and OS file handle release bugfix:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
 
-  1. Fix error when resender is invoked.
-  2. Fix directory polling module dying when specific errors occur that are not caught at source and end up in the module base invocation.
+  1. Add an additional way to filter files based on a regular expression. This allows filtering files based on text within the file name and not just the file extension. See the section **Restricting Directory Files By Extension Or Name** in the documentation for details of use.
+  2. Fix directory polling module not releasing file handles and eventually starving the OS of file handles.
 
 
 ##Upgrade Notes
