@@ -21,12 +21,14 @@ public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_OUTBOX_DIRECTORY = "outboxdir";
     public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
     public static final String PARAM_FILE_EXTENSION_EXCLUDE_FILTER = "fileextensionexcludefilter";
+    public static final String PARAM_FILE_NAME_EXCLUDE_FILTER = "filenameexcluderegexfilter";
     private Map<String, Long> trackedFiles;
     private String outboxDir;
     private String errorDir;
     private String sentDir = null;
     private List<String> allowExtensions;
     private List<String> excludeExtensions;
+    private String excludeFilenameRegexFilter = null;
 
     private Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
 
@@ -43,6 +45,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
             IOUtil.getDirectoryFile(pendingFolder);
             String allowExtensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
             String excludeExtensionFilter = getParameter(PARAM_FILE_EXTENSION_EXCLUDE_FILTER, "");
+            String excludeFilenameRegexFilter = getParameter(PARAM_FILE_NAME_EXCLUDE_FILTER, "");
 
             if (allowExtensionFilter == null || allowExtensionFilter.length() < 1) {
                 this.allowExtensions = new ArrayList<String>();
@@ -53,6 +56,9 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 this.excludeExtensions = new ArrayList<String>();
             } else {
                 this.excludeExtensions = Arrays.asList(excludeExtensionFilter.split("\\s*,\\s*"));
+            }
+            if (excludeFilenameRegexFilter != null && excludeFilenameRegexFilter.length() > 0) {
+                this.excludeFilenameRegexFilter = excludeFilenameRegexFilter;
             }
 
         } catch (IOException e) {
@@ -90,39 +96,49 @@ public abstract class DirectoryPollingModule extends PollingModule {
         /* Claudio.Degioanni - Versione modificata 20210628 2.11 - Start */
 
         /**
-         * Rispetto alla versione tesi ho aggiunto il supporto per allowExtensions e excludeExtensions aggiunto nelle versioni dopo
+         * Rispetto alla versione tesi ho aggiunto il supporto per allowExtensions e
+         * excludeExtensions aggiunto nelle versioni dopo
          */
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Polling module  scanning directory: " + directory);
+        }
         File directoryAsFile = IOUtil.getDirectoryFile(directory);
-
-        DirectoryStream<Path> dirs = Files.newDirectoryStream(directoryAsFile.toPath(), entry -> {
-            String name = entry.getFileName().toString();
-            String extension = name.substring(name.lastIndexOf(".") + 1);
-            boolean isAllowed = true;
-            if (!allowExtensions.isEmpty()) {
-                isAllowed = allowExtensions.contains(extension);
-                if (!isAllowed) {
+        // Wrap in try-with-resources block to ensure close() is called
+        try (DirectoryStream<Path> dirs = Files.newDirectoryStream(directoryAsFile.toPath(), entry -> {
+                String name = entry.getFileName().toString();
+                if (Files.isDirectory(entry)) {
                     return false;
                 }
-            }
-            // Check for the excluded filters
-            if (!excludeExtensions.isEmpty()) {
-                isAllowed = !excludeExtensions.contains(extension);
-            }
-            return isAllowed;
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Polling module file name found: " + name);
+                }
+                String extension = name.substring(name.lastIndexOf(".") + 1);
+                boolean isAllowed = true;
+                if (!allowExtensions.isEmpty()) {
+                    isAllowed = allowExtensions.contains(extension);
+                }
+                // Check for the excluded filters if not already disallowed
+                if (isAllowed && !excludeExtensions.isEmpty()) {
+                    isAllowed = !excludeExtensions.contains(extension);
+                }
+                // Check if there are filename regex exclusions if not already disallowed
+                if (isAllowed && excludeFilenameRegexFilter != null) {
+                    isAllowed = !name.matches(excludeFilenameRegexFilter);
+                }
+                return isAllowed;
 
-        });
+            })) {
 
-        for (Path dir : dirs) {
-            File currentFile = dir.toFile();
+            for (Path dir : dirs) {
+                File currentFile = dir.toFile();
 
-            if (checkFile(currentFile)) {
-                // start watching the file's size if it's not already being watched
-                trackFile(currentFile);
+                if (checkFile(currentFile)) {
+                    // start watching the file's size if it's not already being watched
+                    trackFile(currentFile);
+                }
             }
+            /* Claudio.degioanni - Versione modificata 20210628 2.11 - End */
         }
-
-        /* Claudio.degioanni - Versione modificata 20210628 2.11 - End */
     }
 
     protected boolean checkFile(File file) {
