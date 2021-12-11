@@ -389,15 +389,14 @@ public class BCCryptoHelper implements ICryptoHelper {
 
             // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
             try {
+                // normal check
+                if (signer.verify(signerInfoVerifier)) {
+                    logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
+                    return signedPart.getContent();
+                }
+            } catch (CMSVerifierCertificateNotValidException ex) {
                 String as2SignIgnoreTimeIssue = Properties.getProperty("as2_sign_allow_expired_certificate", "false");
-
-                if ("false".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
-                    // normal check
-                    if (signer.verify(signerInfoVerifier)) {
-                        logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
-                        return signedPart.getContent();
-                    }
-                } else {
+                if ("true".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
                     signer = new SignerInfoIgnoringExpiredCertificate(signer);
                     // if flag is enabled log only issue
                     if (signer.verify(signerInfoVerifier)) {
@@ -405,9 +404,6 @@ public class BCCryptoHelper implements ICryptoHelper {
                         return signedPart.getContent();
                     }
                 }
-
-            } catch (CMSVerifierCertificateNotValidException ex) {
-                throw ex;
             }
             // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
 
