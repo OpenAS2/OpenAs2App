@@ -421,8 +421,8 @@ public class AS2Util {
             logger.trace("HTTP headers in received MDN: " + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()));
         }
         // get the MDN partnership info
-        mdn.getPartnership().setSenderID(Partnership.PID_AS2, mdn.getHeader("AS2-From"));
-        mdn.getPartnership().setReceiverID(Partnership.PID_AS2, mdn.getHeader("AS2-To"));
+        mdn.getPartnership().setSenderID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-From")));
+        mdn.getPartnership().setReceiverID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-To")));
         session.getPartnershipFactory().updatePartnership(mdn, false);
 
         MimeBodyPart part;
