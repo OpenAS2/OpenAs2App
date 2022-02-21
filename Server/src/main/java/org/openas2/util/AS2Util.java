@@ -146,8 +146,7 @@ public class AS2Util {
         return content.toString();
     }
 
-    private static Charset getCharset(ContentType contentType, Message msg, Log logger)
-    {
+    private static Charset getCharset(ContentType contentType, Message msg, Log logger) {
         Charset charset = StandardCharsets.UTF_8;
         String charsetFromContentType = contentType.getParameter("charset");
 
