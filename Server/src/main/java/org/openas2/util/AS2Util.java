@@ -30,6 +30,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -104,6 +105,7 @@ public class AS2Util {
 
             if (reportParts != null) {
                 ContentType reportType = new ContentType(reportParts.getContentType());
+                Charset charset = getCharset(reportType, msg, logger);
 
                 if (reportType.getBaseType().equalsIgnoreCase("multipart/report")) {
                     int reportCount = reportParts.getCount();
@@ -116,7 +118,7 @@ public class AS2Util {
                         }
 
                         if (reportPart.isMimeType("text/plain")) {
-                            mdn.setText(getMimeBodyPartText(reportPart));
+                            mdn.setText(getMimeBodyPartText(reportPart, charset));
                         } else if (reportPart.isMimeType(AS2Standards.DISPOSITION_TYPE)) {
                             InternetHeaders disposition = new InternetHeaders(reportPart.getInputStream());
                             mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, disposition.getHeader("Reporting-UA", ", "));
@@ -134,14 +136,31 @@ public class AS2Util {
         }
     }
 
-    private static String getMimeBodyPartText(MimeBodyPart part) throws MessagingException, IOException {
+    private static String getMimeBodyPartText(MimeBodyPart part, Charset charset) throws MessagingException, IOException {
         Object content = part.getContent();
 
         if (InputStream.class.isAssignableFrom(content.getClass())) {
-            return IOUtils.toString((InputStream) content, StandardCharsets.UTF_8);
+            return IOUtils.toString((InputStream) content, charset);
         }
 
         return content.toString();
+    }
+
+    private static Charset getCharset(ContentType contentType, Message msg, Log logger)
+    {
+        Charset charset = StandardCharsets.UTF_8;
+        String charsetFromContentType = contentType.getParameter("charset");
+
+        if (charsetFromContentType != null) {
+            try {
+                charset = Charset.forName(charsetFromContentType);
+            } catch (Exception e) {
+                // Just warn and allow the default to go through
+                logger.warn("Received charset string that cannot be parsed: " + charsetFromContentType + ", MSG_ID=" + msg.getLogMsgID());
+            }
+        }
+
+        return charset;
     }
 
     /**
