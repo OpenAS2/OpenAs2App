@@ -1,5 +1,6 @@
 package org.openas2.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.ComponentNotFoundException;
@@ -11,18 +12,8 @@ import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.lib.util.MimeUtil;
-import org.openas2.message.AS2Message;
-import org.openas2.message.AS2MessageMDN;
-import org.openas2.message.FileAttribute;
-import org.openas2.message.Message;
-import org.openas2.message.MessageMDN;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageMDNParameters;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.message.*;
+import org.openas2.params.*;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
@@ -37,13 +28,10 @@ import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -117,6 +105,7 @@ public class AS2Util {
 
             if (reportParts != null) {
                 ContentType reportType = new ContentType(reportParts.getContentType());
+                Charset charset = getCharset(reportType, msg, logger);
 
                 if (reportType.getBaseType().equalsIgnoreCase("multipart/report")) {
                     int reportCount = reportParts.getCount();
@@ -129,7 +118,7 @@ public class AS2Util {
                         }
 
                         if (reportPart.isMimeType("text/plain")) {
-                            mdn.setText(reportPart.getContent().toString());
+                            mdn.setText(getMimeBodyPartText(reportPart, charset));
                         } else if (reportPart.isMimeType(AS2Standards.DISPOSITION_TYPE)) {
                             InternetHeaders disposition = new InternetHeaders(reportPart.getInputStream());
                             mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, disposition.getHeader("Reporting-UA", ", "));
@@ -145,6 +134,32 @@ public class AS2Util {
         } catch (Exception e) {
             throw new OpenAS2Exception("Filed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         }
+    }
+
+    private static String getMimeBodyPartText(MimeBodyPart part, Charset charset) throws MessagingException, IOException {
+        Object content = part.getContent();
+
+        if (InputStream.class.isAssignableFrom(content.getClass())) {
+            return IOUtils.toString((InputStream) content, charset);
+        }
+
+        return content.toString();
+    }
+
+    private static Charset getCharset(ContentType contentType, Message msg, Log logger) {
+        Charset charset = StandardCharsets.UTF_8;
+        String charsetFromContentType = contentType.getParameter("charset");
+
+        if (charsetFromContentType != null) {
+            try {
+                charset = Charset.forName(charsetFromContentType);
+            } catch (Exception e) {
+                // Just warn and allow the default to go through
+                logger.warn("Received charset string that cannot be parsed: " + charsetFromContentType + ", MSG_ID=" + msg.getLogMsgID());
+            }
+        }
+
+        return charset;
     }
 
     /**
