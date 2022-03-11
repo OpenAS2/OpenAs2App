@@ -25,6 +25,8 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
 
     private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$ENV\\{([^\\}]++)\\}");
     private final Map<String, String> env_vars;
+    private final String HOME_DIR_PLACEHOLDER = "%home%";
+    private String appHomeDir = null;
 
     public PropertyReplacementFilter() {
         super();
@@ -43,6 +45,10 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
     public PropertyReplacementFilter(XMLReader parent, Map<String, String> env_vars) {
         super(parent);
         this.env_vars = env_vars;
+    }
+
+    public void setAppHomeDir(String appHomeDir) {
+        this.appHomeDir = appHomeDir;
     }
 
     /**
@@ -75,6 +81,9 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
     }
 
     private String replace(String input) throws SAXException {
+        if (this.appHomeDir != null) {
+            input = input.replace(this.HOME_DIR_PLACEHOLDER, this.appHomeDir);
+        }
         StringBuffer strBuf = new StringBuffer();
         Matcher matcher = ENV_VAR_PATTERN.matcher(input);
         while (matcher.find()) {
