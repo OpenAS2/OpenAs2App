@@ -257,9 +257,11 @@ public class HTTPUtil {
                 return null;
             } else {
                 HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, null);
-                Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
-                logger.error("Inbound HTTP request does not provide means to determine data length: " + request.get(0) + " " + request.get(1) + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;"));
-                throw new IOException("Content-Length missing and no \"Transfer-Encoding\" header found to determine how to read message body.");
+                if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
+                  Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
+                  logger.warn("The request either contained no data or has issues with the Transfer-Encoding or Content-Length: : " + request.get(0) + " " + request.get(1) + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;"));
+                }
+                return null;
             }
         }
         cleanIdHeaders(msg.getHeaders());
