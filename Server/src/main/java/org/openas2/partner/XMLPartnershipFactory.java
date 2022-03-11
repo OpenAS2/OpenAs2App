@@ -136,7 +136,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         Node partnerNode = XMLUtil.findChildNode(partnershipNode, partnerType);
 
         if (partnerNode == null) {
-            throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing sender");
+            throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing a node entry for the " +  partnerType + ".");
         }
 
         Map<String, String> partnerAttr = XMLUtil.mapAttributes(partnerNode);
@@ -173,8 +173,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         partnership.setName(name);
 
         // load the sender and receiver information
-        loadPartnerIDs(partners, name, node, "sender", partnership.getSenderIDs());
-        loadPartnerIDs(partners, name, node, "receiver", partnership.getReceiverIDs());
+        loadPartnerIDs(partners, name, node, Partnership.PTYPE_SENDER, partnership.getSenderIDs());
+        loadPartnerIDs(partners, name, node, Partnership.PTYPE_RECEIVER, partnership.getReceiverIDs());
 
         // read in the partnership attributes
         loadAttributes(node, partnership);

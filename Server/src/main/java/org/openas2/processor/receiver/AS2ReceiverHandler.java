@@ -225,7 +225,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
                     // Process the received message
                     try {
-                        getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, null);
+                        Map<String, Object> options = new HashMap<String, Object>(1);
+                        options.put(Partnership.PA_STORE_RECEIVED_FILE_TO, msg.getPartnership().getAttribute(Partnership.PA_STORE_RECEIVED_FILE_TO));
+                        getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, options);
                     } catch (OpenAS2Exception oae) {
                         msg.setLogMsg("Error handling received message: " + oae.getCause());
                         LOG.error(msg, oae);

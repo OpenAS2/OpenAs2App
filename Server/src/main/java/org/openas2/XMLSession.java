@@ -79,7 +79,9 @@ public class XMLSession extends BaseSession {
     }
 
     protected void load(InputStream in) throws Exception {
-        Document document = XMLUtil.parseXML(in, new PropertyReplacementFilter());
+        PropertyReplacementFilter prf = new PropertyReplacementFilter();
+        prf.setAppHomeDir(getBaseDirectory());
+        Document document = XMLUtil.parseXML(in, prf);
 
         Element root = document.getDocumentElement();
 

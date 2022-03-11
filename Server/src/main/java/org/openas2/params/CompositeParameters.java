@@ -3,6 +3,7 @@ package org.openas2.params;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.util.Properties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +70,18 @@ public class CompositeParameters extends ParameterParser {
         StringTokenizer keyParts = new StringTokenizer(key, ".", false);
 
         String parserID = keyParts.nextToken();
+        // support "properties" key for all parser calls
+        if ("properties" == parserID) {
+            String propKey = keyParts.nextToken();
+            if (propKey == null) {
+                throw new InvalidParameterException("Invalid property key format. Missing a property name.", this, key, null);
+            }
+            String val = Properties.getProperty(propKey, null);
+            if (val == null) {
+                throw new InvalidParameterException("Property is null when parsing property string to value", this, propKey, null);
+            }
+            return val;
+        }
         ParameterParser parser = getParameterParsers().get(parserID);
 
         if (parser != null) {

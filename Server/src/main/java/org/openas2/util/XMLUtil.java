@@ -67,8 +67,6 @@ public class XMLUtil {
             Map<String, String> parameters = XMLUtil.mapAttributes(node);
             AS2Util.attributeEnhancer(parameters);
 
-            updateDirectories(session.getBaseDirectory(), parameters);
-
             obj.init(session, parameters);
 
             return obj;
