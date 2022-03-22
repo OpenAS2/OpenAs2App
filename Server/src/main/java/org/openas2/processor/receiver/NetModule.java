@@ -296,8 +296,10 @@ public abstract class NetModule extends BaseReceiverModule {
                 return;
             }
             try {
-                socket.close();
-            } catch (IOException e) {
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
+            } catch (Exception e) {
                 owner.forceStop(e);
             }
             connectionThreads.shutdown();
@@ -312,9 +314,6 @@ public abstract class NetModule extends BaseReceiverModule {
                     connectionThreads.execute(new ConnectionHandler(getOwner(), conn));
                 } catch (IOException e) {
                     logger.error("Failed transferring data over HTTP connection: " + e.getMessage(), e);
-                    if (!isTerminated()) {
-                        //owner.forceStop(e);
-                    }
                 }
             }
         }
