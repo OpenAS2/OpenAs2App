@@ -51,6 +51,9 @@ public class Partnership implements Serializable {
     // A hopefully temporary key to maintain backwards compatibility
     public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
 
+    /* Partnership configuration nodes */
+    public static final String PCFG_POLLER = "pollerConfig"; // Provides configuration for the directory poller config node
+
     /*
      * If set and an error occurs while processing a document, an error MDN will not be sent. This
      * flag was made because some AS2 products don't provide email or some other external notification
