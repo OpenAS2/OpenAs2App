@@ -10,10 +10,15 @@ import org.openas2.cmd.processor.BaseCommandProcessor;
 import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.openas2.logging.LogManager;
 import org.openas2.logging.Logger;
+import org.openas2.params.MessageParameters;
+import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
+import org.openas2.processor.receiver.MessageBuilderModule;
+import org.openas2.processor.receiver.PollingModule;
 import org.openas2.schedule.SchedulerComponent;
+import org.openas2.util.AS2Util;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
@@ -29,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
 
@@ -255,36 +261,73 @@ public class XMLSession extends BaseSession {
         Processor proc = (Processor) XMLUtil.getComponent(rootNode, this);
         setComponent(Processor.COMPID_PROCESSOR, proc);
 
-        LOGGER.info("Loading processor modules...");
+        LOGGER.info("Loading processor nodes...");
 
-        NodeList modules = rootNode.getChildNodes();
-        Node module;
+        NodeList processorChildNodes = rootNode.getChildNodes();
+        Node processorChildNode;
 
-        for (int i = 0; i < modules.getLength(); i++) {
-            module = modules.item(i);
-
-            if (module.getNodeName().equals("module")) {
+        for (int i = 0; i < processorChildNodes.getLength(); i++) {
+            processorChildNode = processorChildNodes.item(i);
+            if (processorChildNode.getNodeName().equals("module")) {
                 // Allow no enabled attrib to default to "true"
-                String enabledFlag = XMLUtil.getNodeAttributeValue(module, "enabled", true);
-                if (enabledFlag == null || "true".equalsIgnoreCase(enabledFlag)) {
-                    loadProcessorModule(proc, module);
-                } else {
+                String enabledFlag = XMLUtil.getNodeAttributeValue(processorChildNode, "enabled", true);
+                if (enabledFlag != null && !"true".equalsIgnoreCase(enabledFlag)) {
                     try {
-                        LOGGER.info("Module is disabled ... ignoring: " + XMLUtil.toString(module, true));
+                        LOGGER.info("Module is disabled ... ignoring: " + XMLUtil.toString(processorChildNode, true));
                     } catch (TransformerException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
+                    continue;
                 }
+                loadProcessorModule(proc, processorChildNode);
+            } else {
+                // Not a known node so ignore for loader
+                continue;
             }
         }
     }
 
     private void loadProcessorModule(Processor proc, Node moduleNode) throws OpenAS2Exception {
+        if (isPollerModule(moduleNode)) {
+            // Special handling for poller modules using the old style polling config
+            String partnershipName = null;
+            Node defaultsNode = moduleNode.getAttributes().getNamedItem("defaults");
+            if (defaultsNode == null) {
+                // If there is a format nodethen this is a generic poller module
+                Node formatNode = moduleNode.getAttributes().getNamedItem("format");
+                if (formatNode == null) {
+                    throw new OpenAS2Exception("Invalid poller module coniguration: " + moduleNode.toString());
+                }
+                partnershipName = "generic";
+            } else {
+                // Since the partnerships will not have loaded yet, just use the defaults string as the partnership name
+                partnershipName = defaultsNode.getNodeValue();
+            }
+            loadPartnershipPoller(moduleNode, partnershipName, "configPoller");
+            return;
+        }
         ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);
         proc.getModules().add(procmod);
     }
 
+    private boolean isPollerModule(Node node) {
+        Node classNameNode = node.getAttributes().getNamedItem("classname");
+        if (classNameNode == null) {
+            return false;
+        }
+        String className = classNameNode.getNodeValue();
+        try {
+            Class<?> objClass = Class.forName(className);
+            if (PollingModule.class.isAssignableFrom(objClass)) {
+                return true;
+            }
+        } catch (Exception e) {
+
+        }
+        return false;
+
+    }
     private void getManifestAttributes() throws OpenAS2Exception {
         manifestAttributes = OpenAS2Server.getManifestAttributes();
     }

@@ -4,7 +4,11 @@ import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
+import org.openas2.processor.ProcessorModule;
+import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.util.Properties;
+import org.openas2.util.XMLUtil;
+import org.w3c.dom.Node;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
@@ -15,6 +19,8 @@ import java.util.Map;
 public abstract class BaseSession implements Session {
     private Map<String, Component> components = new HashMap<String, Component>();
     private String baseDirectory;
+
+    private Map<String, Map<String, String>> polledDirectories = new HashMap<String, Map<String, String>>();
 
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
@@ -40,6 +46,14 @@ public abstract class BaseSession implements Session {
 
     public CertificateFactory getCertificateFactory() throws ComponentNotFoundException {
         return (CertificateFactory) getComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY);
+    }
+
+    public Map<String, Map<String, String>> getPolledDirectories() {
+        return polledDirectories;
+    }
+
+    public void setPolledDirectories(Map<String, Map<String, String>> polledDirectories) {
+        this.polledDirectories = polledDirectories;
     }
 
     /**
@@ -97,6 +111,33 @@ public abstract class BaseSession implements Session {
         MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
         mc.addMailcap(AS2Standards.DISPOSITION_TYPE + ";; x-java-content-handler=org.openas2.lib.util.javamail.DispositionDataContentHandler");
         CommandMap.setDefaultCommandMap(mc);
+    }
+
+    private void checkPollerModule(String pollerDir) throws OpenAS2Exception {
+        if (polledDirectories.containsKey(pollerDir)) {
+            Map<String, String> meta = polledDirectories.get(pollerDir);
+            throw new OpenAS2Exception("Directory already being polled from config in " + meta.get("configSource") + " for the " + meta.get("partnershipName") + " partnership: " + pollerDir);
+        }
+    }
+
+    private void trackPollerModule(String pollerDir, String partnershipName, String configSource) {
+        Map<String, String> meta = new HashMap<String, String>();
+        meta.put("partnershipName", partnershipName);
+        meta.put("configSource", configSource);
+        polledDirectories.put(pollerDir, meta);
+    }
+
+    public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception {
+        Node outboxdirNode = moduleNode.getAttributes().getNamedItem(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY);
+        if (outboxdirNode == null) {
+            throw new OpenAS2Exception("Missing '" + DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY + "' attribute for poller config: " + moduleNode.toString());
+        }
+        String pollerDir = outboxdirNode.getNodeValue();
+        checkPollerModule(pollerDir);
+        ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);
+        Processor proc = (Processor)getComponent(Processor.COMPID_PROCESSOR);
+        proc.getModules().add(procmod);
+        trackPollerModule(pollerDir, partnershipName, configSource);
     }
 
     public String getBaseDirectory() {

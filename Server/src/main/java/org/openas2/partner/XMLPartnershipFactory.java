@@ -45,6 +45,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     public static final String PARAM_FILENAME = "filename";
     public static final String PARAM_INTERVAL = "interval";
 
+    private Node basePollerConfigNode = null;
+
     private Map<String, Object> partners;
 
     private Log logger = LogFactory.getLog(XMLPartnershipFactory.class.getSimpleName());
@@ -99,6 +101,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                     loadPartner(newPartners, rootNode);
                 } else if (nodeName.equals("partnership")) {
                     loadPartnership(newPartners, newPartnerships, rootNode);
+                } else if (nodeName.equals("pollerConfigBase")) {
+                    loadBasePartnershipPollerConfig(rootNode);
                 }
             }
 
@@ -111,11 +115,15 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         }
     }
 
-    private void loadAttributes(Node node, Partnership partnership) throws OpenAS2Exception {
-        Map<String, String> nodes = XMLUtil.mapAttributeNodes(node.getChildNodes(), "attribute", "name", "value");
+    private void loadBasePartnershipPollerConfig(Node node) throws OpenAS2Exception {
+        this.basePollerConfigNode = node;
+    }
 
-        AS2Util.attributeEnhancer(nodes);
-        partnership.getAttributes().putAll(nodes);
+    private void loadAttributes(Node node, Partnership partnership) throws OpenAS2Exception {
+        Map<String, String> attributes = XMLUtil.mapAttributeNodes(node.getChildNodes(), "attribute", "name", "value");
+
+        AS2Util.attributeEnhancer(attributes);
+        partnership.getAttributes().putAll(attributes);
     }
 
     public void loadPartner(Map<String, Object> partners, Node node) throws OpenAS2Exception {
@@ -181,6 +189,24 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
         // add the partnership to the list of available partnerships
         partnerships.add(partnership);
+        
+        // Now check if we need to add a directory polling module
+        Node pollerCfgNode = XMLUtil.findChildNode(node, Partnership.PCFG_POLLER);
+        if (pollerCfgNode != null) {
+            // Load a poller configuration
+            String[] requiredPollerAttributes = {"enabled"};
+            Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
+            if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
+                // Create a copy of the base config node
+                Element pollerConfigElem = (Element)this.basePollerConfigNode.cloneNode(true);
+                // Merge the attributes from the base config with the partnership specific ones
+                partnershipPollerCfgAttributes.forEach((key, value) -> {
+                    pollerConfigElem.setAttribute(key, value);
+                });
+                // Now launch a directory poller module for this config
+                getSession().loadPartnershipPoller(pollerConfigElem, name, "partnership");
+            }
+        }
     }
 
     public void storePartnership() throws OpenAS2Exception {
