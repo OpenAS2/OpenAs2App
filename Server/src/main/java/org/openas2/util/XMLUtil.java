@@ -26,9 +26,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 
 public class XMLUtil {
@@ -177,26 +175,6 @@ public class XMLUtil {
         }
 
         return attributes;
-    }
-
-    private static void updateDirectories(String baseDirectory, Map<String, String> attributes) throws OpenAS2Exception {
-        Iterator<Entry<String, String>> attrIt = attributes.entrySet().iterator();
-        Map.Entry<String, String> attrEntry;
-        String value;
-
-        while (attrIt.hasNext()) {
-            attrEntry = attrIt.next();
-            value = attrEntry.getValue();
-
-            if (value.startsWith("%home%")) {
-                if (baseDirectory != null) {
-                    value = baseDirectory + value.substring(6);
-                    attributes.put(attrEntry.getKey(), value);
-                } else {
-                    throw new OpenAS2Exception("Base directory isn't set");
-                }
-            }
-        }
     }
 
     public static String toString(Node node, boolean omitXmlDeclaration) throws TransformerException {
