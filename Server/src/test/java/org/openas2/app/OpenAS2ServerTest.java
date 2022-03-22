@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -75,21 +76,21 @@ public class OpenAS2ServerTest {
     @Test
     public void shouldSendMessages() throws Exception {
         try {
-            int amountOfMessages = msgCnt;
-            List<Callable<TestMessage>> callers = new ArrayList<Callable<TestMessage>>(amountOfMessages);
+            List<Callable<TestMessage>> callers = new ArrayList<Callable<TestMessage>>(msgCnt);
 
-            // prepare messages
-            for (int i = 0; i < amountOfMessages; i++) {
+            // write messages to outbox and build callables with test message objects
+            for (int i = 0; i < msgCnt; i++) {
+            	TestMessage testMsg = sendMessage(partnerA, partnerB);
                 callers.add(new Callable<TestMessage>() {
                     @Override
                     public TestMessage call() throws Exception {
-                        return sendMessage(partnerA, partnerB);
+                        return getDeliveredMessage(testMsg);
                     }
                 });
             }
             // send and verify all messages in parallel
             for (Future<TestMessage> result : executorService.invokeAll(callers)) {
-                verifyMessageDelivery(result.get());
+            	verifyMessageDelivery(result.get());
             }
         } catch (Throwable e) {
             // Aid debugging JUnit test failures
@@ -98,35 +99,55 @@ public class OpenAS2ServerTest {
         }
     }
 
-
+    /*
     @Test
     public void shouldSendMessagesAsync() throws Exception {
-        int amountOfMessages = msgCnt;
-        List<Callable<TestMessage>> callers = new ArrayList<Callable<TestMessage>>(amountOfMessages);
+        try {
+            List<Callable<TestMessage>> callers = new ArrayList<Callable<TestMessage>>(msgCnt);
 
-        // prepare messages
-        for (int i = 0; i < amountOfMessages; i++) {
-            callers.add(new Callable<TestMessage>() {
-                @Override
-                public TestMessage call() throws Exception {
-                    return sendMessage(partnerB, partnerA);
-                }
-            });
-
-        }
-
-        // send and verify all messages in parallel
-        for (Future<TestMessage> result : executorService.invokeAll(callers)) {
-            verifyMessageDelivery(result.get());
+            // write messages to outbox and build callables with test message objects
+            for (int i = 0; i < msgCnt; i++) {
+            	TestMessage testMsg = sendMessage(partnerB, partnerA);
+                callers.add(new Callable<TestMessage>() {
+                    @Override
+                    public TestMessage call() throws Exception {
+                        return getDeliveredMessage(testMsg);
+                    }
+                });
+            }
+            // send and verify all messages in parallel
+            for (Future<TestMessage> result : executorService.invokeAll(callers)) {
+            	verifyMessageDelivery(result.get());
+            }
+        } catch (Throwable e) {
+            // Aid debugging JUnit test failures
+            System.out.println("ERROR OCCURRED: " + ExceptionUtils.getStackTrace(e));
+            throw new Exception(e);
         }
     }
+    */
 
     @AfterClass
     public static void tearDown() throws Exception {
-        //executorService.awaitTermination(100, TimeUnit.SECONDS);
+        //executorService.awaitTermination(15, TimeUnit.SECONDS);
         executorService.shutdown();
+        String dataDirPartnerA = partnerA.getHome().getAbsolutePath() + File.separator + "data";
+        String dataDirPartnerB = partnerB.getHome().getAbsolutePath() + File.separator + "data";
         partnerA.getServer().shutdown();
         partnerB.getServer().shutdown();
+        // NOTE: For debugging "missing" files it is best to comment this out
+        try {
+			FileUtils.deleteDirectory(new File(dataDirPartnerA));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        try {
+			FileUtils.deleteDirectory(new File(dataDirPartnerB));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     private TestMessage sendMessage(TestPartner fromPartner, TestPartner toPartner) throws IOException {
@@ -136,29 +157,28 @@ public class OpenAS2ServerTest {
         FileUtils.write(outgoingMsg, outgoingMsgBody, "UTF-8");
 
         FileUtils.copyFileToDirectory(outgoingMsg, fromPartner.getOutbox());
+    	//System.out.println("**** ****   FILE COPIED: " + fromPartner.getOutbox() + "/" + outgoingMsg.getName());
 
         return new TestMessage(outgoingMsgFileName, outgoingMsgBody, fromPartner, toPartner);
 
     }
 
+    private TestMessage getDeliveredMessage(TestMessage testMessage) throws IOException {
+        // Wait a while - will depend on the sender poller interval how long it takes to arrive
+    	testMessage.deliveredMsg = waitForFile(testMessage.toPartner.getInbox(), new PrefixFileFilter(testMessage.fileName), 20, TimeUnit.SECONDS);
+    	return testMessage;
+    }
+
     private void verifyMessageDelivery(TestMessage testMessage) throws IOException {
-        // wait till delivery occurs
-        File deliveredMsg = waitForFile(testMessage.toPartner.getInbox(), new PrefixFileFilter(testMessage.fileName), 20, TimeUnit.SECONDS);
+    	assertThat("A file was received by " + testMessage.toPartner.getName() + " from " + testMessage.fromPartner.getName(),  testMessage.deliveredMsg != null, is(true));
+        String deliveredMsgBody = FileUtils.readFileToString(testMessage.deliveredMsg, "UTF-8");
+        assertThat("Verify content of delivered message", deliveredMsgBody, is(testMessage.body));
 
-        {
-            String deliveredMsgBody = FileUtils.readFileToString(deliveredMsg, "UTF-8");
-            assertThat("Verify content of delivered message", deliveredMsgBody, is(testMessage.body));
-        }
+        File rxdMDN = waitForFile(testMessage.toPartner.getRxdMDNs(), new PrefixFileFilter(testMessage.fileName), 10, TimeUnit.SECONDS);
+        assertThat("Verify MDN was received by " + testMessage.toPartner.getName(), rxdMDN.exists(), is(true));
 
-        {
-            File deliveryConfirmationMDN = waitForFile(testMessage.fromPartner.getRxdMDNs(), new PrefixFileFilter(testMessage.fileName), 10, TimeUnit.SECONDS);
-            assertThat("Verify MDN was received by " + testMessage.fromPartner.getName(), deliveryConfirmationMDN.exists(), is(true));
-        }
-
-        {
-            File deliveryConfirmationMDN = waitForFile(testMessage.toPartner.getSentMDNs(), new PrefixFileFilter(testMessage.fileName), 10, TimeUnit.SECONDS);
-            assertThat("Verify MDN was stored by " + testMessage.toPartner.getName(), deliveryConfirmationMDN.exists(), is(true));
-        }
+        File sentMDN = waitForFile(testMessage.fromPartner.getSentMDNs(), new PrefixFileFilter(testMessage.fileName), 10, TimeUnit.SECONDS);
+        assertThat("Verify sent MDN was stored by " + testMessage.fromPartner.getName(), sentMDN.exists(), is(true));
     }
 
     /**
@@ -171,12 +191,12 @@ public class OpenAS2ServerTest {
     private static void enhancePartners() throws ComponentNotFoundException, FileNotFoundException {
         PartnershipFactory pf = serverA.getSession().getPartnershipFactory();
         Map<String, Object> partners = pf.getPartners();
-        for (Map.Entry<String, Object> pair : partners.entrySet()) {
-            if (pair.getKey().equals(partnerB.getName())) {
-                Map<String, String> partner = (Map<String, String>) pair.getValue();
+        for (Map.Entry<String, Object> attribute : partners.entrySet()) {
+            if (attribute.getKey().equals(partnerB.getName())) {
+                Map<String, String> partner = (Map<String, String>) attribute.getValue();
                 partnerB.setAs2Id(partner.get(Partnership.PID_AS2));
-            } else if (pair.getKey().equals(partnerA.getName())) {
-                Map<String, String> partner = (Map<String, String>) pair.getValue();
+            } else if (attribute.getKey().equals(partnerA.getName())) {
+                Map<String, String> partner = (Map<String, String>) attribute.getValue();
                 partnerA.setAs2Id(partner.get(Partnership.PID_AS2));
             }
         }
@@ -186,35 +206,51 @@ public class OpenAS2ServerTest {
         partnerA.setHome(RESOURCE.get(partnerA.getName()));
         partnerA.setOutbox(FileUtils.getFile(partnerA.getHome(), "data", "to" + partnerB.getName()));
         partnerA.setInbox(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderBtoA, "inbox"));
-        partnerA.setSentMDNs(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderBtoA, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
-        partnerA.setRxdMDNs(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderAtoB, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
+        partnerA.setSentMDNs(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderAtoB, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
+        partnerA.setRxdMDNs(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderBtoA, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
 
         partnerB.setHome(RESOURCE.get(partnerB.getName()));
         partnerB.setOutbox(FileUtils.getFile(partnerB.getHome(), "data", "to" + partnerA.getName()));
         partnerB.setInbox(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderAtoB, "inbox"));
-        partnerB.setSentMDNs(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderAtoB, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
-        partnerB.setRxdMDNs(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderBtoA, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
+        partnerB.setSentMDNs(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderBtoA, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
+        partnerB.setRxdMDNs(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderAtoB, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
 
     }
 
     @SuppressWarnings("unused")
-	private static void getPartnership() throws Exception {
-        // Set Partner B to request ASYNC MDN
-        PartnershipFactory pf = serverA.getSession().getPartnershipFactory();
-        Partnership p = new Partnership();
-        Partnership asyncPartnership = pf.getPartnership(p, false);
-        if (asyncPartnership != null) {
-            asyncPartnership.setAttribute(Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
+	private Partnership getPartnership(OpenAS2Server servicerInstance, String senderAS2Id, String receiverAS2Id) throws Exception {
+        PartnershipFactory pf = servicerInstance.getSession().getPartnershipFactory();
+        Map<String, Object> senderIDs = new HashMap<String, Object>();
+        senderIDs.put(Partnership.PID_AS2, senderAS2Id);
+        Map<String, Object> receiverIDs = new HashMap<String, Object>();
+        receiverIDs.put(Partnership.PID_AS2, receiverAS2Id);
+        return pf.getPartnership(senderIDs, receiverIDs);
+	}
+
+    @SuppressWarnings("unused")
+    private void setPartnershipToAsync(Partnership partnership) throws Exception {
+        if (partnership != null) {
+            partnership.setAttribute(Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
         } else {
             throw new Exception("Could not set partnership to ~ASYNC mode");
         }
+    }
 
+    @SuppressWarnings("unused")
+    private void enableSentMDNStorage(Partnership partnership) throws Exception {
+        if (partnership != null) {
+            partnership.setAttribute(Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
+        } else {
+            throw new Exception("Could not set partnership to ~ASYNC mode");
+        }
     }
 
     private static class TestMessage {
         private final String fileName;
         private final String body;
         private final TestPartner fromPartner, toPartner;
+        @SuppressWarnings("unused")
+		public File deliveredMsg = null;
 
         private TestMessage(String fileName, String body, TestPartner fromPartner, TestPartner toPartner) {
             this.fileName = fileName;
