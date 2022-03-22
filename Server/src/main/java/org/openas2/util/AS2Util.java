@@ -132,7 +132,7 @@ public class AS2Util {
                 }
             }
         } catch (Exception e) {
-            throw new OpenAS2Exception("Filed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Failed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         }
     }
 
