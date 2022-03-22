@@ -246,9 +246,9 @@ public class BCCryptoHelper implements ICryptoHelper {
             }
         }
         throw new GeneralSecurityException(
-        		"Matching certificate recipient could not be found trying to decrypt the message."
-                + " Either the sender has encrypted the message with a public key that does not match"
-        		+ " a private key in your keystore or the there is a problem in your keystore where the private key has not been imported or is corrupt.");
+            "Matching certificate recipient could not be found trying to decrypt the message."
+            + " Either the sender has encrypted the message with a public key that does not match"
+            + " a private key in your keystore or the there is a problem in your keystore where the private key has not been imported or is corrupt.");
     }
 
     public void deinitialize() {
