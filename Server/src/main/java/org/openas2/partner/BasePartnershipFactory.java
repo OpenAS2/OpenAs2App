@@ -104,7 +104,7 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
         }
     }
 
-    protected Partnership getPartnership(Map<String, Object> senderIDs, Map<String, Object> receiverIDs) {
+    public Partnership getPartnership(Map<String, Object> senderIDs, Map<String, Object> receiverIDs) {
         Iterator<Partnership> psIt = getPartnerships().iterator();
         Partnership currentPs;
         Map<String, Object> currentSids;
