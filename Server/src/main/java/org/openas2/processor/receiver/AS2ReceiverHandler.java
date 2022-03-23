@@ -558,7 +558,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         // store MDN into msg in case AsynchMDN is sent fails, needs to be resent by
         // send module
         msg.setMDN(mdn);
-
         return mdn;
     }
 
@@ -600,12 +599,17 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         // Convert report parts to MimeBodyPart
         MimeBodyPart report = new MimeBodyPart();
         reportParts.setSubType(AS2Standards.REPORT_SUBTYPE);
-        report.setContent(reportParts);
         String contentType = reportParts.getContentType();
         if ("true".equalsIgnoreCase(Properties.getProperty("remove_multipart_content_type_header_folding", "false"))) {
             contentType = contentType.replaceAll("\r\n[ \t]*", " ");
         }
+        // Remove the trailing information for header if any
+        int indexOfSemiColon = contentType.indexOf(";");
+        if (indexOfSemiColon > -1) {
+            contentType = contentType.substring(0, indexOfSemiColon);
+        }
         report.setHeader("Content-Type", contentType);
+        report.setContent(reportParts, reportParts.getContentType());
 
         // Sign the data if needed
         if (signatureProtocol != null) {
@@ -632,6 +636,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 mdn.setData(report);
             }
         } else {
+            // Must provide a stream for this to avoid the DCH error
+            //report.setDataHandler(new DataHandler(reportParts, "multipart/report"));
             mdn.setData(report);
         }
 
