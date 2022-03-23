@@ -1,4 +1,12 @@
 <partnerships>
+     <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->
+     <pollerConfigBase classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+             outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver$"
+             errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd/$partnership.receiver$"
+             interval="5"
+             defaults="sender.as2_id=$partnership.sender$, receiver.as2_id=$partnership.receiver$"
+             sendfilename="true"
+             mimetype="application/EDI-X12"/>
     <partner name="OpenAS2A"
              as2_id="OpenAS2A_OID"
              x509_alias="openas2a"
@@ -12,6 +20,7 @@
     <partnership name="OpenAS2A-to-OpenAS2B">
         <sender name="OpenAS2A"/>
         <receiver name="OpenAS2B"/>
+        <pollerConfig enabled="true"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="8bit"/>
         <attribute name="compression_type" value="ZLIB"/>
@@ -19,8 +28,10 @@
         <attribute name="as2_url" value="http://localhost:20080"/>
         <attribute name="as2_mdn_to" value="edi@openas2b.org"/>
         <!--  <attribute name="as2_receipt_option" value="http://localhost:10080"/>   ...for async MDN-->
-        <attribute name="as2_mdn_options"
+        <attribute name="as2_mdn_options" value="none"/>
+        <!--
                    value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        -->
         <attribute name="encrypt" value="3DES"/>
         <attribute name="sign" value="SHA1"/>
         <attribute name="resend_max_retries" value="3"/>
