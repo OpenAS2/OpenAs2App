@@ -1,6 +1,5 @@
 package org.openas2.processor.sender;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -20,6 +19,7 @@ import org.openas2.util.ResponseWrapper;
 import javax.mail.Header;
 import javax.mail.internet.MimeBodyPart;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -76,6 +76,7 @@ public class MDNSenderModule extends HttpSenderModule {
                 logger.trace("Calling asynch MDN sender....");
             }
             if (!sendAsyncMDN(mdn, ((AS2Message) msg).getAsyncMDNurl(), disposition, options)) {
+                // Handling of failure to send MDN done already in sendAsyncMDN so just return
                 return;
             }
         } else {
@@ -84,7 +85,7 @@ public class MDNSenderModule extends HttpSenderModule {
             ByteArrayOutputStream data = new ByteArrayOutputStream();
             MimeBodyPart part = mdn.getData();
             try {
-                IOUtils.copy(part.getInputStream(), data);
+                part.writeTo(data);
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error writing MDN to byte array.", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
@@ -93,7 +94,6 @@ public class MDNSenderModule extends HttpSenderModule {
             }
             // make sure to set the content-length header
             mdn.setHeader("Content-Length", Integer.toString(data.size()));
-
             try {
                 HTTPUtil.sendHTTPResponse(httpOutputStream, HttpURLConnection.HTTP_OK, data, mdn.getHeaders().getAllHeaderLines());
                 msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
@@ -101,7 +101,6 @@ public class MDNSenderModule extends HttpSenderModule {
             } catch (IOException e) {
                 WrappedException we = new WrappedException("Error writing MDN to output stream.", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                //we.terminate();
                 throw new WrappedException(we);
             }
             if (logger.isTraceEnabled()) {
@@ -116,7 +115,6 @@ public class MDNSenderModule extends HttpSenderModule {
         if (logger.isInfoEnabled()) {
             logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
         }
-
     }
 
     private boolean sendAsyncMDN(MessageMDN mdn, String url, DispositionType disposition, Map<String, Object> options) throws OpenAS2Exception {
@@ -135,7 +133,21 @@ public class MDNSenderModule extends HttpSenderModule {
             Map<String, String> httpOptions = getHttpOptions();
             httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
             httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
-            ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, mdn.getHeaders().getAllHeaders(), null, mdn.getData().getInputStream(), httpOptions, maxSize);
+            // Convert the MimebodyPart to a string so we know how big it is to set Content-Length
+            ByteArrayOutputStream dataOutputStream = new ByteArrayOutputStream();
+            MimeBodyPart part = mdn.getData();
+            try {
+                part.writeTo(dataOutputStream);
+            } catch (Exception e) {
+                WrappedException we = new WrappedException("Error writing MDN to byte array.", e);
+                we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
+                //we.terminate();
+                throw new WrappedException(we);
+            }
+            byte[] data = dataOutputStream.toByteArray();
+            // make sure to set the content-length header
+            mdn.setHeader("Content-Length", Integer.toString(data.length));
+            ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, mdn.getHeaders().getAllHeaders(), null, new ByteArrayInputStream(data), httpOptions, maxSize);
 
             int respCode = resp.getStatusCode();
             // Check the HTTP Response code

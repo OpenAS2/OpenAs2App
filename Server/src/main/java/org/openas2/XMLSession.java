@@ -10,15 +10,11 @@ import org.openas2.cmd.processor.BaseCommandProcessor;
 import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.openas2.logging.LogManager;
 import org.openas2.logging.Logger;
-import org.openas2.params.MessageParameters;
-import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
-import org.openas2.processor.receiver.MessageBuilderModule;
 import org.openas2.processor.receiver.PollingModule;
 import org.openas2.schedule.SchedulerComponent;
-import org.openas2.util.AS2Util;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
@@ -34,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
 
@@ -53,10 +48,14 @@ public class XMLSession extends BaseSession {
     private static final String EL_PARTNERSHIPS = "partnerships";
     private static final String EL_COMMANDS = "commands";
     private static final String EL_LOGGERS = "loggers";
+    private static final String EL_POLLER_CONFIG = "pollerConfigBase";
     // private static final String PARAM_BASE_DIRECTORY = "basedir";
 
     private CommandRegistry commandRegistry;
     private CommandManager cmdManager = new CommandManager();
+
+    // Poller base confog that will be used for partnership based pollers. Can be overridden in the partnership
+    private Node basePollerConfigNode = null;
 
     private Attributes manifestAttributes = null;
     private String VERSION;
@@ -117,6 +116,8 @@ public class XMLSession extends BaseSession {
                 loadCommands(rootNode);
             } else if (nodeName.equals(EL_LOGGERS)) {
                 loadLoggers(rootNode);
+            } else if (nodeName.equals(EL_POLLER_CONFIG)) {
+                loadBasePartnershipPollerConfig(rootNode);
             } else if (nodeName.equals("#text")) {
                 // do nothing
             } else if (nodeName.equals("#comment")) {
@@ -184,7 +185,15 @@ public class XMLSession extends BaseSession {
         setComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY, certFx);
     }
 
-    private void loadCommands(Node rootNode) throws OpenAS2Exception {
+    private void loadBasePartnershipPollerConfig(Node node) throws OpenAS2Exception {
+        this.basePollerConfigNode = node;
+    }
+
+    public Node getBasePartnershipPollerConfig() throws OpenAS2Exception {
+        return this.basePollerConfigNode;
+    }
+
+   private void loadCommands(Node rootNode) throws OpenAS2Exception {
         Component component = XMLUtil.getComponent(rootNode, this);
         commandRegistry = (CommandRegistry) component;
     }

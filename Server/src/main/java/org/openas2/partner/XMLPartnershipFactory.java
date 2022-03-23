@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
+import org.openas2.XMLSession;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.support.FileMonitorAdapter;
@@ -44,8 +45,6 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
     public static final String PARAM_FILENAME = "filename";
     public static final String PARAM_INTERVAL = "interval";
-
-    private Node basePollerConfigNode = null;
 
     private Map<String, Object> partners;
 
@@ -101,8 +100,6 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                     loadPartner(newPartners, rootNode);
                 } else if (nodeName.equals("partnership")) {
                     loadPartnership(newPartners, newPartnerships, rootNode);
-                } else if (nodeName.equals("pollerConfigBase")) {
-                    loadBasePartnershipPollerConfig(rootNode);
                 }
             }
 
@@ -113,10 +110,6 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         } catch (Exception e) {
             throw new WrappedException(e);
         }
-    }
-
-    private void loadBasePartnershipPollerConfig(Node node) throws OpenAS2Exception {
-        this.basePollerConfigNode = node;
     }
 
     private void loadAttributes(Node node, Partnership partnership) throws OpenAS2Exception {
@@ -198,7 +191,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
             if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
                 // Create a copy of the base config node
-                Element pollerConfigElem = (Element)this.basePollerConfigNode.cloneNode(true);
+                Node basePollerConfigNode = ((XMLSession)getSession()).getBasePartnershipPollerConfig();
+                Element pollerConfigElem = (Element)basePollerConfigNode.cloneNode(true);
                 // Merge the attributes from the base config with the partnership specific ones
                 partnershipPollerCfgAttributes.forEach((key, value) -> {
                     pollerConfigElem.setAttribute(key, value);
