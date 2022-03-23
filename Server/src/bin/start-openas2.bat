@@ -32,7 +32,16 @@ rem  set EXTRA_PARMS=%EXTRA_PARMS% -DCmdProcessorSocketCipher=SSL_DH_anon_WITH_R
 rem Setup the Java Virtual Machine
 call "%OPENAS2_BASE_DIR%\bin\find_java.bat"
 if %ERRORLEVEL% NEQ 0 exit /B 1
-set LIB_JARS=%OPENAS2_BASE_DIR%/lib/*
+
+rem Using file globbing via * in classpath causes Mailcap loading issues so build full path
+rem set LIB_JARS=%OPENAS2_BASE_DIR%/lib/*
+setLocal EnableDelayedExpansion
+set LIB_JARS=
+for /R %OPENAS2_BASE_DIR%/lib %%a in (*.jar) do (
+  set LIB_JARS=!LIB_JARS!;%%a
+)
+set LIB_JARS=".!LIB_JARS!"
+setLocal disableDelayedExpansion
 rem    
 rem echo Running: "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
 "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
