@@ -95,6 +95,8 @@ public interface Session {
      * @throws OpenAS2Exception If there are issues with the definition of the poller
      */
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception;
+    
+    public void destroyPartnershipPollers();
 
     String getBaseDirectory();
 

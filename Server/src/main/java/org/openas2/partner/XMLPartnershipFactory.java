@@ -78,6 +78,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
     void refresh() throws OpenAS2Exception {
+        getSession().destroyPartnershipPollers();
         try (FileInputStream inputStream = new FileInputStream(getFilename())) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 

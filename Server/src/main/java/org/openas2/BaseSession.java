@@ -1,5 +1,7 @@
 package org.openas2;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.partner.PartnershipFactory;
@@ -20,7 +22,9 @@ public abstract class BaseSession implements Session {
     private Map<String, Component> components = new HashMap<String, Component>();
     private String baseDirectory;
 
-    private Map<String, Map<String, String>> polledDirectories = new HashMap<String, Map<String, String>>();
+    protected static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
+
+    private Map<String, Map<String, Object>> polledDirectories = new HashMap<String, Map<String, Object>>();
 
     /**
      * Creates a <code>BaseSession</code> object, then calls the <code>init()</code> method.
@@ -48,11 +52,11 @@ public abstract class BaseSession implements Session {
         return (CertificateFactory) getComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY);
     }
 
-    public Map<String, Map<String, String>> getPolledDirectories() {
+    public Map<String, Map<String, Object>> getPolledDirectories() {
         return polledDirectories;
     }
 
-    public void setPolledDirectories(Map<String, Map<String, String>> polledDirectories) {
+    public void setPolledDirectories(Map<String, Map<String, Object>> polledDirectories) {
         this.polledDirectories = polledDirectories;
     }
 
@@ -115,16 +119,31 @@ public abstract class BaseSession implements Session {
 
     private void checkPollerModule(String pollerDir) throws OpenAS2Exception {
         if (polledDirectories.containsKey(pollerDir)) {
-            Map<String, String> meta = polledDirectories.get(pollerDir);
+            Map<String, Object> meta = polledDirectories.get(pollerDir);
             throw new OpenAS2Exception("Directory already being polled from config in " + meta.get("configSource") + " for the " + meta.get("partnershipName") + " partnership: " + pollerDir);
         }
     }
 
-    private void trackPollerModule(String pollerDir, String partnershipName, String configSource) {
-        Map<String, String> meta = new HashMap<String, String>();
+    private void trackPollerModule(String pollerDir, String partnershipName, String configSource, ProcessorModule pollerInstance) {
+        Map<String, Object> meta = new HashMap<String, Object>();
         meta.put("partnershipName", partnershipName);
         meta.put("configSource", configSource);
+        meta.put("pollerInstance", pollerInstance);
         polledDirectories.put(pollerDir, meta);
+    }
+
+    public void destroyPartnershipPollers() {
+        for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
+            Map<String, Object> meta = entry.getValue();
+            ProcessorModule poller = (ProcessorModule) meta.get("pollerInstance");
+            try {
+                poller.destroy();
+            } catch (Exception e) {
+                // something went wrong stoppint it - report and keep going
+                LOGGER.error("Failed to stop a partnership poller for directory " + entry.getKey() + ": " + meta, e);
+            }
+            
+        }
     }
 
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception {
@@ -137,7 +156,7 @@ public abstract class BaseSession implements Session {
         ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);
         Processor proc = (Processor)getComponent(Processor.COMPID_PROCESSOR);
         proc.getModules().add(procmod);
-        trackPollerModule(pollerDir, partnershipName, configSource);
+        trackPollerModule(pollerDir, partnershipName, configSource, procmod);
     }
 
     public String getBaseDirectory() {

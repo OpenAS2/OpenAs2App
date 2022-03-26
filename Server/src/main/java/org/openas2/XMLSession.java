@@ -1,7 +1,5 @@
 package org.openas2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
@@ -60,8 +58,6 @@ public class XMLSession extends BaseSession {
     private Attributes manifestAttributes = null;
     private String VERSION;
     private String TITLE;
-
-    private static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
 
     public XMLSession(String configAbsPath) throws Exception {
         File configXml = new File(configAbsPath);
