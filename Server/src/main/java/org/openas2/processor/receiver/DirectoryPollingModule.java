@@ -85,7 +85,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
             // scan the directory for new files
             scanDirectory(outboxDir);
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
         } catch (Exception e) {
             logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
         }
@@ -197,7 +197,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
                     try {
                         processFile(file);
                     } catch (OpenAS2Exception e) {
-                        e.terminate();
+                        e.log();
                         try {
                             IOUtil.handleError(file, errorDir);
                         } catch (OpenAS2Exception e1) {

@@ -197,7 +197,7 @@ public class AS2Util {
                 if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
                     // Do not throw error in this case ... just log it
                     de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                    de.terminate();
+                    de.log();
                 } else {
                     throw de;
                 }
@@ -508,7 +508,7 @@ public class AS2Util {
             }
             OpenAS2Exception oae2 = new OpenAS2Exception("Message was sent but an error occured while receiving the MDN: " + org.openas2.logging.Log.getExceptionMsg(oae), oae);
             oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-            oae2.terminate();
+            oae2.log();
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);

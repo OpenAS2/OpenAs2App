@@ -105,7 +105,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 msg.setLogMsg("HTTP connection error on inbound message.");
                 LOG.error(msg, e);
                 NetException ne = new NetException(s.getInetAddress(), s.getPort(), e);
-                ne.terminate();
+                ne.log();
             }
             Profiler.endProfile(transferStub);
 
@@ -479,7 +479,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 }
                 WrappedException we = new WrappedException("Error creating MDN", e1);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                we.terminate();
+                we.log();
                 msg.setLogMsg("Unexpected error occurred creating MDN: " + org.openas2.logging.Log.getExceptionMsg(e1));
                 LOG.error(msg, e1);
                 return false;
@@ -495,7 +495,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                we.terminate();
+                we.log();
                 msg.setLogMsg("Unexpected error occurred sending MDN: " + org.openas2.logging.Log.getExceptionMsg(e));
                 LOG.error(msg, e);
                 return false;
@@ -629,10 +629,10 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 MimeBodyPart signedReport = AS2Util.getCryptoHelper().sign(report, senderCert, senderKey, micAlg, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
                 mdn.setData(signedReport);
             } catch (CertificateNotFoundException cnfe) {
-                cnfe.terminate();
+                cnfe.log();
                 mdn.setData(report);
             } catch (KeyNotFoundException knfe) {
-                knfe.terminate();
+                knfe.log();
                 mdn.setData(report);
             }
         } else {

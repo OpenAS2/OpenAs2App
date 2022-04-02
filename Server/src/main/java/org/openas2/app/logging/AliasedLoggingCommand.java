@@ -18,7 +18,7 @@ public abstract class AliasedLoggingCommand extends BaseCommand {
             // Add support for other logging packages here as necessary
             return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current logging factory");
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
 
             return new CommandResult(oae);
         }

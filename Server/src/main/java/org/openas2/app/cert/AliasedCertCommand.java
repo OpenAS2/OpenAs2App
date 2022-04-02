@@ -18,7 +18,7 @@ public abstract class AliasedCertCommand extends BaseCommand {
             }
             return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current certificate store");
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
 
             return new CommandResult(oae);
         }

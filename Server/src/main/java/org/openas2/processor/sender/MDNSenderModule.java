@@ -173,7 +173,7 @@ public class MDNSenderModule extends HttpSenderModule {
         } catch (HttpResponseException hre) {
             // Resend if the HTTP Response has an error code
             logger.warn("HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre) + msg.getLogMsgID(), hre);
-            hre.terminate();
+            hre.log();
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
             msg.trackMsgState(getSession());
@@ -184,7 +184,7 @@ public class MDNSenderModule extends HttpSenderModule {
             // Resend if a network error occurs during transmission
             WrappedException wioe = new WrappedException(ioe);
             wioe.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-            wioe.terminate();
+            wioe.log();
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
             msg.trackMsgState(getSession());

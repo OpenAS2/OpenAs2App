@@ -83,7 +83,7 @@ public class OpenAS2Server {
         try {
             session.getProcessor().stopActiveModules();
         } catch (OpenAS2Exception same) {
-            same.terminate();
+            same.log();
         }
 
         LOGGER.info("OpenAS2 has shut down\r\n");

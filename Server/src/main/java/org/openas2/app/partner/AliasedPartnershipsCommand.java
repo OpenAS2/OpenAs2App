@@ -17,7 +17,7 @@ public abstract class AliasedPartnershipsCommand extends BaseCommand {
             }
             return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current partnership store");
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
 
             return new CommandResult(oae);
         }

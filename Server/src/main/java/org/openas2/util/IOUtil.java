@@ -135,7 +135,7 @@ public class IOUtil {
 
         // make sure an error of this event is logged
         InvalidMessageException imMoved = new InvalidMessageException("Moved " + file.getAbsolutePath() + " to " + destFile.getAbsolutePath());
-        imMoved.terminate();
+        imMoved.log();
     }
 
     public static File moveFile(File src, File dest, boolean overwrite) throws IOException {
