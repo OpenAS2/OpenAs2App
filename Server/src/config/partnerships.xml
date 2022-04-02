@@ -64,6 +64,7 @@
     <partnership name="PartnerA-to-MyCompany">
         <sender name="PartnerA"/>
         <receiver name="MyCompany"/>
+        <attribute name="store_received_file_to" value="$properties.storageBaseDir$/inbox/$msg.receiver.as2_id$/inbox/$msg.sender.as2_id$-$rand.12345$-$msg.content-disposition.filename$"/>
     </partnership>
 
     <partnership name="MyCompany-to-PartnerB">
