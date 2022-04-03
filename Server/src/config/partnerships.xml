@@ -70,6 +70,7 @@
     <partnership name="MyCompany-to-PartnerB">
         <sender name="MyCompany"/>
         <receiver name="PartnerB"/>
+        <pollerConfig enabled="true"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="8bit"/>
         <attribute name="compression_type" value="ZLIB"/>

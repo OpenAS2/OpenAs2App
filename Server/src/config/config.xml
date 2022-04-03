@@ -85,6 +85,7 @@
       <!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
 		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
 		     The name of the file sent to the partner will be "OrderID-745634.edi" -->
+      <!-- 
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toAny"
               errordir="$properties.storageBaseDir$/toAny/error/$msg.sender.as2_id$-$msg.receiver.as2_id$"
@@ -94,7 +95,9 @@
               sendfilename="true"
               format="sender.as2_id, receiver.as2_id, attributes.filename"
               mimetype="application/EDI-X12"/>
+      -->
       <!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
+      <!-- NOTE: This mechanism is no longer the preferred way to add pollers. Use the partnership config for this as of 3.0.0
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toPartnerA/"
               errordir="$properties.storageBaseDir$/toPartnerA/error/$date.YYYY$/$date.MM$"
@@ -105,7 +108,9 @@
               defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerA_OID"
               sendfilename="true"
               mimetype="application/EDI-X12"/>
+      -->
       <!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
+      <!-- NOTE: This mechanism is no longer the preferred way to add pollers. Use the partnership config for this as of 3.0.0
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toPartnerB"
               errordir="$properties.storageBaseDir$/toPartnerB/error"
@@ -113,6 +118,7 @@
               defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerB_OID"
               sendfilename="true"
               mimetype="application/EDI-X12"/>
+      -->
       <module enabled="$properties.module.DbTrackingModule.enabled$"
               classname="org.openas2.processor.msgtracking.DbTrackingModule"
               use_embedded_db="true"
