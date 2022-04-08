@@ -1,10 +1,10 @@
-FROM node:latest AS web-builder
+FROM node:lts-alpine AS web-builder
+RUN npm install -g --force yarn
 COPY ./WebUI /usr/src/webui
 WORKDIR /usr/src/webui
-RUN npm install --force yarn
 RUN yarn install
 RUN npx browserslist@latest --update-db
 RUN yarn run build
 
 FROM nginx
-COPY --from=web-builder /usr/src/webui/dist /var/www/html
+COPY --from=web-builder /usr/src/webui/dist /usr/share/nginx/html
