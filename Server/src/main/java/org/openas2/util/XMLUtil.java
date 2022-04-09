@@ -12,6 +12,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -87,6 +90,17 @@ public class XMLUtil {
         }
 
         return null;
+    }
+
+    public static Document createDoc(Node node) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        Document doc = builder.newDocument();
+        if (node != null) {
+            Node newNode = doc.importNode(node, true);
+            doc.appendChild(newNode);
+        }
+        return doc;
     }
 
     public static String getNodeAttributeValue(Node node, String attrib, boolean enhance) throws OpenAS2Exception {
