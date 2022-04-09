@@ -117,7 +117,7 @@ public abstract class BaseSession implements Session {
         CommandMap.setDefaultCommandMap(mc);
     }
 
-    private void checkPollerModule(String pollerDir) throws OpenAS2Exception {
+    private void checkPollerModuleConfig(String pollerDir) throws OpenAS2Exception {
         if (polledDirectories.containsKey(pollerDir)) {
             Map<String, Object> meta = polledDirectories.get(pollerDir);
             throw new OpenAS2Exception("Directory already being polled from config in " + meta.get("configSource") + " for the " + meta.get("partnershipName") + " partnership: " + pollerDir);
@@ -147,13 +147,18 @@ public abstract class BaseSession implements Session {
     }
 
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception {
-        Node outboxdirNode = moduleNode.getAttributes().getNamedItem(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY);
-        if (outboxdirNode == null) {
-            throw new OpenAS2Exception("Missing '" + DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY + "' attribute for poller config: " + moduleNode.toString());
-        }
-        String pollerDir = outboxdirNode.getNodeValue();
-        checkPollerModule(pollerDir);
         ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);
+        String pollerDir = procmod.getParameters().get(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY);
+        try {
+            checkPollerModuleConfig(pollerDir);
+        } catch (OpenAS2Exception oae) {
+            try {
+                procmod.destroy();
+            } catch (Exception e) {
+                throw new OpenAS2Exception("Failed to destroy a partnershipthat has config errors", e);
+            }
+            throw new OpenAS2Exception("Partnership cannot be loaded because there is a configuration error: " + partnershipName, oae);
+        }
         Processor proc = (Processor)getComponent(Processor.COMPID_PROCESSOR);
         proc.getModules().add(procmod);
         trackPollerModule(pollerDir, partnershipName, configSource, procmod);
