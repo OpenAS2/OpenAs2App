@@ -219,7 +219,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         Collection<RecipientInformation> recipients = recipientInfoStore.getRecipients();
 
         if (recipients == null) {
-            throw new GeneralSecurityException("Certificate recipients could not be extracted");
+            throw new GeneralSecurityException("Certificate recipients could not be extracted from the inbound message envelope.");
         }
         //RecipientInformation recipientInfo  = recipientInfoStore.get(recId);
         //Object recipient = null;
@@ -240,12 +240,15 @@ public class BCCryptoHelper implements ICryptoHelper {
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
                 } else {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Failed match on recipient ID's:\n     RID from msg:" + recipientInfo.getRID().toString() + "    \n     RID from priv cert: " + certRecId.toString());
+                        logger.debug("Failed match on recipient ID's:: RID type from msg:" + recipientInfo.getRID().getType() + "  RID type from priv cert: " + certRecId.getType());
                     }
                 }
             }
         }
-        throw new GeneralSecurityException("Matching certificate recipient could not be found");
+        throw new GeneralSecurityException(
+            "Matching certificate recipient could not be found trying to decrypt the message."
+            + " Either the sender has encrypted the message with a public key that does not match"
+            + " a private key in your keystore or the there is a problem in your keystore where the private key has not been imported or is corrupt.");
     }
 
     public void deinitialize() {

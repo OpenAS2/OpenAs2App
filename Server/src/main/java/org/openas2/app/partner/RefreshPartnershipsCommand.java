@@ -37,7 +37,7 @@ public class RefreshPartnershipsCommand extends BaseCommand {
             }
 
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
 
             return new CommandResult(oae);
         }

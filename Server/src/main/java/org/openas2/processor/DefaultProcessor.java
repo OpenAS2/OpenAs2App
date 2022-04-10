@@ -82,7 +82,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                 activeModule.start();
                 logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " started.");
             } catch (OpenAS2Exception e) {
-                e.terminate();
+                e.log();
                 throw e;
             }
         }
@@ -105,7 +105,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                     }
                 }
             } catch (OpenAS2Exception e) {
-                e.terminate();
+                e.log();
             }
         }
 

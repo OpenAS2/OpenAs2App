@@ -14,21 +14,28 @@
              x509_alias="partnerb"
              email="as2msgs@partnerb.com"/>
 
-    <partnership name="MyCompany-to-PartnerA">
+    <partnership name="MyCompany-to-PartnerA" pollerEnabled="false">
         <sender name="MyCompany"/>
         <receiver name="PartnerA"/>
+        <!--  The pollerConfig node defines whether this partnership will receive files to send to the "receiver" partner via a directory poller.
+              Remove this node or set enabled="false" if the "sender" partner is not your own organisation or you want to prevent the poller running for this partnership.
+              Attributes from the "pollerConfigBase" node above can be overridden by defining them in this node. 
+         -->
+        <pollerConfig enabled="true"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="binary"/>
         <attribute name="compression_type" value="ZLIB"/>
         <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
         <attribute name="as2_url" value="http://localhost:10080"/>
         <attribute name="as2_mdn_to" value="edi@myCompany.com"/>
-        <attribute name="as2_mdn_options"
+        <attribute name="as2_mdn_options" value="none"/>
+        <!--
                    value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+        -->
         <!--  For enabling ASYNC MDN uncomment this attribute and set this to the URL partner must send MDN back to.
               Example below uses a property from the config.xml to facilitate centralised management of the URL
-            <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
          -->
+            <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
         <attribute name="encrypt" value="3DES"/>
         <attribute name="sign" value="SHA256"/>
         <attribute name="resend_max_retries" value="3"/>
@@ -57,11 +64,13 @@
     <partnership name="PartnerA-to-MyCompany">
         <sender name="PartnerA"/>
         <receiver name="MyCompany"/>
+        <attribute name="store_received_file_to" value="$properties.storageBaseDir$/inbox/$msg.receiver.as2_id$/inbox/$msg.sender.as2_id$-$rand.12345$-$msg.content-disposition.filename$"/>
     </partnership>
 
     <partnership name="MyCompany-to-PartnerB">
         <sender name="MyCompany"/>
         <receiver name="PartnerB"/>
+        <pollerConfig enabled="true"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="8bit"/>
         <attribute name="compression_type" value="ZLIB"/>

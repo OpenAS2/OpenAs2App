@@ -105,7 +105,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 msg.setLogMsg("HTTP connection error on inbound message.");
                 LOG.error(msg, e);
                 NetException ne = new NetException(s.getInetAddress(), s.getPort(), e);
-                ne.terminate();
+                ne.log();
             }
             Profiler.endProfile(transferStub);
 
@@ -225,7 +225,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
                     // Process the received message
                     try {
-                        getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, null);
+                        Map<String, Object> options = new HashMap<String, Object>(1);
+                        options.put(Partnership.PA_STORE_RECEIVED_FILE_TO, msg.getPartnership().getAttribute(Partnership.PA_STORE_RECEIVED_FILE_TO));
+                        getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, options);
                     } catch (OpenAS2Exception oae) {
                         msg.setLogMsg("Error handling received message: " + oae.getCause());
                         LOG.error(msg, oae);
@@ -477,7 +479,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 }
                 WrappedException we = new WrappedException("Error creating MDN", e1);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                we.terminate();
+                we.log();
                 msg.setLogMsg("Unexpected error occurred creating MDN: " + org.openas2.logging.Log.getExceptionMsg(e1));
                 LOG.error(msg, e1);
                 return false;
@@ -493,7 +495,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                we.terminate();
+                we.log();
                 msg.setLogMsg("Unexpected error occurred sending MDN: " + org.openas2.logging.Log.getExceptionMsg(e));
                 LOG.error(msg, e);
                 return false;
@@ -556,7 +558,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         // store MDN into msg in case AsynchMDN is sent fails, needs to be resent by
         // send module
         msg.setMDN(mdn);
-
         return mdn;
     }
 
@@ -598,12 +599,17 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         // Convert report parts to MimeBodyPart
         MimeBodyPart report = new MimeBodyPart();
         reportParts.setSubType(AS2Standards.REPORT_SUBTYPE);
-        report.setContent(reportParts);
         String contentType = reportParts.getContentType();
         if ("true".equalsIgnoreCase(Properties.getProperty("remove_multipart_content_type_header_folding", "false"))) {
             contentType = contentType.replaceAll("\r\n[ \t]*", " ");
         }
+        // Remove the trailing information for header if any
+        int indexOfSemiColon = contentType.indexOf(";");
+        if (indexOfSemiColon > -1) {
+            contentType = contentType.substring(0, indexOfSemiColon);
+        }
         report.setHeader("Content-Type", contentType);
+        report.setContent(reportParts, reportParts.getContentType());
 
         // Sign the data if needed
         if (signatureProtocol != null) {
@@ -623,13 +629,15 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 MimeBodyPart signedReport = AS2Util.getCryptoHelper().sign(report, senderCert, senderKey, micAlg, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
                 mdn.setData(signedReport);
             } catch (CertificateNotFoundException cnfe) {
-                cnfe.terminate();
+                cnfe.log();
                 mdn.setData(report);
             } catch (KeyNotFoundException knfe) {
-                knfe.terminate();
+                knfe.log();
                 mdn.setData(report);
             }
         } else {
+            // Must provide a stream for this to avoid the DCH error
+            //report.setDataHandler(new DataHandler(reportParts, "multipart/report"));
             mdn.setData(report);
         }
 

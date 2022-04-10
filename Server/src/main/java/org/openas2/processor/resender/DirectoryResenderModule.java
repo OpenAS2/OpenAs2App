@@ -103,7 +103,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 throw new WrappedException(ioe);
             }
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
             //forceStop(oae);
         }
     }
@@ -195,7 +195,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
         } catch (OpenAS2Exception oae) {
             oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             oae.addSource(OpenAS2Exception.SOURCE_FILE, file);
-            oae.terminate();
+            oae.log();
             IOUtil.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
         }
     }

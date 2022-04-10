@@ -25,16 +25,13 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
     }
 
     public void forceStop(Exception cause) {
-        try {
-            throw new ForcedStopException(cause);
-        } catch (ForcedStopException fse) {
-            fse.terminate();
-        }
+        ForcedStopException fse = new ForcedStopException(cause);
+        fse.log();
 
         try {
             stop();
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
         }
     }
 

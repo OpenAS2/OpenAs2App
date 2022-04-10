@@ -121,7 +121,7 @@ public abstract class NetModule extends BaseReceiverModule {
 
     protected void handleError(Message msg, OpenAS2Exception oae) {
         oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-        oae.terminate();
+        oae.log();
 
         try {
             CompositeParameters params = new CompositeParameters(false).
@@ -140,14 +140,14 @@ public abstract class NetModule extends BaseReceiverModule {
 
             // make sure an error of this event is logged
             InvalidMessageException im = new InvalidMessageException("Stored invalid message to " + msgFile.getAbsolutePath());
-            im.terminate();
+            im.log();
         } catch (OpenAS2Exception oae2) {
             oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-            oae2.terminate();
+            oae2.log();
         } catch (IOException ioe) {
             WrappedException we = new WrappedException(ioe);
             we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-            we.terminate();
+            we.log();
         }
     }
 
@@ -178,7 +178,7 @@ public abstract class NetModule extends BaseReceiverModule {
                 try {
                     s.close();
                 } catch (IOException sce) {
-                    new WrappedException(sce).terminate();
+                    new WrappedException(sce).log();
                 }
             }
         }
@@ -296,8 +296,10 @@ public abstract class NetModule extends BaseReceiverModule {
                 return;
             }
             try {
-                socket.close();
-            } catch (IOException e) {
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
+            } catch (Exception e) {
                 owner.forceStop(e);
             }
             connectionThreads.shutdown();
@@ -312,9 +314,6 @@ public abstract class NetModule extends BaseReceiverModule {
                     connectionThreads.execute(new ConnectionHandler(getOwner(), conn));
                 } catch (IOException e) {
                     logger.error("Failed transferring data over HTTP connection: " + e.getMessage(), e);
-                    if (!isTerminated()) {
-                        //owner.forceStop(e);
-                    }
                 }
             }
         }

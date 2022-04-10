@@ -1,7 +1,5 @@
 package org.openas2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
@@ -13,6 +11,7 @@ import org.openas2.logging.Logger;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
+import org.openas2.processor.receiver.PollingModule;
 import org.openas2.schedule.SchedulerComponent;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
@@ -40,23 +39,25 @@ import java.util.jar.Attributes;
  * @author joseph mcverry
  */
 public class XMLSession extends BaseSession {
-    private static final String EL_PROPERTIES = "properties";
-    private static final String EL_CERTIFICATES = "certificates";
-    private static final String EL_CMDPROCESSOR = "commandProcessors";
-    private static final String EL_PROCESSOR = "processor";
-    private static final String EL_PARTNERSHIPS = "partnerships";
-    private static final String EL_COMMANDS = "commands";
-    private static final String EL_LOGGERS = "loggers";
+    public static final String EL_PROPERTIES = "properties";
+    public static final String EL_CERTIFICATES = "certificates";
+    public static final String EL_CMDPROCESSOR = "commandProcessors";
+    public static final String EL_PROCESSOR = "processor";
+    public static final String EL_PARTNERSHIPS = "partnerships";
+    public static final String EL_COMMANDS = "commands";
+    public static final String EL_LOGGERS = "loggers";
+    public static final String EL_POLLER_CONFIG = "pollerConfigBase";
     // private static final String PARAM_BASE_DIRECTORY = "basedir";
 
     private CommandRegistry commandRegistry;
     private CommandManager cmdManager = new CommandManager();
 
+    // Poller base confog that will be used for partnership based pollers. Can be overridden in the partnership
+    private Node basePollerConfigNode = null;
+
     private Attributes manifestAttributes = null;
     private String VERSION;
     private String TITLE;
-
-    private static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
 
     public XMLSession(String configAbsPath) throws Exception {
         File configXml = new File(configAbsPath);
@@ -79,7 +80,9 @@ public class XMLSession extends BaseSession {
     }
 
     protected void load(InputStream in) throws Exception {
-        Document document = XMLUtil.parseXML(in, new PropertyReplacementFilter());
+        PropertyReplacementFilter prf = new PropertyReplacementFilter();
+        prf.setAppHomeDir(getBaseDirectory());
+        Document document = XMLUtil.parseXML(in, prf);
 
         Element root = document.getDocumentElement();
 
@@ -109,6 +112,8 @@ public class XMLSession extends BaseSession {
                 loadCommands(rootNode);
             } else if (nodeName.equals(EL_LOGGERS)) {
                 loadLoggers(rootNode);
+            } else if (nodeName.equals(EL_POLLER_CONFIG)) {
+                loadBasePartnershipPollerConfig(rootNode);
             } else if (nodeName.equals("#text")) {
                 // do nothing
             } else if (nodeName.equals("#comment")) {
@@ -176,7 +181,15 @@ public class XMLSession extends BaseSession {
         setComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY, certFx);
     }
 
-    private void loadCommands(Node rootNode) throws OpenAS2Exception {
+    private void loadBasePartnershipPollerConfig(Node node) throws OpenAS2Exception {
+        this.basePollerConfigNode = node;
+    }
+
+    public Node getBasePartnershipPollerConfig() throws OpenAS2Exception {
+        return this.basePollerConfigNode;
+    }
+
+   private void loadCommands(Node rootNode) throws OpenAS2Exception {
         Component component = XMLUtil.getComponent(rootNode, this);
         commandRegistry = (CommandRegistry) component;
     }
@@ -253,36 +266,73 @@ public class XMLSession extends BaseSession {
         Processor proc = (Processor) XMLUtil.getComponent(rootNode, this);
         setComponent(Processor.COMPID_PROCESSOR, proc);
 
-        LOGGER.info("Loading processor modules...");
+        LOGGER.info("Loading processor nodes...");
 
-        NodeList modules = rootNode.getChildNodes();
-        Node module;
+        NodeList processorChildNodes = rootNode.getChildNodes();
+        Node processorChildNode;
 
-        for (int i = 0; i < modules.getLength(); i++) {
-            module = modules.item(i);
-
-            if (module.getNodeName().equals("module")) {
+        for (int i = 0; i < processorChildNodes.getLength(); i++) {
+            processorChildNode = processorChildNodes.item(i);
+            if (processorChildNode.getNodeName().equals("module")) {
                 // Allow no enabled attrib to default to "true"
-                String enabledFlag = XMLUtil.getNodeAttributeValue(module, "enabled", true);
-                if (enabledFlag == null || "true".equalsIgnoreCase(enabledFlag)) {
-                    loadProcessorModule(proc, module);
-                } else {
+                String enabledFlag = XMLUtil.getNodeAttributeValue(processorChildNode, "enabled", true);
+                if (enabledFlag != null && !"true".equalsIgnoreCase(enabledFlag)) {
                     try {
-                        LOGGER.info("Module is disabled ... ignoring: " + XMLUtil.toString(module, true));
+                        LOGGER.info("Module is disabled ... ignoring: " + XMLUtil.toString(processorChildNode, true));
                     } catch (TransformerException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
+                    continue;
                 }
+                loadProcessorModule(proc, processorChildNode);
+            } else {
+                // Not a known node so ignore for loader
+                continue;
             }
         }
     }
 
     private void loadProcessorModule(Processor proc, Node moduleNode) throws OpenAS2Exception {
+        if (isPollerModule(moduleNode)) {
+            // Special handling for poller modules using the old style polling config
+            String partnershipName = null;
+            Node defaultsNode = moduleNode.getAttributes().getNamedItem("defaults");
+            if (defaultsNode == null) {
+                // If there is a format nodethen this is a generic poller module
+                Node formatNode = moduleNode.getAttributes().getNamedItem("format");
+                if (formatNode == null) {
+                    throw new OpenAS2Exception("Invalid poller module coniguration: " + moduleNode.toString());
+                }
+                partnershipName = "generic";
+            } else {
+                // Since the partnerships will not have loaded yet, just use the defaults string as the partnership name
+                partnershipName = defaultsNode.getNodeValue();
+            }
+            loadPartnershipPoller(moduleNode, partnershipName, "configPoller");
+            return;
+        }
         ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);
         proc.getModules().add(procmod);
     }
 
+    private boolean isPollerModule(Node node) {
+        Node classNameNode = node.getAttributes().getNamedItem("classname");
+        if (classNameNode == null) {
+            return false;
+        }
+        String className = classNameNode.getNodeValue();
+        try {
+            Class<?> objClass = Class.forName(className);
+            if (PollingModule.class.isAssignableFrom(objClass)) {
+                return true;
+            }
+        } catch (Exception e) {
+
+        }
+        return false;
+
+    }
     private void getManifestAttributes() throws OpenAS2Exception {
         manifestAttributes = OpenAS2Server.getManifestAttributes();
     }

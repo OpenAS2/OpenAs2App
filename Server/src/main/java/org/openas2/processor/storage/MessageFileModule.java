@@ -12,6 +12,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
+import org.openas2.partner.Partnership;
 import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.DispositionType;
 
@@ -32,7 +33,13 @@ public class MessageFileModule extends BaseStorageModule {
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         // store message content
         try {
-            File msgFile = getFile(msg, getParameter(PARAM_FILENAME, true), action);
+            // Check if the location to store the received message is specified in the partnership
+            String store_message_to = (String)options.get(Partnership.PA_STORE_RECEIVED_FILE_TO);
+            if (store_message_to == null) {
+                // Fetch the global storage string
+                store_message_to = getParameter(PARAM_FILENAME, true);
+            }
+            File msgFile = getFile(msg, store_message_to, action);
             InputStream in = msg.getData().getInputStream();
             store(msgFile, in);
             logger.info("stored message to " + msgFile.getAbsolutePath() + msg.getLogMsgID());

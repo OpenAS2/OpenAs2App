@@ -64,7 +64,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
         }
         map.put(FIELDS.SENDER_ID, sender);
         String receiver = msg.getPartnership().getReceiverID(Partnership.PID_AS2);
-        if (receiver == null) {
+        if (receiver == null && mdn != null) {
             receiver = mdn.getPartnership().getReceiverID(Partnership.PID_AS2);
         }
         map.put(FIELDS.RECEIVER_ID, receiver);

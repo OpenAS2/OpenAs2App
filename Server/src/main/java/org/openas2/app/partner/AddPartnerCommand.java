@@ -27,7 +27,7 @@ public class AddPartnerCommand extends AliasedPartnershipsCommand {
     }
 
     public String getDefaultUsage() {
-        return "add name <attribute 1=value 1> <attribute 2=value 2> ... <attribute n=value n>";
+        return "add name <attribute 1=value-1> <attribute 2=value-2> ... <attribute n=value-n>";
     }
 
     public CommandResult execute(PartnershipFactory partFx, Object[] params) throws OpenAS2Exception {
@@ -48,18 +48,18 @@ public class AddPartnerCommand extends AliasedPartnershipsCommand {
 
             Document doc = db.newDocument();
 
-            Element root = doc.createElement("partner");
-            doc.appendChild(root);
+            Element partnerRoot = doc.createElement("partner");
+            doc.appendChild(partnerRoot);
 
             for (int i = 0; i < params.length; i++) {
                 String param = (String) params[i];
                 int pos = param.indexOf('=');
                 if (i == 0) {
-                    root.setAttribute("name", param);
+                    partnerRoot.setAttribute("name", param);
                 } else if (pos == 0) {
                     return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing name");
                 } else if (pos > 0) {
-                    root.setAttribute(param.substring(0, pos), param.substring(pos + 1));
+                    partnerRoot.setAttribute(param.substring(0, pos), param.substring(pos + 1));
 
                 } else {
                     return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing value");
@@ -67,7 +67,9 @@ public class AddPartnerCommand extends AliasedPartnershipsCommand {
 
             }
 
-            ((XMLPartnershipFactory) partFx).loadPartner(partFx.getPartners(), root);
+            ((XMLPartnershipFactory) partFx).loadPartner(partFx.getPartners(), partnerRoot);
+            // Add the element to the already loaded partnership XML doc
+            ((XMLPartnershipFactory) partFx).addElement(partnerRoot);
 
             return new CommandResult(CommandResult.TYPE_OK);
         }

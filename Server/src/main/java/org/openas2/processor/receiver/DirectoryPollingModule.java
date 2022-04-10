@@ -85,7 +85,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
             // scan the directory for new files
             scanDirectory(outboxDir);
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
         } catch (Exception e) {
             logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
         }
@@ -99,8 +99,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
          * Rispetto alla versione tesi ho aggiunto il supporto per allowExtensions e
          * excludeExtensions aggiunto nelle versioni dopo
          */
-        if (logger.isDebugEnabled()) {
-            logger.debug("Polling module  scanning directory: " + directory);
+        if (logger.isTraceEnabled()) {
+            logger.trace("Polling module scanning directory: " + directory);
         }
         File directoryAsFile = IOUtil.getDirectoryFile(directory);
         // Wrap in try-with-resources block to ensure close() is called
@@ -109,8 +109,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 if (Files.isDirectory(entry)) {
                     return false;
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Polling module file name found: " + name);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Polling module file name found: " + name);
                 }
                 String extension = name.substring(name.lastIndexOf(".") + 1);
                 boolean isAllowed = true;
@@ -197,7 +197,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
                     try {
                         processFile(file);
                     } catch (OpenAS2Exception e) {
-                        e.terminate();
+                        e.log();
                         try {
                             IOUtil.handleError(file, errorDir);
                         } catch (OpenAS2Exception e1) {

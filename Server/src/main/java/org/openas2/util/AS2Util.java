@@ -120,19 +120,19 @@ public class AS2Util {
                         if (reportPart.isMimeType("text/plain")) {
                             mdn.setText(getMimeBodyPartText(reportPart, charset));
                         } else if (reportPart.isMimeType(AS2Standards.DISPOSITION_TYPE)) {
-                            InternetHeaders disposition = new InternetHeaders(reportPart.getInputStream());
-                            mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, disposition.getHeader("Reporting-UA", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, disposition.getHeader("Original-Recipient", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, disposition.getHeader("Final-Recipient", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, disposition.getHeader("Original-Message-ID", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, disposition.getHeader("Disposition", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_MIC, disposition.getHeader("Received-Content-MIC", ", "));
+                            InternetHeaders headers = new InternetHeaders(reportPart.getInputStream());
+                            mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, headers.getHeader("Reporting-UA", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, headers.getHeader("Original-Recipient", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, headers.getHeader("Final-Recipient", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, headers.getHeader("Original-Message-ID", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, headers.getHeader("Disposition", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_MIC, headers.getHeader("Received-Content-MIC", ", "));
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            throw new OpenAS2Exception("Filed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Failed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         }
     }
 
@@ -179,31 +179,33 @@ public class AS2Util {
          * check disposition first
          */
         String disposition = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_DISPOSITION);
-        if (disposition != null && logger.isInfoEnabled()) {
-            logger.info("received MDN [" + disposition + "]" + msg.getLogMsgID());
-        }
         boolean dispositionHasWarning = false;
-        try {
-            new DispositionType(disposition).validate();
-        } catch (DispositionException de) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Disposition exception on MDN. Disposition: " + disposition + msg.getLogMsgID(), de);
+        if (disposition != null) {
+            if (logger.isInfoEnabled()) {
+                logger.info("received MDN [" + disposition + "]" + msg.getLogMsgID());
             }
-            // Something wrong detected so flag it for later use
-            dispositionHasWarning = true;
-            de.setText(msg.getMDN().getText());
-
-            if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
-                // Do not throw error in this case ... just log it
-                de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                de.terminate();
-            } else {
-                throw de;
+            try {
+                new DispositionType(disposition).validate();
+            } catch (DispositionException de) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("Disposition exception on MDN. Disposition: " + disposition + msg.getLogMsgID(), de);
+                }
+                // Something wrong detected so flag it for later use
+                dispositionHasWarning = true;
+                de.setText(msg.getMDN().getText());
+    
+                if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
+                    // Do not throw error in this case ... just log it
+                    de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
+                    de.log();
+                } else {
+                    throw de;
+                }
+            } catch (OpenAS2Exception e) {
+                msg.setLogMsg("Processing error occurred: " + org.openas2.logging.Log.getExceptionMsg(e));
+                logger.error(msg, e);
+                throw new OpenAS2Exception(e);
             }
-        } catch (OpenAS2Exception e) {
-            msg.setLogMsg("Processing error occurred: " + org.openas2.logging.Log.getExceptionMsg(e));
-            logger.error(msg, e);
-            throw new OpenAS2Exception(e);
         }
 
         if ("none".equalsIgnoreCase(msg.getPartnership().getAttribute(Partnership.PA_AS2_MDN_OPTIONS))) {
@@ -506,7 +508,7 @@ public class AS2Util {
             }
             OpenAS2Exception oae2 = new OpenAS2Exception("Message was sent but an error occured while receiving the MDN: " + org.openas2.logging.Log.getExceptionMsg(oae), oae);
             oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-            oae2.terminate();
+            oae2.log();
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
