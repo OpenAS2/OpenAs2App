@@ -8084,7 +8084,11 @@ url-loader@^1.1.2:
     mime "^2.0.3"
     schema-utils "^1.0.0"
 
+<<<<<<< HEAD
 url-parse@^1.4.3, url-parse@^1.5.10:
+=======
+url-parse@^1.4.3, url-parse@^1.5.3:
+>>>>>>> branch 'master' of https://github.com/OpenAS2/OpenAs2App.git
   version "1.5.10"
   resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.10.tgz#9d3c2f736c1d75dd3bd2be507dcc111f1e2ea9c1"
   integrity sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==
