@@ -39,14 +39,14 @@ import java.util.jar.Attributes;
  * @author joseph mcverry
  */
 public class XMLSession extends BaseSession {
-    private static final String EL_PROPERTIES = "properties";
-    private static final String EL_CERTIFICATES = "certificates";
-    private static final String EL_CMDPROCESSOR = "commandProcessors";
-    private static final String EL_PROCESSOR = "processor";
-    private static final String EL_PARTNERSHIPS = "partnerships";
-    private static final String EL_COMMANDS = "commands";
-    private static final String EL_LOGGERS = "loggers";
-    private static final String EL_POLLER_CONFIG = "pollerConfigBase";
+    public static final String EL_PROPERTIES = "properties";
+    public static final String EL_CERTIFICATES = "certificates";
+    public static final String EL_CMDPROCESSOR = "commandProcessors";
+    public static final String EL_PROCESSOR = "processor";
+    public static final String EL_PARTNERSHIPS = "partnerships";
+    public static final String EL_COMMANDS = "commands";
+    public static final String EL_LOGGERS = "loggers";
+    public static final String EL_POLLER_CONFIG = "pollerConfigBase";
     // private static final String PARAM_BASE_DIRECTORY = "basedir";
 
     private CommandRegistry commandRegistry;
