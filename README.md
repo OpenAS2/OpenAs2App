@@ -9,14 +9,17 @@ There is a pom.xml in the Server folder to compile and create the jar and build 
 The current version of the application is extracted from the POM and inserted into the MANIFEST.MF at build time.
 More detailed information is available in the DeveloperGuide.odt in the docs folder in Github.
 
-## Build
+## Test, Build and Package
 The following commands can be used in the build process.
+
+Checking dependency tree:
+`./mvnw dependency:tree`
 
 Checking dependencies against latest:
 `./mvnw versions:display-dependency-updates`
 
 Updating dependencies to latest:
-`./mvnw versions:use-next-releases`
+`./mvnw versions:use-latest-releases`
 
 Build a snapshot the following command should be used:
 `./mvnw versions:set -DnewVersion=2.12.0-SNAPSHOT`
