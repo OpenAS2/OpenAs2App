@@ -11,23 +11,30 @@ import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.Consumes;
+
+import jakarta.ws.rs.DefaultValue;
+
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.HEAD;
+
+
+import jakarta.ws.rs.PathParam;
+
+import jakarta.ws.rs.core.Context;
+
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -45,16 +52,29 @@ import java.util.logging.Logger;
 @Path("api")
 public class ApiResource {
 
-    private final RestCommandProcessor processor;
+    /**
+     * @return the processor
+     */
+    public static RestCommandProcessor getProcessor() {
+        return processor;
+    }
+
+    /**
+     * @param aProcessor the processor to set
+     */
+    public static void setProcessor(RestCommandProcessor aProcessor) {
+        processor = aProcessor;
+    }
+
+    private static RestCommandProcessor processor;
     @Context
     UriInfo ui;
     @Context
     Request request;
     private final ObjectMapper mapper;
-
-    public ApiResource(RestCommandProcessor processor) {
-        this.processor = processor;
-        // create the mapper
+    
+    public ApiResource() {
+                
         mapper = new ObjectMapper();
         // enable pretty printing
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -64,7 +84,7 @@ public class ApiResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public CommandResult getVersion() {
-        return new CommandResult(CommandResult.TYPE_OK, processor.getSession().getAppTitle());
+        return new CommandResult(CommandResult.TYPE_OK, getProcessor().getSession().getAppTitle());
     }
 
     private CommandResult getCertificate(String itemId) throws Exception {
@@ -72,7 +92,7 @@ public class ApiResource {
             List<String> params = new ArrayList<String>();
             params.add("view");
             params.add(itemId);
-            CommandResult output = processor.feedCommand("cert", params);
+            CommandResult output = getProcessor().feedCommand("cert", params);
             Certificate cert = (Certificate) output.getResults().get(0);
             HashMap<String, String> map = new HashMap<>();
             map.put("data", Base64.getEncoder().encodeToString(cert.getEncoded()));
@@ -97,7 +117,7 @@ public class ApiResource {
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert") && (itemId != null && itemId.length() > 1)) {
                 return this.getCertificate(itemId.substring(1));
             }
-            List<String> params = new ArrayList<String>();
+            List<String> params = new ArrayList<>();
             if (action != null) {
                 params.add(action);
             }
@@ -110,7 +130,7 @@ public class ApiResource {
                 String valueParam = ui.getQueryParameters().getFirst(valueKey);
                 params.add(valueKey + "=" + valueParam);
             }
-            CommandResult output = processor.feedCommand(resource, params);
+            CommandResult output = getProcessor().feedCommand(resource, params);
             return output;
         } catch (Exception ex) {
             Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
@@ -160,7 +180,7 @@ public class ApiResource {
                 String valueParam = formParams.getFirst(valueKey);
                 params.add(valueKey + "=" + valueParam);
             }
-            CommandResult output = processor.feedCommand(resource, params);
+            CommandResult output = getProcessor().feedCommand(resource, params);
             return output;
         } catch (Exception ex) {
             Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
@@ -200,7 +220,7 @@ public class ApiResource {
             params.add("importbystream");
             params.add(itemId);
             String payload = formParams.getFirst("data");
-            AliasedCertificateFactory certFx = (AliasedCertificateFactory) processor.getSession().getCertificateFactory();
+            AliasedCertificateFactory certFx = (AliasedCertificateFactory) getProcessor().getSession().getCertificateFactory();
             ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(payload));
 
             java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");

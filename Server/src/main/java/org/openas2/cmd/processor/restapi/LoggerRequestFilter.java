@@ -19,20 +19,34 @@ import java.io.IOException;
  */
 @Provider
 public class LoggerRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
-    protected Log logger;
+    private static Log logger;
 
-    public LoggerRequestFilter(Log logger) {
-        this.logger = logger;
+    public LoggerRequestFilter() {
+        
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        this.logger.info("API Request: " + requestContext.getMethod() + " /" + requestContext.getUriInfo().getPath());
+        getLogger().info("API Request: " + requestContext.getMethod() + " /" + requestContext.getUriInfo().getPath());
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        this.logger.info("API Response: " + responseContext.getStatus() + responseContext.getHeaders().toString());
+        getLogger().info("API Response: " + responseContext.getStatus() + responseContext.getHeaders().toString());
+    }
+
+    /**
+     * @return the logger
+     */
+    public static Log getLogger() {
+        return logger;
+    }
+
+    /**
+     * @param aLogger the logger to set
+     */
+    public static void setLogger(Log aLogger) {
+        logger = aLogger;
     }
 
 }

@@ -39,15 +39,16 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
     private static final String AUTHENTICATION_SCHEME = "Basic";
     private static final CommandResult ERROR_ACCESS_DENIED = new CommandResult(CommandResult.TYPE_ERROR, "You cannot access this resource");
     private static final CommandResult ERROR_ACCESS_FORBIDDEN = new CommandResult(CommandResult.TYPE_ERROR, "Access blocked for all users !!");
-    private String adminUsername;
-    private String adminPassword;
-    private Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
+    private static String adminUsername;
+    private static String adminPassword;
+    private final Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
 
-    public AuthenticationRequestFilter(String adminUsername, String adminPassword) {
-        this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
+
+    public static void setCredentials(String userId,String password) {
+        adminUsername = userId;
+        adminPassword = password;
     }
-
+    
     @Override
     public void filter(ContainerRequestContext requestContext) {
         Method method = resourceInfo.getResourceMethod();

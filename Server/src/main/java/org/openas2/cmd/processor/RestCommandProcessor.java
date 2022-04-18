@@ -83,17 +83,16 @@ public class RestCommandProcessor extends BaseCommandProcessor {
     @Override
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         try {
-            super.init(session, parameters);
+            super.init(session, parameters);            
             logger.info(this.getName() + " initialized...");
             // create a resource config that scans for JAX-RS resources and providers
-            final String userId = parameters.getOrDefault("userid", "userid");
-            final String password = parameters.getOrDefault("password", "pWd");
-            final ResourceConfig rc = new ResourceConfig();
-            rc.register(new LoggerRequestFilter(logger))
-              .register(new AuthenticationRequestFilter(userId, password))
-              .register(new ApiResource(this))
-              .register(new CORSFilter())
-              .register(new JacksonFeature());
+            final String userId = parameters.getOrDefault("userid", "admin");
+            final String password = parameters.getOrDefault("password", "admin"); 
+            ApiResource.setProcessor(this);
+            LoggerRequestFilter.setLogger(logger);
+            AuthenticationRequestFilter.setCredentials(userId, password);
+            // Now needed to define packages in Jersey 3.0
+            final ResourceConfig rc = new ResourceConfig().packages("org.openas2.cmd.processor.restapi");
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
 
 
