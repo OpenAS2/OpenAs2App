@@ -30,7 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
+import org.glassfish.jersey.message.filtering.SecurityEntityFilteringFeature;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 /**
  * @author javier
  */
@@ -92,7 +94,12 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             LoggerRequestFilter.setLogger(logger);
             AuthenticationRequestFilter.setCredentials(userId, password);
             // Now needed to define packages in Jersey 3.0
-            final ResourceConfig rc = new ResourceConfig().packages("org.openas2.cmd.processor.restapi");
+            final ResourceConfig rc = new ResourceConfig();
+            rc.packages("org.openas2.cmd.processor.restapi");
+            rc.register(SecurityEntityFilteringFeature.class);
+            rc.register(EntityFilteringFeature.class);
+            rc.register(RolesAllowedDynamicFeature.class);
+            //rc.registerClasses(LoggerRequestFilter.class);
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
 
 

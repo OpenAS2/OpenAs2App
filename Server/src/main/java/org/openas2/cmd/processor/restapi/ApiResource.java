@@ -11,7 +11,7 @@ import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
 
-import jakarta.annotation.security.RolesAllowed;
+import javax.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 
 import jakarta.ws.rs.DefaultValue;
@@ -80,7 +80,7 @@ public class ApiResource {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-    @RolesAllowed("ADMIN")
+    @RolesAllowed({"ADMIN"})
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public CommandResult getVersion() {
@@ -107,7 +107,7 @@ public class ApiResource {
 
     }
 
-    @RolesAllowed("ADMIN")
+    @RolesAllowed({"ADMIN"})
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -140,7 +140,7 @@ public class ApiResource {
 
     }
 
-    @RolesAllowed("ADMIN")
+    @RolesAllowed({"ADMIN"})
     @POST
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -189,7 +189,7 @@ public class ApiResource {
         }
     }
 
-    @RolesAllowed("ADMIN")
+    @RolesAllowed({"ADMIN"})
     @PUT
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -198,7 +198,7 @@ public class ApiResource {
         return postCommand(resource, "add", itemId, formParams);
     }
 
-    @RolesAllowed("ADMIN")
+    @RolesAllowed({"ADMIN"})
     @DELETE
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -206,7 +206,7 @@ public class ApiResource {
         return getCommand(resource, "delete", itemId);
     }
 
-    @RolesAllowed("ADMIN")
+    @RolesAllowed({"ADMIN"})
     @HEAD
     @Path("/{resource}{action:(/[^/]+?)?}{id:(/[^/]+?)?}")
     public Response headCommand(@PathParam("param") String command) {
