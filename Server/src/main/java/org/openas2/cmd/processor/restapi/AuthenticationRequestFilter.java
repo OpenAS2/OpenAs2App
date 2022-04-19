@@ -5,32 +5,42 @@
  */
 package org.openas2.cmd.processor.restapi;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.util.encoders.Base64;
 import org.openas2.cmd.CommandResult;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.PreMatching;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+
+
 /**
  * @author javier
  */
 @Provider
-public class AuthenticationRequestFilter implements javax.ws.rs.container.ContainerRequestFilter {
+@PreMatching
+public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
     @Context
     private ResourceInfo resourceInfo;
@@ -39,79 +49,93 @@ public class AuthenticationRequestFilter implements javax.ws.rs.container.Contai
     private static final String AUTHENTICATION_SCHEME = "Basic";
     private static final CommandResult ERROR_ACCESS_DENIED = new CommandResult(CommandResult.TYPE_ERROR, "You cannot access this resource");
     private static final CommandResult ERROR_ACCESS_FORBIDDEN = new CommandResult(CommandResult.TYPE_ERROR, "Access blocked for all users !!");
-    private String adminUsername;
-    private String adminPassword;
-    private Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
+    private static String adminUsername;
+    private static String adminPassword;
+    private final Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
 
-    public AuthenticationRequestFilter(String adminUsername, String adminPassword) {
-        this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
+
+    public static void setCredentials(String userId,String password) {
+        adminUsername = userId;
+        adminPassword = password;
     }
-
+    
     @Override
-    public void filter(ContainerRequestContext requestContext) {
-        Method method = resourceInfo.getResourceMethod();
-        //Access allowed for all
-        if (!method.isAnnotationPresent(PermitAll.class)) {
-            //Access denied for all
-            if (method.isAnnotationPresent(DenyAll.class)) {
-                requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity(AuthenticationRequestFilter.ERROR_ACCESS_FORBIDDEN).build());
-                return;
+    public void filter(final ContainerRequestContext requestContext) throws IOException {
+        
+        requestContext.setSecurityContext(new SecurityContext() {
+            @Override
+            public Principal getUserPrincipal() {
+                return new Principal() {
+                    @Override
+                    public String getName() {
+                        return "OpenAS2";
+                    }
+                };
+                
             }
 
-            //Get request headers
-            final MultivaluedMap<String, String> headers = requestContext.getHeaders();
-
-            //Fetch authorization header
-            final List<String> authorization = headers.get(AUTHORIZATION_PROPERTY);
-
-            //If no authorization information present; block access
-            if (authorization == null || authorization.isEmpty()) {
-
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
-                return;
+            @Override
+            public boolean isUserInRole(String role) {
+                return "ADMIN".equals(role);
             }
 
-            //Get encoded username and password
-            final String encodedUserPassword = authorization.get(0).replaceFirst(AUTHENTICATION_SCHEME + " ", "");
-
-            //Decode username and password
-            String usernameAndPassword = new String(Base64.decode(encodedUserPassword.getBytes()));
-
-            //Split username and password tokens
-            final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
-            final String username = tokenizer.nextToken();
-            final String password = tokenizer.nextToken();
-
-            //Log Username and password for verification
-            logger.info("Username: " + username);
-            if (password.length() > 0) {
-                logger.info("password: " + new String(new char[password.length()]).replace("\0", "*"));
-            } else {
-                logger.info("password: <none>");
+            @Override
+            public boolean isSecure() {
+               return false;
             }
 
-            //Verify user access
-            if (method.isAnnotationPresent(RolesAllowed.class)) {
-                RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
-                Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
-
-                //Is user valid?
-                if (!isUserAllowed(username, password, rolesSet)) {
-                    requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
-                    return;
-                }
+            @Override
+            public String getAuthenticationScheme() {
+               return AUTHENTICATION_SCHEME;
             }
+            
+        });
+        
+        //Get request headers
+        final MultivaluedMap<String, String> headers = requestContext.getHeaders();
+
+        //Fetch authorization header
+        final List<String> authorization = headers.get(AUTHORIZATION_PROPERTY);
+
+        //If no authorization information present; block access
+        if (authorization == null || authorization.isEmpty()) {
+
+            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
+            return;
         }
+
+        //Get encoded username and password
+        final String encodedUserPassword = authorization.get(0).replaceFirst(AUTHENTICATION_SCHEME + " ", "");
+
+        //Decode username and password
+        String usernameAndPassword = new String(Base64.decode(encodedUserPassword.getBytes()));
+
+        //Split username and password tokens
+        final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
+        final String username = tokenizer.nextToken();
+        final String password = tokenizer.nextToken();
+
+        //Log Username and password for verification
+        logger.info("Username: " + username);
+        if (password.length() > 0) {
+            logger.info("password: " + new String(new char[password.length()]).replace("\0", "*"));
+        } else {
+            logger.info("password: <none>");
+        }
+
+        //Verify user access
+        Set<String> rolesSet = new HashSet<>();
+        rolesSet.add("ADMIN");
+
+        //Is user valid?
+        if (!isUserAllowed(username, password, rolesSet)) {
+            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());            
+        }
+         
     }
 
     private boolean isUserAllowed(final String username, final String password, final Set<String> rolesSet) {
         boolean isAllowed = false;
-
-        //Step 1. Fetch password from database and match with password in argument
-        //If both match then get the defined role for user from database and continue; else return isAllowed [false]
-        //Access the database and do this part yourself
-        //String userRole = userMgr.getUserRole(username);
 
         if (username.equals(adminUsername) && password.equals(adminPassword)) {
             String userRole = "ADMIN";

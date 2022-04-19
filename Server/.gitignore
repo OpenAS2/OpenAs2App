@@ -1,2 +1,4 @@
 /logs/
 /target/
+nbactions.xml
+nbactions-release.xml

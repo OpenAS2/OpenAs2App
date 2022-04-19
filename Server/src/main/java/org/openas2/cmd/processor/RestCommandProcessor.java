@@ -30,7 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
+import org.glassfish.jersey.message.filtering.SecurityEntityFilteringFeature;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 /**
  * @author javier
  */
@@ -83,17 +85,21 @@ public class RestCommandProcessor extends BaseCommandProcessor {
     @Override
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         try {
-            super.init(session, parameters);
+            super.init(session, parameters);            
             logger.info(this.getName() + " initialized...");
             // create a resource config that scans for JAX-RS resources and providers
-            final String userId = parameters.getOrDefault("userid", "userid");
-            final String password = parameters.getOrDefault("password", "pWd");
+            final String userId = parameters.getOrDefault("userid", "admin");
+            final String password = parameters.getOrDefault("password", "admin"); 
+            ApiResource.setProcessor(this);
+            LoggerRequestFilter.setLogger(logger);
+            AuthenticationRequestFilter.setCredentials(userId, password);
+            // Now needed to define packages in Jersey 3.0
             final ResourceConfig rc = new ResourceConfig();
-            rc.register(new LoggerRequestFilter(logger))
-              .register(new AuthenticationRequestFilter(userId, password))
-              .register(new ApiResource(this))
-              .register(new CORSFilter())
-              .register(new JacksonFeature());
+            rc.packages("org.openas2.cmd.processor.restapi");
+            rc.register(SecurityEntityFilteringFeature.class);
+            rc.register(EntityFilteringFeature.class);
+            rc.register(RolesAllowedDynamicFeature.class);
+            //rc.registerClasses(LoggerRequestFilter.class);
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
 
 
