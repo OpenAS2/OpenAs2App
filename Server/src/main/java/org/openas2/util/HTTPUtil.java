@@ -1,47 +1,5 @@
 package org.openas2.util;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.Authenticator;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.PasswordAuthentication;
-import java.net.Proxy;
-import java.net.SocketException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.security.KeyStore;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import javax.mail.Header;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetHeaders;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +31,17 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.message.Message;
 
+import javax.mail.Header;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetHeaders;
+import javax.net.ssl.*;
+import java.io.*;
+import java.net.*;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.*;
+
 
 /**
  * @author Christopher
@@ -94,6 +63,8 @@ public class HTTPUtil {
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_USER_AGENT = "User-Agent";
     public static final String HEADER_CONNECTION = "Connection";
+
+    private static final ProxySelector PROXY_SELECTOR = ProxySelector.getDefault();
 
     public abstract static class Method {
         public static final String GET = "GET";
@@ -355,7 +326,7 @@ public class HTTPUtil {
 
         RequestBuilder rb = getRequestBuilder(method, urlObj, params, headers);
         RequestConfig.Builder rcBuilder = buildRequestConfig(options);
-        setProxyConfig(httpBuilder, rcBuilder, urlObj.getProtocol());
+        setProxyConfig(httpBuilder, rcBuilder, urlObj);
         rb.setConfig(rcBuilder.build());
 
         String httpUser = options.get(HTTPUtil.PARAM_HTTP_USER);
@@ -695,12 +666,16 @@ public class HTTPUtil {
         }
     }
 
-    private static void setProxyConfig(HttpClientBuilder builder, RequestConfig.Builder rcBuilder, String protocol) throws OpenAS2Exception {
+    private static void setProxyConfig(HttpClientBuilder builder, RequestConfig.Builder rcBuilder, URL urlObj) throws OpenAS2Exception {
+        String protocol = urlObj.getProtocol();
         String proxyHost = Properties.getProperty(protocol + ".proxyHost", null);
         if (proxyHost == null) {
             proxyHost = System.getProperty(protocol + ".proxyHost");
         }
         if (proxyHost == null) {
+            return;
+        }
+        if (urlMatchesNonProxyHosts(urlObj)) {
             return;
         }
         String proxyPort = Properties.getProperty(protocol + ".proxyPort", null);
@@ -725,6 +700,18 @@ public class HTTPUtil {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(new AuthScope(proxyHost, port), new UsernamePasswordCredentials(proxyUser, proxyPassword));
         builder.setDefaultCredentialsProvider(credsProvider);
+    }
+
+    private static boolean urlMatchesNonProxyHosts(URL urlObj) {
+        try {
+            // The DefaultProxySelector uses the http.nonProxyHosts property
+            // to determine if a direct connection should be established even
+            // though a proxy is configured.
+            return PROXY_SELECTOR.select(urlObj.toURI()).stream()
+                .anyMatch(proxy -> proxy.type() == Proxy.Type.DIRECT);
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 
     /**
