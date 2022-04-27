@@ -25,6 +25,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.openas2.OpenAS2Exception;
@@ -63,8 +64,6 @@ public class HTTPUtil {
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_USER_AGENT = "User-Agent";
     public static final String HEADER_CONNECTION = "Connection";
-
-    private static final ProxySelector PROXY_SELECTOR = ProxySelector.getDefault();
 
     public abstract static class Method {
         public static final String GET = "GET";
@@ -326,7 +325,7 @@ public class HTTPUtil {
 
         RequestBuilder rb = getRequestBuilder(method, urlObj, params, headers);
         RequestConfig.Builder rcBuilder = buildRequestConfig(options);
-        setProxyConfig(httpBuilder, rcBuilder, urlObj);
+        setProxyConfig(httpBuilder, rcBuilder, urlObj.getProtocol());
         rb.setConfig(rcBuilder.build());
 
         String httpUser = options.get(HTTPUtil.PARAM_HTTP_USER);
@@ -666,16 +665,12 @@ public class HTTPUtil {
         }
     }
 
-    private static void setProxyConfig(HttpClientBuilder builder, RequestConfig.Builder rcBuilder, URL urlObj) throws OpenAS2Exception {
-        String protocol = urlObj.getProtocol();
+    private static void setProxyConfig(HttpClientBuilder builder, RequestConfig.Builder rcBuilder, String protocol) throws OpenAS2Exception {
         String proxyHost = Properties.getProperty(protocol + ".proxyHost", null);
         if (proxyHost == null) {
             proxyHost = System.getProperty(protocol + ".proxyHost");
         }
         if (proxyHost == null) {
-            return;
-        }
-        if (urlMatchesNonProxyHosts(urlObj)) {
             return;
         }
         String proxyPort = Properties.getProperty(protocol + ".proxyPort", null);
@@ -700,18 +695,9 @@ public class HTTPUtil {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(new AuthScope(proxyHost, port), new UsernamePasswordCredentials(proxyUser, proxyPassword));
         builder.setDefaultCredentialsProvider(credsProvider);
-    }
 
-    private static boolean urlMatchesNonProxyHosts(URL urlObj) {
-        try {
-            // The DefaultProxySelector uses the http.nonProxyHosts property
-            // to determine if a direct connection should be established even
-            // though a proxy is configured.
-            return PROXY_SELECTOR.select(urlObj.toURI()).stream()
-                .anyMatch(proxy -> proxy.type() == Proxy.Type.DIRECT);
-        } catch (URISyntaxException e) {
-            return false;
-        }
+        SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(null);
+        builder.setRoutePlanner(routePlanner);
     }
 
     /**
