@@ -47,6 +47,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
@@ -609,11 +611,14 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             logger.warn("Failed to retrieve the name of the pending info folder for sent messages in trying to run the failed message detection method.", e);
             return;
         }
-        File pendingDir;
+        File pendingDir=null;
         try {
             pendingDir = IOUtil.getDirectoryFile(dir);
         } catch (IOException e) {
             logger.warn("Failed to open the pending info folder for sent messages in trying to run the failed message detection method.", e);
+            return;
+        } catch (InvalidParameterException ex) {
+            Logger.getLogger(AS2SenderModule.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
         // We are interested in files older than configured seconds
