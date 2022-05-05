@@ -7,7 +7,6 @@ This is a simple implementation of Web-based user interface that interacts with 
   - List, view, delete and Create new partner's profile
   - List, view, delete and create new partnerships (connections) between two partners
 
-
 ## Project setup
 ```
 yarn install

@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class DirectoryResenderModule extends BaseResenderModule {
@@ -115,6 +117,9 @@ public class DirectoryResenderModule extends BaseResenderModule {
         } catch (IOException e) {
             failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + resendDirPath);
             return false;
+        } catch (InvalidParameterException ex) {
+            Logger.getLogger(DirectoryResenderModule.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
         return true;
     }
@@ -196,7 +201,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
             oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             oae.addSource(OpenAS2Exception.SOURCE_FILE, file);
             oae.log();
-            IOUtil.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
+            IOUtil.handleArchive(file, getParameter(PARAM_ERROR_DIRECTORY, true));
         }
     }
 
