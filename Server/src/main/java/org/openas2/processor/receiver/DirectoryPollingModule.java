@@ -16,15 +16,19 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_OUTBOX_DIRECTORY = "outboxdir";
+    public static final String PARAM_ERROR_DIRECTORY = "errordir";
+    public static final String PARAM_SENT_DIRECTORY = "sentdir";
     public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
     public static final String PARAM_FILE_EXTENSION_EXCLUDE_FILTER = "fileextensionexcludefilter";
     public static final String PARAM_FILE_NAME_EXCLUDE_FILTER = "filenameexcluderegexfilter";
     private Map<String, Long> trackedFiles;
     private String outboxDir;
-    private String errorDir;
+    private String errorDir = null;
     private String sentDir = null;
     private List<String> allowExtensions;
     private List<String> excludeExtensions;
@@ -39,10 +43,19 @@ public abstract class DirectoryPollingModule extends PollingModule {
         try {
             outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
             IOUtil.getDirectoryFile(outboxDir);
+            errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
+            IOUtil.getDirectoryFile(errorDir);
+            sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
+            if(null != sentDir) {
+                IOUtil.getDirectoryFile(sentDir);
+            }
+            
             String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
             IOUtil.getDirectoryFile(pendingInfoFolder);
             String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
             IOUtil.getDirectoryFile(pendingFolder);
+            
+            
             String allowExtensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
             String excludeExtensionFilter = getParameter(PARAM_FILE_EXTENSION_EXCLUDE_FILTER, "");
             String excludeFilenameRegexFilter = getParameter(PARAM_FILE_NAME_EXCLUDE_FILTER, "");
@@ -72,6 +85,10 @@ public abstract class DirectoryPollingModule extends PollingModule {
             IOUtil.getDirectoryFile(outboxDir);
         } catch (IOException e) {
             failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
+            Logger.getLogger(DirectoryPollingModule.class.getName()).log(Level.SEVERE, null, e);
+            return false;
+        } catch (InvalidParameterException ex) {
+            Logger.getLogger(DirectoryPollingModule.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
         return true;
@@ -199,7 +216,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
                     } catch (OpenAS2Exception e) {
                         e.log();
                         try {
-                            IOUtil.handleError(file, errorDir);
+                            IOUtil.handleArchive(file, errorDir);
                         } catch (OpenAS2Exception e1) {
                             logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
                             //forceStop(e1);
@@ -224,9 +241,14 @@ public abstract class DirectoryPollingModule extends PollingModule {
         try (FileInputStream in = new FileInputStream(file)) {
             processDocument(in, file.getName());
             try {
-                IOUtil.deleteFile(file);
+                if(sentDir != null) {
+                    // Archive Sent file on disk
+                    IOUtil.handleArchive(file, sentDir, false);
+                }else{
+                    IOUtil.deleteFile(file);
+                }
             } catch (IOException e) {
-                throw new OpenAS2Exception("Failed to delete file handed off for processing:" + file.getAbsolutePath(), e);
+                throw new OpenAS2Exception("Failed to archive/remove file handed off for processing:" + file.getAbsolutePath(), e);
             }
         } catch (IOException e) {
             throw new OpenAS2Exception("Failed to process file:" + file.getAbsolutePath(), e);
