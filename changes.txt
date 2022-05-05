@@ -1,3 +1,14 @@
+Version 3.1.0 - 2022-05-01
+This is a major enhancement release:
+       **READ THE UPGRADE NOTES FOR THIS RELEASE**
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading from any older version.
+
+  1. Support very large file encryption, signing, decryption and signature verification.
+  2. Fix the rest API implementation and provide basic documentation on its use.
+  3. Support setting the valid days count and start date for certificate generation in the gen_p12_key_par.sh script.
+  4. Provide a more useful message when parsing dynmaic strings throws an error.
+  
+
 Version 3.0.0 - 2022-04-10
 This is a major enhancement release:
        **READ THE UPGRADE NOTES FOR THIS RELEASE**

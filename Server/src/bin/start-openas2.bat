@@ -42,8 +42,9 @@ for /R %OPENAS2_BASE_DIR%/lib %%a in (*.jar) do (
 )
 set LIB_JARS=".!LIB_JARS!"
 setLocal disableDelayedExpansion
-rem    
-rem echo Running: "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
+rem  Include the bin dir so that commons-logging.properties is found
+CLASSPATH=.;%LIB_JARS%;%OPENAS2_BASE_DIR%/bin
+rem echo Running: "%JAVA%" %EXTRA_PARMS%  -cp %CLASSPATH% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
 "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
 
 :warn
