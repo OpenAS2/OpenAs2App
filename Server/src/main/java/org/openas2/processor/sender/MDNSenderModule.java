@@ -146,7 +146,7 @@ public class MDNSenderModule extends HttpSenderModule {
             }
             byte[] data = dataOutputStream.toByteArray();
             // make sure to set the content-length header
-            mdn.setHeader("Content-Length", Integer.toString(data.length));
+            // mdn.setHeader("Content-Length", Integer.toString(data.length));
             ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, mdn.getHeaders().getAllHeaders(), null, new ByteArrayInputStream(data), httpOptions, maxSize);
 
             int respCode = resp.getStatusCode();
