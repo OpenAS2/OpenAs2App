@@ -1,0 +1,210 @@
+
+<template>
+  <div>
+    <b-row>
+      <template>
+        <!-- <b-col sm="12" lg="12" md="12" class="my-3">
+          <b-form-group
+            label="Filter"
+            label-for="filter-input"
+            label-cols-sm="1"
+            label-align-sm="right"
+            label-size="sm"
+            class="mb-0"
+          >
+            <b-input-group size="sm">
+              <b-form-input
+                id="filter-input"
+                v-model="filter.text"
+                type="search"
+                placeholder="Type to Search"
+              ></b-form-input>
+
+              <b-input-group-append>
+                <b-button :disabled="!filter.text" @click="filter.text = ''"
+                  >Clear</b-button
+                >
+              </b-input-group-append>
+            </b-input-group>
+          </b-form-group>
+        </b-col> -->
+        <b-col sm="12" md="4" class="my-1">
+          <b-form-group
+            label="Per page"
+            label-for="per-page-select"
+            label-cols-sm="6"
+            label-cols-md="5"
+            label-cols-lg="4"
+            label-align-sm="right"
+            label-size="sm"
+            class="mb-0"
+          >
+            <b-form-select
+              id="per-page-select"
+              v-model="perPage"
+              :options="pageOptions"
+              size="sm"
+            ></b-form-select>
+          </b-form-group>
+        </b-col>
+
+        <b-col sm="12" md="8" class="my-1">
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="totalRows"
+            :per-page="perPage"
+            align="fill"
+            size="sm"
+            class="my-0"
+          ></b-pagination>
+        </b-col>
+      </template>
+    </b-row>
+    <b-table
+      :items="filteredItems"
+      :fields="fields"
+      :current-page="currentPage"
+      :per-page="perPage"
+      :filter="filter.text"
+      :filter-included-fields="filterOn"
+      :sort-by.sync="sortBy"
+      :sort-desc.sync="sortDesc"
+      :sort-direction="sortDirection"
+      stacked="md"
+      show-empty
+      small
+      @filtered="onFiltered"
+    >
+      <template #cell(display)="row">
+        <b-badge v-if="row.item.display=='Display Ok'" variant="success">O</b-badge>
+        <b-badge v-if="row.item.display=='Display Pending'" variant="warning">P</b-badge>
+        <b-badge v-if="row.item.display=='Display Stop'" variant="danger">S</b-badge>
+      </template>
+      <template #cell(actions)="row">
+        <b-button
+          v-if="row.item.actions.edit ? row.item.actions.edit.show : false"
+          variant="primary"
+          size="sm"
+          @click="editItem(row.item)"
+          class="mr-1"
+        >
+          {{ row.item.actions.edit ? row.item.actions.edit.name : "Edit" }}
+        </b-button>
+        <b-button
+          v-if="row.item.actions.delete ? row.item.actions.delete.show : false"
+          variant="danger"
+          @click="deleteItem(row.item)"
+          size="sm"
+        >
+          {{
+            row.item.actions.delete ? row.item.actions.delete.name : "Delete"
+          }}
+        </b-button>
+        <b-button
+          v-if="row.item.actions.show ? row.item.actions.show.show : false"
+          variant="secondary"
+          size="sm"
+          @click="showItem(row.item)"
+          class="mr-1"
+        >
+          {{ row.item.actions.show ? row.item.actions.show.name : "Show" }}
+        </b-button>
+      </template>
+    </b-table>
+    <b-row> </b-row>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      totalRows: 1,
+      currentPage: 1,
+      perPage: 10,
+      pageOptions: [10, 25, 50, { value: 100, text: "Show a lot" }],
+      sortBy: "",
+      sortDesc: false,
+      sortDirection: "asc",
+      filterOn: [],
+      selectVal: {
+         key: "",
+          display: "",
+          timestamp: "",
+          location: "",
+          message: "",
+          payload: "",
+          encryption: "",
+          signature: "",
+          mdn: "",
+      },
+    };
+  },
+  props: {
+    items: {
+      type: Array,
+      required: true,
+    },
+    fields: {
+      type: Array,
+      required: true,
+    },
+    showFilter: {
+      type: Boolean,
+      default: true,
+    },
+    filter: {
+      type: Object,
+      // default: {
+      //   text: "",
+      // },
+      default: () => {return {text:""}},
+    },
+  },
+  computed: {
+    filteredItems() {
+      return this.items.filter((item) => {
+        let keep = true;
+        // This is a basic equality filter. What I did in the actual code was to have an object with filter functions for each key. If a key was missing, it defaulted to straight equality.
+        this.fields.forEach((key) => {
+          keep =
+            keep &&
+            (this.selectVal[key] === undefined ||
+              item[key] === this.selectVal[key]);
+        });
+
+        return keep;
+      });
+    },
+    options() {
+      // This could be simplified if the select was it's own component.
+      const options = {};
+      this.fields.forEach((key) => {
+        const vals = this.items.map((item) => item[key]);
+        // Cheap and efficient unique.
+        options[key] = Array.from(new Set(vals));
+      });
+
+      return options;
+    },
+  },
+  mounted() {
+    this.totalRows = this.items.length;
+  },
+  methods: {
+    editItem: function (item) {
+      this.$emit("editObject", item);
+    },
+    showItem: function (item) {
+      this.$emit("showObject", item);
+    },
+    deleteItem: function (item) {
+      this.$emit("deleteObject", item);
+    },
+    onFiltered: function (filteredItems) {
+      this.totalRows = filteredItems.length;
+      this.currentPage = 1;
+    },
+  },
+};
+</script>
