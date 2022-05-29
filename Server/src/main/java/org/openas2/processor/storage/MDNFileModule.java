@@ -10,6 +10,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
+import org.openas2.processor.sender.SenderModule;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -36,10 +37,16 @@ public class MDNFileModule extends BaseStorageModule {
         }
     }
 
-    protected String getModuleAction() {
-        return DO_STOREMDN;
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return DO_STOREMDN;
+        }
+        return action;
     }
-
 
     /**
      * @since 2007-06-01
