@@ -296,6 +296,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             public void onConfigFileChanged() throws OpenAS2Exception {
                 logger.info("Partnerships file change detected. Starting refresh...");
                 refresh();
+                getSession().startPartnershipPollers();
                 logger.info("Partnerships file change detected - Partnerships Reloaded");
             }
         }.scheduleIfNeed(executor, new File(getFilename()), getRefreshInterval(), TimeUnit.SECONDS);
