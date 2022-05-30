@@ -74,6 +74,24 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         }
     }
 
+    public List<ProcessorModule> getModulesSupportingAction(String action) {
+        List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
+        Iterator<ProcessorModule> moduleIt = getModules().iterator();
+        ProcessorModule module;
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Processor searching for module handlers for action: " + action);
+        }
+
+        while (moduleIt.hasNext()) {
+            module = moduleIt.next();
+            if (action.equals(module.getModuleAction())) {
+                modules.add(module);
+            }
+        }
+        return modules;
+    }
+
     public void startActiveModules() throws OpenAS2Exception {
 
         List<ActiveModule> activeModules = getActiveModules();

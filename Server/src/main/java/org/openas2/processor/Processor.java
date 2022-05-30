@@ -23,4 +23,6 @@ public interface Processor extends Component {
     List<ActiveModule> getActiveModulesByClass(Class<?> clazz);
 
     boolean checkActiveModules(List<String> failures);
+
+    public List<ProcessorModule> getModulesSupportingAction(String action);
 }

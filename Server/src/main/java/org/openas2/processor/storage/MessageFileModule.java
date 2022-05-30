@@ -61,8 +61,15 @@ public class MessageFileModule extends BaseStorageModule {
         }
     }
 
-    protected String getModuleAction() {
-        return DO_STORE;
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return DO_STORE;
+        }
+        return action;
     }
 
 

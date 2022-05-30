@@ -21,11 +21,9 @@ import java.nio.file.Path;
 import java.nio.file.InvalidPathException;
 import java.util.List;
 import java.util.UUID;
-import org.openas2.message.Message;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.DateParameters;
 import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 

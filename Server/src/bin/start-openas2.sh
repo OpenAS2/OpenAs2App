@@ -65,6 +65,8 @@ if [ -z $JAVA_HOME ]; then
 fi
 # Expand the classpath instead of using file globbing expansion in the java command as it seems to mess with Mailcap loading
 CLASSPATH=$(echo "${binDir}/../lib/"*".jar" | tr ' ' ':')
+# Include the bin dir so that icommons-logging.properties is always found
+CLASSPATH=${CLASSPATH}:${binDir}
 CMD=$(echo "${JAVA_HOME}/bin/java ${PWD_OVERRIDE} ${EXTRA_PARMS} -cp .:${CLASSPATH} org.openas2.app.OpenAS2Server")
 echo
 echo Running ${CMD}

@@ -14,7 +14,7 @@
              x509_alias="partnerb"
              email="as2msgs@partnerb.com"/>
 
-    <partnership name="MyCompany-to-PartnerA" pollerEnabled="false">
+    <partnership name="MyCompany-to-PartnerA">
         <sender name="MyCompany"/>
         <receiver name="PartnerA"/>
         <!--  The pollerConfig node defines whether this partnership will receive files to send to the "receiver" partner via a directory poller.

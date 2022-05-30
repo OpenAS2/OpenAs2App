@@ -43,9 +43,16 @@ public class DirectoryResenderModule extends BaseResenderModule {
     private Log logger = LogFactory.getLog(DirectoryResenderModule.class.getSimpleName());
 
 
-    public boolean canHandle(String action, Message msg, Map<String, Object> options) {
-        return action.equals(ResenderModule.DO_RESEND);
-    }
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+   public String getModuleAction() {
+       String action = super.getModuleAction();
+       if (action == null) {
+           return ResenderModule.DO_RESEND;
+       }
+       return action;
+   }
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         ObjectOutputStream oos = null;

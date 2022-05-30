@@ -35,11 +35,22 @@ public class MDNSenderModule extends HttpSenderModule {
 
     private Log logger = LogFactory.getLog(MDNSenderModule.class.getSimpleName());
 
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+   public String getModuleAction() {
+       String action = super.getModuleAction();
+       if (action == null) {
+           return SenderModule.DO_SENDMDN;
+       }
+       return action;
+   }
+
     public boolean canHandle(String action, Message msg, Map<String, Object> options) {
-        if (!action.equals(SenderModule.DO_SENDMDN)) {
+        if (!super.canHandle(action, msg, options)) {
             return false;
         }
-
+        // So generally supports the action. Check if specifically for AS2 messages
         return (msg instanceof AS2Message);
     }
 

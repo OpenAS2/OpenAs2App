@@ -1,3 +1,15 @@
+ Version 3.0.1 - 2022-05-30
+This is a bugfix and minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
+
+
+  1. Fix partnership directory poller cache not refreshing when partnerships file is modified on a live system.
+  2. Fix the support for bypassing proxy hosts.
+  3. Fix access via the web application. See the README here for using it: https://github.com/OpenAS2/OpenAs2App/blob/master/WebUI/README.md
+  4. Support setting the valid days count and start date for certificate generation in the gen_p12_key_par.sh script.
+  5. Provide a more useful message when parsing dynamic strings throws an error.
+  
+
 Version 3.0.0 - 2022-04-10
 This is a major enhancement release:
        **READ THE UPGRADE NOTES FOR THIS RELEASE**

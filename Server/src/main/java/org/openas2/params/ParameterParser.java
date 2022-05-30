@@ -127,7 +127,7 @@ public abstract class ParameterParser {
             prev = next + 1;
             next = format.indexOf('$', prev);
             if (next == -1) {
-                throw new InvalidParameterException("Invalid key (missing closing $)");
+                throw new InvalidParameterException("Invalid key (missing closing $) parsing this string: " + format);
             }
 
             // If we have just $$ then output $, else we have $xxx$, lookup xxx
