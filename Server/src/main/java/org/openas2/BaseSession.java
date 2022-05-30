@@ -14,6 +14,7 @@ import org.w3c.dom.Node;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -133,17 +134,20 @@ public abstract class BaseSession implements Session {
     }
 
     public void destroyPartnershipPollers() {
+        ArrayList<String> removeKeys = new ArrayList<String>();
         for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
             Map<String, Object> meta = entry.getValue();
             ProcessorModule poller = (ProcessorModule) meta.get("pollerInstance");
             try {
                 poller.destroy();
+                removeKeys.add(entry.getKey());
             } catch (Exception e) {
                 // something went wrong stoppint it - report and keep going
                 LOGGER.error("Failed to stop a partnership poller for directory " + entry.getKey() + ": " + meta, e);
             }
-            
         }
+        // remove keys
+        removeKeys.forEach(s -> polledDirectories.remove(s));
     }
 
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception {
