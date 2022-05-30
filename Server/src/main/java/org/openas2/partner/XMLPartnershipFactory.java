@@ -219,6 +219,9 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             String[] requiredPollerAttributes = {"enabled"};
             Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
             if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
+                if (logger.isTraceEnabled()) {
+                        logger.trace("Found partnership poller for partnership: " + name);
+                }
                 // Create a copy of the base config node
                 Node basePollerConfigNode = ((XMLSession)getSession()).getBasePartnershipPollerConfig();
                 if (basePollerConfigNode == null) {
@@ -291,6 +294,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         new FileMonitorAdapter() {
             @Override
             public void onConfigFileChanged() throws OpenAS2Exception {
+                logger.info("Partnerships file change detected. Starting refresh...");
                 refresh();
                 logger.info("Partnerships file change detected - Partnerships Reloaded");
             }
