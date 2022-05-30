@@ -96,9 +96,11 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             // Now needed to define packages in Jersey 3.0
             final ResourceConfig rc = new ResourceConfig();
             rc.packages("org.openas2.cmd.processor.restapi");
+            rc.packages("org.glassfish.jersey.jackson");
             rc.register(SecurityEntityFilteringFeature.class);
             rc.register(EntityFilteringFeature.class);
             rc.register(RolesAllowedDynamicFeature.class);
+            rc.register(JacksonFeature.class);
             //rc.registerClasses(LoggerRequestFilter.class);
             URI baseUri = URI.create(parameters.getOrDefault("baseuri", BASE_URI));
 
