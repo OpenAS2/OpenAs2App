@@ -21,10 +21,11 @@ import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -93,17 +94,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         }
         fo = null;
 
-        FileInputStream fis = new FileInputStream(doc);
         try {
-            buildMessageData(msg, fis, filename);
+            buildMessageData(msg, doc, null);
         } finally {
-            try {
-                fis.close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            fis = null;
             doc = null;
         }
         String customHeaderList = msg.getPartnership().getAttribute(Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
@@ -234,11 +227,63 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     }
 
+    /**
+     * Provides support for a random inputstream. 
+     *     NOTE: Ths method should not be used for very large files as it will consume all the available heap and fail to send.
+     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param ip - the generic inputstream
+     * @param filename - name of the file being sent (currently unused)
+     * @throws OpenAS2Exception
+
+     */
     public void buildMessageData(Message msg, InputStream ip, String filename) throws OpenAS2Exception {
+            String contentType = getMessageContentType(msg);
+            javax.mail.util.ByteArrayDataSource byteSource;
+            try {
+                byteSource = new javax.mail.util.ByteArrayDataSource(ip, contentType);
+            } catch (IOException e) {
+                throw new OpenAS2Exception("Failed to set up datasource from input stream: " + e.getMessage(), e);
+            }
+            buildMessageData(msg, byteSource, contentType);
+
+    }
+
+    /**
+     * This method will minimise the memory usage when creating the MimeBodyPart
+     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param fileObject - a File object that will provide the file content
+     * @param contentType - the Content-Type for the sent data - can be null and fall back to the OpenAS2 default
+     * @throws OpenAS2Exception
+     */
+    public void buildMessageData(Message msg, File fileObject, String contentType) throws OpenAS2Exception {
+        buildMessageData(msg, new FileDataSource(fileObject), contentType);
+    }
+
+    /**
+     * This method will minimise the memory usage when creating the MimeBodyPart
+     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param dataSource - a DatsSource object that will provide the file content
+     * @param contentType - the Content-Type for the sent data - can be null and fall back to the OpenAS2 default
+     * @throws OpenAS2Exception
+     */
+    public void buildMessageData(Message msg, DataSource dataSource, String contentType) throws OpenAS2Exception {
+        if (contentType == null) {
+            contentType = getMessageContentType(msg);
+        }
+        MimeBodyPart body = new MimeBodyPart();
+        try {
+            body.setDataHandler(new DataHandler(dataSource));
+            body.setHeader("Content-Type", contentType);
+        } catch (MessagingException e) {
+            throw new OpenAS2Exception("Failed to set properties on mime body part: " + e.getMessage(), e);
+        }
+        setAdditionalMetaData(msg, body);
+        msg.setData(body);
+    }
+
+    private String getMessageContentType(Message msg) throws OpenAS2Exception {
         MessageParameters params = new MessageParameters(msg);
 
-        try {
-            // byte[] data = IOUtilOld.getFileBytes(file);
             // Allow Content-Type to be overridden at partnership level or as property
             String contentType = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TYPE, null);
             if (contentType == null) {
@@ -253,46 +298,38 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                     throw new OpenAS2Exception("Bad content-type" + contentType, e);
                 }
             }
-            javax.mail.util.ByteArrayDataSource byteSource = new javax.mail.util.ByteArrayDataSource(ip, contentType);
-            MimeBodyPart body = new MimeBodyPart();
-            body.setDataHandler(new DataHandler(byteSource));
+            return contentType;
+    }
 
-            // below statement is not filename related, just want to make it
-            // consist with the parameter "mimetype="application/EDI-X12""
-            // defined in config.xml 2007-06-01
+    private void setAdditionalMetaData(Message msg, MimeBodyPart mimeBodyPart) throws OpenAS2Exception {
 
-            body.setHeader("Content-Type", contentType);
-
+        try {
             // add below statement will tell the receiver to save the filename
             // as the one sent by sender. 2007-06-01
             String sendFileName = getParameter("sendfilename", false);
             if (sendFileName != null && sendFileName.equals("true")) {
                 String contentDisposition = "Attachment; filename=\"" + msg.getAttribute(FileAttribute.MA_FILENAME) + "\"";
-                body.setHeader("Content-Disposition", contentDisposition);
+                mimeBodyPart.setHeader("Content-Disposition", contentDisposition);
                 msg.setContentDisposition(contentDisposition);
             }
+            /*
+             * Not sure it should be set at this level as there is no encoding of the
+             * content at this point so make it configurable
+             */
+            if (msg.getPartnership().isSetTransferEncodingOnInitialBodyPart()) {
+                String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+                if (contentTxfrEncoding == null) {
+                    contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                }
+                try {
+                    mimeBodyPart.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+                } catch (MessagingException e) {
+                    throw new OpenAS2Exception("Failed to set content transfer encoding in created MimeBodyPart: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                }
+            }
 
-            msg.setData(body);
         } catch (MessagingException me) {
             throw new WrappedException(me);
-        } catch (IOException ioe) {
-            throw new WrappedException(ioe);
-        }
-
-        /*
-         * Not sure it should be set at this level as there is no encoding of the
-         * content at this point so make it configurable
-         */
-        if (msg.getPartnership().isSetTransferEncodingOnInitialBodyPart()) {
-            String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-            if (contentTxfrEncoding == null) {
-                contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-            }
-            try {
-                msg.getData().setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
-            } catch (MessagingException e) {
-                throw new OpenAS2Exception("Failed to set content transfer encoding in created MimeBodyPart: " + org.openas2.logging.Log.getExceptionMsg(e), e);
-            }
         }
     }
 }

@@ -54,11 +54,22 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
     private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
 
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+   public String getModuleAction() {
+       String action = super.getModuleAction();
+       if (action == null) {
+           return SenderModule.DO_SEND;
+       }
+       return action;
+   }
+
     public boolean canHandle(String action, Message msg, Map<String, Object> options) {
-        if (!action.equals(SenderModule.DO_SEND)) {
+        if (!super.canHandle(action, msg, options)) {
             return false;
         }
-
+        // So generally supports the action. Check if specifically for AS2 messages
         return (msg instanceof AS2Message);
     }
 
@@ -558,10 +569,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
 
             msg.setAttribute(FileAttribute.MA_STATUS, FileAttribute.MA_PENDING);
-            // If ASYNC MDN is requested, set up a file watcher in case partner MDN is not
-            // received
+            // If ASYNC MDN is requested, set up a file watcher in case partner MDN is not received
             if (msg.isConfiguredForAsynchMDN()) {
-                // Create a listener that will force resend if the pendinginfo file is still
+                // TODO: Create a listener that will force resend if the pendinginfo file is still
                 // there after set amount of time
 
             }

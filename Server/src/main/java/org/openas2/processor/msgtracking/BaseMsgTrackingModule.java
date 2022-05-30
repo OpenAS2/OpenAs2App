@@ -22,15 +22,20 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 
     }
 
-    public boolean canHandle(String action, Message msg, Map<String, Object> options) {
-        return action.equals(getModuleAction());
-    }
-
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
     }
 
-    protected abstract String getModuleAction();
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+     *
+     */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return DO_TRACK_MSG;
+        }
+        return action;
+    }
 
     protected abstract void persist(Message msg, Map<String, String> map);
 

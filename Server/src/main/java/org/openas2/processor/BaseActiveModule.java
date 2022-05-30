@@ -21,6 +21,7 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
     public abstract boolean healthcheck(List<String> failures);
 
     public boolean canHandle(String action, Message msg, Map<String, Object> options) {
+        // Active modules that are continuously doing their job do not handle stuff on demand
         return false;
     }
 

@@ -12,17 +12,20 @@ import org.junit.rules.TemporaryFolder;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.TestPartner;
 import org.openas2.TestResource;
+import org.openas2.XMLSession;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
-import org.openas2.util.DateUtil;
+import org.openas2.processor.ActiveModule;
+import org.openas2.processor.receiver.AS2DirectoryPollingModule;
+import org.openas2.processor.receiver.DirectoryPollingModule;
+import org.openas2.util.Properties;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,10 +40,11 @@ public class OpenAS2ServerTest {
 
     private static final TestResource RESOURCE = TestResource.forClass(OpenAS2ServerTest.class);
 
-    private static TestPartner partnerA;
-    private static TestPartner partnerB;
+    private static TestPartner serverAPartnerSender;
+    private static TestPartner severBPartnerReceiver;
     private static OpenAS2Server serverA;
     private static OpenAS2Server serverB;
+    private static String[] dataFolders = new String[2];
     private final int msgCnt = 2;
 
     private static ExecutorService executorService;
@@ -52,15 +56,14 @@ public class OpenAS2ServerTest {
         //System.setProperty("org.openas2.logging.defaultlog", "TRACE");
         System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
         try {
-            partnerA = new TestPartner("OpenAS2A");
-            partnerB = new TestPartner("OpenAS2B");
-
-            serverA = new OpenAS2Server.Builder().run(RESOURCE.get(partnerA.getName(), "config", "config.xml").getAbsolutePath());
-            partnerA.setServer(serverA);
-
-            serverB = new OpenAS2Server.Builder().run(RESOURCE.get(partnerB.getName(), "config", "config.xml").getAbsolutePath());
-            partnerB.setServer(serverB);
-            enhancePartners();
+            serverA = new OpenAS2Server.Builder().run(RESOURCE.get("OpenAS2A", "config", "config.xml").getAbsolutePath());
+            // Get the data folder from Properties before starting the other server as it overwrites the Properties
+            dataFolders[0] = Properties.getProperty("storageBaseDir", null);
+            // Iterate over the partnerships picking the first one that has a directory poller
+            serverAPartnerSender = getFromFirstSendingPartnership(serverA);
+            serverB = new OpenAS2Server.Builder().run(RESOURCE.get("OpenAS2B", "config", "config.xml").getAbsolutePath());
+            severBPartnerReceiver = getFromPartnerIds(serverB, serverAPartnerSender.getAs2Id(), serverAPartnerSender.getPartnerAS2Id());
+            dataFolders[1] = Properties.getProperty("storageBaseDir", null);
             executorService = Executors.newFixedThreadPool(20);
         } catch (FileNotFoundException e) {
             System.err.println("Failed to retrieve resource for test: " + e.getMessage());
@@ -80,7 +83,7 @@ public class OpenAS2ServerTest {
 
             // write messages to outbox and build callables with test message objects
             for (int i = 0; i < msgCnt; i++) {
-            	TestMessage testMsg = sendMessage(partnerA, partnerB);
+            	TestMessage testMsg = sendMessage(serverAPartnerSender, severBPartnerReceiver);
                 callers.add(new Callable<TestMessage>() {
                     @Override
                     public TestMessage call() throws Exception {
@@ -131,22 +134,17 @@ public class OpenAS2ServerTest {
     public static void tearDown() throws Exception {
         //executorService.awaitTermination(15, TimeUnit.SECONDS);
         executorService.shutdown();
-        String dataDirPartnerA = partnerA.getHome().getAbsolutePath() + File.separator + "data";
-        String dataDirPartnerB = partnerB.getHome().getAbsolutePath() + File.separator + "data";
-        partnerA.getServer().shutdown();
-        partnerB.getServer().shutdown();
+        serverAPartnerSender.getServer().shutdown();
+        severBPartnerReceiver.getServer().shutdown();
+        // Cleanup the folders created so the test does not fail next time round from leftover data
         // NOTE: For debugging "missing" files it is best to comment this out
-        try {
-			FileUtils.deleteDirectory(new File(dataDirPartnerA));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        try {
-			FileUtils.deleteDirectory(new File(dataDirPartnerB));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+        for (int i = 0; i < dataFolders.length; i++) {
+            try {
+    			FileUtils.deleteDirectory(new File(dataFolders[i]));
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
 		}
     }
 
@@ -182,66 +180,61 @@ public class OpenAS2ServerTest {
     }
 
     /**
-     * Add additional attributes to partner objects.
-     *
-     * @throws ComponentNotFoundException
-     * @throws FileNotFoundException
+     * Finds the first partnership in the list for the server instance that has a directory poller and builds a TestPartner object using that
+     * @param server - the instance of an OpenAS2 server
+     * @return - a TestPartner instance based on the partnership found
+     * @throws Exception
      */
-    // TODO:  Should try to extract more of them from config to help make tests less brittle
-    private static void enhancePartners() throws ComponentNotFoundException, FileNotFoundException {
-        PartnershipFactory pf = serverA.getSession().getPartnershipFactory();
-        Map<String, Object> partners = pf.getPartners();
-        for (Map.Entry<String, Object> attribute : partners.entrySet()) {
-            if (attribute.getKey().equals(partnerB.getName())) {
-                Map<String, String> partner = (Map<String, String>) attribute.getValue();
-                partnerB.setAs2Id(partner.get(Partnership.PID_AS2));
-            } else if (attribute.getKey().equals(partnerA.getName())) {
-                Map<String, String> partner = (Map<String, String>) attribute.getValue();
-                partnerA.setAs2Id(partner.get(Partnership.PID_AS2));
+    private static TestPartner getFromFirstSendingPartnership(OpenAS2Server server) throws Exception {
+	    PartnershipFactory pf = server.getSession().getPartnershipFactory();
+        List<Partnership> partnerships = pf.getPartnerships();
+        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
+			Partnership partnership = (Partnership) iterator.next();
+            DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
+            if (pollerModule != null) {
+            	return new TestPartner(server, partnership, pollerModule);
             }
         }
-        String partnershipFolderAtoB = partnerA.getAs2Id() + "-" + partnerB.getAs2Id();
-        String partnershipFolderBtoA = partnerB.getAs2Id() + "-" + partnerA.getAs2Id();
-
-        partnerA.setHome(RESOURCE.get(partnerA.getName()));
-        partnerA.setOutbox(FileUtils.getFile(partnerA.getHome(), "data", "to" + partnerB.getName()));
-        partnerA.setInbox(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderBtoA, "inbox"));
-        partnerA.setSentMDNs(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderAtoB, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
-        partnerA.setRxdMDNs(FileUtils.getFile(partnerA.getHome(), "data", partnershipFolderBtoA, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
-
-        partnerB.setHome(RESOURCE.get(partnerB.getName()));
-        partnerB.setOutbox(FileUtils.getFile(partnerB.getHome(), "data", "to" + partnerA.getName()));
-        partnerB.setInbox(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderAtoB, "inbox"));
-        partnerB.setSentMDNs(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderBtoA, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
-        partnerB.setRxdMDNs(FileUtils.getFile(partnerB.getHome(), "data", partnershipFolderAtoB, "mdn", DateUtil.formatDate("yyyy-MM-dd")));
-
+        return null;
     }
 
-    @SuppressWarnings("unused")
-	private Partnership getPartnership(OpenAS2Server servicerInstance, String senderAS2Id, String receiverAS2Id) throws Exception {
-        PartnershipFactory pf = servicerInstance.getSession().getPartnershipFactory();
-        Map<String, Object> senderIDs = new HashMap<String, Object>();
-        senderIDs.put(Partnership.PID_AS2, senderAS2Id);
-        Map<String, Object> receiverIDs = new HashMap<String, Object>();
-        receiverIDs.put(Partnership.PID_AS2, receiverAS2Id);
-        return pf.getPartnership(senderIDs, receiverIDs);
-	}
+    private static TestPartner getFromPartnerIds(OpenAS2Server server, String senderAs2Id, String receiverAs2Id) throws Exception {
+	    PartnershipFactory pf = server.getSession().getPartnershipFactory();
+        List<Partnership> partnerships = pf.getPartnerships();
+        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
+			Partnership partnership = (Partnership) iterator.next();
+			if (senderAs2Id.equals(partnership.getSenderID(Partnership.PID_AS2)) && receiverAs2Id.equals(partnership.getReceiverID(Partnership.PID_AS2))) {
+	            DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
+	            return new TestPartner(server, partnership, pollerModule);
+			}
+        }
+        return null;
+    }
+
+    private static DirectoryPollingModule getPollingModule(XMLSession session, Partnership partnership) throws ComponentNotFoundException {
+        DirectoryPollingModule dirPollMod = session.getPartnershipPoller(partnership.getName());
+        if (dirPollMod != null) {
+        	return dirPollMod;
+        }
+    	// Try to find a module defined poller since there is not partnership defined poller
+        List<ActiveModule> dirPollers = session.getProcessor().getActiveModulesByClass(AS2DirectoryPollingModule.class);
+        for (Iterator<ActiveModule> iterator = dirPollers.iterator(); iterator.hasNext();) {
+            ActiveModule activeModule = (ActiveModule) iterator.next();
+            String defaults = activeModule.getParameters().get("defaults");
+            if (defaults.contains("receiver.as2_id=" + partnership.getReceiverID(Partnership.PID_AS2)) && defaults.contains("sender.as2_id=" + partnership.getSenderID(Partnership.PID_AS2))) {
+                    return (DirectoryPollingModule)activeModule;
+            }
+        }
+        return null;
+    	
+    }
 
     @SuppressWarnings("unused")
     private void setPartnershipToAsync(Partnership partnership) throws Exception {
         if (partnership != null) {
             partnership.setAttribute(Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
         } else {
-            throw new Exception("Could not set partnership to ~ASYNC mode");
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private void enableSentMDNStorage(Partnership partnership) throws Exception {
-        if (partnership != null) {
-            partnership.setAttribute(Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
-        } else {
-            throw new Exception("Could not set partnership to ~ASYNC mode");
+            throw new Exception("Could not set partnership to ASYNC mode");
         }
     }
 

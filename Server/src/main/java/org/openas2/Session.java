@@ -96,6 +96,7 @@ public interface Session {
      */
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception;
     
+    public void startPartnershipPollers() throws OpenAS2Exception;
     public void destroyPartnershipPollers();
 
     String getBaseDirectory();

@@ -83,10 +83,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         }
     }
 
-    protected String getModuleAction() {
-        return DO_TRACK_MSG;
-    }
-
     protected CompositeParameters createParser() {
         CompositeParameters params = new CompositeParameters(true);
 
