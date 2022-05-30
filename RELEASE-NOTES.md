@@ -1,27 +1,31 @@
 #              OpenAS2 Server
-#              Version 3.0.0
+#              Version 3.0.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.0.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.0.1
 
-The release download file is: OpenAS2Server-3.0.0.zip
+The release download file is: OpenAS2Server-3.0.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 3.0.0 - 2022-04-10
-This is a major release:
+Version 3.0.1 - 2022-05-30
+This is a  and minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
 
-  1. The directory polling module is no longer configured in the config.xml file. By default, any partnership will get a polling module unless explicitly disabled using the appropriate attribute. See documentation for details.
-  2. Support for expired certificates. Some partners seem to continue to use expired certificates when sending messages. The expiration date can be ignored and still validate the signature by adding an attribute to the partnership to ignore the expiration. See documentation for details.
+  1. Fix partnership directory poller cache not refreshing when partnerships file is modified on a live system.
+  2. Fix the support for bypassing proxy hosts.
+  3. Fix access via the web application. See the README here for using it: https://github.com/OpenAS2/OpenAs2App/blob/master/WebUI/README.md
+  4. Support setting the valid days count and start date for certificate generation in the gen_p12_key_par.sh script.
+  5. Provide a more useful message when parsing dynamic strings throws an error.
 
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
  
-### For this upgrade, the old config will work without change but it is strongly recommended that you follow these steps to convert your existing configuration to the new format:
+### Upgrading to 3.xx from 2.x (or older) version:
+## NOTE: The old config will work without change but it is strongly recommended that you follow these steps to convert your existing configuration to the new format as it provides a cleaner and less complicated setup and the old config will eventually be discontinued
       1. Follow the instructions for specific versions between your current version and this version as defined below before executing the commands below to convert your existing config.xml and partnerships.xml files to use the enhanced poller configuration.
       2. Open a terminal window (command window in Windows)
       3. Change to the <install>/config directory of the new version.
