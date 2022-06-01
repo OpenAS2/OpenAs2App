@@ -98,8 +98,8 @@ public class CompositeParameters extends ParameterParser {
 
             return parser.getParameter(keyBuf.toString());
         } else if (!getIgnoreMissingParsers()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Failed to find a parser for: " + key + "  ::: Parser list: " + getParameterParsers().keySet().toString());
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to find a parser for: " + key + "  ::: Available parser list: " + getParameterParsers().keySet().toString());
             }
             throw new InvalidParameterException("Invalid parser identifier", this, key, null);
         } else {
