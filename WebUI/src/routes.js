@@ -4,6 +4,8 @@ import Dashboard from './components/Dashboard'
 import CertificatesAdmin from './components/CertificatesAdmin'
 import PartnersAdmin from './components/PartnersAdmin'
 import ConnectionsAdmin from './components/ConnectionsAdmin'
+import MessagesAdmin from './components/MessagesAdmin'
+import MessageDetail from './components/MessageDetail'
 
 Vue.use(VueRouter);
 const routes = [
@@ -13,7 +15,9 @@ const routes = [
     { path: '/partnerships', component: ConnectionsAdmin, name: "Connections", meta: { sidemenu: true } },
     { path: '/partnership/:id', component: ConnectionsAdmin, name: "ConnectionEditor", meta: { sidemenu: false } },
     { path: '/certs', component: CertificatesAdmin, name: "Certificates", meta: { sidemenu: true } },
-    { path: '/cert/:id', component: CertificatesAdmin, name: "CertificateEditor", meta: { sidemenu: false } }
+    { path: '/cert/:id', component: CertificatesAdmin, name: "CertificateEditor", meta: { sidemenu: false } },
+    { path: '/messages', component: MessagesAdmin, name: "Messages" , meta: { sidemenu: true }},
+    { path: '/message/:id', component: MessageDetail, name: "MessageDetail" , meta: { sidemenu: false }},
 ];
 const router = new VueRouter({
   routes // short for `routes: routes`

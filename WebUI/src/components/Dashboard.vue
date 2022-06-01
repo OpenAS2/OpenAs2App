@@ -1,27 +1,325 @@
 <template>
-    <div id="dashboard">
-    
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Dashboard</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-          <div class="btn-group mr-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-          </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            This week
-          </button>
-        </div>
-        
-      </div>
-      <iframe href="https://sourceforge.net/p/openas2/discussion/" width="100%" height="800px" border="0" style="border:none"></iframe>
+  <div id="dashboard">
+    <div
+      class="
+        d-flex
+        justify-content-between
+        flex-wrap flex-md-nowrap
+        align-items-center
+        pt-3
+        pb-2
+        mb-3
+        border-bottom
+      "
+    >
+      <h1 class="h2">Dashboard</h1>
     </div>
+
+    <b-row>
+      <!-- <b-card-group deck> -->
+      <b-col md="4">
+        <b-card
+          bg-variant="warning"
+          text-variant="white"
+          header="Total Partners"
+          class="text-center mt-1"
+        >
+          <b-card-text
+            ><h1>{{ countPartners }}</h1></b-card-text
+          >
+        </b-card>
+      </b-col>
+      <b-col md="4">
+        <b-card
+          bg-variant="dark"
+          text-variant="white"
+          header="Total Connections"
+          class="text-center mt-1"
+        >
+          <b-card-text>
+            <h1>{{ countCertificates }}</h1>
+          </b-card-text>
+        </b-card>
+      </b-col>
+      <b-col md="4">
+        <b-card
+          bg-variant="info"
+          text-variant="white"
+          header="Total Certificates"
+          class="text-center mt-1"
+        >
+          <b-card-text
+            ><h1>{{ countPartnerships }}</h1></b-card-text
+          >
+        </b-card>
+      </b-col>
+      <!-- </b-card-group> -->
+      <b-row class="justify-content-md-center mt-3">
+        <b-col md="4">
+          <date-range-picker
+            @update="changeDate"
+            v-model="dateRange"
+            opens="left"
+          ></date-range-picker>
+          <!-- :locale="locale" -->
+        </b-col>
+      </b-row>
+      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+        <chart-line-two
+          :labels="dates"
+          :messagesSent="messagesSent"
+          :messagesReceived="messagesReceived"
+          :messagesFailed="messagesFailed"
+        >
+        </chart-line-two>
+      </b-col>
+      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+        <chart-line
+          :labels="dates"
+          :messagesSent="messagesSent"
+          :messagesReceived="messagesReceived"
+          :messagesFailed="messagesFailed"
+        >
+        </chart-line>
+      </b-col>
+      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+        <chart-bar
+          :labels="dates"
+          :datasets="datasetsMessagesSent"
+          :title="'Sent messages '"
+        >
+        </chart-bar>
+      </b-col>
+      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+        <chart-bar
+          :labels="dates"
+          :datasets="datasetsMessagesReceived"
+          :title="'Received messages'"
+        >
+        </chart-bar>
+      </b-col>
+      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+        <chart-bar
+          :labels="dates"
+          :datasets="datasetsMessagesFailed"
+          :title="'Failed messages'"
+        >
+        </chart-bar>
+      </b-col>
+      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+        <chart-bar
+          :labels="dates"
+          :datasets="datasets"
+          :title="'Failed messages'"
+        >
+        </chart-bar>
+      </b-col>
+      <messages-admin></messages-admin>
+    </b-row>
+  </div>
 </template>
 <script>
+import ChartLine from "./ChartLine.vue";
+import MessagesAdmin from "./MessagesAdmin.vue";
+
+import ChartLineTwo from "./ChartLineTwo.vue";
+import ChartBar from "./ChartBar";
+
+import Utils from "../utils";
+import DateRangePicker from "vue2-daterange-picker";
+//you need to import the CSS manually
+import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
+
+import moment from "moment";
+var XLSX = require("xlsx");
 export default {
-    name: 'dashboard'
-}
+  name: "dashboard",
+  components: {
+    ChartLine,
+    MessagesAdmin,
+    ChartLineTwo,
+    ChartBar,
+    DateRangePicker,
+  },
+  data() {
+    return {
+      length: 10,
+      messagesSent: [],
+      messagesReceived: [],
+      messagesFailed: [],
+      datasetsMessagesSent: [],
+      datasetsMessagesReceived: [],
+      datasetsMessagesFailed: [],
+      datasets: [],
+      dates: [],
+      partners: [],
+      certificates: [],
+      partnerships: [],
+      dateRange: {
+        startDate: moment().startOf("week"),
+        endDate: moment(),
+      },
+      
+      // locale: {
+      //   direction: "ltr",
+      //   format: "DD-MM-YYYY",
+      //   separator: " - ",
+      //   applyLabel: "Apply",
+      //   cancelLabel: "Cancel",
+      //   weekLabel: "W",
+      //   customRangeLabel: "Custom Range",
+      //   daysOfWeek: moment.weekdaysMin(),
+      //   monthNames: moment.monthsShort(),
+      //   firstDay: 1,
+      // },
+    };
+  },
+  computed: {
+    countPartners: function () {
+      return this.partners.length;
+    },
+    countCertificates: function () {
+      return this.certificates.length;
+    },
+    countPartnerships: function () {
+      return this.partnerships.length;
+    },
+  },
+  mounted() {
+    this.generateDates();
+    this.getListMessageSent();
+    this.getListMessageReceived();
+    this.getListMessageFailed();
+    this.getListPartners();
+    this.getListCertificates();
+    this.getListConnections();
+  },
+  methods: {
+    dateFormat(classes, date) {
+      if (!classes.disabled) {
+        classes.disabled = date.getTime() < new Date();
+      }
+      return classes;
+    },
+    getListPartners: async function () {
+      this.partners = await Utils.Crud.getList("partner");
+    },
+    getListCertificates: async function () {
+      this.certificates = await Utils.Crud.getList("cert");
+    },
+    getListConnections: async function () {
+      this.partnerships = await Utils.Crud.getList("partnership");
+    },
+    getListMessageSent: function () {
+      this.messagesSent = [];
+
+      let min = 1;
+      let max = 100;
+      let init = moment(this.dateRange.startDate);
+      let now = moment();
+      let end = moment(this.dateRange.endDate).isSameOrBefore(now)
+        ? moment(this.dateRange.endDate)
+        : moment(now);
+      let tam = end.diff(init, "days");
+      for (let index = 0; index <= tam; index++) {
+        this.messagesSent.push(Math.round(Math.random() * (max - min) + min));
+      }
+      this.datasetsMessagesSent.push({
+        label: "Sent messages",
+        backgroundColor: "#28a745",
+        data: this.messagesSent,
+      });
+      this.datasets.push({
+        label: "Sent messages",
+        backgroundColor: "#28a745",
+        data: this.messagesSent,
+      });
+    },
+    getListMessageReceived: function () {
+      this.messagesReceived = [];
+      let min = 1;
+      let max = 100;
+      let init = moment(this.dateRange.startDate);
+      let now = moment();
+      let end = moment(this.dateRange.endDate).isSameOrBefore(now)
+        ? moment(this.dateRange.endDate)
+        : moment(now);
+      let tam = end.diff(init, "days");
+      for (let index = 0; index <= tam; index++) {
+        this.messagesReceived.push(
+          Math.round(Math.random() * (max - min) + min)
+        );
+      }
+      this.datasetsMessagesReceived.push({
+        label: "Received messages",
+        backgroundColor: "#007bff",
+        data: this.messagesReceived,
+      });
+      this.datasets.push({
+        label: "Received messages",
+        backgroundColor: "#007bff",
+        data: this.messagesReceived,
+      });
+    },
+    getListMessageFailed: function () {
+      console.log("ssssss");
+      this.messagesFailed = [];
+      let min = 1;
+      let max = 100;
+      // let tam=moment.duration(moment(this.dateRange.endDate).diff(moment(this.dateRange.startDate)))
+      let init = moment(this.dateRange.startDate);
+      let now = moment();
+      let end = moment(this.dateRange.endDate).isSameOrBefore(now)
+        ? moment(this.dateRange.endDate)
+        : moment(now);
+      let tam = end.diff(init, "days");
+      for (let index = 0; index <= tam; index++) {
+        this.messagesFailed.push(Math.round(Math.random() * (max - min) + min));
+      }
+      this.datasetsMessagesFailed.push({
+        label: "Failed messages",
+        backgroundColor: "#FF0000",
+        data: this.messagesFailed,
+      });
+      this.datasets.push({
+        label: "Failed messages",
+        backgroundColor: "#FF0000",
+        data: this.messagesFailed,
+      });
+    },
+    generateDates: function () {
+      this.dates = [];
+      console.log("juans");
+      let init = moment(this.dateRange.startDate).format("YYYY-MM-DD");
+      let end = moment(this.dateRange.endDate).format("YYYY-MM-DD");
+      let now = moment().format("YYYY-MM-DD");
+
+      let end2 = moment(this.dateRange.endDate).isSameOrBefore(now)
+        ? moment(this.dateRange.endDate)
+        : moment(now);
+      this.length = end2.diff(init, "days");
+
+      while (
+        moment(init).isSameOrBefore(end) &&
+        moment(init).isSameOrBefore(now)
+      ) {
+        this.dates.push(init);
+        init = moment(init).add(1, "days").format("YYYY-MM-DD");
+      }
+    },
+    changeDate: function () {
+      console.log(this.dateRange);
+      this.datasets = [];
+      this.datasetsMessagesSent = [];
+      this.datasetsMessagesReceived = [];
+      this.datasetsMessagesFailed = [];
+      this.getListMessageSent();
+      this.getListMessageReceived();
+      this.getListMessageFailed();
+      this.generateDates();
+    },
+  },
+};
 </script>
 <style scoped>
 /*

@@ -55,7 +55,7 @@ const Utils = {
         saveObject: function(resource, data) {
             console.log('Saving',data);
             var old_id=data._id;
-            delete data._id;
+            // delete data._id;
             if(old_id !== null) {
                 return this.deleteObject(resource,old_id).then( () => this.createObject(resource,data));
             }else{
