@@ -76,7 +76,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         if (logger.isInfoEnabled()) {
-            logger.info("message sender invoked" + msg.getLogMsgID());
+            logger.info("Message sender invoked for log ID: " + msg.getLogMsgID());
         }
         boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
         options.put(FIELDS.DIRECTION, "SEND");
@@ -209,7 +209,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             return;
         }
         // Check if it will be a Sync or AsyncMDN
-        if (msg.getPartnership().getAttribute(Partnership.PA_AS2_RECEIPT_OPTION) != null) {
+        if (msg.getPartnership().isAsyncMDN()) {
             // Async MDN
             msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
         } else {
