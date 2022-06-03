@@ -1,13 +1,22 @@
 <template>
-    <nav class="col-md-2 d-none d-md-block bg-light sidebar">
-      <div class="sidebar-sticky">
-        <ul class="nav flex-column">
-          <li class="nav-item" v-bind:key="route.path" v-for="route in routes">
-            <router-link class="nav-link active" :to="route.path">
-              {{route.name}}
-            </router-link>
-          </li>
-          <!-- 
+  <nav
+    class="col-md-2 col-sm-3 d-none bg-light sidebar"
+    :class="showMenu ? 'd-md-block d-sm-block ' : ''"
+  >
+  
+    <div class="sidebar-sticky">
+      
+      <ul class="nav nav-pills nav-justified ">
+        <li class="nav-item" :key="route.path" v-for="route in routes">
+          <router-link
+            class="nav-link"
+            :class="{ active: actualRoute == route.name }"
+            :to="route.path"
+          >
+            {{ route.name }}
+          </router-link>
+        </li>
+        <!-- 
           <li class="nav-item">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
               Dashboard <span class="sr-only">(current)</span>
@@ -43,8 +52,8 @@
             </a>
           </li>
           -->
-        </ul>
-        <!--
+      </ul>
+      <!--
         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
           <span>Saved reports</span>
           <a class="d-flex align-items-center text-muted" href="#">
@@ -78,20 +87,33 @@
           </li>
         </ul>
         -->
-      </div>
-    </nav>
+    </div>
+  </nav>
 </template>
 <script>
-import router from '../routes'
+import router from "../routes";
 export default {
-    name: 'side-menu',
-    data: function() {
-        //console.log(router.options.routes);
-        return {
-            routes: router.options.routes.filter( (e)=> (e.meta != null)?e.meta.sidemenu:false )
-         };
-    }
-}
+  name: "side-menu",
+  data: function () {
+    //console.log(router.options.routes);
+    return {
+      routes: router.options.routes.filter((e) =>
+        e.meta != null ? e.meta.sidemenu : false
+      ),
+    };
+  },
+  props: {
+    showMenu: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  computed: {
+    actualRoute() {
+      return this.$router.name;
+    },
+  },
+};
 </script>
 <style>
 /*
@@ -105,7 +127,7 @@ export default {
   left: 0;
   z-index: 100; /* Behind the navbar */
   padding: 48px 0 0; /* Height of navbar */
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
   text-align: left;
 }
 
@@ -113,7 +135,7 @@ export default {
   position: relative;
   top: 0;
   height: calc(100vh - 48px);
-  padding-top: .5rem;
+  padding-top: 0.5rem;
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
@@ -147,8 +169,15 @@ export default {
 }
 
 .sidebar-heading {
-  font-size: .75rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 
+@media (max-width: 575px) {
+  .display-menu {
+    display: block !important;
+  }
+  .d-none {
+  }
+}
 </style>

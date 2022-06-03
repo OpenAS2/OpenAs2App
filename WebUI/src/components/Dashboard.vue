@@ -262,7 +262,6 @@ export default {
       });
     },
     getListMessageFailed: function () {
-      console.log("ssssss");
       this.messagesFailed = [];
       let min = 1;
       let max = 100;
@@ -289,7 +288,6 @@ export default {
     },
     generateDates: function () {
       this.dates = [];
-      console.log("juans");
       let init = moment(this.dateRange.startDate).format("YYYY-MM-DD");
       let end = moment(this.dateRange.endDate).format("YYYY-MM-DD");
       let now = moment().format("YYYY-MM-DD");
@@ -308,7 +306,6 @@ export default {
       }
     },
     changeDate: function () {
-      console.log(this.dateRange);
       this.datasets = [];
       this.datasetsMessagesSent = [];
       this.datasetsMessagesReceived = [];
