@@ -25,6 +25,7 @@ public class GeneralUtil {
         return map.keySet().toArray(keys);
     }
 
+    @SuppressWarnings("unchecked")
     public static String convert(Map<?, ?> map, String valueDelimiter, String pairDelimiter) {
         StringBuffer strBuf = new StringBuffer();
         Iterator<?> it = map.entrySet().iterator();
@@ -40,6 +41,7 @@ public class GeneralUtil {
         return strBuf.toString();
     }
 
+    @SuppressWarnings("unchecked")
     public static Object getKey(Map<?, Object> map, Object value) {
         Iterator<?> it = map.entrySet().iterator();
         Map.Entry<Object, Object> entry;

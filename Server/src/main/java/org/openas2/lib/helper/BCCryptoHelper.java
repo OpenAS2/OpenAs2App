@@ -369,6 +369,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             SignerInformation signer = it.next();
             if (logger.isTraceEnabled()) {
                 try { // Code block below does not do null-checks or other encoding error checking.
+                    @SuppressWarnings("unchecked")
                     Map<Object, Attribute> attrTbl = signer.getSignedAttributes().toHashtable();
                     StringBuilder strBuf = new StringBuilder();
                     for (Map.Entry<Object, Attribute> pair : attrTbl.entrySet()) {

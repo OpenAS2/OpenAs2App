@@ -175,6 +175,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         String partnerName = partnerAttr.get("name");
 
         if (partnerName != null) {
+            @SuppressWarnings("unchecked")
             Map<String, Object> map = (Map<String, Object>) partners.get(partnerName);
             Map<String, Object> partner = map;
 

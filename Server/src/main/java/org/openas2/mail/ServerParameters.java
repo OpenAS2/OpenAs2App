@@ -2,8 +2,6 @@ package org.openas2.mail;
 
 
 class ServerParameters {
-    private String userId;
-    private String password;
     private String hostName;
     private String port;
     private String mailProtocol;
