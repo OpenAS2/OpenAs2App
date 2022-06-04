@@ -3,6 +3,7 @@ package org.openas2.processor.receiver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
@@ -80,14 +81,8 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                 logger.trace("Incoming ASYNC MDN message - Message struct: " + msg.toString());
             }
             ContentType receivedContentType;
-
             MimeBodyPart receivedPart = new MimeBodyPart(msg.getHeaders(), data);
             receivedContentType = new ContentType(receivedPart.getContentType());
-
-            // MimeBodyPart receivedPart = new MimeBodyPart();
-            receivedPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
-            receivedPart.setHeader("Content-Type", receivedContentType.toString());
-
             msg.setData(receivedPart);
 
             // Switch the msg headers since the original message went in the opposite direction
