@@ -183,6 +183,20 @@ public abstract class BaseSession implements Session {
         return null;
     }
 
+    public DirectoryPollingModule getPartnershipPoller(String senderAs2Id, String receiverAs2Id) {
+        // search by the defaults since the partnershipName used as the key is not consistent due to config.xml defined pollers issue
+        // so iterate over all and search by the AS2 ID's in the defaults element
+        for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
+            Map<String, Object> meta = entry.getValue();
+            DirectoryPollingModule pollerModule = (DirectoryPollingModule)meta.get("pollerInstance");
+            String defaults = pollerModule.getParameters().get("defaults");
+            if (defaults != null && defaults.contains("receiver.as2_id=" + receiverAs2Id) && defaults.contains("sender.as2_id=" + senderAs2Id)) {
+                    return pollerModule;
+            }
+        }
+        return null;
+    }
+
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception {
         DirectoryPollingModule procmod = (DirectoryPollingModule) XMLUtil.getComponent(moduleNode, this);
         String pollerDir = procmod.getParameters().get(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY);
