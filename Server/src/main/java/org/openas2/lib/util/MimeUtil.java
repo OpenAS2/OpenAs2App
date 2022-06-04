@@ -15,6 +15,10 @@ import java.io.InputStream;
 
 
 public class MimeUtil {
+    public static final String MIME_CONTENT_TYPE_KEY = "Content-Type";
+    public static final String MIME_CONTENT_DISPOSITION_KEY = "Content-Type";
+    public static final String MIME_CONTENT_TRANSFER_ENCODING_KEY = "Content-Transfer-Encoding";
+
     private static final String HEADER_VALUE_SEPARATOR = ", ";
 
     public static int getContentLength(InternetHeaders headers) throws IOException {
@@ -56,8 +60,8 @@ public class MimeUtil {
         // create a MimeBodyPart and set up it's content and content headers
         MimeBodyPart part = new MimeBodyPart();
         part.setDataHandler(new DataHandler(new ByteArrayDataSource(data, contentType, null)));
-        part.setHeader("Content-Type", contentType);
-        part.setHeader("Content-Transfer-Encoding", contentTransferEncoding);
+        part.setHeader(MIME_CONTENT_TYPE_KEY, contentType);
+        part.setHeader(MIME_CONTENT_TRANSFER_ENCODING_KEY, contentTransferEncoding);
 
         return part;
     }
@@ -65,7 +69,7 @@ public class MimeUtil {
     public static MimeBodyPart createMimeBodyPart(MimeMultipart multipart) throws MessagingException {
         MimeBodyPart part = new MimeBodyPart();
         part.setContent(multipart);
-        part.setHeader("Content-Type", multipart.getContentType());
+        part.setHeader(MIME_CONTENT_TYPE_KEY, multipart.getContentType());
 
         return part;
     }
@@ -93,7 +97,7 @@ public class MimeUtil {
         if (contentTransferEncoding == null) {
             contentTransferEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
         }
-        return createMimeBodyPart(data, getHeader(headers, "Content-Type"), contentTransferEncoding);
+        return createMimeBodyPart(data, getHeader(headers, MIME_CONTENT_TYPE_KEY), contentTransferEncoding);
     }
 
     public static String toString(MimeBodyPart mbp, boolean addDelimiterText) throws IOException, MessagingException {

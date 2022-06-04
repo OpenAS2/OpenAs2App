@@ -44,6 +44,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 import org.openas2.processor.receiver.AS2ReceiverModule;
@@ -326,7 +327,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         MimeBodyPart tmpBody = new MimeBodyPart();
         tmpBody.setContent(signedData);
         // Content-type header is required, unit tests fail badly on async MDNs if not set.
-        tmpBody.setHeader("Content-Type", signedData.getContentType());
+        tmpBody.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, signedData.getContentType());
         return tmpBody;
     }
 
