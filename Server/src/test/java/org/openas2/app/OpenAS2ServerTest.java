@@ -15,8 +15,6 @@ import org.openas2.TestResource;
 import org.openas2.XMLSession;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
-import org.openas2.processor.ActiveModule;
-import org.openas2.processor.receiver.AS2DirectoryPollingModule;
 import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.util.Properties;
 
@@ -41,7 +39,9 @@ public class OpenAS2ServerTest {
     private static final TestResource RESOURCE = TestResource.forClass(OpenAS2ServerTest.class);
 
     private static TestPartner serverAPartnerSender;
-    private static TestPartner severBPartnerReceiver;
+    private static TestPartner serverBPartnerReceiver;
+    private static TestPartner serverBPartnerSender;
+    private static TestPartner serverAPartnerReceiver;
     private static OpenAS2Server serverA;
     private static OpenAS2Server serverB;
     private static String[] dataFolders = new String[2];
@@ -61,8 +61,14 @@ public class OpenAS2ServerTest {
             dataFolders[0] = Properties.getProperty("storageBaseDir", null);
             // Iterate over the partnerships picking the first one that has a directory poller
             serverAPartnerSender = getFromFirstSendingPartnership(serverA);
+            // Use the 2 partners in the initial partnership to get other parnerships to test both way transfer
+            // Get a receiver partnership for the matching partners in the sender partnership for server A
+            serverAPartnerReceiver = getFromPartnerIds(serverA, serverAPartnerSender.getPartnerAS2Id(), serverAPartnerSender.getAs2Id());
             serverB = new OpenAS2Server.Builder().run(RESOURCE.get("OpenAS2B", "config", "config.xml").getAbsolutePath());
-            severBPartnerReceiver = getFromPartnerIds(serverB, serverAPartnerSender.getAs2Id(), serverAPartnerSender.getPartnerAS2Id());
+            // Set up the receiver fin server B for the sender from server A
+            serverBPartnerReceiver = getFromPartnerIds(serverB, serverAPartnerSender.getAs2Id(), serverAPartnerSender.getPartnerAS2Id());
+            // Get a sender partnership for the matching partners in the receiver partnership for server B
+            serverBPartnerSender = getFromPartnerIds(serverB, serverAPartnerSender.getPartnerAS2Id(), serverAPartnerSender.getAs2Id());
             dataFolders[1] = Properties.getProperty("storageBaseDir", null);
             executorService = Executors.newFixedThreadPool(20);
         } catch (FileNotFoundException e) {
@@ -77,65 +83,52 @@ public class OpenAS2ServerTest {
     }
 
     @Test
-    public void shouldSendMessages() throws Exception {
+    public void shouldSendMessagesSyncMdn() throws Exception {
         try {
-            List<Callable<TestMessage>> callers = new ArrayList<Callable<TestMessage>>(msgCnt);
-
-            // write messages to outbox and build callables with test message objects
-            for (int i = 0; i < msgCnt; i++) {
-            	TestMessage testMsg = sendMessage(serverAPartnerSender, severBPartnerReceiver);
-                callers.add(new Callable<TestMessage>() {
-                    @Override
-                    public TestMessage call() throws Exception {
-                        return getDeliveredMessage(testMsg);
-                    }
-                });
-            }
-            // send and verify all messages in parallel
-            for (Future<TestMessage> result : executorService.invokeAll(callers)) {
-            	verifyMessageDelivery(result.get());
-            }
+            sendMessages(serverAPartnerSender, serverBPartnerReceiver);
         } catch (Throwable e) {
             // Aid debugging JUnit test failures
-            System.out.println("ERROR OCCURRED: " + ExceptionUtils.getStackTrace(e));
+            System.out.println("shouldSendMessagesSyncMdn ERROR OCCURRED: " + ExceptionUtils.getStackTrace(e));
             throw new Exception(e);
         }
     }
 
-    /*
     @Test
-    public void shouldSendMessagesAsync() throws Exception {
+    public void shouldSendMessagesAsyncMdn() throws Exception {
         try {
-            List<Callable<TestMessage>> callers = new ArrayList<Callable<TestMessage>>(msgCnt);
-
-            // write messages to outbox and build callables with test message objects
-            for (int i = 0; i < msgCnt; i++) {
-            	TestMessage testMsg = sendMessage(partnerB, partnerA);
-                callers.add(new Callable<TestMessage>() {
-                    @Override
-                    public TestMessage call() throws Exception {
-                        return getDeliveredMessage(testMsg);
-                    }
-                });
-            }
-            // send and verify all messages in parallel
-            for (Future<TestMessage> result : executorService.invokeAll(callers)) {
-            	verifyMessageDelivery(result.get());
-            }
+            sendMessages(serverBPartnerSender, serverAPartnerReceiver);
         } catch (Throwable e) {
             // Aid debugging JUnit test failures
-            System.out.println("ERROR OCCURRED: " + ExceptionUtils.getStackTrace(e));
+            System.out.println("shouldSendMessagesAsyncMdn ERROR OCCURRED: " + ExceptionUtils.getStackTrace(e));
             throw new Exception(e);
         }
     }
-    */
+
+    public void sendMessages(TestPartner sender, TestPartner receiver) throws Exception {
+        List<Callable<TestMessage>> callers = new ArrayList<Callable<TestMessage>>(msgCnt);
+
+        // write messages to outbox and build callables with test message objects
+        for (int i = 0; i < msgCnt; i++) {
+        	TestMessage testMsg = sendMessage(sender, receiver);
+            callers.add(new Callable<TestMessage>() {
+                @Override
+                public TestMessage call() throws Exception {
+                    return getDeliveredMessage(testMsg);
+                }
+            });
+        }
+        // send and verify all messages in parallel
+        for (Future<TestMessage> result : executorService.invokeAll(callers)) {
+        	verifyMessageDelivery(result.get());
+        }
+    }
 
     @AfterClass
     public static void tearDown() throws Exception {
         //executorService.awaitTermination(15, TimeUnit.SECONDS);
         executorService.shutdown();
         serverAPartnerSender.getServer().shutdown();
-        severBPartnerReceiver.getServer().shutdown();
+        serverBPartnerReceiver.getServer().shutdown();
         // Cleanup the folders created so the test does not fail next time round from leftover data
         // NOTE: For debugging "missing" files it is best to comment this out
         for (int i = 0; i < dataFolders.length; i++) {
@@ -153,7 +146,7 @@ public class OpenAS2ServerTest {
         String outgoingMsgBody = RandomStringUtils.randomAlphanumeric(1024);
         File outgoingMsg = tmp.newFile(outgoingMsgFileName);
         FileUtils.write(outgoingMsg, outgoingMsgBody, "UTF-8");
-
+        System.out.println("Copying a file to send to:" + fromPartner.getOutbox());
         FileUtils.copyFileToDirectory(outgoingMsg, fromPartner.getOutbox());
     	//System.out.println("**** ****   FILE COPIED: " + fromPartner.getOutbox() + "/" + outgoingMsg.getName());
 
@@ -216,17 +209,8 @@ public class OpenAS2ServerTest {
         if (dirPollMod != null) {
         	return dirPollMod;
         }
-    	// Try to find a module defined poller since there is not partnership defined poller
-        List<ActiveModule> dirPollers = session.getProcessor().getActiveModulesByClass(AS2DirectoryPollingModule.class);
-        for (Iterator<ActiveModule> iterator = dirPollers.iterator(); iterator.hasNext();) {
-            ActiveModule activeModule = (ActiveModule) iterator.next();
-            String defaults = activeModule.getParameters().get("defaults");
-            if (defaults.contains("receiver.as2_id=" + partnership.getReceiverID(Partnership.PID_AS2)) && defaults.contains("sender.as2_id=" + partnership.getSenderID(Partnership.PID_AS2))) {
-                    return (DirectoryPollingModule)activeModule;
-            }
-        }
-        return null;
-    	
+    	// Try to find a module defined poller since there is no matching poller by name. (config.xml defined pollers do not have the correct partnership name in the poller cache)
+        return session.getPartnershipPoller(partnership.getSenderID(Partnership.PID_AS2), partnership.getReceiverID(Partnership.PID_AS2));    	
     }
 
     @SuppressWarnings("unused")
