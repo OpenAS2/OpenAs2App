@@ -116,7 +116,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                  * Cannot identify the target if in init or parse state so not sure what the
                  * best course of action is apart from do nothing
                  */
-                msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
+                msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
                 logger.error(msg.getLogMsg(), e);
                 try {
                     HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
