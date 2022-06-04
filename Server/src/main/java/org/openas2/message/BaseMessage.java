@@ -5,6 +5,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.TrackingModule;
@@ -112,11 +113,11 @@ public abstract class BaseMessage implements Message {
     }
 
     public String getContentType() {
-        return getHeader("Content-Type");
+        return getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY);
     }
 
     public void setContentType(String contentType) {
-        setHeader("Content-Type", contentType);
+        setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, contentType);
     }
 
     public String getCompressionType() {

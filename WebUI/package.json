@@ -31,10 +31,10 @@
     "yarn": "^1.22.17"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.0.1",
     "@vue/cli-plugin-babel": "^3.11.0",
     "@vue/cli-plugin-eslint": "^3.11.0",
     "@vue/cli-service": "^3.11.0",
-    "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
     "vue-template-compiler": "^2.6.10"
@@ -57,7 +57,7 @@
       "eslint:recommended"
     ],
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "eslint-parser"
     }
   },
   "postcss": {

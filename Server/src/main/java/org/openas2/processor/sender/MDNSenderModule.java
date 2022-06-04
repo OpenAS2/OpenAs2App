@@ -93,10 +93,10 @@ public class MDNSenderModule extends HttpSenderModule {
         } else {
             // otherwise, send sync MDN back on same connection
 
-            ByteArrayOutputStream data = new ByteArrayOutputStream();
+            ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
             MimeBodyPart part = mdn.getData();
             try {
-                part.writeTo(data);
+                part.writeTo(dataStream);
             } catch (Exception e) {
                 WrappedException we = new WrappedException("Error writing MDN to byte array.", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
@@ -104,9 +104,9 @@ public class MDNSenderModule extends HttpSenderModule {
                 throw new WrappedException(we);
             }
             // make sure to set the content-length header
-            mdn.setHeader("Content-Length", Integer.toString(data.size()));
+            //mdn.setHeader("Content-Length", Integer.toString(data.size()));
             try {
-                HTTPUtil.sendHTTPResponse(httpOutputStream, HttpURLConnection.HTTP_OK, data, mdn.getHeaders().getAllHeaderLines());
+                HTTPUtil.sendHTTPResponse(httpOutputStream, HttpURLConnection.HTTP_OK, dataStream, mdn.getHeaders().getAllHeaderLines());
                 msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
                 msg.trackMsgState(getSession());
             } catch (IOException e) {
@@ -157,7 +157,11 @@ public class MDNSenderModule extends HttpSenderModule {
             }
             byte[] data = dataOutputStream.toByteArray();
             // make sure to set the content-length header
+<<<<<<< HEAD
             // mdn.setHeader("Content-Length", Integer.toString(data.length));
+=======
+            //mdn.setHeader("Content-Length", Integer.toString(data.length));
+>>>>>>> b668dbb (Fix async mdn (#278))
             ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, mdn.getHeaders().getAllHeaders(), null, new ByteArrayInputStream(data), httpOptions, maxSize);
 
             int respCode = resp.getStatusCode();

@@ -3,6 +3,7 @@ package org.openas2.processor.receiver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
@@ -42,7 +43,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
     public void handle(NetModule owner, Socket s) {
 
         if (logger.isInfoEnabled()) {
-            logger.info("incoming connection" + " [" + getClientInfo(s) + "]");
+            logger.info("Incoming connection" + " [" + getClientInfo(s) + "]");
         }
 
         AS2Message msg = new AS2Message();
@@ -66,9 +67,8 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                         HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
                     } catch (IOException e1) {
                     }
-                    OpenAS2Exception oe = new OpenAS2Exception("Missing data in MDN response message");
-                    msg.setLogMsg("Error receiving asynchronous MDN. There is no data.");
-                    logger.error(msg, oe);
+                    msg.setLogMsg("Error receiving asynchronous MDN. There is no data in the receivd MDN: " +  getClientInfo(s) + ":: " + msg.getLogMsgID());
+                    logger.error(msg);
                     return;
                 }
             }
@@ -81,14 +81,8 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                 logger.trace("Incoming ASYNC MDN message - Message struct: " + msg.toString());
             }
             ContentType receivedContentType;
-
             MimeBodyPart receivedPart = new MimeBodyPart(msg.getHeaders(), data);
             receivedContentType = new ContentType(receivedPart.getContentType());
-
-            // MimeBodyPart receivedPart = new MimeBodyPart();
-            receivedPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
-            receivedPart.setHeader("Content-Type", receivedContentType.toString());
-
             msg.setData(receivedPart);
 
             // Switch the msg headers since the original message went in the opposite direction
@@ -122,12 +116,12 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                  * Cannot identify the target if in init or parse state so not sure what the
                  * best course of action is apart from do nothing
                  */
+                msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
+                logger.error(msg.getLogMsg(), e);
                 try {
                     HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
                 } catch (IOException e1) {
                 }
-                msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
-                logger.error(msg, e);
             } else {
                 /*
                  * Most likely a resend abort of max resend reached if

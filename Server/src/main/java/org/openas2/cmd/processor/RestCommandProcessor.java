@@ -21,7 +21,6 @@ import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.restapi.ApiResource;
 import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
-import org.openas2.cmd.processor.restapi.CORSFilter;
 import org.openas2.cmd.processor.restapi.LoggerRequestFilter;
 
 import java.io.IOException;

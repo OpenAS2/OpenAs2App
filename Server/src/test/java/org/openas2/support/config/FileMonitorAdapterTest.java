@@ -37,14 +37,12 @@ public class FileMonitorAdapterTest {
     @Mock
     private ScheduledExecutorService executorService;
     private File configFile;
-    private File tst;
 
     private FileMonitorAdapter adapter;
 
     @Before
     public void setUp() throws Exception {
         configFile = spy(tmp.newFile());
-        tst = tmp.newFile();
         adapter = spy(new FileMonitorAdapter() {
             @Override
             public void onConfigFileChanged() throws OpenAS2Exception {

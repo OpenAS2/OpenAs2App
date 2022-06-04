@@ -1,24 +1,21 @@
 #              OpenAS2 Server
-#              Version 3.0.1
+#              Version 3.1.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.0.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.1.0
 
-The release download file is: OpenAS2Server-3.0.1.zip
+The release download file is: OpenAS2Server-3.1.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 3.0.1 - 2022-05-30
-This is a  and minor enhancement release:
+Version 3.1.0 - 2022-06-04
+This is a minor enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-
-  1. Fix partnership directory poller cache not refreshing when partnerships file is modified on a live system.
-  2. Fix the support for bypassing proxy hosts.
-  3. Fix access via the web application. See the README here for using it: https://github.com/OpenAS2/OpenAs2App/blob/master/WebUI/README.md
-  4. Support setting the valid days count and start date for certificate generation in the gen_p12_key_par.sh script.
-  5. Provide a more useful message when parsing dynamic strings throws an error.
+  1. Support embedded $properties.xxx$ within property element values.
+  2. Support setting unix executables in ZIP file when packaging new release in Maven.
+  3. Fix asynchronous MDN sending and receiving.
 
 
 ##Upgrade Notes

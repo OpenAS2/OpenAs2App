@@ -9,6 +9,26 @@ import java.util.StringTokenizer;
 
 
 public abstract class ParameterParser {
+    protected final static String parameterDelimiterString = "$";
+    private boolean returnEmptyStringForMissingParsers;
+    private boolean returnParamStringForMissingParsers = false;
+
+    public boolean isReturnParamStringForMissingParsers() {
+        return returnParamStringForMissingParsers;
+    }
+
+    public void setReturnParamStringForMissingParsers(boolean returnParamStringForMissingParsers) {
+        this.returnParamStringForMissingParsers = returnParamStringForMissingParsers;
+    }
+
+    public void setReturnEmptyStringForMissingParsers(boolean returnEmptyStringForMissingParsers) {
+        this.returnEmptyStringForMissingParsers = returnEmptyStringForMissingParsers;
+    }
+
+    public boolean getReturnEmptyStringForMissingParsers() {
+        return returnEmptyStringForMissingParsers;
+    }
+
     public abstract void setParameter(String key, String value) throws InvalidParameterException;
 
     public abstract String getParameter(String key) throws InvalidParameterException;
@@ -112,7 +132,7 @@ public abstract class ParameterParser {
             int prev = next;
 
             // Find start of $xxx$ sequence.
-            next = format.indexOf('$', prev);
+            next = format.indexOf(parameterDelimiterString, prev);
             if (next == -1) {
                 result.append(format.substring(prev));
                 break;
@@ -125,16 +145,21 @@ public abstract class ParameterParser {
 
             // Find end of $xxx$ sequence
             prev = next + 1;
-            next = format.indexOf('$', prev);
+            next = format.indexOf(parameterDelimiterString, prev);
             if (next == -1) {
-                throw new InvalidParameterException("Invalid key (missing closing $) parsing this string: " + format);
+                throw new InvalidParameterException("Invalid key (missing closing '" + parameterDelimiterString + "') parsing this string: " + format);
             }
 
             // If we have just $$ then output $, else we have $xxx$, lookup xxx
             if (next == prev) {
-                result.append("$");
+                result.append(parameterDelimiterString);
             } else {
-                result.append(getParameter(format.substring(prev, next)));
+                String newString = getParameter(format.substring(prev, next));
+                if ("".equals(newString) && getReturnEmptyStringForMissingParsers() && isReturnParamStringForMissingParsers()) {
+                    result.append(parameterDelimiterString).append(format.substring(prev, next)).append(parameterDelimiterString);
+                } else {
+                    result.append(newString);
+                }
             }
         }
 

@@ -28,14 +28,14 @@
         <attribute name="subject" value="File $attributes.filename$ sent from $sender.name$ to $receiver.name$"/>
         <attribute name="as2_url" value="http://localhost:10080"/>
         <attribute name="as2_mdn_to" value="edi@myCompany.com"/>
-        <attribute name="as2_mdn_options" value="none"/>
+        <attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
         <!--
-                   value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
+            For an unsigned MDN use this value for as2_mdn_options:       value="none"
         -->
         <!--  For enabling ASYNC MDN uncomment this attribute and set this to the URL partner must send MDN back to.
               Example below uses a property from the config.xml to facilitate centralised management of the URL
-         -->
             <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
+         -->
         <attribute name="encrypt" value="3DES"/>
         <attribute name="sign" value="SHA256"/>
         <attribute name="resend_max_retries" value="3"/>

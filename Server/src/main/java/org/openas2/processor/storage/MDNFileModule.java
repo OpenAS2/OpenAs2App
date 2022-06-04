@@ -10,7 +10,6 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
-import org.openas2.processor.sender.SenderModule;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
