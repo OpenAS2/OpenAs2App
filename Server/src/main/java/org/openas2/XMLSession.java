@@ -184,6 +184,7 @@ public class XMLSession extends BaseSession {
          */
         // Pass "true" to ignore unmatched parse ID's in case the properties contain dynamic parameters needed for JIT evaluation
         CompositeParameters parser = new CompositeParameters(true);
+        parser.setReturnParamStringForMissingParsers(true);
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             String val = entry.getValue();
             String parsedVal = ParameterParser.parse(val, parser);
