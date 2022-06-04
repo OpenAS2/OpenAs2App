@@ -178,15 +178,20 @@ public class XMLSession extends BaseSession {
                 }
             }
         }
-        // Process all loaded values in case they reference other properties in the value
-        // Ignore unmatched parse ID's in case the properties contain dynamic parameters need for JIT evaluation
+        /* Process all loaded values in case they reference other properties in the value
+           Use the properties object instead of Properties so we only parse the properties that were in the config.xml
+           so that we can use system property values to replace config.xml properties.
+         */
+        // Pass "true" to ignore unmatched parse ID's in case the properties contain dynamic parameters needed for JIT evaluation
         CompositeParameters parser = new CompositeParameters(true);
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             String val = entry.getValue();
             String parsedVal = ParameterParser.parse(val, parser);
             // Parser will return empty string if there is an unmatched parser ID in the string
             if (parsedVal.length() > 0 && !val.equals(parsedVal)) {
-                properties.put(entry.getKey(), parsedVal);
+                String key = entry.getKey();
+                // Put the changed value into the Properties set
+                Properties.setProperty(key, parsedVal);
             }
         }
     }
