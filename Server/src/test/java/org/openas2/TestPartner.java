@@ -40,6 +40,9 @@ public class TestPartner {
         this.as2Id = partnership.getSenderID(Partnership.PID_AS2);
         this.partnerName = partnership.getReceiverID("name");
         this.partnerAS2Id = partnership.getReceiverID(Partnership.PID_AS2);
+        if (this.partnership == null) {
+        	throw new Exception("Require a partnership to configure a test partner.");
+        }
         XMLSession session = (XMLSession)server.getSession();
         if (dirPollMod != null) {
         	// Must be a sender so set up the relevant folders for test
@@ -48,7 +51,8 @@ public class TestPartner {
         // Create a fake AS2 message to build the directory structures so we know where the files will be stored
         AS2Message msg = new AS2Message();
         msg.setPartnership(partnership);
-        AS2MessageMDN mdn = new AS2MessageMDN(msg, true);
+        // Add an MDN to the msg to be able to configure directories
+        new AS2MessageMDN(msg, true);
         List<ProcessorModule> msgStorageModules = session.getProcessor().getModulesSupportingAction(StorageModule.DO_STORE);
         // Just use the first one even if there is more than 1
         MessageFileModule msgFileModule = (MessageFileModule)msgStorageModules.get(0);

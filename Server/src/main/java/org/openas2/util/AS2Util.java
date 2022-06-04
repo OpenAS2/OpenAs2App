@@ -22,8 +22,10 @@ import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 
+import javax.mail.BodyPart;
 import javax.mail.Header;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
@@ -92,6 +94,7 @@ public class AS2Util {
             ICryptoHelper ch = getCryptoHelper();
 
             if (ch.isSigned(mainPart)) {
+                // the signature verifier will return the signed content as a MimeBodyPart
                 mainPart = getCryptoHelper().verifySignature(mainPart, receiver);
             }
         } catch (Exception e1) {
@@ -101,7 +104,7 @@ public class AS2Util {
         }
 
         try {
-            MimeMultipart reportParts = new MimeMultipart(mainPart.getDataHandler().getDataSource());
+            MimeMultipart reportParts = (MimeMultipart)mainPart.getContent();
 
             if (reportParts != null) {
                 ContentType reportType = new ContentType(reportParts.getContentType());
@@ -129,6 +132,9 @@ public class AS2Util {
                             mdn.setAttribute(AS2MessageMDN.MDNA_MIC, headers.getHeader("Received-Content-MIC", ", "));
                         }
                     }
+                } else {
+                    // No multipart/report so now what?
+                    logger.warn("MDN received from partner but did not contain a multipart/report section. " + msg.getLogMsgID());
                 }
             }
         } catch (Exception e) {
@@ -271,7 +277,7 @@ public class AS2Util {
                  * RFC 6362 specifies that the sent attachments should be considered invalid and
                  * retransmitted
                  */
-                String errmsg = "MIC algorithm returned by partner is not the same as the algorithm requested but must be the same per RFC4130 section 7.4.3. Original MIC alg: " + cMicAlg + " ::: returned MIC alg: " + rMicAlg + "\n\t\tEnsure that Partner supports the requested algorithm and the \"" + Partnership.PA_AS2_MDN_OPTIONS + "\" attribute for the outbound partnership uses the same algorithm as the \" +" + Partnership.PA_SIGNATURE_ALGORITHM + "\" attribute.";
+                String errmsg = "MIC algorithm returned by partner is not the same as the algorithm requested but must be the same per RFC4130 section 7.4.3. Original MIC alg: " + cMicAlg + " ::: returned MIC alg: " + rMicAlg + "\n        Ensure that Partner supports the requested algorithm and the \"" + Partnership.PA_AS2_MDN_OPTIONS + "\" attribute for the outbound partnership uses the same algorithm as the \" +" + Partnership.PA_SIGNATURE_ALGORITHM + "\" attribute.";
                 throw new OpenAS2Exception(errmsg + " Forcing Resend");
             }
         }
@@ -470,7 +476,7 @@ public class AS2Util {
 
         msg.setStatus(Message.MSG_STATUS_MDN_VERIFY);
         if (logger.isTraceEnabled()) {
-            logger.trace("MDN parsed. \n\tPayload file name: " + msg.getPayloadFilename() + "\n\tChecking MDN report..." + msg.getLogMsgID());
+            logger.trace("MDN parsed. \n    Payload file name: " + msg.getPayloadFilename() + "\n    Checking MDN report..." + msg.getLogMsgID());
         }
         try {
             AS2Util.checkMDN(msg);
@@ -518,7 +524,7 @@ public class AS2Util {
         msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
         msg.trackMsgState(session);
         if (logger.isTraceEnabled()) {
-            logger.trace("MDN processed. \n\tPayload file name: " + msg.getPayloadFilename() + "\n\tPersisting MDN report..." + msg.getLogMsgID());
+            logger.trace("MDN processed. \n    Payload file name: " + msg.getPayloadFilename() + "\n    Persisting MDN report..." + msg.getLogMsgID());
         }
 
         session.getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);

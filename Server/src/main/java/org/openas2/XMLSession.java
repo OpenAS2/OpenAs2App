@@ -8,6 +8,9 @@ import org.openas2.cmd.processor.BaseCommandProcessor;
 import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.openas2.logging.LogManager;
 import org.openas2.logging.Logger;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.InvalidParameterException;
+import org.openas2.params.ParameterParser;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
@@ -133,8 +136,9 @@ public class XMLSession extends BaseSession {
      * Finally checks if an additional property file was provided and loads those.
      * 
      * @param propNode - the "properties" element of the configuration file containing property values
+     * @throws InvalidParameterException 
      */
-    private void loadProperties(Node propNode) {
+    private void loadProperties(Node propNode) throws InvalidParameterException {
         LOGGER.info("Loading properties...");
 
         Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
@@ -172,6 +176,23 @@ public class XMLSession extends BaseSession {
                         LOGGER.warn("Failed to close properties fiel input stream.", e);
                     }
                 }
+            }
+        }
+        /* Process all loaded values in case they reference other properties in the value
+           Use the properties object instead of Properties so we only parse the properties that were in the config.xml
+           so that we can use system property values to replace config.xml properties.
+         */
+        // Pass "true" to ignore unmatched parse ID's in case the properties contain dynamic parameters needed for JIT evaluation
+        CompositeParameters parser = new CompositeParameters(true);
+        parser.setReturnParamStringForMissingParsers(true);
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            String val = entry.getValue();
+            String parsedVal = ParameterParser.parse(val, parser);
+            // Parser will return empty string if there is an unmatched parser ID in the string
+            if (parsedVal.length() > 0 && !val.equals(parsedVal)) {
+                String key = entry.getKey();
+                // Put the changed value into the Properties set
+                Properties.setProperty(key, parsedVal);
             }
         }
     }

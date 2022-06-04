@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
@@ -273,7 +274,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         MimeBodyPart body = new MimeBodyPart();
         try {
             body.setDataHandler(new DataHandler(dataSource));
-            body.setHeader("Content-Type", contentType);
+            body.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, contentType);
         } catch (MessagingException e) {
             throw new OpenAS2Exception("Failed to set properties on mime body part: " + e.getMessage(), e);
         }

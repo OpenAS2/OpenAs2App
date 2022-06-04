@@ -8,6 +8,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.DataHistoryItem;
@@ -76,7 +77,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         if (logger.isInfoEnabled()) {
-            logger.info("message sender invoked" + msg.getLogMsgID());
+            logger.info("Message sender invoked for log ID: " + msg.getLogMsgID());
         }
         boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
         options.put(FIELDS.DIRECTION, "SEND");
@@ -209,7 +210,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             return;
         }
         // Check if it will be a Sync or AsyncMDN
-        if (msg.getPartnership().getAttribute(Partnership.PA_AS2_RECEIPT_OPTION) != null) {
+        if (msg.getPartnership().isAsyncMDN()) {
             // Async MDN
             msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
         } else {
@@ -450,9 +451,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         ih.addHeader("Mime-Version", "1.0"); // make sure this is the
         // encoding used in the msg, run TBF1
         try {
-            ih.addHeader(HTTPUtil.HEADER_CONTENT_TYPE, securedData.getContentType());
+            ih.addHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, securedData.getContentType());
         } catch (MessagingException e) {
-            ih.addHeader(HTTPUtil.HEADER_CONTENT_TYPE, msg.getContentType());
+            ih.addHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, msg.getContentType());
         }
         // AS2 V1.2 additionally supports EDIINT-Features
         // ih.addHeader("EDIINT-Features","CEM,multiple-attachments");

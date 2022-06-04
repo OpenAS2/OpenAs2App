@@ -1,6 +1,14 @@
- Version 3.0.1 - 2022-05-30
+Version 3.1.0 - 2022-06-04
+This is a minor enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support embedded $properties.xxx$ within property element values.
+  2. Support setting unix executables in ZIP file when packaging new release in Maven.
+  3. Fix asynchronous MDN sending and receiving.
+  
+Version 3.0.1 - 2022-05-30
 This is a bugfix and minor enhancement release:
-       **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
 
   1. Fix partnership directory poller cache not refreshing when partnerships file is modified on a live system.

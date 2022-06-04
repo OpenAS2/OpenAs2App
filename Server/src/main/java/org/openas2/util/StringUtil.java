@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class StringUtil {
 
+    @SuppressWarnings("unchecked")
     public static String mapToString(Map<Object, Object> map, String keyValContenator, String entryConcatenator) {
         if (map == null) {
             return null;
@@ -42,6 +43,7 @@ public class StringUtil {
         return strBuf.append(myList.get(myList.size() - 1)).toString();
     }
 
+    @SuppressWarnings("unchecked")
     public static String mapToString(Map<String, List<String>> map, String keyValContenator, String entryConcatenator, String listConcatenator) {
         if (map == null) {
             return null;

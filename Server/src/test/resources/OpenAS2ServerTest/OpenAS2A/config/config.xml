@@ -60,8 +60,8 @@
                         password="pWd"/>
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
-              pendingMDN="%home%/../data/pendingMDN3"
-              pendingMDNinfo="%home%/../data/pendinginfoMDN3">
+              pendingMDN="$properties.storageBaseDir$/pendingMDN3"
+              pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3">
       <module enabled="$properties.module.AS2SenderModule.enabled$"
               classname="org.openas2.processor.sender.AS2SenderModule">
         </module>
@@ -72,8 +72,8 @@
     named OpenAS2A_OID-OpenAS2B_OID.1234 would be sent from OpenAS2A to OpenAS2B. -->
       <module enabled="true"
               classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-              outboxdir="%home%/../data/toAny"
-              errordir="%home%/../data/toAny/error"
+              outboxdir="$properties.storageBaseDir$/toAny"
+              errordir="$properties.storageBaseDir$/toAny/error"
               interval="1"
               delimiters="-."
               sendfilename="true"
@@ -82,8 +82,8 @@
       <!--  Handled in Partnership config so commented out
       <module enabled="true"
               classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-              outboxdir="%home%/../data/toOpenAS2A/"
-              errordir="%home%/../data/toOpenAS2A/error"
+              outboxdir="$properties.storageBaseDir$/toOpenAS2A/"
+              errordir="$properties.storageBaseDir$/toOpenAS2A/error"
               interval="1"
               defaults="sender.as2_id=OpenAS2B_OID, receiver.as2_id=OpenAS2A_OID"
               sendfilename="true"
@@ -91,8 +91,8 @@
       -->
       <module enabled="true"
               classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-              outboxdir="%home%/../data/toOpenAS2B"
-              errordir="%home%/../data/toOpenAS2B/error"
+              outboxdir="$properties.storageBaseDir$/toOpenAS2B"
+              errordir="$properties.storageBaseDir$/toOpenAS2B/error"
               interval="1"
               defaults="sender.as2_id=OpenAS2A_OID, receiver.as2_id=OpenAS2B_OID"
               sendFilename="true"
@@ -111,19 +111,19 @@
               tcp_server_password="openas2"/>
       <module enabled="$properties.module.MDNFileModule.enabled$"
               classname="org.openas2.processor.storage.MDNFileModule"
-              filename="%home%/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
+              filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
               protocol="as2"
-              tempdir="%home%/../data/temp"/>
+              tempdir="$properties.storageBaseDir$/temp"/>
       <module enabled="$properties.module.MessageFileModule.enabled$"
               classname="org.openas2.processor.storage.MessageFileModule"
-              filename="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
-              header="%home%/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
+              filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
+              header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
               protocol="as2"
-              tempdir="%home%/../data/temp"/>
+              tempdir="$properties.storageBaseDir$/temp"/>
       <module enabled="$properties.module.AS2ReceiverModule.http.enabled$"
               classname="org.openas2.processor.receiver.AS2ReceiverModule"
               port="10080"
-              errordir="%home%/../data/inbox/error"
+              errordir="$properties.storageBaseDir$/inbox/error"
               errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
       <!--
         <module classname="org.openas2.processor.receiver.AS2ReceiverModule"			
@@ -132,7 +132,7 @@
             ssl_protocol="TLS"
             ssl_keystore="%home%/ssl_certs.jks"
             ssl_keystore_password="testas2"
-            errordir="%home%/../data/inbox/error"
+            errordir="$properties.storageBaseDir$/inbox/error"
             errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
             -->
       <module enabled="$properties.module.AS2MDNReceiverModule.http.enabled$"
@@ -149,8 +149,8 @@
 			-->
       <module enabled="$properties.module.DirectoryResenderModule.enabled$"
               classname="org.openas2.processor.resender.DirectoryResenderModule"
-              resenddir="%home%/../data/resend"
-              errordir="%home%/../data/resend/error"
+              resenddir="$properties.storageBaseDir$/resend"
+              errordir="$properties.storageBaseDir$/resend/error"
               resenddelay="60"/>
    </processor>
    <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->

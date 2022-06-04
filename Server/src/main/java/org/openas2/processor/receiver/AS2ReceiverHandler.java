@@ -44,6 +44,7 @@ import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -148,7 +149,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                          * msg.setData(receivedPart); receivedContentType = new
                          * ContentType(receivedPart.getContentType());
                          */
-                        receivedContentType = new ContentType(msg.getHeader("Content-Type"));
+                        receivedContentType = new ContentType(msg.getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY));
 
                         MimeBodyPart receivedPart = new MimeBodyPart();
                         receivedPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
@@ -158,7 +159,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                         // Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the
                         // HTTP header
                         // since it may not be set in the received mime body part
-                        receivedPart.setHeader("Content-Type", receivedContentType.toString());
+                        receivedPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, receivedContentType.toString());
 
                         // Set the transfer encoding if necessary
                         String cte = receivedPart.getEncoding();
@@ -562,18 +563,15 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     }
 
     public void createMDNData(Session session, MessageMDN mdn, String micAlg, String signatureProtocol) throws Exception {
-        // Create the report and sub-body parts
-        MimeMultipart reportParts = new MimeMultipart();
-
         // Create the text part
         MimeBodyPart textPart = new MimeBodyPart();
         String text = mdn.getText() + "\r\n";
         textPart.setContent(text, "text/plain");
-        textPart.setHeader("Content-Type", "text/plain");
-        reportParts.addBodyPart(textPart);
+        textPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, "text/plain");
+        boolean unfoldHeaders = "true".equalsIgnoreCase(mdn.getPartnership().getAttributeOrProperty("remove_http_header_folding", "true"));
 
         // Create the report part
-        MimeBodyPart reportPart = new MimeBodyPart();
+        MimeBodyPart reportMetaPart = new MimeBodyPart();
         InternetHeaders reportValues = new InternetHeaders();
         reportValues.setHeader("Reporting-UA", mdn.getAttribute(AS2MessageMDN.MDNA_REPORTING_UA));
         reportValues.setHeader("Original-Recipient", mdn.getAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT));
@@ -581,42 +579,28 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         reportValues.setHeader("Original-Message-ID", mdn.getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID));
         reportValues.setHeader("Disposition", mdn.getAttribute(AS2MessageMDN.MDNA_DISPOSITION));
         reportValues.setHeader("Received-Content-MIC", mdn.getAttribute(AS2MessageMDN.MDNA_MIC));
-
         Enumeration<String> reportEn = reportValues.getAllHeaderLines();
         StringBuffer reportData = new StringBuffer();
-
         while (reportEn.hasMoreElements()) {
             reportData.append(reportEn.nextElement()).append("\r\n");
         }
-
         reportData.append("\r\n");
-
         String reportText = reportData.toString();
-        reportPart.setContent(reportText, AS2Standards.DISPOSITION_TYPE);
-        reportPart.setHeader("Content-Type", AS2Standards.DISPOSITION_TYPE);
-        reportParts.addBodyPart(reportPart);
+        reportMetaPart.setContent(reportText, AS2Standards.DISPOSITION_TYPE);
+        reportMetaPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, AS2Standards.DISPOSITION_TYPE);
 
-        // Convert report parts to MimeBodyPart
-        MimeBodyPart report = new MimeBodyPart();
-        reportParts.setSubType(AS2Standards.REPORT_SUBTYPE);
-        String contentType = reportParts.getContentType();
-        if ("true".equalsIgnoreCase(Properties.getProperty("remove_multipart_content_type_header_folding", "false"))) {
-            contentType = contentType.replaceAll("\r\n[ \t]*", " ");
-        }
-        // Remove the trailing information for header if any
-        int indexOfSemiColon = contentType.indexOf(";");
-        if (indexOfSemiColon > -1) {
-            contentType = contentType.substring(0, indexOfSemiColon);
-        }
-        report.setHeader("Content-Type", contentType);
-        report.setContent(reportParts, reportParts.getContentType());
-
+        // Create the multipart to hold the report parts
+        MimeMultipart reportMultiPart = new MimeMultipart(AS2Standards.REPORT_SUBTYPE, textPart, reportMetaPart);
+        MimeBodyPart reportPart = new MimeBodyPart();
+        reportPart.setContent(reportMultiPart);
+        //IMPORTANT: Set the Content-Type AFTER setting the content as setContent() clears the Content-Type of the BodyPart
+        reportPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, unfoldHeaders?MimeUtility.unfold(reportMultiPart.getContentType()):reportMultiPart.getContentType());
         // Sign the data if needed
         if (signatureProtocol != null) {
             CertificateFactory certFx = session.getCertificateFactory();
 
             try {
-                // The receiver of the original message is the sender of the MDN....
+                // The receiver of the original message is the sender of the MDN - sign with the receivers private key
                 X509Certificate senderCert = certFx.getCertificate(mdn, Partnership.PTYPE_RECEIVER);
                 PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
                 Partnership p = mdn.getPartnership();
@@ -626,37 +610,22 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
                 }
                 // sign the data using CryptoHelper
-                MimeBodyPart signedReport = AS2Util.getCryptoHelper().sign(report, senderCert, senderKey, micAlg, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
+                MimeBodyPart signedReport = AS2Util.getCryptoHelper().sign(reportPart, senderCert, senderKey, micAlg, contentTxfrEncoding, false, isRemoveCmsAlgorithmProtectionAttr);
+                if (unfoldHeaders) {
+                    signedReport.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, MimeUtility.unfold(signedReport.getContentType()));
+                }
                 mdn.setData(signedReport);
             } catch (CertificateNotFoundException cnfe) {
                 cnfe.log();
-                mdn.setData(report);
+                mdn.setData(reportPart);
             } catch (KeyNotFoundException knfe) {
                 knfe.log();
-                mdn.setData(report);
+                mdn.setData(reportPart);
             }
         } else {
-            // Must provide a stream for this to avoid the DCH error
-            //report.setDataHandler(new DataHandler(reportParts, "multipart/report"));
-            mdn.setData(report);
+            mdn.setData(reportPart);
         }
-
-        // Update the MDN headers with content information
-        MimeBodyPart data = mdn.getData();
-        String headerContentType = data.getContentType();
-        // Remove content folding unless configured not to do so
-        String removeHeaderFolding = mdn.getPartnership().getAttribute("remove_http_header_folding");
-        if (removeHeaderFolding == null) {
-            // Not configured at partnership level so use system level
-            removeHeaderFolding = Properties.getProperty("remove_http_header_folding", "true");
-        }
-        if ("true".equalsIgnoreCase(removeHeaderFolding)) {
-            headerContentType = headerContentType.replaceAll("\r\n[ \t]*", " ");
-        }
-
-        mdn.setHeader("Content-Type", headerContentType);
-
-        // int size = getSize(data);
-        // mdn.setHeader("Content-Length", Integer.toString(size));
+        mdn.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, mdn.getData().getContentType());
     }
+
 }

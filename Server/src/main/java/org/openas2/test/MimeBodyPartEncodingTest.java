@@ -4,6 +4,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.Session;
 import org.openas2.XMLSession;
 import org.openas2.cert.CertificateFactory;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
@@ -87,7 +88,7 @@ public class MimeBodyPartEncodingTest {
             // consist with the parameter "mimetype="application/EDI-X12""
             // defined in config.xml 2007-06-01
 
-            body.setHeader("Content-Type", contentType);
+            body.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, contentType);
 
             // add below statement will tell the receiver to save the filename
             // as the one sent by sender. 2007-06-01
