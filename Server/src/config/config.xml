@@ -4,7 +4,8 @@
                log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
                sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
                as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
-               as2_async_mdn_url="http://localhost:10081"
+               async_mdn_receiver_port="10081"
+               as2_async_mdn_url="http://localhost:$properties.async_mdn_receiver_port$"
                as2_receive_message_filename_fallback="$rand.shortUUID$"
                console.logger.enabled="true"
                file.logger.enabled="true"
@@ -163,7 +164,7 @@
               errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
       <module enabled="$properties.module.AS2MDNReceiverModule.http.enabled$"
               classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
-              port="10081"/>
+              port="$properties.async_mdn_receiver_port$"/>
       <module enabled="$properties.module.AS2MDNReceiverModule.https.enabled$"
               classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
               port="10444"
