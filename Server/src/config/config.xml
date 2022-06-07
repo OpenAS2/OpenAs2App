@@ -12,7 +12,7 @@
                email.logger.enabled="false"
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
-               restapi.command.processor.enabled="false"
+               restapi.command.processor.enabled="true"
                module.AS2SenderModule.enabled="true"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
@@ -67,7 +67,7 @@
                         response_format="xml"/>
       <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
                         enabled="$properties.restapi.command.processor.enabled$"
-                        baseuri="https://localhost:8443" 
+                        baseuri="http://localhost:8443"
                         ssl_protocol="TLS"
                         ssl_keystore="%home%/ssl_certs.jks"
                         ssl_keystore_password="testas2"
@@ -190,5 +190,9 @@
            mimetype="application/EDI-X12"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                  filename="%home%/partnerships.xml"
+                 interval="120"/>
+
+   <messages classname="org.openas2.message.XMLMessageFactory"
+                 filename="%home%/messages.xml"
                  interval="120"/>
 </openas2>
