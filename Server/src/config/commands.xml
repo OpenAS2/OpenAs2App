@@ -28,5 +28,9 @@
 		description="Logging Levels commands">
 		<command classname="org.openas2.app.logging.SetLogLevelCommand"/>
 	</multicommand>
+	<multicommand name="messages" description="Messages commands">
+		<command classname="org.openas2.app.message.ListMessagesCommand"/>
+		<command classname="org.openas2.app.message.ViewMessageCommand"/>
+	</multicommand>
 	
 </commands>

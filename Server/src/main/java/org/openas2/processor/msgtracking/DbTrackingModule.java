@@ -17,6 +17,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -187,6 +189,80 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         }
 
     }
+
+    public ArrayList<HashMap<String,String>> listMessages() {
+
+        Connection conn = null;
+        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>();
+
+        try {
+            conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
+
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM msg_metadata");
+            ResultSetMetaData meta = rs.getMetaData();
+
+            HashMap<String,String> row = new HashMap<String,String>();
+
+            while(rs.next()){
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    String key = meta.getColumnName(i);
+                    String value = rs.getString(key);
+                    row.put(key, value);
+                }
+                rows.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return rows;
+
+    }
+
+    public HashMap<String, String> showMessage(String msg_id) {
+
+        Connection conn = null;
+        HashMap<String, String> row = new HashMap<String,String>();
+
+        try {
+            conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT * FROM msg_metadata WHERE msg_id = '" + msg_id + "'");
+            ResultSetMetaData meta = rs.getMetaData();
+            while (rs.next()) {
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    String key = meta.getColumnName(i);
+                    String value = rs.getString(key);
+                    row.put(key, value);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return row;
+
+    }
+
+
 
     private String formatField(String value, int dataType) {
         if (value == null) {
