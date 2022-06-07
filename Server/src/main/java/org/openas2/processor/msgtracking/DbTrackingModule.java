@@ -193,7 +193,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     public ArrayList<HashMap<String,String>> listMessages() {
 
         Connection conn = null;
-        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>();
+        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
 
         try {
             conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
@@ -262,7 +262,45 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
     }
 
+    public ArrayList<HashMap<String,String>> getDataCharts() {
 
+        Connection conn = null;
+        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
+
+        try {
+            conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            // conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
+
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT MSG_ID,STATE,STATUS FROM msg_metadata");
+            ResultSetMetaData meta = rs.getMetaData();
+
+            HashMap<String,String> row = new HashMap<String,String>();
+
+            while(rs.next()){
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    String key = meta.getColumnName(i);
+                    String value = rs.getString(key);
+                    row.put(key, value);
+                }
+                rows.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return rows;
+
+    }
 
     private String formatField(String value, int dataType) {
         if (value == null) {

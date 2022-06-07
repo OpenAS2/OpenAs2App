@@ -22,7 +22,7 @@ public class ViewMessageCommand extends AliasedMessagesCommand {
     }
 
     public String getDefaultUsage() {
-        return "view <name>";
+        return "view <msg_id>";
     }
 
     protected CommandResult execute(MessageFactory messageFx, Object[] params) throws OpenAS2Exception {
