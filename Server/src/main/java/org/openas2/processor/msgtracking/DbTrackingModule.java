@@ -202,9 +202,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             ResultSet rs = s.executeQuery("SELECT CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM msg_metadata");
             ResultSetMetaData meta = rs.getMetaData();
 
-            HashMap<String,String> row = new HashMap<String,String>();
-
             while(rs.next()){
+                HashMap<String,String> row = new HashMap<String,String>();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String key = meta.getColumnName(i);
                     String value = rs.getString(key);
