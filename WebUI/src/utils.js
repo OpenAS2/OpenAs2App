@@ -28,6 +28,21 @@ const Utils = {
                 throw(`Error getting ${resource} list:\n${e}`);
             }
         },
+        getListChart: async function(resource) {
+            var url =store.state.server +  `/${resource}/data_charts`;
+            try {
+                var response= await axios.get(url,{ auth: { username: store.state.username, password: store.state.password }});
+                if(response.data.type === 'OK') {
+                    return response.data.results;
+                    
+                }else{
+                    throw response.data.result;
+                }
+            }catch(e) {
+                console.log(e);
+                throw(`Error getting ${resource} list:\n${e}`);
+            }
+        },
         getObject: async function(resource, index, empty) {
             console.log(`Loading Object ${index} from ${resource}`);
             var emptyObject = Object.assign({}, empty , {"_id":null });

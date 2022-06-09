@@ -199,7 +199,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
 
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM msg_metadata");
+            ResultSet rs = s.executeQuery("SELECT ID,CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM msg_metadata");
             ResultSetMetaData meta = rs.getMetaData();
 
             while(rs.next()){

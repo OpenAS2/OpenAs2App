@@ -3,6 +3,7 @@
   <div>
     <b-row>
       <template>
+        <!-- <pre>{{items}}</pre> -->
         <!-- <b-col sm="12" lg="12" md="12" class="my-3">
           <b-form-group
             label="Filter"
@@ -51,7 +52,7 @@
         <b-col sm="12" md="8" class="my-1">
           <b-pagination
             v-model="currentPage"
-            :total-rows="totalRows"
+            :total-rows="this.filteredItems.length"
             :per-page="perPage"
             align="fill"
             size="sm"
@@ -75,10 +76,10 @@
       small
       @filtered="onFiltered"
     >
-      <template #cell(display)="row">
-        <b-badge v-if="row.item.display=='Display Ok'" variant="success">O</b-badge>
-        <b-badge v-if="row.item.display=='Display Pending'" variant="warning">P</b-badge>
-        <b-badge v-if="row.item.display=='Display Stop'" variant="danger">S</b-badge>
+      <template #cell(state)="row">
+        <b-badge v-if="stateMap['ok'].includes(row.item.state)" variant="success">O</b-badge>
+        <b-badge v-if="stateMap['pending'].includes(row.item.state)" variant="warning">P</b-badge>
+        <b-badge v-if="stateMap['stop'].includes(row.item.state)" variant="danger">S</b-badge>
       </template>
       <template #cell(actions)="row">
         <b-button
@@ -116,6 +117,7 @@
 </template>
 
 <script>
+var momenttz = require('moment-timezone');
 export default {
   data() {
     return {
@@ -123,13 +125,13 @@ export default {
       currentPage: 1,
       perPage: 10,
       pageOptions: [10, 25, 50, { value: 100, text: "Show a lot" }],
-      sortBy: "",
+      sortBy: "key",
       sortDesc: false,
       sortDirection: "asc",
       filterOn: [],
       selectVal: {
          key: "",
-          display: "",
+          state: "",
           timestamp: "",
           location: "",
           message: "",
@@ -160,19 +162,20 @@ export default {
       // },
       default: () => {return {text:""}},
     },
+    stateMap:{
+      type:Object
+    }
   },
   computed: {
     filteredItems() {
       return this.items.filter((item) => {
         let keep = true;
-        // This is a basic equality filter. What I did in the actual code was to have an object with filter functions for each key. If a key was missing, it defaulted to straight equality.
         this.fields.forEach((key) => {
           keep =
             keep &&
             (this.selectVal[key] === undefined ||
               item[key] === this.selectVal[key]);
         });
-
         return keep;
       });
     },
@@ -189,9 +192,12 @@ export default {
     },
   },
   mounted() {
-    this.totalRows = this.items.length;
+    this.totalRows = this.filteredItems.length;
   },
   methods: {
+    showTime(create_dt){
+      return momenttz.tz(create_dt, "America/New_York")
+    },
     editItem: function (item) {
       this.$emit("editObject", item);
     },
@@ -202,6 +208,7 @@ export default {
       this.$emit("deleteObject", item);
     },
     onFiltered: function (filteredItems) {
+
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },

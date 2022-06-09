@@ -17,7 +17,12 @@
       <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group mr-2">
           <!-- @click="newObject()" -->
-          <b-button v-if="isPathMessageList" variant="primary" size="sm">
+          <b-button
+            v-if="isPathMessageList"
+            @click="getList()"
+            variant="primary"
+            size="sm"
+          >
             <b-icon icon="arrow-repeat"></b-icon>
             Refresh</b-button
           >
@@ -35,6 +40,7 @@
     </div>
     <filter-message-table
       :filter="filter"
+      :filterField="filterField"
       @filterItems="filterItems"
     ></filter-message-table>
     <div id="table-message">
@@ -43,6 +49,7 @@
         :items="getFilterItems"
         :fields="fields"
         :filter="filter"
+        :stateMap="stateMap"
         :showFilter="showFilter"
         @deleteObject="deleteObject"
         @editObject="editObject"
@@ -75,7 +82,8 @@ import Swal from "sweetalert2";
 var _ = require("lodash");
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import moment from 'moment';
+import moment from "moment";
+// var momentTz= require("moment-timezone")
 var XLSX = require("xlsx");
 
 export default {
@@ -95,51 +103,94 @@ export default {
       ],
       filter: {
         text: "",
-        location: "",
-        local: "",
-        displays: ["Display Ok", "Display Pending", "Display Stop"],
+        sender_id: "",
+        receiver_id: "",
+        states: ["ok", "pending", "stop"],
+        dateTime: "America/Caracas",
       },
+      stateMap: {
+        ok: [
+          "msg_send_start",
+          "msg_receive_start",
+          "mdn_send_start",
+          "mdn_receive_start",
+          "msg_sent_mdn_received_ok",
+          "msg_rxd_mdn_sent_ok",
+          "msg_rxd_mdn_not_requested_ok",
+          "msg_sent_mdn_received_mic_mismatch",
+        ],
+        pending: [
+          "msg_send_exception",
+          "msg_receive_exception",
+          "mdn_sending_exception",
+          "mdn_receiving_exception",
+        ],
+        stop: [
+          "msg_send_fail",
+          "msg_send_fail_resend_queued",
+          "msg_receive_fail",
+          "msg_rxd_asyn_mdn_send_fail_resend_queued",
+          "mdn_asyn_receive_fail",
+          "msg_rxd_mdn_sending_fail",
+          "msg_receive_error_sending_mdn_error",
+          "msg_sent_mdn_received_error",
+        ],
+      },
+
       showFilter: false,
-      filterField: [
-        {
-          type: "select",
-          name: "location",
-          label: "Remote Location",
-          // placeholder: "X.509 Certificate Alias on the KeyStore",
-          _validate: {
-            required: true,
+      filterField: {
+        locations: [
+          {
+            type: "select",
+            name: "sender_id",
+            label: "Local station",
+            list: [
+              {
+                value: "",
+                text: "All",
+              },
+            ],
           },
-          list: [],
-        },
-        {
-          type: "select",
-          name: "message",
-          label: "Message ID",
-          // placeholder: "X.509 Certificate Alias on the KeyStore",
-          _validate: {
-            required: true,
+          {
+            type: "select",
+            name: "receiver_id",
+            label: "Remote station",
+            list: [
+              {
+                value: "",
+                text: "All",
+              },
+            ],
           },
-          list: [],
-        },
-        {
-          type: "checkbox",
-          name: "displayOk",
-          label: "Display Ok",
-          // placeholder: "X.509 Certificate Alias on the KeyStore",
-        },
-        {
-          type: "checkbox",
-          name: "displayPending",
-          label: "Display Pending",
-          // placeholder: "X.509 Certificate Alias on the KeyStore",
-        },
-        {
-          type: "checkbox",
-          name: "displayStopped",
-          label: "Display Stopped",
-          // placeholder: "X.509 Certificate Alias on the KeyStore",
-        },
-      ],
+        ],
+        states: [
+          {
+            text: "Display ok",
+            value: "ok",
+            badge: "success",
+            ab: "O",
+          },
+          {
+            text: "Display pending",
+            value: "pending",
+            badge: "warning",
+            ab: "P",
+          },
+          { text: "Display stop", value: "stop", badge: "danger", ab: "S" },
+        ],
+        dateTimes: [
+          {
+            type: "radio",
+            text: "Local[America/Caracas; -04:00]",
+            value: "America/Caracas",
+          },
+          {
+            type: "radio",
+            text: "AS2 Server[Europe/Berlin; +02:00]",
+            value: "Europe/Berlin",
+          },
+        ],
+      },
       schema: {
         fields: [
           {
@@ -193,7 +244,7 @@ export default {
           export: true,
         },
         {
-          key: "display",
+          key: "state",
           label: "Display",
           sortable: false,
           class: "text-center",
@@ -201,7 +252,7 @@ export default {
           export: true,
         },
         {
-          key: "timestamp",
+          key: "create_dt",
           label: "Timestamp",
           sortable: true,
           class: "text-center",
@@ -209,7 +260,7 @@ export default {
           export: true,
         },
         {
-          key: "local",
+          key: "sender_id",
           label: "Local Location",
           sortable: true,
           class: "text-center",
@@ -217,7 +268,7 @@ export default {
           export: true,
         },
         {
-          key: "location",
+          key: "receiver_id",
           label: "Remote Location",
           sortable: true,
           class: "text-center",
@@ -225,7 +276,7 @@ export default {
           export: true,
         },
         {
-          key: "message",
+          key: "msg_id",
           label: "Message ID",
           sortable: true,
           class: "text-center",
@@ -233,7 +284,7 @@ export default {
           export: true,
         },
         {
-          key: "payload",
+          key: "file_name",
           label: "Payload",
           sortable: true,
           class: "text-center",
@@ -241,7 +292,7 @@ export default {
           export: true,
         },
         {
-          key: "encryption",
+          key: "encryption_algorithm",
           label: "Encryption",
           sortable: true,
           class: "text-center",
@@ -249,7 +300,7 @@ export default {
           export: true,
         },
         {
-          key: "signature",
+          key: "signature_algorithm",
           label: "Signature",
           sortable: true,
           class: "text-center",
@@ -257,297 +308,25 @@ export default {
           export: true,
         },
         {
-          key: "mdn",
+          key: "mdn_mode",
           label: "MDN",
           sortable: true,
           class: "text-center",
           filter: false,
           export: true,
         },
-        {
-          key: "actions",
-          label: "Actions",
-          class: "text-center",
-          export: false,
-        },
+        // {
+        //   key: "actions",
+        //   label: "Actions",
+        //   class: "text-center",
+        //   export: false,
+        // },
       ],
       infoModal: {
         id: "info-modal",
         title: "",
       },
       items: [],
-      items2: [
-        {
-          key: "0",
-          display: "Display Ok",
-          local: "PartnerB",
-          location: "MyCompany",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "1",
-          display: "Display Pending",
-          local: "PartnerA",
-          location: "MyCompany",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test.id",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "2",
-          display: "Display Ok",
-          local: "MyCompany",
-          location: "PartnerB",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test.id",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "3",
-          display: "Display Pending",
-          local: "PartnerB",
-          location: "PartnerA",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "tets",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "4",
-          display: "Display Stop",
-          local: "PartnerA",
-          location: "PartnerB",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "5",
-          display: "Display Ok",
-          local: "PartnerB",
-          location: "MyCompany",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "6",
-          display: "Display Pending",
-          local: "PartnerA",
-          location: "MyCompany",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test.id",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "7",
-          display: "Display Ok",
-          local: "MyCompany",
-          location: "PartnerB",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test.id",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "8",
-          display: "Display Pending",
-          local: "PartnerB",
-          location: "PartnerA",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "tets",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "9",
-          display: "Display Stop",
-          local: "PartnerA",
-          location: "PartnerB",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "10",
-          display: "Display Ok",
-          local: "PartnerB",
-          location: "MyCompany",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "11",
-          display: "Display Pending",
-          local: "PartnerA",
-          location: "MyCompany",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test.id",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "12",
-          display: "Display Ok",
-          local: "MyCompany",
-          location: "PartnerB",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test.id",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "13",
-          display: "Display Pending",
-          local: "PartnerB",
-          location: "PartnerA",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "tets",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-        {
-          key: "14",
-          display: "Display Stop",
-          local: "PartnerA",
-          location: "PartnerB",
-          message:
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.  ",
-          timestamp: "2022/04/01 00:04:05",
-          payload: "test",
-          encryption: "SHA",
-          signature: "SHA-256",
-          mdn: "SYNC",
-          actions: {
-            show: { name: "Detail", show: true },
-            delete: { name: "Delete", show: false },
-            edit: { name: "Edit", show: false },
-          },
-        },
-      ],
 
       item: {
         _id: null,
@@ -568,28 +347,44 @@ export default {
       return this.$route.name == "Messages";
     },
     getFilterItems() {
-      let _list = this.items2;
-      if (this.filter.location != "") {
+      let _list = this.items;
+      if (this.filter.sender_id != "") {
         _list = _.filter(_list, (item) => {
-          return item.location == this.filter.location;
+          return item.sender_id == this.filter.sender_id;
         });
       }
-      if (this.filter.local != "") {
+      if (this.filter.receiver_id != "") {
         _list = _.filter(_list, (item) => {
-          return item.local == this.filter.local;
+          return item.receiver_id == this.filter.receiver_id;
         });
       }
-      if (this.filter.displays.length == 0) {
+      if (this.filter.states.length == 0) {
         _list = [];
       } else {
         let _list2 = [];
-        this.filter.displays.forEach((display) => {
+        this.filter.states.forEach((display) => {
           let aux = _.filter(_list, (item) => {
-            return item.display == display;
+            return (
+              _.find(this.stateMap[display], (m) => {
+                return item.state == m;
+              }) && item
+            );
           });
           _list2 = _.concat(_list2, aux);
         });
         _list = _list2;
+      }
+      if (this.filter.dateTime != "") {
+        _list.forEach((item) => {
+          item.create_dt =
+            this.filter.dateTime == "America/Caracas"
+              ? moment()
+                  .tz(this.filter.dateTime, item.create_dt)
+                  .format("YYYY-DD-MM H:mm:ss")
+              : moment()
+                  .tz(this.filter.dateTime, item.create_dt)
+                  .format("YYYY-DD-MM H:mm:ss");
+        });
       }
       return _list;
     },
@@ -600,18 +395,19 @@ export default {
       return { value: item, text: item };
     });
     await this.getList();
+    await this.getListPartners();
   },
   methods: {
     exportExcel() {
-      const fileName = "table-"+moment().format("YYYYMMDDH:mm:ss")+".xlsx";
-       let _items = _.map(this.getFilterItems, (_item) => {
-        let obj={}
+      const fileName = "table-" + moment().format("YYYYMMDDH:mm:ss") + ".xlsx";
+      let _items = _.map(this.getFilterItems, (_item) => {
+        let obj = {};
         _.forIn(_item, function (value, key) {
-            if(typeof _item[key]==='string'){
-              obj[key]=value
-            }
+          if (typeof _item[key] === "string") {
+            obj[key] = value;
+          }
         });
-        return obj
+        return obj;
       });
       const ws = XLSX.utils.json_to_sheet(_items);
       const wb = XLSX.utils.book_new();
@@ -619,33 +415,73 @@ export default {
       XLSX.writeFile(wb, fileName);
     },
     exportPdf() {
-      const doc = new jsPDF();
+      const doc = new jsPDF({
+        orientation: "landscape",
+      });
       let head = _.map(
         _.filter(this.fields, (field) => field.export),
         (_field) => {
-          return _field.label;
+          return { header: _field.label, dataKey: _field.key };
         }
       );
+      console.log("head", head);
+      let body = _.map(this.getFilterItems, (item) => {
+        // return [
+        //   item.key,
+        //   item.state,
+        //   item.create_dt,
+        //   item.sender_id,
+        //   item.receiver_id,
+        //   item.msg_id,
+        //   item.file_name,
+        //   item.encryption_algorithm,
+        //   item.signature_algorithm,
+        //   item.mdn_mode,
+        // ];
+        return {
+        "key": item.key,
+        "state": item.state,
+        "create_dt": item.create_dt,
+        "sender_id": item.sender_id,
+        "receiver_id": item.receiver_id,
+        "msg_id": item.msg_id,
+        "file_name": item.file_name,
+        "encryption_algorithm": item.encryption_algorithm,
+        "signature_algorithm": item.signature_algorithm,
+        "mdn_mode": item.mdn_mode,
+        }
+        // console.log("value,key",value);
+        // return JSON.parse(JSON.stringify(item))
+      });
+      // _.map(this.getFilterItems, (_item, index) => {
+      //   let array = [];
+      //   array.push(index);
+      //   _.forIn(_item, function (value, key) {
+      //     if (typeof _item[key] === "string") {
+      //       array.push(value);
+      //     }
+      //   });
+      //   return array;
+      // });
+      console.log("body", body);
 
-      let body = _.map(this.items2, (_item) => {
-        let array=[]
-        _.forIn(_item, function (value, key) {
-            if(typeof _item[key]==='string'){
-              array.push(value);
-            }
-        });
-        return array
-      });
+      // var doc = new jsPDF();
+      // doc.autoTable(head, body, {
+      //     columnStyles: {
+
+      //     },
+      // });
+
       autoTable(doc, {
-        head: [head],
-        body: body
+        columnStyles: { 5: { halign: "center", cellWidth: 50 },6: { halign: "center", cellWidth: 40 } },
+        columns:head,
+        body: body,
       });
-      doc.save("table-"+moment().format("YYYYMMDDH:mm:ss")+".pdf");
+      doc.save("table-" + moment().format("YYYYMMDDH:mm:ss") + ".pdf");
       // doc.autoPrint(this.fields, this.items2);
       // doc.save("two-by-four.pdf");
     },
-    filterItems: function (data) {
-    },
+    filterItems: function (data) {},
     resetModal: function () {
       this.infoModal.title = "";
       this.item = {
@@ -711,19 +547,42 @@ export default {
       return obj;
     },
     getList: async function () {
-      this.items = await Utils.Crud.getList("partner").then((results) => {
+      this.items = await Utils.Crud.getList("messages").then((results) => {
+        console.log("results", results);
         return _.map(results, (item, index) => {
           return {
             key: index,
-            name: item,
-            actions: {
-              show: { name: "Detail", show: true },
-              delete: { name: "Delete", show: false },
-              edit: { name: "Edit", show: false },
-            },
+            id:item.ID,
+            state: item.STATE,
+            create_dt: item.CREATE_DT,
+            sender_id: item.SENDER_ID,
+            receiver_id: item.RECEIVER_ID,
+            msg_id: item.MSG_ID,
+            file_name: item.FILE_NAME,
+            encryption_algorithm: item.ENCRYPTION_ALGORITHM
+              ? item.ENCRYPTION_ALGORITHM
+              : "Unknown",
+            signature_algorithm: item.SIGNATURE_ALGORITHM
+              ? item.SIGNATURE_ALGORITHM
+              : "Unknown",
+            mdn_mode: item.MDN_MODE,
+            // actions: {
+            //   show: { name: "Detail", show: true },
+            //   delete: { name: "Delete", show: false },
+            //   edit: { name: "Edit", show: false },
+            // },
           };
         });
       });
+    },
+    getListPartners: async function () {
+      let list = _.map(await Utils.Crud.getList("partner"), (item) => {
+        return { value: item, text: item };
+      });
+      let _list = _.concat(this.filterField.locations[0].list, list);
+
+      this.filterField.locations[0].list = _list;
+      this.filterField.locations[1].list = _list;
     },
     saveObject: async function (data) {
       try {
