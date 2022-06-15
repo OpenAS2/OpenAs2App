@@ -12,6 +12,7 @@ import org.openas2.util.DateUtil;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -192,7 +193,11 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
 
         try {
-            conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
+            if (useEmbeddedDB) {
+                conn = dbHandler.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            }
 
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM msg_metadata");
@@ -230,9 +235,14 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         HashMap<String, String> row = new HashMap<String,String>();
 
         try {
-            conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
-            Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT * FROM msg_metadata WHERE msg_id = '" + msg_id + "'");
+            if (useEmbeddedDB) {
+                conn = dbHandler.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            }
+            PreparedStatement s = conn.prepareStatement("SELECT * FROM msg_metadata WHERE msg_id = ?");
+            s.setString(1, msg_id);
+            ResultSet rs = s.executeQuery();            
             ResultSetMetaData meta = rs.getMetaData();
             while (rs.next()) {
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
@@ -263,8 +273,11 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
 
         try {
-            conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
-            // conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
+            if (useEmbeddedDB) {
+                conn = dbHandler.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            }
 
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT MSG_ID,STATE,STATUS FROM msg_metadata");
