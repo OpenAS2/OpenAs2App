@@ -70,18 +70,12 @@ export default {
       type: Array,
       default: () => [],
     },
-    messagesSent: {
-      type: Array,
-    },
-    messagesReceived: {
-      type: Array,
-    },
-    messagesFailed: {
-      type: Array,
-    },
     labels: {
       type: Array,
     },
+    datasets:{
+      type:Array
+    }
   },
   data() {
     return {
@@ -95,26 +89,26 @@ export default {
     chartData: function () {
       return {
         labels: this.labels,
-        datasets: [
-          {
-            label: "Sent messages ",
-            backgroundColor: "#28a745",
-            data: this.messagesSent,
-            borderColor: "#28a745",
-          },
-          {
-            label: "Received messages",
-            backgroundColor: "#007bff",
-            borderColor: "#007bff",
-            data: this.messagesReceived,
-          },
-          {
-            label: "Failed messages",
-            backgroundColor: "#FF0000",
-            borderColor: "#FF0000",
-            data: this.messagesFailed,
-          },
-        ],
+        datasets:this.datasets,
+        // {
+        //   label: "Sent messages ",
+        //   backgroundColor: "#28a745",
+        //   data: this.messagesSent,
+        //   borderColor: "#28a745",
+        // },
+        // {
+        //   label: "Received messages",
+        //   backgroundColor: "#007bff",
+        //   borderColor: "#007bff",
+        //   data: this.messagesReceived,
+        // },
+        // {
+        //   label: "Failed messages",
+        //   backgroundColor: "#FF0000",
+        //   borderColor: "#FF0000",
+        //   data: this.messagesFailed,
+        // },
+        // ],
       };
     },
     getRandomArbitrary: function () {

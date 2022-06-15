@@ -28,8 +28,8 @@ const Utils = {
                 throw(`Error getting ${resource} list:\n${e}`);
             }
         },
-        getListChart: async function(resource) {
-            var url =store.state.server +  `/${resource}/data_charts`;
+        getListChart: async function(resource,range) {
+            var url =store.state.server +  `/${resource}/data_charts?startDate=${range.startDate}&endDate=${range.endDate}`;
             try {
                 var response= await axios.get(url,{ auth: { username: store.state.username, password: store.state.password }});
                 if(response.data.type === 'OK') {
@@ -57,7 +57,6 @@ const Utils = {
                 if(response.data.type == 'OK') {
                     var results=response.data.results[0];
                     results._id = index;
-                    console.log(results);
                     return results;
                 }else{
                     throw response.data.result;

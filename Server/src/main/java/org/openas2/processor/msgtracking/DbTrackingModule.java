@@ -261,22 +261,19 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
     }
 
-    public ArrayList<HashMap<String,String>> getDataCharts() {
+    public ArrayList<HashMap<String,String>> getDataCharts(HashMap<String, String> map) {
 
         Connection conn = null;
         ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
 
         try {
-            conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             // conn = DriverManager.getConnection ("jdbc:h2:tcp://localhost:9092/openas2", "sa","OpenAS2");
-
+            conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT MSG_ID,STATE,STATUS FROM msg_metadata");
+            ResultSet rs = s.executeQuery("SELECT MSG_ID,STATE,STATUS,CREATE_DT FROM msg_metadata WHERE CREATE_DT BETWEEN '"+map.get("startDate").toString()+" 01:00:00' AND '"+map.get("endDate").toString()+" 23:59:59'");
             ResultSetMetaData meta = rs.getMetaData();
-
-            HashMap<String,String> row = new HashMap<String,String>();
-
             while(rs.next()){
+                HashMap<String,String> row = new HashMap<String,String>();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String key = meta.getColumnName(i);
                     String value = rs.getString(key);
