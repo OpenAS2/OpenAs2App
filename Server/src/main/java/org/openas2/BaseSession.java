@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.message.AS2Standards;
+import org.openas2.message.MessageFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
@@ -94,6 +95,10 @@ public abstract class BaseSession implements Session {
 
     public PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException {
         return (PartnershipFactory) getComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY);
+    }
+
+    public MessageFactory getMessageFactory() throws ComponentNotFoundException {
+        return (MessageFactory) getComponent(MessageFactory.COMPID_MESSAGE_FACTORY);
     }
 
     public Processor getProcessor() throws ComponentNotFoundException {

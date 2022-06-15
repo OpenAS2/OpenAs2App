@@ -13,6 +13,7 @@
     "bootstrap-vue": "^2.22.0",
     "chart.js": "^3.7.1",
     "core-js": "^2.6.5",
+    "highcharts": "^10.1.0",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.24",
     "lodash": "^4.17.21",
