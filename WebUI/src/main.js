@@ -5,6 +5,7 @@ import store from './store'
 import VueHighcharts from 'vue-highcharts';
 import Vuelidate from 'vuelidate'
 import VeeValidate from "vee-validate";
+import VueScreen from 'vue-screen';
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 Vue.use(VeeValidate, {
   inject: true,
@@ -22,7 +23,7 @@ Vue.use(VueHighcharts);
 Vue.use(BootstrapVue)
 // Optionally install the BootstrapVue icon components plugin
 Vue.use(IconsPlugin)
-
+Vue.use(VueScreen, 'bootstrap');
 new Vue({
   el:'#app',
   store,
