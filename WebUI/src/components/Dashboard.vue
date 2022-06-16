@@ -14,7 +14,6 @@
     >
       <h1 class="h2">Dashboard</h1>
     </div>
-
     <b-row>
       <!-- <b-card-group deck> -->
       <b-col md="4">
@@ -25,7 +24,12 @@
           class="text-center mt-1"
         >
           <b-card-text
-            ><h1>{{ countPartners }}</h1></b-card-text
+            > <b-row align-h="between">
+              <b-col> <b-icon icon="person" font-scale="3 "></b-icon></b-col>
+              <b-col>
+                <h1>{{ countPartners }}</h1></b-col
+              >
+            </b-row></b-card-text
           >
         </b-card>
       </b-col>
@@ -37,19 +41,31 @@
           class="text-center mt-1"
         >
           <b-card-text>
-            <h1>{{ countCertificates }}</h1>
+            <b-row align-h="between">
+              <b-col> <b-icon icon="people" font-scale="3 "></b-icon></b-col>
+              <b-col>
+                <h1>{{ countCertificates }}</h1></b-col
+              >
+            </b-row>
           </b-card-text>
         </b-card>
       </b-col>
       <b-col md="4">
         <b-card
           bg-variant="info"
-          text-variant="white"
+          text-variant="white" 
           header="Total Certificates"
           class="text-center mt-1"
         >
           <b-card-text
-            ><h1>{{ countPartnerships }}</h1></b-card-text
+            >
+            <b-row align-h="between">
+              <b-col> <b-icon icon="file-earmark-richtext" font-scale="3 "></b-icon></b-col>
+              <b-col>
+                <h1>{{ countPartnerships }}</h1></b-col
+              >
+            </b-row>
+            </b-card-text
           >
         </b-card>
       </b-col>
@@ -61,10 +77,9 @@
             v-model="dateRange"
             opens="left"
           ></date-range-picker>
-          <!-- :locale="locale" -->
         </b-col>
       </b-row>
-      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+      <!-- <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
         <chart-line-two
           :labels="dates"
           :messagesSent="messagesSent"
@@ -72,45 +87,24 @@
           :messagesFailed="messagesFailed"
         >
         </chart-line-two>
-      </b-col>
-      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+      </b-col> -->
+      <b-col class="mt-3" :md="dataChart['sent'].valuesX.length < 15 ? '6' : '12'">
         <chart-line
-          :labels="dates"
-          :messagesSent="messagesSent"
-          :messagesReceived="messagesReceived"
-          :messagesFailed="messagesFailed"
+          :labels="dataChart['sent'].valuesX"
+          :datasets="allState"
         >
         </chart-line>
       </b-col>
-      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
+      <b-col
+        v-for="(state, index) in states"
+        :key="index"
+        class="mt-3"
+        :md="dataChart[state].valuesX.length < 15 ? '6' : '12'"
+      >
         <chart-bar
-          :labels="dates"
-          :datasets="datasetsMessagesSent"
-          :title="'Sent messages '"
-        >
-        </chart-bar>
-      </b-col>
-      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
-        <chart-bar
-          :labels="dates"
-          :datasets="datasetsMessagesReceived"
-          :title="'Received messages'"
-        >
-        </chart-bar>
-      </b-col>
-      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
-        <chart-bar
-          :labels="dates"
-          :datasets="datasetsMessagesFailed"
-          :title="'Failed messages'"
-        >
-        </chart-bar>
-      </b-col>
-      <b-col class="mt-3" :md="length < 15 ? '6' : '12'">
-        <chart-bar
-          :labels="dates"
-          :datasets="datasets"
-          :title="'Failed messages'"
+          :labels="dataChart[state].valuesX"
+          :datasets="dataChart[state].valuesY"
+          :title="dataChart[state].valuesX.label"
         >
         </chart-bar>
       </b-col>
@@ -122,14 +116,14 @@
 import ChartLine from "./ChartLine.vue";
 import MessagesAdmin from "./MessagesAdmin.vue";
 
-import ChartLineTwo from "./ChartLineTwo.vue";
+// import ChartLineTwo from "./ChartLineTwo.vue";
 import ChartBar from "./ChartBar";
 
 import Utils from "../utils";
 import DateRangePicker from "vue2-daterange-picker";
 //you need to import the CSS manually
 import "vue2-daterange-picker/dist/vue2-daterange-picker.css";
-
+var _ = require("lodash");
 import moment from "moment";
 var XLSX = require("xlsx");
 export default {
@@ -137,21 +131,57 @@ export default {
   components: {
     ChartLine,
     MessagesAdmin,
-    ChartLineTwo,
+    // ChartLineTwo,
     ChartBar,
     DateRangePicker,
   },
   data() {
     return {
       length: 10,
-      messagesSent: [],
-      messagesReceived: [],
-      messagesFailed: [],
-      datasetsMessagesSent: [],
-      datasetsMessagesReceived: [],
-      datasetsMessagesFailed: [],
-      datasets: [],
-      dates: [],
+      messages: {
+        sent: [],
+        receive: [],
+        fail: [],
+      },
+      dataChartAll: {
+        valuesX: [],
+        valuesY: [],
+      },
+      dataChart: {
+        sent: {
+          valuesX: [],
+          valuesY: [
+            {
+              label: "Sent messages",
+              backgroundColor: "#28a745",
+              borderColor: "#28a745",
+              data: [],
+            },
+          ],
+        },
+        receive: {
+          valuesX: [],
+          valuesY: [
+            {
+              label: "Received messages",
+              backgroundColor: "#007bff",
+              borderColor: "#007bff",
+              data: [],
+            },
+          ],
+        },
+        fail: {
+          valuesX: [],
+          valuesY: [
+            {
+              label: "Failed messages",
+              backgroundColor: "#FF0000",
+              borderColor: "#FF0000",
+              data: [],
+            },
+          ],
+        },
+      },
       partners: [],
       certificates: [],
       partnerships: [],
@@ -159,7 +189,36 @@ export default {
         startDate: moment().startOf("week"),
         endDate: moment(),
       },
-      
+      states: ["sent", "receive", "fail"],
+      stateMap: {
+        sent: [
+          "msg_send_start",
+          "mdn_send_start",
+          "msg_rxd_mdn_sent_ok",
+          "msg_rxd_mdn_not_requested_ok",
+        ],
+        receive: [
+          "msg_sent_mdn_received_mic_mismatch",
+          "msg_sent_mdn_received_ok",
+          "msg_receive_start",
+          "mdn_receive_start",
+        ],
+        fail: [
+          "msg_send_exception",
+          "msg_receive_exception",
+          "mdn_sending_exception",
+          "mdn_receiving_exception",
+          "msg_send_fail",
+          "msg_send_fail_resend_queued",
+          "msg_receive_fail",
+          "msg_rxd_asyn_mdn_send_fail_resend_queued",
+          "mdn_asyn_receive_fail",
+          "msg_rxd_mdn_sending_fail",
+          "msg_receive_error_sending_mdn_error",
+          "msg_sent_mdn_received_error",
+        ],
+      },
+
       // locale: {
       //   direction: "ltr",
       //   format: "DD-MM-YYYY",
@@ -184,15 +243,19 @@ export default {
     countPartnerships: function () {
       return this.partnerships.length;
     },
+    allState() {
+      let list = [];
+      this.states.forEach((state) => {
+        list.push(this.dataChart[state].valuesY[0]);
+      });
+      return list;
+    },
   },
   mounted() {
-    this.generateDates();
-    this.getListMessageSent();
-    this.getListMessageReceived();
-    this.getListMessageFailed();
     this.getListPartners();
     this.getListCertificates();
     this.getListConnections();
+    this.getListMessageChart();
   },
   methods: {
     dateFormat(classes, date) {
@@ -210,113 +273,41 @@ export default {
     getListConnections: async function () {
       this.partnerships = await Utils.Crud.getList("partnership");
     },
-    getListMessageSent: function () {
-      this.messagesSent = [];
-
-      let min = 1;
-      let max = 100;
-      let init = moment(this.dateRange.startDate);
-      let now = moment();
-      let end = moment(this.dateRange.endDate).isSameOrBefore(now)
-        ? moment(this.dateRange.endDate)
-        : moment(now);
-      let tam = end.diff(init, "days");
-      for (let index = 0; index <= tam; index++) {
-        this.messagesSent.push(Math.round(Math.random() * (max - min) + min));
-      }
-      this.datasetsMessagesSent.push({
-        label: "Sent messages",
-        backgroundColor: "#28a745",
-        data: this.messagesSent,
+    getListMessageChart: async function () {
+      const data = {
+        startDate: moment(this.dateRange.startDate).format("YYYY-MM-DD"),
+        endDate: moment(this.dateRange.endDate).format("YYYY-MM-DD"),
+      };
+      let messages = await Utils.Crud.getListChart("messages", data);
+      messages.forEach((message) => {
+        this.states.forEach((state) => {
+          if (this.stateMap[state].includes(message.STATE)) {
+            this.messages[state].push({
+              date: moment(message.CREATE_DT).format("YYYY-MM-DD"),
+              name: message.MSG_ID,
+            });
+          }
+        });
       });
-      this.datasets.push({
-        label: "Sent messages",
-        backgroundColor: "#28a745",
-        data: this.messagesSent,
-      });
-    },
-    getListMessageReceived: function () {
-      this.messagesReceived = [];
-      let min = 1;
-      let max = 100;
-      let init = moment(this.dateRange.startDate);
-      let now = moment();
-      let end = moment(this.dateRange.endDate).isSameOrBefore(now)
-        ? moment(this.dateRange.endDate)
-        : moment(now);
-      let tam = end.diff(init, "days");
-      for (let index = 0; index <= tam; index++) {
-        this.messagesReceived.push(
-          Math.round(Math.random() * (max - min) + min)
-        );
-      }
-      this.datasetsMessagesReceived.push({
-        label: "Received messages",
-        backgroundColor: "#007bff",
-        data: this.messagesReceived,
-      });
-      this.datasets.push({
-        label: "Received messages",
-        backgroundColor: "#007bff",
-        data: this.messagesReceived,
-      });
-    },
-    getListMessageFailed: function () {
-      console.log("ssssss");
-      this.messagesFailed = [];
-      let min = 1;
-      let max = 100;
-      // let tam=moment.duration(moment(this.dateRange.endDate).diff(moment(this.dateRange.startDate)))
-      let init = moment(this.dateRange.startDate);
-      let now = moment();
-      let end = moment(this.dateRange.endDate).isSameOrBefore(now)
-        ? moment(this.dateRange.endDate)
-        : moment(now);
-      let tam = end.diff(init, "days");
-      for (let index = 0; index <= tam; index++) {
-        this.messagesFailed.push(Math.round(Math.random() * (max - min) + min));
-      }
-      this.datasetsMessagesFailed.push({
-        label: "Failed messages",
-        backgroundColor: "#FF0000",
-        data: this.messagesFailed,
-      });
-      this.datasets.push({
-        label: "Failed messages",
-        backgroundColor: "#FF0000",
-        data: this.messagesFailed,
-      });
-    },
-    generateDates: function () {
-      this.dates = [];
-      console.log("juans");
-      let init = moment(this.dateRange.startDate).format("YYYY-MM-DD");
-      let end = moment(this.dateRange.endDate).format("YYYY-MM-DD");
-      let now = moment().format("YYYY-MM-DD");
-
-      let end2 = moment(this.dateRange.endDate).isSameOrBefore(now)
-        ? moment(this.dateRange.endDate)
-        : moment(now);
-      this.length = end2.diff(init, "days");
-
-      while (
-        moment(init).isSameOrBefore(end) &&
-        moment(init).isSameOrBefore(now)
-      ) {
-        this.dates.push(init);
-        init = moment(init).add(1, "days").format("YYYY-MM-DD");
+      let ini = moment(data.startDate);
+      let end = moment(data.endDate);
+      while (ini.isBefore(end)) {
+        let inicio = ini.format("YYYY-MM-DD");
+        this.states.forEach((state) => {
+          this.dataChart[state].valuesX.push(inicio);
+          let filter = _.filter(this.messages[state], (msg) => {
+            return moment(msg.date).format("YYYY-MM-DD") == inicio;
+          });
+          let count = filter.length > 0 ? filter.length : 0;
+          this.dataChart[state].valuesY[0].data.push(count);
+        });
+        ini.add(1, "days");
       }
     },
+   
+    
     changeDate: function () {
-      console.log(this.dateRange);
-      this.datasets = [];
-      this.datasetsMessagesSent = [];
-      this.datasetsMessagesReceived = [];
-      this.datasetsMessagesFailed = [];
-      this.getListMessageSent();
-      this.getListMessageReceived();
-      this.getListMessageFailed();
-      this.generateDates();
+      this.getListMessageChart();
     },
   },
 };

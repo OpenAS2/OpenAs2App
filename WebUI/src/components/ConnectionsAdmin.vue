@@ -324,7 +324,6 @@ export default {
           if (result.isConfirmed) {
             Utils.Crud.deleteObject("partnership", item.key)
               .then((response) => {
-                console.log("juan", response);
                 Swal.fire("Deleted!", "", "success");
                 this.getList();
               })

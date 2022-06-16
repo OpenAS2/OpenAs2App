@@ -11,6 +11,7 @@ import org.openas2.logging.Logger;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.ParameterParser;
+import org.openas2.message.MessageFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
@@ -47,6 +48,7 @@ public class XMLSession extends BaseSession {
     public static final String EL_CMDPROCESSOR = "commandProcessors";
     public static final String EL_PROCESSOR = "processor";
     public static final String EL_PARTNERSHIPS = "partnerships";
+    public static final String EL_MESSAGES = "messages";
     public static final String EL_COMMANDS = "commands";
     public static final String EL_LOGGERS = "loggers";
     public static final String EL_POLLER_CONFIG = "pollerConfigBase";
@@ -117,6 +119,8 @@ public class XMLSession extends BaseSession {
                 loadLoggers(rootNode);
             } else if (nodeName.equals(EL_POLLER_CONFIG)) {
                 loadBasePartnershipPollerConfig(rootNode);
+            } else if (nodeName.equals(EL_MESSAGES)) {
+                loadMessages(rootNode);
             } else if (nodeName.equals("#text")) {
                 // do nothing
             } else if (nodeName.equals("#comment")) {
@@ -379,5 +383,11 @@ public class XMLSession extends BaseSession {
         }
         return TITLE;
 
+    }
+
+    private void loadMessages(Node rootNode) throws OpenAS2Exception {
+        LOGGER.info("Loading messages...");
+        MessageFactory messageFx = (MessageFactory) XMLUtil.getComponent(rootNode, this);
+        setComponent(MessageFactory.COMPID_MESSAGE_FACTORY, messageFx);
     }
 }
