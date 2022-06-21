@@ -9,7 +9,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.util.IOUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -238,20 +238,12 @@ public abstract class DirectoryPollingModule extends PollingModule {
             logger.info("processing " + file.getAbsolutePath());
         }
 
-        try (FileInputStream in = new FileInputStream(file)) {
-            processDocument(in, file.getName());
-            try {
-                if(sentDir != null) {
-                    // Archive Sent file on disk
-                    IOUtil.handleArchive(file, sentDir, false);
-                }else{
-                    IOUtil.deleteFile(file);
-                }
-            } catch (IOException e) {
-                throw new OpenAS2Exception("Failed to archive/remove file handed off for processing:" + file.getAbsolutePath(), e);
-            }
-        } catch (IOException e) {
-            throw new OpenAS2Exception("Failed to process file:" + file.getAbsolutePath(), e);
+        try {
+            processDocument(file, file.getName());
+        } catch (FileNotFoundException e) {
+            // Try to move original file to error dir in case error handling has not done it  for us.
+            IOUtil.handleArchive(file, errorDir, false);
+            throw new OpenAS2Exception("Failed to initiate processing for file:" + file.getAbsolutePath(), e);
         }
     }
 
