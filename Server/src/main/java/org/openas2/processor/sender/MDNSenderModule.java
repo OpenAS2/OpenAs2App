@@ -2,6 +2,7 @@ package org.openas2.processor.sender;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.protocol.HTTP;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.message.AS2Message;
@@ -156,9 +157,10 @@ public class MDNSenderModule extends HttpSenderModule {
                 throw new WrappedException(we);
             }
             byte[] data = dataOutputStream.toByteArray();
-            // make sure to set the content-length header
-            //mdn.setHeader("Content-Length", Integer.toString(data.length));
-            ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, mdn.getHeaders().getAllHeaders(), null, new ByteArrayInputStream(data), httpOptions, maxSize);
+            // make sure to set the content-length header to avoid transferring as chunked which some AS2 software implementations do not support
+            mdn.setHeader(HTTP.CONTENT_LEN, Integer.toString(data.length));
+            boolean preventChunking = msg.getPartnership().isPreventChunking(false);
+            ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, mdn.getHeaders(), null, new ByteArrayInputStream(data), httpOptions, maxSize, preventChunking);
 
             int respCode = resp.getStatusCode();
             // Check the HTTP Response code

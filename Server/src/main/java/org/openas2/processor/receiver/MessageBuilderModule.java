@@ -20,6 +20,7 @@ import org.openas2.partner.Partnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
+import org.openas2.util.IOUtil;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -62,23 +63,49 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     }
 
 
+    /**
+     * Move the file into the processing folder then invoke the sending process.
+     * @param fileToSend
+     * @param filename
+     * @return
+     * @throws OpenAS2Exception
+     * @throws FileNotFoundException
+     */
+    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {
+        Message msg = buildMessageMetadata(filename);
+        File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
+        try {
+            IOUtil.moveFile(fileToSend, pendingFile, false);
+        } catch (IOException e) {
+            logger.error(": " + e.getMessage(), e);
+            throw new OpenAS2Exception("Failed to move the inbound file " + fileToSend.getPath() + " to the processing location " + pendingFile.getName());
+        }
+        return processDocument(pendingFile, msg); 
+    }
+
+    /**
+     * Take the file input stream and write it to a file system file in the processing folder. 
+     * Use this method if the file is produced in real time through a stream.
+     * @param ip
+     * @param filename
+     * @return
+     * @throws OpenAS2Exception
+     * @throws FileNotFoundException
+     */
     protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException {
         Message msg = buildMessageMetadata(filename);
-
-        String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
-        // Persist the file that has been passed in
-        File doc = new File(pendingFile);
+        File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
         FileOutputStream fo = null;
         try {
-            fo = new FileOutputStream(doc);
+            fo = new FileOutputStream(pendingFile);
         } catch (FileNotFoundException e1) {
-            throw new OpenAS2Exception("Could not create file in pending folder: " + pendingFile, e1);
+            throw new OpenAS2Exception("Could not create file in pending folder: " + pendingFile.getName(), e1);
         }
         try {
             IOUtils.copy(ip, fo);
         } catch (IOException e1) {
             fo = null;
-            throw new OpenAS2Exception("Could not write file to pending folder: " + pendingFile, e1);
+            throw new OpenAS2Exception("Could not write file to pending folder: " + pendingFile.getName(), e1);
         }
         try {
             ip.close();
@@ -94,12 +121,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             e1.printStackTrace();
         }
         fo = null;
+        return processDocument(pendingFile, msg);
+    }
 
-        try {
-            buildMessageData(msg, doc, null);
-        } finally {
-            doc = null;
-        }
+    protected Message processDocument(File pendingFile, Message msg) throws OpenAS2Exception, FileNotFoundException {
+        buildMessageData(msg, pendingFile, null);
         String customHeaderList = msg.getPartnership().getAttribute(Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
         if (customHeaderList != null && customHeaderList.length() > 0) {
             String[] headerNames = customHeaderList.split("\\s*,\\s*");
@@ -107,6 +133,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             if (logger.isTraceEnabled()) {
                 logger.trace("Adding custom headers based on message file name to custom headers map. Delimeters: " + delimiters + msg.getLogMsgID());
             }
+            String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
             if (delimiters != null) {
                 // Extract the values based on delimiters which means the mime header names are
                 // prefixed with a target
@@ -146,11 +173,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             }
         }
         if (logger.isInfoEnabled()) {
-            logger.info("File assigned to message: " + filename + msg.getLogMsgID());
+            logger.info("File assigned to message: " + pendingFile.getName() + msg.getLogMsgID());
         }
 
         if (msg.getData() == null) {
-            throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + filename);
+            throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + pendingFile.getName());
         }
         if (logger.isTraceEnabled()) {
             logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());
@@ -171,6 +198,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             msg.setStatus(Message.MSG_STATUS_MSG_SEND);
             // Transmit the message
             getSession().getProcessor().handle(SenderModule.DO_SEND, msg, options);
+            if (!msg.isConfiguredForAsynchMDN()) {
+                AS2Util.cleanupFiles(msg, false);
+            }
         } catch (Exception e) {
             msg.setLogMsg("Fatal error sending message: " + org.openas2.logging.Log.getExceptionMsg(e));
             logger.error(msg, e);

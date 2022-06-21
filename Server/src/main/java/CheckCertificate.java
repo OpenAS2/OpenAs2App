@@ -226,7 +226,7 @@ public class CheckCertificate {
             httpOptions.put(HTTPUtil.PARAM_HTTP_USER, auth_user);
             httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, auth_pwd);
         }
-        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, "https://" + host + ":" + port + "/" + uri, null, null, new ByteArrayInputStream("Testing".getBytes()), httpOptions, 1000000000);
+        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, "https://" + host + ":" + port + "/" + uri, null, null, new ByteArrayInputStream("Testing".getBytes()), httpOptions, 1000000000, false);
         System.out.println("Got a response using Apache HTTP Client: " + resp.getStatusCode());
         System.out.println("\t\tHEADERS: " + resp.getHeaders());
         System.out.println("\t\tBODY: " + resp.getBody());

@@ -17,6 +17,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
@@ -27,6 +28,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContexts;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -144,8 +146,8 @@ public class HTTPUtil {
 
         DataInputStream dataIn = new DataInputStream(in);
         // Retrieve the message content
-        if (headerCache.getHeader("Content-Length") == null) {
-            String transfer_encoding = headerCache.getHeader("Transfer-Encoding", ",");
+        if (headerCache.getHeader(HTTP.CONTENT_LEN) == null) {
+            String transfer_encoding = headerCache.getHeader(HTTP.TRANSFER_ENCODING, ",");
 
             if (transfer_encoding != null) {
                 if (transfer_encoding.replaceAll("\\s+", "").equalsIgnoreCase("chunked")) {
@@ -306,9 +308,10 @@ public class HTTPUtil {
      * @return ResponseWrapper
      * @throws Exception
      */
-    public static ResponseWrapper execRequest(String method, String url, Enumeration<Header> headers, NameValuePair[] params, InputStream inputStream, Map<String, String> options, long noChunkMaxSize) throws Exception {
+    public static ResponseWrapper execRequest(String method, String url, InternetHeaders headers, NameValuePair[] params, InputStream inputStream, Map<String, String> options, long noChunkMaxSize, boolean preventChunking) throws Exception {
 
         HttpClientBuilder httpBuilder = HttpClientBuilder.create();
+        //org.apache.http.protocol.RequestContent
         URL urlObj = new URL(url);
         /*
          * httpClient is used for this request only,
@@ -325,6 +328,13 @@ public class HTTPUtil {
             httpBuilder.setConnectionManager(new BasicHttpClientConnectionManager());
         }
 
+        // Check if Content-Length was added and remove it so it as it is managed by the HttpRequest when processing the entity
+        long contentLength = -1; // Initialise as unknown
+        String[] contentLengthValues = headers==null?null:headers.getHeader(HTTP.CONTENT_LEN);
+        if (contentLengthValues != null && contentLengthValues.length > 0) {
+            contentLength = Long.parseLong(contentLengthValues[0]);
+            headers.removeHeader(HTTP.CONTENT_LEN);
+        }
         RequestBuilder rb = getRequestBuilder(method, urlObj, params, headers);
         RequestConfig.Builder rcBuilder = buildRequestConfig(options);
         setProxyConfig(httpBuilder, rcBuilder, urlObj.getProtocol());
@@ -337,26 +347,33 @@ public class HTTPUtil {
             credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(httpUser, httpPwd));
             httpBuilder.setDefaultCredentialsProvider(credentialsProvider);
         }
-
         if (inputStream != null) {
-            if (noChunkMaxSize > 0L) {
-                ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                long copied = IOUtils.copyLarge(inputStream, bout, 0L, noChunkMaxSize + 1, new byte[8192]);
-                if (copied > noChunkMaxSize) {
-                    throw new IOException("Mime inputstream too big to put in memory (more than " + noChunkMaxSize + " bytes).");
+            AbstractHttpEntity httpEntity = new InputStreamEntity(inputStream, contentLength);
+            // the default is to use chunking for transfer encoding - allow override
+            if (preventChunking) {
+                if (noChunkMaxSize > 0L) {
+                    // There is a maximum size of the content that a partner receiver can accept
+                    if (contentLength == -1) {
+                        // Not set as a header so do it the compute expensive way
+                        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                        contentLength = IOUtils.copyLarge(inputStream, bout, 0L, noChunkMaxSize + 1, new byte[8192]);
+                        if (contentLength > noChunkMaxSize) {
+                            throw new IOException("Data inputstream too big to put in memory (more than " + noChunkMaxSize + " bytes).");
+                        }
+                        httpEntity = new ByteArrayEntity(bout.toByteArray(), null);
+                    }
                 }
-                ByteArrayEntity bae = new ByteArrayEntity(bout.toByteArray(), null);
-                rb.setEntity(bae);
+                // Tell the HTTP client to try to send unchunked - the Content-Length will be extracted from the entity
+                httpEntity.setChunked(false);
+            }
+            // Use a BufferedEntity for BasicAuth connections to avoid the NonRepeatableRequestException
+            if (httpUser != null) {
+                rb.setEntity(new BufferedHttpEntity(httpEntity));
             } else {
-                InputStreamEntity ise = new InputStreamEntity(inputStream);
-                // Use a BufferedEntity for BasicAuth connections to avoid the NonRepeatableRequestExceotion
-                if (httpUser != null) {
-                    rb.setEntity(new BufferedHttpEntity(ise));
-                } else {
-                    rb.setEntity(ise);
-                }
+                rb.setEntity(httpEntity);
             }
         }
+            
         final HttpUriRequest request = rb.build();
 
         BasicHttpContext localcontext = new BasicHttpContext();
@@ -413,7 +430,7 @@ public class HTTPUtil {
         return sslsf;
     }
 
-    private static RequestBuilder getRequestBuilder(String method, URL urlObj, NameValuePair[] params, Enumeration<Header> headers) throws URISyntaxException {
+    private static RequestBuilder getRequestBuilder(String method, URL urlObj, NameValuePair[] params, InternetHeaders headers) throws URISyntaxException {
 
         RequestBuilder req = null;
         if (method == null || method.equalsIgnoreCase(Method.GET)) {
@@ -438,8 +455,9 @@ public class HTTPUtil {
         }
         if (headers != null) {
             boolean removeHeaderFolding = "true".equals(Properties.getProperty(HTTP_PROP_REMOVE_HEADER_FOLDING, "true"));
-            while (headers.hasMoreElements()) {
-                Header header = headers.nextElement();
+            Enumeration<Header> headerEnum = headers.getAllHeaders();
+            while (headerEnum.hasMoreElements()) {
+                Header header = headerEnum.nextElement();
                 String headerValue = header.getValue();
                 if (removeHeaderFolding) {
                     headerValue = headerValue.replaceAll("\r\n[ \t]*", " ");
