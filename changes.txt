@@ -1,3 +1,10 @@
+Version 3.2.0 - 2022-06-21
+This is a minor enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support "prevent_chunking" attribute on partnership to support older AS2 systems.
+  2. Fix copying the sent file to the sent folder when successfully sent.
+  
 Version 3.1.0 - 2022-06-04
 This is a minor enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
