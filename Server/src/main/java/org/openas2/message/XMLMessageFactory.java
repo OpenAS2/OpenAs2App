@@ -88,8 +88,7 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
         }
     }
 
-    void refreshConfig() throws OpenAS2Exception {
-        getSession().destroyPartnershipPollers();
+    void refreshConfig() throws OpenAS2Exception {     
         try {
             Element root = getMessageXml().getDocumentElement();
             NodeList rootNodes = root.getChildNodes();
