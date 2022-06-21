@@ -39,6 +39,7 @@ import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -58,13 +59,13 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
     /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
     *
     */
-   public String getModuleAction() {
-       String action = super.getModuleAction();
-       if (action == null) {
-           return SenderModule.DO_SEND;
-       }
-       return action;
-   }
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return SenderModule.DO_SEND;
+        }
+        return action;
+    }
 
     public boolean canHandle(String action, Message msg, Map<String, Object> options) {
         if (!super.canHandle(action, msg, options)) {
@@ -186,7 +187,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
         httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
         long maxSize = msg.getPartnership().getNoChunkedMaxSize();
-        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih.getAllHeaders(), null, securedData.getInputStream(), httpOptions, maxSize);
+        boolean preventChunking = msg.getPartnership().isPreventChunking(false);
+        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih, null, securedData.getInputStream(), httpOptions, maxSize, preventChunking);
         if (logger.isInfoEnabled()) {
             logger.info("Message sent and response received in " + resp.getTransferTimeMs() + "ms" + msg.getLogMsgID());
         }

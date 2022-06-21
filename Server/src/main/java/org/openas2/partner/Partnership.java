@@ -55,7 +55,8 @@ public class Partnership implements Serializable {
     public static final String PA_CUSTOM_MIME_HEADER_NAMES_REGEX_ON_FILENAME = "custom_mime_header_names_regex_on_filename"; // Regex to split filename into values
     public static final String PAIB_NAMES_FROM_FILENAME = "attribute_names_from_filename"; // List of attribute names to be set from parsed filename
     public static final String PAIB_VALUES_REGEX_ON_FILENAME = "attribute_values_regex_on_filename"; // Regex to split filename into values
-    public static final String PA_HTTP_NO_CHUNKED_MAX_SIZE = "no_chunked_max_size"; // Disables chunked HTTP transfer when file size is set larger as 0
+    public static final String PA_HTTP_NO_CHUNKED_MAX_SIZE = "no_chunked_max_size"; // Disables chunked HTTP transfer when file size is set larger than the value in this param
+    public static final String PA_HTTP_PREVENT_CHUNKING = "prevent_chunking"; // Will try to force the send without using chunked HTTP transfer
     public static final String PA_STORE_RECEIVED_FILE_TO = "store_received_file_to"; // Allows overriding the MessageFileModule "filename" parameter per partnership
     // A hopefully temporary key to maintain backwards compatibility
     public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
@@ -86,6 +87,10 @@ public class Partnership implements Serializable {
         getAttributes().put(id, value);
     }
 
+    /** Gets the value of the attribute for the provided key
+     * @param id
+     * @return Returns the value to which the specified key is mapped, or null if this map contains no mapping for the key.
+     */
     public String getAttribute(String id) {
         return getAttributes().get(id);
     }
@@ -254,10 +259,6 @@ public class Partnership implements Serializable {
         return "true".equalsIgnoreCase(getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
     }
 
-    public boolean isNoChunkedTransfer() {
-        return (getNoChunkedMaxSize() > 0L);
-    }
-
     public long getNoChunkedMaxSize() {
         long max = 0L;
         try {
@@ -267,4 +268,8 @@ public class Partnership implements Serializable {
         return max;
     }
 
+    public boolean isPreventChunking(boolean defaultPreference) {
+        String preventChunking = getAttribute(Partnership.PA_HTTP_PREVENT_CHUNKING);
+        return preventChunking == null?defaultPreference:"true".equalsIgnoreCase(preventChunking);
+    }
 }

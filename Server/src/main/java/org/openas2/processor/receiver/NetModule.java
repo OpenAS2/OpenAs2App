@@ -104,7 +104,7 @@ public abstract class NetModule extends BaseReceiverModule {
             }
             Map<String, String> options = new HashMap<String, String>();
             options.put(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS, "true");
-            ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options, 0L);
+            ResponseWrapper rw = HTTPUtil.execRequest(HTTPUtil.Method.GET, urlString, null, null, null, options, 0L, false);
             if (200 != rw.getStatusCode()) {
                 failures.add(this.getClass().getSimpleName() + " - Error making HTTP connection. Response code: " + rw.getStatusCode() + " " + rw.getStatusPhrase());
                 return false;
