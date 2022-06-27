@@ -5,6 +5,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.TrackingModule;
@@ -39,7 +40,7 @@ public abstract class BaseMessage implements Message {
     private String compressionType = ICryptoHelper.COMPRESSION_NONE;
     private boolean rxdMsgWasSigned = false;
     private boolean rxdMsgWasEncrypted = false;
-    private Map<Object, Object> options = new HashMap<Object, Object>();
+    private Map<String, Object> options = new HashMap<String, Object>();
     private String calculatedMIC = null;
     private String logMsg = null;
     private String status = MSG_STATUS_MSG_INIT;
@@ -55,9 +56,9 @@ public abstract class BaseMessage implements Message {
         return Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server");
     }
 
-    public Map<Object, Object> getOptions() {
+    public Map<String, Object> getOptions() {
         if (options == null) {
-            options = new HashMap<Object, Object>();
+            options = new HashMap<String, Object>();
         }
         return options;
     }
@@ -83,11 +84,11 @@ public abstract class BaseMessage implements Message {
         this.customOuterMimeHeaders.put(key, value);
     }
 
-    public void setOption(Object key, Object value) {
+    public void setOption(String key, Object value) {
         getOptions().put(key, value);
     }
 
-    public Object getOption(Object key) {
+    public Object getOption(String key) {
         return getOptions().get(key);
     }
 
@@ -112,11 +113,11 @@ public abstract class BaseMessage implements Message {
     }
 
     public String getContentType() {
-        return getHeader("Content-Type");
+        return getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY);
     }
 
     public void setContentType(String contentType) {
-        setHeader("Content-Type", contentType);
+        setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, contentType);
     }
 
     public String getCompressionType() {

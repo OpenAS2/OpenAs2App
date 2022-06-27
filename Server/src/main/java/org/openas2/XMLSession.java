@@ -1,7 +1,6 @@
 package org.openas2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openas2.app.OpenAS2Server;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
@@ -9,9 +8,13 @@ import org.openas2.cmd.processor.BaseCommandProcessor;
 import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.openas2.logging.LogManager;
 import org.openas2.logging.Logger;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.InvalidParameterException;
+import org.openas2.params.ParameterParser;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
+import org.openas2.processor.receiver.PollingModule;
 import org.openas2.schedule.SchedulerComponent;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
@@ -20,21 +23,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 /**
  * original author unknown
@@ -44,28 +42,25 @@ import java.util.jar.Manifest;
  * @author joseph mcverry
  */
 public class XMLSession extends BaseSession {
-    private static final String EL_PROPERTIES = "properties";
-    private static final String EL_CERTIFICATES = "certificates";
-    private static final String EL_CMDPROCESSOR = "commandProcessors";
-    private static final String EL_PROCESSOR = "processor";
-    private static final String EL_PARTNERSHIPS = "partnerships";
-    private static final String EL_COMMANDS = "commands";
-    private static final String EL_LOGGERS = "loggers";
+    public static final String EL_PROPERTIES = "properties";
+    public static final String EL_CERTIFICATES = "certificates";
+    public static final String EL_CMDPROCESSOR = "commandProcessors";
+    public static final String EL_PROCESSOR = "processor";
+    public static final String EL_PARTNERSHIPS = "partnerships";
+    public static final String EL_COMMANDS = "commands";
+    public static final String EL_LOGGERS = "loggers";
+    public static final String EL_POLLER_CONFIG = "pollerConfigBase";
     // private static final String PARAM_BASE_DIRECTORY = "basedir";
 
     private CommandRegistry commandRegistry;
     private CommandManager cmdManager = new CommandManager();
 
-    private static final String MANIFEST_VENDOR_ID_ATTRIB = "Implementation-Vendor-Id";
-    private static final String MANIFEST_VERSION_ATTRIB = "Implementation-Version";
-    private static final String MANIFEST_TITLE_ATTRIB = "Implementation-Title";
-    private static final String VENDOR_ID = "net.sf.openas2";
-    private static final String PROJECT_NAME = "OpenAS2 Server";
+    // Poller base confog that will be used for partnership based pollers. Can be overridden in the partnership
+    private Node basePollerConfigNode = null;
+
     private Attributes manifestAttributes = null;
     private String VERSION;
     private String TITLE;
-
-    private static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
 
     public XMLSession(String configAbsPath) throws Exception {
         File configXml = new File(configAbsPath);
@@ -88,7 +83,9 @@ public class XMLSession extends BaseSession {
     }
 
     protected void load(InputStream in) throws Exception {
-        Document document = XMLUtil.parseXML(in, new PropertyReplacementFilter());
+        PropertyReplacementFilter prf = new PropertyReplacementFilter();
+        prf.setAppHomeDir(getBaseDirectory());
+        Document document = XMLUtil.parseXML(in, prf);
 
         Element root = document.getDocumentElement();
 
@@ -118,6 +115,8 @@ public class XMLSession extends BaseSession {
                 loadCommands(rootNode);
             } else if (nodeName.equals(EL_LOGGERS)) {
                 loadLoggers(rootNode);
+            } else if (nodeName.equals(EL_POLLER_CONFIG)) {
+                loadBasePartnershipPollerConfig(rootNode);
             } else if (nodeName.equals("#text")) {
                 // do nothing
             } else if (nodeName.equals("#comment")) {
@@ -137,8 +136,9 @@ public class XMLSession extends BaseSession {
      * Finally checks if an additional property file was provided and loads those.
      * 
      * @param propNode - the "properties" element of the configuration file containing property values
+     * @throws InvalidParameterException 
      */
-    private void loadProperties(Node propNode) {
+    private void loadProperties(Node propNode) throws InvalidParameterException {
         LOGGER.info("Loading properties...");
 
         Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
@@ -157,7 +157,7 @@ public class XMLSession extends BaseSession {
             try {
                 fis = new FileInputStream(appPropsFile);
                 appProps.load(fis);
-                Enumeration enuKeys = appProps.keys();
+                Enumeration<Object> enuKeys = appProps.keys();
                 while (enuKeys.hasMoreElements()) {
                     String key = (String) enuKeys.nextElement();
                     Properties.setProperty(key, appProps.getProperty(key));
@@ -178,6 +178,23 @@ public class XMLSession extends BaseSession {
                 }
             }
         }
+        /* Process all loaded values in case they reference other properties in the value
+           Use the properties object instead of Properties so we only parse the properties that were in the config.xml
+           so that we can use system property values to replace config.xml properties.
+         */
+        // Pass "true" to ignore unmatched parse ID's in case the properties contain dynamic parameters needed for JIT evaluation
+        CompositeParameters parser = new CompositeParameters(true);
+        parser.setReturnParamStringForMissingParsers(true);
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            String val = entry.getValue();
+            String parsedVal = ParameterParser.parse(val, parser);
+            // Parser will return empty string if there is an unmatched parser ID in the string
+            if (parsedVal.length() > 0 && !val.equals(parsedVal)) {
+                String key = entry.getKey();
+                // Put the changed value into the Properties set
+                Properties.setProperty(key, parsedVal);
+            }
+        }
     }
 
     private void loadCertificates(Node rootNode) throws OpenAS2Exception {
@@ -185,7 +202,15 @@ public class XMLSession extends BaseSession {
         setComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY, certFx);
     }
 
-    private void loadCommands(Node rootNode) throws OpenAS2Exception {
+    private void loadBasePartnershipPollerConfig(Node node) throws OpenAS2Exception {
+        this.basePollerConfigNode = node;
+    }
+
+    public Node getBasePartnershipPollerConfig() throws OpenAS2Exception {
+        return this.basePollerConfigNode;
+    }
+
+   private void loadCommands(Node rootNode) throws OpenAS2Exception {
         Component component = XMLUtil.getComponent(rootNode, this);
         commandRegistry = (CommandRegistry) component;
     }
@@ -262,90 +287,82 @@ public class XMLSession extends BaseSession {
         Processor proc = (Processor) XMLUtil.getComponent(rootNode, this);
         setComponent(Processor.COMPID_PROCESSOR, proc);
 
-        LOGGER.info("Loading processor modules...");
+        LOGGER.info("Loading processor nodes...");
 
-        NodeList modules = rootNode.getChildNodes();
-        Node module;
+        NodeList processorChildNodes = rootNode.getChildNodes();
+        Node processorChildNode;
 
-        for (int i = 0; i < modules.getLength(); i++) {
-            module = modules.item(i);
-
-            if (module.getNodeName().equals("module")) {
+        for (int i = 0; i < processorChildNodes.getLength(); i++) {
+            processorChildNode = processorChildNodes.item(i);
+            if (processorChildNode.getNodeName().equals("module")) {
                 // Allow no enabled attrib to default to "true"
-                String enabledFlag = XMLUtil.getNodeAttributeValue(module, "enabled", true);
-                if (enabledFlag == null || "true".equalsIgnoreCase(enabledFlag)) {
-                    loadProcessorModule(proc, module);
-                } else {
+                String enabledFlag = XMLUtil.getNodeAttributeValue(processorChildNode, "enabled", true);
+                if (enabledFlag != null && !"true".equalsIgnoreCase(enabledFlag)) {
                     try {
-                        LOGGER.info("Module is disabled ... ignoring: " + XMLUtil.toString(module, true));
+                        LOGGER.info("Module is disabled ... ignoring: " + XMLUtil.toString(processorChildNode, true));
                     } catch (TransformerException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
+                    continue;
                 }
+                loadProcessorModule(proc, processorChildNode);
+            } else {
+                // Not a known node so ignore for loader
+                continue;
             }
         }
     }
 
     private void loadProcessorModule(Processor proc, Node moduleNode) throws OpenAS2Exception {
+        if (isPollerModule(moduleNode)) {
+            // Special handling for poller modules using the old style polling config
+            String partnershipName = null;
+            Node defaultsNode = moduleNode.getAttributes().getNamedItem("defaults");
+            if (defaultsNode == null) {
+                // If there is a format nodethen this is a generic poller module
+                Node formatNode = moduleNode.getAttributes().getNamedItem("format");
+                if (formatNode == null) {
+                    throw new OpenAS2Exception("Invalid poller module coniguration: " + moduleNode.toString());
+                }
+                partnershipName = "generic";
+            } else {
+                // Since the partnerships will not have loaded yet, just use the defaults string as the partnership name
+                partnershipName = defaultsNode.getNodeValue();
+            }
+            loadPartnershipPoller(moduleNode, partnershipName, "configPoller");
+            return;
+        }
         ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);
         proc.getModules().add(procmod);
     }
 
-    private void getManifestAttributes() throws OpenAS2Exception {
-        Enumeration<?> resEnum;
-        URL openAS2Manifest = null;
+    private boolean isPollerModule(Node node) {
+        Node classNameNode = node.getAttributes().getNamedItem("classname");
+        if (classNameNode == null) {
+            return false;
+        }
+        String className = classNameNode.getNodeValue();
         try {
-            resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
-            while (resEnum.hasMoreElements()) {
-                try {
-                    URL url = (URL) resEnum.nextElement();
-                    InputStream is = url.openStream();
-                    if (is != null) {
-                        Manifest manifest = new Manifest(is);
-                        Attributes mainAttribs = manifest.getMainAttributes();
-                        is.close();
-                        String vendor = mainAttribs.getValue(MANIFEST_VENDOR_ID_ATTRIB);
-                        if (vendor != null && VENDOR_ID.equals(vendor)) {
-                            // We have an OpenAS2 jar at least - check the project name
-                            String project = mainAttribs.getValue(MANIFEST_TITLE_ATTRIB);
-                            if (project != null && PROJECT_NAME.equals(project)) {
-                                if (openAS2Manifest != null) {
-                                    // A duplicate detected
-                                    throw new OpenAS2Exception("|Duplicate manifests detected: " + openAS2Manifest.getPath() + " ::: " + url.getPath());
-                                }
-                                openAS2Manifest = url;
-                                manifestAttributes = mainAttribs;
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    // Silently ignore wrong manifests on classpath?
-                }
+            Class<?> objClass = Class.forName(className);
+            if (PollingModule.class.isAssignableFrom(objClass)) {
+                return true;
             }
-        } catch (IOException e1) {
-            // Silently ignore wrong manifests on classpath?
-        }
-        if (openAS2Manifest == null) {
-            LOGGER.warn("Failed to find a MANIFEST.MF with the desired vendor and project name.");
-        } else {
-            LOGGER.info("Using MANIFEST " + openAS2Manifest.getPath());
-        }
-    }
+        } catch (Exception e) {
 
-    @Nullable
-    private String getManifestAttribValue(@Nonnull String attrib) throws OpenAS2Exception {
-        if (manifestAttributes != null) {
-            return manifestAttributes.getValue(attrib);
         }
-        return "NO MANIFEST";
+        return false;
+
+    }
+    private void getManifestAttributes() throws OpenAS2Exception {
+        manifestAttributes = OpenAS2Server.getManifestAttributes();
     }
 
     public String getAppVersion() {
         if (VERSION == null) {
             try {
-                VERSION = getManifestAttribValue(MANIFEST_VERSION_ATTRIB);
-            } catch (OpenAS2Exception e) {
+                VERSION = OpenAS2Server.getAppVersion(manifestAttributes);
+            } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
             }
         }
@@ -355,8 +372,8 @@ public class XMLSession extends BaseSession {
     public String getAppTitle() {
         if (TITLE == null) {
             try {
-                TITLE = getManifestAttribValue(MANIFEST_TITLE_ATTRIB) + " v" + getAppVersion();
-            } catch (OpenAS2Exception e) {
+                TITLE = OpenAS2Server.getAppTitle(manifestAttributes);
+            } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
             }
         }

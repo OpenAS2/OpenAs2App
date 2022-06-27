@@ -214,7 +214,7 @@ public class CheckCertificate {
             OutputStream out = new FileOutputStream(targetKeyStore);
             ks.store(out, passphrase);
             out.close();
-            System.out.println("Installed certificate as trusted: " + cert.getIssuerDN() + "::" + cert.getSigAlgName());
+            System.out.println("Installed certificate as trusted: " + cert.getIssuerX500Principal() + "::" + cert.getSigAlgName());
         }
         return 0;
     }
@@ -226,7 +226,7 @@ public class CheckCertificate {
             httpOptions.put(HTTPUtil.PARAM_HTTP_USER, auth_user);
             httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, auth_pwd);
         }
-        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, "https://" + host + ":" + port + "/" + uri, null, null, new ByteArrayInputStream("Testing".getBytes()), httpOptions, 1000000000);
+        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, "https://" + host + ":" + port + "/" + uri, null, null, new ByteArrayInputStream("Testing".getBytes()), httpOptions, 1000000000, false);
         System.out.println("Got a response using Apache HTTP Client: " + resp.getStatusCode());
         System.out.println("\t\tHEADERS: " + resp.getHeaders());
         System.out.println("\t\tBODY: " + resp.getBody());
@@ -244,7 +244,7 @@ public class CheckCertificate {
             return;
         }
 
-        String rootCertDN = rootCert.getIssuerDN().getName();
+        String rootCertDN = rootCert.getIssuerX500Principal().getName();
         String org = getDNField("O", rootCertDN).toLowerCase();
         String org1StWord = org.replaceAll("(\\S*)[^$]*", "$1").toLowerCase();
         System.out.println("Looking for matches to root certificate DN:\n\t" + rootCertDN + "\n\t\tReference certificate signing algorthim: " + rootCert.getSigAlgName() + "\n\n\tTrusted certificate(s) most closely matching \"O\" field of root certificate DN:");
@@ -255,7 +255,7 @@ public class CheckCertificate {
             TrustAnchor ta = (TrustAnchor) it.next();
             // Get certificate
             X509Certificate cert = ta.getTrustedCert();
-            String dn = cert.getIssuerDN().getName();
+            String dn = cert.getIssuerX500Principal().getName();
             String lcDN = dn.toLowerCase();
             if (lcDN.contains(org) || lcDN.contains(org1StWord)) {
                 found = true;

@@ -11,7 +11,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
-import org.xml.sax.helpers.XMLReaderFactory;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -24,14 +28,14 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 
 public class XMLUtil {
     public static Document parseXML(InputStream in, XMLFilterImpl handler) throws Exception {
-        XMLReader xmlparser = XMLReaderFactory.createXMLReader();
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser parser = factory.newSAXParser();
+        XMLReader xmlparser = parser.getXMLReader();
         handler.setParent(xmlparser);
 
         SAXSource source = new SAXSource(handler, new InputSource(in));
@@ -58,12 +62,10 @@ public class XMLUtil {
                 throw new OpenAS2Exception("Class " + className + " must implement " + Component.class.getName());
             }
 
-            Component obj = (Component) objClass.newInstance();
+            Component obj = (Component) objClass.getDeclaredConstructor().newInstance();
 
             Map<String, String> parameters = XMLUtil.mapAttributes(node);
             AS2Util.attributeEnhancer(parameters);
-
-            updateDirectories(session.getBaseDirectory(), parameters);
 
             obj.init(session, parameters);
 
@@ -87,6 +89,17 @@ public class XMLUtil {
         }
 
         return null;
+    }
+
+    public static Document createDoc(Node node) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        Document doc = builder.newDocument();
+        if (node != null) {
+            Node newNode = doc.importNode(node, true);
+            doc.appendChild(newNode);
+        }
+        return doc;
     }
 
     public static String getNodeAttributeValue(Node node, String attrib, boolean enhance) throws OpenAS2Exception {
@@ -175,26 +188,6 @@ public class XMLUtil {
         }
 
         return attributes;
-    }
-
-    private static void updateDirectories(String baseDirectory, Map<String, String> attributes) throws OpenAS2Exception {
-        Iterator<Entry<String, String>> attrIt = attributes.entrySet().iterator();
-        Map.Entry<String, String> attrEntry;
-        String value;
-
-        while (attrIt.hasNext()) {
-            attrEntry = attrIt.next();
-            value = attrEntry.getValue();
-
-            if (value.startsWith("%home%")) {
-                if (baseDirectory != null) {
-                    value = baseDirectory + value.substring(6);
-                    attributes.put(attrEntry.getKey(), value);
-                } else {
-                    throw new OpenAS2Exception("Base directory isn't set");
-                }
-            }
-        }
     }
 
     public static String toString(Node node, boolean omitXmlDeclaration) throws TransformerException {

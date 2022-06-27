@@ -38,6 +38,7 @@ public class ViewPartnerCommand extends AliasedPartnershipsCommand {
             while (parts.hasNext()) {
                 String partName = parts.next();
                 if (partName.equals(name)) {
+                    @SuppressWarnings("unchecked")
                     Map<Object, Object> partDefs = (Map<Object, Object>) partFx.getPartners().get(name);
                     //String out = name + "\n" + partDefs.toString();
                     return new CommandResult(CommandResult.TYPE_OK, partDefs);

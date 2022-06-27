@@ -3,6 +3,7 @@ package org.openas2.app;
 import java.util.Arrays;
 
 public class OpenAS2WindowsService {
+    @SuppressWarnings("unused")
     private static OpenAS2Server server;
 
     public static boolean stop = false;

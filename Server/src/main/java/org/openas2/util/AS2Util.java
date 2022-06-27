@@ -1,7 +1,9 @@
 package org.openas2.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.ComponentNotFoundException;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
@@ -10,38 +12,28 @@ import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.lib.util.MimeUtil;
-import org.openas2.message.AS2Message;
-import org.openas2.message.AS2MessageMDN;
-import org.openas2.message.FileAttribute;
-import org.openas2.message.Message;
-import org.openas2.message.MessageMDN;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageMDNParameters;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.message.*;
+import org.openas2.params.*;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
+import org.openas2.processor.receiver.MessageBuilderModule;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 
+import javax.mail.BodyPart;
 import javax.mail.Header;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -102,6 +94,7 @@ public class AS2Util {
             ICryptoHelper ch = getCryptoHelper();
 
             if (ch.isSigned(mainPart)) {
+                // the signature verifier will return the signed content as a MimeBodyPart
                 mainPart = getCryptoHelper().verifySignature(mainPart, receiver);
             }
         } catch (Exception e1) {
@@ -111,10 +104,11 @@ public class AS2Util {
         }
 
         try {
-            MimeMultipart reportParts = new MimeMultipart(mainPart.getDataHandler().getDataSource());
+            MimeMultipart reportParts = (MimeMultipart)mainPart.getContent();
 
             if (reportParts != null) {
                 ContentType reportType = new ContentType(reportParts.getContentType());
+                Charset charset = getCharset(reportType, msg, logger);
 
                 if (reportType.getBaseType().equalsIgnoreCase("multipart/report")) {
                     int reportCount = reportParts.getCount();
@@ -127,22 +121,51 @@ public class AS2Util {
                         }
 
                         if (reportPart.isMimeType("text/plain")) {
-                            mdn.setText(reportPart.getContent().toString());
+                            mdn.setText(getMimeBodyPartText(reportPart, charset));
                         } else if (reportPart.isMimeType(AS2Standards.DISPOSITION_TYPE)) {
-                            InternetHeaders disposition = new InternetHeaders(reportPart.getInputStream());
-                            mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, disposition.getHeader("Reporting-UA", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, disposition.getHeader("Original-Recipient", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, disposition.getHeader("Final-Recipient", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, disposition.getHeader("Original-Message-ID", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, disposition.getHeader("Disposition", ", "));
-                            mdn.setAttribute(AS2MessageMDN.MDNA_MIC, disposition.getHeader("Received-Content-MIC", ", "));
+                            InternetHeaders headers = new InternetHeaders(reportPart.getInputStream());
+                            mdn.setAttribute(AS2MessageMDN.MDNA_REPORTING_UA, headers.getHeader("Reporting-UA", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_RECIPIENT, headers.getHeader("Original-Recipient", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_FINAL_RECIPIENT, headers.getHeader("Final-Recipient", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID, headers.getHeader("Original-Message-ID", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_DISPOSITION, headers.getHeader("Disposition", ", "));
+                            mdn.setAttribute(AS2MessageMDN.MDNA_MIC, headers.getHeader("Received-Content-MIC", ", "));
                         }
                     }
+                } else {
+                    // No multipart/report so now what?
+                    logger.warn("MDN received from partner but did not contain a multipart/report section. " + msg.getLogMsgID());
                 }
             }
         } catch (Exception e) {
-            throw new OpenAS2Exception("Filed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Failed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         }
+    }
+
+    private static String getMimeBodyPartText(MimeBodyPart part, Charset charset) throws MessagingException, IOException {
+        Object content = part.getContent();
+
+        if (InputStream.class.isAssignableFrom(content.getClass())) {
+            return IOUtils.toString((InputStream) content, charset);
+        }
+
+        return content.toString();
+    }
+
+    private static Charset getCharset(ContentType contentType, Message msg, Log logger) {
+        Charset charset = StandardCharsets.UTF_8;
+        String charsetFromContentType = contentType.getParameter("charset");
+
+        if (charsetFromContentType != null) {
+            try {
+                charset = Charset.forName(charsetFromContentType);
+            } catch (Exception e) {
+                // Just warn and allow the default to go through
+                logger.warn("Received charset string that cannot be parsed: " + charsetFromContentType + ", MSG_ID=" + msg.getLogMsgID());
+            }
+        }
+
+        return charset;
     }
 
     /**
@@ -162,31 +185,33 @@ public class AS2Util {
          * check disposition first
          */
         String disposition = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_DISPOSITION);
-        if (disposition != null && logger.isInfoEnabled()) {
-            logger.info("received MDN [" + disposition + "]" + msg.getLogMsgID());
-        }
         boolean dispositionHasWarning = false;
-        try {
-            new DispositionType(disposition).validate();
-        } catch (DispositionException de) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Disposition exception on MDN. Disposition: " + disposition + msg.getLogMsgID(), de);
+        if (disposition != null) {
+            if (logger.isInfoEnabled()) {
+                logger.info("received MDN [" + disposition + "]" + msg.getLogMsgID());
             }
-            // Something wrong detected so flag it for later use
-            dispositionHasWarning = true;
-            de.setText(msg.getMDN().getText());
-
-            if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
-                // Do not throw error in this case ... just log it
-                de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-                de.terminate();
-            } else {
-                throw de;
+            try {
+                new DispositionType(disposition).validate();
+            } catch (DispositionException de) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("Disposition exception on MDN. Disposition: " + disposition + msg.getLogMsgID(), de);
+                }
+                // Something wrong detected so flag it for later use
+                dispositionHasWarning = true;
+                de.setText(msg.getMDN().getText());
+    
+                if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
+                    // Do not throw error in this case ... just log it
+                    de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
+                    de.log();
+                } else {
+                    throw de;
+                }
+            } catch (OpenAS2Exception e) {
+                msg.setLogMsg("Processing error occurred: " + org.openas2.logging.Log.getExceptionMsg(e));
+                logger.error(msg, e);
+                throw new OpenAS2Exception(e);
             }
-        } catch (OpenAS2Exception e) {
-            msg.setLogMsg("Processing error occurred: " + org.openas2.logging.Log.getExceptionMsg(e));
-            logger.error(msg, e);
-            throw new OpenAS2Exception(e);
         }
 
         if ("none".equalsIgnoreCase(msg.getPartnership().getAttribute(Partnership.PA_AS2_MDN_OPTIONS))) {
@@ -252,7 +277,7 @@ public class AS2Util {
                  * RFC 6362 specifies that the sent attachments should be considered invalid and
                  * retransmitted
                  */
-                String errmsg = "MIC algorithm returned by partner is not the same as the algorithm requested but must be the same per RFC4130 section 7.4.3. Original MIC alg: " + cMicAlg + " ::: returned MIC alg: " + rMicAlg + "\n\t\tEnsure that Partner supports the requested algorithm and the \"" + Partnership.PA_AS2_MDN_OPTIONS + "\" attribute for the outbound partnership uses the same algorithm as the \" +" + Partnership.PA_SIGNATURE_ALGORITHM + "\" attribute.";
+                String errmsg = "MIC algorithm returned by partner is not the same as the algorithm requested but must be the same per RFC4130 section 7.4.3. Original MIC alg: " + cMicAlg + " ::: returned MIC alg: " + rMicAlg + "\n        Ensure that Partner supports the requested algorithm and the \"" + Partnership.PA_AS2_MDN_OPTIONS + "\" attribute for the outbound partnership uses the same algorithm as the \" +" + Partnership.PA_SIGNATURE_ALGORITHM + "\" attribute.";
                 throw new OpenAS2Exception(errmsg + " Forcing Resend");
             }
         }
@@ -271,54 +296,31 @@ public class AS2Util {
         return true;
     }
 
-    // How many times should this message be sent?
-    public static String retries(Map<Object, Object> options, String fallbackRetries) {
-        String left;
-        if (options == null || (left = (String) options.get(SenderModule.SOPT_RETRIES)) == null) {
-            left = fallbackRetries;
-        }
-
-        if (left == null) {
-            left = SenderModule.DEFAULT_RETRIES;
-        }
-        // Verify it is a valid integer
-        try {
-            Integer.parseInt(left);
-        } catch (Exception e) {
-            return SenderModule.DEFAULT_RETRIES;
-        }
-        return left;
-    }
-
     /*
      * @description Attempts to check if a resend should go ahead and if so
      * decrements the resend count and stores the decremented retry count in the
      * options map. If the passed in retry count is null or invalid it will fall
      * back to a system default
      */
-    public static boolean resend(Session session, Object sourceClass, String how, Message msg, OpenAS2Exception cause, String tries, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
+    public static boolean resend(Session session, Class<?> sourceClass, String how, Message msg, OpenAS2Exception cause, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
+        int maxRetryCount = getMaxResendCount(session, msg);
         if (logger.isDebugEnabled()) {
-            logger.debug("RESEND requested.... retries to go: " + tries + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
+            logger.debug("RESEND requested. Retries: " + retries + "Max retries: " + maxRetryCount + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
         }
-
-        int retries = -1;
-        if (tries == null) {
-            tries = SenderModule.DEFAULT_RETRIES;
-        }
-        try {
-            retries = Integer.parseInt(tries);
-        } catch (Exception e) {
-            msg.setLogMsg("The retry count is not a valid integer value: " + tries);
-            logger.error(msg);
-        }
-        if (retries >= 0 && retries-- <= 0) {
-            msg.setLogMsg("Message abandoned after retry limit reached.");
-            logger.error(msg);
-            // Log significant msg state
-            msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
-            msg.trackMsgState(session);
-            throw new OpenAS2Exception("Message abandoned after retry limit reached." + msg.getLogMsgID());
+        if (maxRetryCount > -1) {
+            // Have to resend some fixed number of times so check if we are done
+            if (retries >= maxRetryCount) {
+                msg.setLogMsg("Message abandoned after retry limit reached.");
+                logger.error(msg);
+                // Log significant msg state
+                msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+                msg.trackMsgState(session);
+                throw new OpenAS2Exception("Message abandoned after retry limit reached." + msg.getLogMsgID());
+            }
+            // Going to try again so increment the try count
+            retries++;
         }
 
         if (useOriginalMsgObject) {
@@ -357,7 +359,7 @@ public class AS2Util {
             originalMsg.setAttribute(FileAttribute.MA_PENDINGINFO, msg.getAttribute(FileAttribute.MA_PENDINGINFO));
             if (!keepOriginalData) {
                 originalMsg.setMessageID(msg.getMessageID());
-                originalMsg.setOption(ResenderModule.OPTION_RETRIES, tries);
+                originalMsg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Message file extracted from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Message file extracted from original object: " + originalMsg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
@@ -388,8 +390,7 @@ public class AS2Util {
             String newMsgId = msg.generateMessageID();
             // Set new Id in Message object so we can generate new file name
             msg.setMessageID(newMsgId);
-            // msg.setHeader("Original-Message-Id", oldMsgId); // Not sure about this so
-            // lesve out for now
+            // msg.setHeader("Original-Message-Id", oldMsgId); // Not sure about this so leave out for now
             String newPendingInfoFileName = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
             if (logger.isDebugEnabled()) {
                 logger.debug("" + "\n        Old Msg Id: " + oldMsgId + "\n        Old Info File: " + oldPendingInfoFileName + "\n        New Info File: " + newPendingInfoFileName + msg.getLogMsgID());
@@ -413,7 +414,7 @@ public class AS2Util {
                 logger.error(msg, iose);
             }
         }
-        Map<Object, Object> options = new HashMap<Object, Object>();
+        Map<String, Object> options = new HashMap<String, Object>();
         options.put(ResenderModule.OPTION_CAUSE, cause);
         options.put(ResenderModule.OPTION_INITIAL_SENDER, sourceClass);
         options.put(ResenderModule.OPTION_RESEND_METHOD, how);
@@ -434,7 +435,7 @@ public class AS2Util {
      * @throws OpenAS2Exception - an internally handled error has occurred
      * @throws IOException      - the IO system has a problem
      */
-    public static void processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Object sourceClass) throws OpenAS2Exception, IOException {
+    public static void processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 
         // Create a MessageMDN and copy HTTP headers
@@ -443,8 +444,8 @@ public class AS2Util {
             logger.trace("HTTP headers in received MDN: " + AS2Util.printHeaders(mdn.getHeaders().getAllHeaders()));
         }
         // get the MDN partnership info
-        mdn.getPartnership().setSenderID(Partnership.PID_AS2, mdn.getHeader("AS2-From"));
-        mdn.getPartnership().setReceiverID(Partnership.PID_AS2, mdn.getHeader("AS2-To"));
+        mdn.getPartnership().setSenderID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-From")));
+        mdn.getPartnership().setReceiverID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-To")));
         session.getPartnershipFactory().updatePartnership(mdn, false);
 
         MimeBodyPart part;
@@ -473,11 +474,9 @@ public class AS2Util {
             getMetaData(msg, session);
         }
 
-        String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
-
         msg.setStatus(Message.MSG_STATUS_MDN_VERIFY);
         if (logger.isTraceEnabled()) {
-            logger.trace("MDN parsed. \n\tPayload file name: " + msg.getPayloadFilename() + "\n\tChecking MDN report..." + msg.getLogMsgID());
+            logger.trace("MDN parsed. \n    Payload file name: " + msg.getPayloadFilename() + "\n    Checking MDN report..." + msg.getLogMsgID());
         }
         try {
             AS2Util.checkMDN(msg);
@@ -504,7 +503,7 @@ public class AS2Util {
             }
             // Hmmmm... Error may require manual intervention but keep
             // trying.... possibly change retry count to 1 or just fail????
-            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, retries, true, false);
+            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
             return;
@@ -515,8 +514,8 @@ public class AS2Util {
             }
             OpenAS2Exception oae2 = new OpenAS2Exception("Message was sent but an error occured while receiving the MDN: " + org.openas2.logging.Log.getExceptionMsg(oae), oae);
             oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
-            oae2.terminate();
-            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, retries, true, false);
+            oae2.log();
+            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
             return;
@@ -525,7 +524,7 @@ public class AS2Util {
         msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
         msg.trackMsgState(session);
         if (logger.isTraceEnabled()) {
-            logger.trace("MDN processed. \n\tPayload file name: " + msg.getPayloadFilename() + "\n\tPersisting MDN report..." + msg.getLogMsgID());
+            logger.trace("MDN processed. \n    Payload file name: " + msg.getPayloadFilename() + "\n    Persisting MDN report..." + msg.getLogMsgID());
         }
 
         session.getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
@@ -608,11 +607,11 @@ public class AS2Util {
             msg.setCalculatedMIC((String) pifois.readObject());
             // Get the retry count for number of resends to go from the second line of
             // pending information file
-            String retries = (String) pifois.readObject();
+            int retries = Integer.parseInt((String) pifois.readObject());
             if (logger.isTraceEnabled()) {
                 logger.trace("RETRY COUNT from pending info file: " + retries);
             }
-            msg.setOption(ResenderModule.OPTION_RETRIES, retries);
+            msg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
             // Get the original source file name from the 3rd line of pending information
             // file
             msg.setPayloadFilename((String) pifois.readObject());
@@ -780,4 +779,13 @@ public class AS2Util {
 
     }
 
+    public static int getMaxResendCount(Session session, Message msg) throws ComponentNotFoundException {
+        // Retry count - first try on partnership then on the processor
+        String maxRetryCntStr = msg.getPartnership().getAttribute(Partnership.PA_RESEND_MAX_RETRIES);
+        if (maxRetryCntStr == null || maxRetryCntStr.length() < 1) {
+            maxRetryCntStr = session.getProcessor().getParameters().get(MessageBuilderModule.PARAM_RESEND_MAX_RETRIES);
+        }
+        int maxResendCount = (maxRetryCntStr != null && maxRetryCntStr.length() > 0)?Integer.parseInt(maxRetryCntStr):ResenderModule.DEFAULT_RETRIES;
+        return maxResendCount;
+    }
 }

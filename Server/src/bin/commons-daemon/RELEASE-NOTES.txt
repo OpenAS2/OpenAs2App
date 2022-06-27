@@ -15,39 +15,45 @@
   limitations under the License.
 ================================================================================
 
-                   Apache Commons Daemon 1.1
+                   Apache Commons Daemon 1.2.4
                          Release Notes
 
 This document contains the release notes for this version of the
-Apache Commons Daemon package, and highlights new features compared
-to the 1.0 releases.
+Apache Commons Daemon package, and highlights new features in the 1.2
+releases compared to the 1.1 releases.
 
 
 New Features
 ------------
 
- - The minimum required Java version has been increased from Java
-   1.3 to Java 6
- - Explicit support has been added for Java 9
+ - Improved JRE/JDK detection to support increased range of both JVM
+   versions and vendors
+ 
  - The minimum target platform for Windows has been increased to
-   Windows XP
+   Windows 7 / Server 2008 SP2
+
+ - The default Windows service user has changed from LocalSystem to
+  'NT Authority\LocalService'
+  
+Note: The minimum Java version remains unchanged at 1.6.
 
 
 Bug Fixes
 ---------
 
  - Please see the change log
-   http://commons.apache.org/proper/commons-daemon/changes-report.html
+   https://commons.apache.org/proper/commons-daemon/changes-report.html
+
 
 Feedback
 --------
 Open source works best when you give feedback:
-http://commons.apache.org/daemon/
+https://commons.apache.org/daemon/
 
 Please direct all bug reports to JIRA
 https://issues.apache.org/jira/browse/DAEMON
 
 Or subscribe to the commons-user mailing list (prefix emails by [daemon])
-http://commons.apache.org/mail-lists.html
+https://commons.apache.org/mail-lists.html
 
 The Apache Commons Daemon Team

@@ -1,29 +1,41 @@
 #              OpenAS2 Server
-#              Version 2.12.0
+#              Version 3.2.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 2.12.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.2.0
 
-The release download file is: OpenAS2Server-2.12.0.zip
+The release download file is: OpenAS2Server-3.2.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
+## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 2.12.0 - 2021-04-04
-This is a minor enhancement release and bugfix:
+Version 3.2.0 - 2022-06-21
+This is a minor enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Upgrade libraries to latest release versions (IMPORTANT: See release notes below for this upgrade)
-  2. Register successfully sent MDN in DB tracking.
+  1. Support "prevent_chunking" attribute on partnership to support older AS2 systems.
+  2. Fix copying the sent file to the sent folder when successfully sent.
 
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
+ 
+### Upgrading to 3.xx from 2.x (or older) version:
+## NOTE: The old config will work without change but it is strongly recommended that you follow these steps to convert your existing configuration to the new format as it provides a cleaner and less complicated setup and the old config will eventually be discontinued
+      1. Follow the instructions for specific versions between your current version and this version as defined below before executing the commands below to convert your existing config.xml and partnerships.xml files to use the enhanced poller configuration.
+      2. Open a terminal window (command window in Windows)
+      3. Change to the <install>/config directory of the new version.
+      4. Copy the config.xml and partnerships.xml from your existing version to the new version if not already done in other steps.
+      5. Run this command: java -cp ../lib/\* org.openas2.upgrades.MigratePollingModuleConfig config.xml partnerships.xml
+      6. A backup will be created of the original file (with .00 extension|) that can be removed if the conversion is successful.
+
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
 
 ### If upgrading from versions older than 2.12.0:
       1. If you are using the DB tracking module with the default H2 database then you will need to follow the DB upgrade steps "Appendix: Updating database structure" defined in the OpenAS2HowTo.pdf to ensure you do not lose your existing data because the new H2 version has issues with old databases.
+      2. A change to the way the private key is looked up in the receiver handler means that if you have duplicated a certificate in the keystore, some partnerships may start to fail. This fix may fix other strange certificate issues when receiving messages. To fix partnership failures that occur after the upgrade, find the duplicates and remove them making sure the one you leave behind is the one with the correct private key. Alternatively, use the **use_new_certificate_lookup_mode** attribute at partnership level set to **false** and the old mechanism will be used but this is not advised as a long term solution as it will eventually be removed in a future version.
 
 
 ### If you have been passing the password for the certificate file on the command line in a shell script (no change to the Windows .bat file):

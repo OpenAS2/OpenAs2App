@@ -36,7 +36,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         return modules;
     }
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         Iterator<ProcessorModule> moduleIt = getModules().iterator();
         ProcessorModule module;
         ProcessorException pex = null;
@@ -74,6 +74,24 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         }
     }
 
+    public List<ProcessorModule> getModulesSupportingAction(String action) {
+        List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
+        Iterator<ProcessorModule> moduleIt = getModules().iterator();
+        ProcessorModule module;
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Processor searching for module handlers for action: " + action);
+        }
+
+        while (moduleIt.hasNext()) {
+            module = moduleIt.next();
+            if (action.equals(module.getModuleAction())) {
+                modules.add(module);
+            }
+        }
+        return modules;
+    }
+
     public void startActiveModules() throws OpenAS2Exception {
 
         List<ActiveModule> activeModules = getActiveModules();
@@ -82,7 +100,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                 activeModule.start();
                 logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " started.");
             } catch (OpenAS2Exception e) {
-                e.terminate();
+                e.log();
                 throw e;
             }
         }
@@ -105,7 +123,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                     }
                 }
             } catch (OpenAS2Exception e) {
-                e.terminate();
+                e.log();
             }
         }
 

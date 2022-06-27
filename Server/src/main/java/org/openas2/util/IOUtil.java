@@ -21,6 +21,11 @@ import java.nio.file.Path;
 import java.nio.file.InvalidPathException;
 import java.util.List;
 import java.util.UUID;
+import org.openas2.params.CompositeParameters;
+import org.openas2.params.DateParameters;
+import org.openas2.params.InvalidParameterException;
+import org.openas2.params.ParameterParser;
+import org.openas2.params.RandomParameters;
 
 
 public class IOUtil {
@@ -46,9 +51,24 @@ public class IOUtil {
         }
         return new FileOutputStream(tgtFile);
     }
+    /**
+     * Takes a Path and expands it with the token information
+     * @param String directory
+     * @param Message msg
+     * @return String
+     * @throws org.openas2.params.InvalidParameterException
+     * @since 2007-06-01
+     */
+    protected static String getExpandedPath(String directory) throws InvalidParameterException {
+        CompositeParameters compParams = new CompositeParameters(false)        
+                            .add("date", new DateParameters())
+                            .add("rand", new RandomParameters());
 
-    public static File getDirectoryFile(String directory) throws IOException {
-        File dir = new File(directory);
+        return ParameterParser.parse(directory, compParams);
+    }
+    
+    public static File getDirectoryFile(String directory) throws IOException, InvalidParameterException {
+        File dir = new File(getExpandedPath(directory));
         if (!dir.exists()) {
             createDirs(dir);
         }
@@ -116,26 +136,46 @@ public class IOUtil {
         return filename;
     }
 
-    // move the file to an error directory    
-    public static void handleError(File file, String errorDirectory) throws OpenAS2Exception {
+    /**
+     * Method used to archive file on an specific directory with 
+     * the option to suppress the InvalidMessageException event
+     * Note: Used by directory poller to move the file to an error directory    
+     * @param file
+     * @param archiveDirectory
+     * @throws OpenAS2Exception 
+     */
+    public static void handleArchive(File file, String archiveDirectory) throws OpenAS2Exception {
+        handleArchive(file, archiveDirectory, true);
+    }
+    
+    /**
+     * Method used to archive file on an specific directory with 
+     * the option to suppress the InvalidMessageException event
+     * @param file
+     * @param archiveDirectory
+     * @param throwException
+     * @throws OpenAS2Exception 
+     */
+    public static void handleArchive(File file, String archiveDirectory,boolean throwException) throws OpenAS2Exception {
         File destFile = null;
 
         try {
-            File errorDir = IOUtil.getDirectoryFile(errorDirectory);
+            File archiveDir = IOUtil.getDirectoryFile(archiveDirectory);
 
-            destFile = new File(errorDir, file.getName());
+            destFile = new File(archiveDir, file.getName());
 
             // move the file
             destFile = IOUtil.moveFile(file, destFile, false);
-        } catch (IOException ioe) {
-            InvalidMessageException im = new InvalidMessageException("Failed to move " + file.getAbsolutePath() + " to error directory " + destFile.getAbsolutePath());
+        } catch (IOException ioe) {            
+            InvalidMessageException im = new InvalidMessageException("Failed to move " + file.getAbsolutePath() + " to directory " + destFile.getAbsolutePath());
             im.initCause(ioe);
             throw im;
         }
-
-        // make sure an error of this event is logged
-        InvalidMessageException imMoved = new InvalidMessageException("Moved " + file.getAbsolutePath() + " to " + destFile.getAbsolutePath());
-        imMoved.terminate();
+        if(throwException) {
+            // make sure an error of this event is logged
+            InvalidMessageException imMoved = new InvalidMessageException("Moved " + file.getAbsolutePath() + " to " + destFile.getAbsolutePath());
+            imMoved.log();
+        }
     }
 
     public static File moveFile(File src, File dest, boolean overwrite) throws IOException {

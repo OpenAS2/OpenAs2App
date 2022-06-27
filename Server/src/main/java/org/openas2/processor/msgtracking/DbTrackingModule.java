@@ -83,10 +83,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         }
     }
 
-    protected String getModuleAction() {
-        return DO_TRACK_MSG;
-    }
-
     protected CompositeParameters createParser() {
         CompositeParameters params = new CompositeParameters(true);
 
@@ -284,7 +280,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             }
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM " + tableName);
+            s.executeQuery("SELECT COUNT(*) FROM " + tableName);
         } catch (Exception e) {
             failures.add(this.getClass().getSimpleName() + " - Failed to check DB tracking module connection to DB: " + e.getMessage() + " :: Connect String: " + jdbcConnectString);
             return false;

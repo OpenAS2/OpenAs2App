@@ -18,7 +18,7 @@ public class OpenAS2Exception extends Exception {
     private Log logger = LogFactory.getLog(OpenAS2Exception.class.getSimpleName());
 
     public OpenAS2Exception() {
-        log(false);
+        super();
     }
 
     public OpenAS2Exception(String msg) {
@@ -45,11 +45,7 @@ public class OpenAS2Exception extends Exception {
         sources.put(id, source);
     }
 
-    public void terminate() {
-        log(true);
-    }
-
-    protected void log(boolean terminated) {
+    public void log() {
         logger.error("Error occurred:: " + org.openas2.logging.Log.getExceptionMsg(this) + "\n    Sources: " + this.getSources(), this);
     }
 }

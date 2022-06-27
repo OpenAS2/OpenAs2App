@@ -12,6 +12,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
+import org.openas2.partner.Partnership;
 import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.DispositionType;
 
@@ -29,10 +30,16 @@ public class MessageFileModule extends BaseStorageModule {
     private Log logger = LogFactory.getLog(MessageFileModule.class.getSimpleName());
 
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         // store message content
         try {
-            File msgFile = getFile(msg, getParameter(PARAM_FILENAME, true), action);
+            // Check if the location to store the received message is specified in the partnership
+            String store_message_to = (String)options.get(Partnership.PA_STORE_RECEIVED_FILE_TO);
+            if (store_message_to == null) {
+                // Fetch the global storage string
+                store_message_to = getParameter(PARAM_FILENAME, true);
+            }
+            File msgFile = getFile(msg, store_message_to, action);
             InputStream in = msg.getData().getInputStream();
             store(msgFile, in);
             logger.info("stored message to " + msgFile.getAbsolutePath() + msg.getLogMsgID());
@@ -54,8 +61,15 @@ public class MessageFileModule extends BaseStorageModule {
         }
     }
 
-    protected String getModuleAction() {
-        return DO_STORE;
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return DO_STORE;
+        }
+        return action;
     }
 
 

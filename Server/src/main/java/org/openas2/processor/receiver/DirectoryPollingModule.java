@@ -9,25 +9,30 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.util.IOUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_OUTBOX_DIRECTORY = "outboxdir";
+    public static final String PARAM_ERROR_DIRECTORY = "errordir";
+    public static final String PARAM_SENT_DIRECTORY = "sentdir";
     public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
     public static final String PARAM_FILE_EXTENSION_EXCLUDE_FILTER = "fileextensionexcludefilter";
+    public static final String PARAM_FILE_NAME_EXCLUDE_FILTER = "filenameexcluderegexfilter";
     private Map<String, Long> trackedFiles;
     private String outboxDir;
-    private String errorDir;
+    private String errorDir = null;
     private String sentDir = null;
     private List<String> allowExtensions;
     private List<String> excludeExtensions;
+    private String excludeFilenameRegexFilter = null;
 
     private Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
 
@@ -38,12 +43,22 @@ public abstract class DirectoryPollingModule extends PollingModule {
         try {
             outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
             IOUtil.getDirectoryFile(outboxDir);
+            errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
+            IOUtil.getDirectoryFile(errorDir);
+            sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
+            if(null != sentDir) {
+                IOUtil.getDirectoryFile(sentDir);
+            }
+            
             String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
             IOUtil.getDirectoryFile(pendingInfoFolder);
             String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
             IOUtil.getDirectoryFile(pendingFolder);
+            
+            
             String allowExtensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
             String excludeExtensionFilter = getParameter(PARAM_FILE_EXTENSION_EXCLUDE_FILTER, "");
+            String excludeFilenameRegexFilter = getParameter(PARAM_FILE_NAME_EXCLUDE_FILTER, "");
 
             if (allowExtensionFilter == null || allowExtensionFilter.length() < 1) {
                 this.allowExtensions = new ArrayList<String>();
@@ -54,6 +69,9 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 this.excludeExtensions = new ArrayList<String>();
             } else {
                 this.excludeExtensions = Arrays.asList(excludeExtensionFilter.split("\\s*,\\s*"));
+            }
+            if (excludeFilenameRegexFilter != null && excludeFilenameRegexFilter.length() > 0) {
+                this.excludeFilenameRegexFilter = excludeFilenameRegexFilter;
             }
 
         } catch (IOException e) {
@@ -67,6 +85,10 @@ public abstract class DirectoryPollingModule extends PollingModule {
             IOUtil.getDirectoryFile(outboxDir);
         } catch (IOException e) {
             failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
+            Logger.getLogger(DirectoryPollingModule.class.getName()).log(Level.SEVERE, null, e);
+            return false;
+        } catch (InvalidParameterException ex) {
+            Logger.getLogger(DirectoryPollingModule.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
         return true;
@@ -80,31 +102,59 @@ public abstract class DirectoryPollingModule extends PollingModule {
             // scan the directory for new files
             scanDirectory(outboxDir);
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
         } catch (Exception e) {
             logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
         }
     }
 
     protected void scanDirectory(String directory) throws IOException, InvalidParameterException {
-        File dir = IOUtil.getDirectoryFile(directory);
-        // get a list of entries in the directory
-        File[] files = IOUtil.getFiles(dir, allowExtensions, excludeExtensions);
-        if (files == null) {
-            throw new InvalidParameterException("Error getting list of files in directory", this, PARAM_OUTBOX_DIRECTORY, dir.getAbsolutePath());
-        }
 
-        // iterator through each entry, and start tracking new files
-        if (files.length > 0) {
-            for (int i = 0; i < files.length; i++) {
-                File currentFile = files[i];
+        /* Claudio.Degioanni - Versione modificata 20210628 2.11 - Start */
+
+        /**
+         * Rispetto alla versione tesi ho aggiunto il supporto per allowExtensions e
+         * excludeExtensions aggiunto nelle versioni dopo
+         */
+        if (logger.isTraceEnabled()) {
+            logger.trace("Polling module scanning directory: " + directory);
+        }
+        File directoryAsFile = IOUtil.getDirectoryFile(directory);
+        // Wrap in try-with-resources block to ensure close() is called
+        try (DirectoryStream<Path> dirs = Files.newDirectoryStream(directoryAsFile.toPath(), entry -> {
+                String name = entry.getFileName().toString();
+                if (Files.isDirectory(entry)) {
+                    return false;
+                }
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Polling module file name found: " + name);
+                }
+                String extension = name.substring(name.lastIndexOf(".") + 1);
+                boolean isAllowed = true;
+                if (!allowExtensions.isEmpty()) {
+                    isAllowed = allowExtensions.contains(extension);
+                }
+                // Check for the excluded filters if not already disallowed
+                if (isAllowed && !excludeExtensions.isEmpty()) {
+                    isAllowed = !excludeExtensions.contains(extension);
+                }
+                // Check if there are filename regex exclusions if not already disallowed
+                if (isAllowed && excludeFilenameRegexFilter != null) {
+                    isAllowed = !name.matches(excludeFilenameRegexFilter);
+                }
+                return isAllowed;
+
+            })) {
+
+            for (Path dir : dirs) {
+                File currentFile = dir.toFile();
 
                 if (checkFile(currentFile)) {
-                    // start watching the file's size if it's not already being
-                    // watched
+                    // start watching the file's size if it's not already being watched
                     trackFile(currentFile);
                 }
             }
+            /* Claudio.degioanni - Versione modificata 20210628 2.11 - End */
         }
     }
 
@@ -164,12 +214,12 @@ public abstract class DirectoryPollingModule extends PollingModule {
                     try {
                         processFile(file);
                     } catch (OpenAS2Exception e) {
-                        e.terminate();
+                        e.log();
                         try {
-                            IOUtil.handleError(file, errorDir);
+                            IOUtil.handleArchive(file, errorDir);
                         } catch (OpenAS2Exception e1) {
                             logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
-                            forceStop(e1);
+                            //forceStop(e1);
                             return;
                         }
                     } finally {
@@ -188,15 +238,12 @@ public abstract class DirectoryPollingModule extends PollingModule {
             logger.info("processing " + file.getAbsolutePath());
         }
 
-        try (FileInputStream in = new FileInputStream(file)) {
-            processDocument(in, file.getName());
-            try {
-                IOUtil.deleteFile(file);
-            } catch (IOException e) {
-                throw new OpenAS2Exception("Failed to delete file handed off for processing:" + file.getAbsolutePath(), e);
-            }
-        } catch (IOException e) {
-            throw new OpenAS2Exception("Failed to process file:" + file.getAbsolutePath(), e);
+        try {
+            processDocument(file, file.getName());
+        } catch (FileNotFoundException e) {
+            // Try to move original file to error dir in case error handling has not done it  for us.
+            IOUtil.handleArchive(file, errorDir, false);
+            throw new OpenAS2Exception("Failed to initiate processing for file:" + file.getAbsolutePath(), e);
         }
     }
 

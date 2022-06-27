@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
@@ -19,16 +20,19 @@ import org.openas2.partner.Partnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
+import org.openas2.util.IOUtil;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -59,23 +63,49 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     }
 
 
+    /**
+     * Move the file into the processing folder then invoke the sending process.
+     * @param fileToSend
+     * @param filename
+     * @return
+     * @throws OpenAS2Exception
+     * @throws FileNotFoundException
+     */
+    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {
+        Message msg = buildMessageMetadata(filename);
+        File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
+        try {
+            IOUtil.moveFile(fileToSend, pendingFile, false);
+        } catch (IOException e) {
+            logger.error(": " + e.getMessage(), e);
+            throw new OpenAS2Exception("Failed to move the inbound file " + fileToSend.getPath() + " to the processing location " + pendingFile.getName());
+        }
+        return processDocument(pendingFile, msg); 
+    }
+
+    /**
+     * Take the file input stream and write it to a file system file in the processing folder. 
+     * Use this method if the file is produced in real time through a stream.
+     * @param ip
+     * @param filename
+     * @return
+     * @throws OpenAS2Exception
+     * @throws FileNotFoundException
+     */
     protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException {
         Message msg = buildMessageMetadata(filename);
-
-        String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
-        // Persist the file that has been passed in
-        File doc = new File(pendingFile);
+        File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
         FileOutputStream fo = null;
         try {
-            fo = new FileOutputStream(doc);
+            fo = new FileOutputStream(pendingFile);
         } catch (FileNotFoundException e1) {
-            throw new OpenAS2Exception("Could not create file in pending folder: " + pendingFile, e1);
+            throw new OpenAS2Exception("Could not create file in pending folder: " + pendingFile.getName(), e1);
         }
         try {
             IOUtils.copy(ip, fo);
         } catch (IOException e1) {
             fo = null;
-            throw new OpenAS2Exception("Could not write file to pending folder: " + pendingFile, e1);
+            throw new OpenAS2Exception("Could not write file to pending folder: " + pendingFile.getName(), e1);
         }
         try {
             ip.close();
@@ -91,20 +121,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             e1.printStackTrace();
         }
         fo = null;
+        return processDocument(pendingFile, msg);
+    }
 
-        FileInputStream fis = new FileInputStream(doc);
-        try {
-            buildMessageData(msg, fis, filename);
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            fis = null;
-            doc = null;
-        }
+    protected Message processDocument(File pendingFile, Message msg) throws OpenAS2Exception, FileNotFoundException {
+        buildMessageData(msg, pendingFile, null);
         String customHeaderList = msg.getPartnership().getAttribute(Partnership.PA_CUSTOM_MIME_HEADER_NAMES_FROM_FILENAME);
         if (customHeaderList != null && customHeaderList.length() > 0) {
             String[] headerNames = customHeaderList.split("\\s*,\\s*");
@@ -112,6 +133,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             if (logger.isTraceEnabled()) {
                 logger.trace("Adding custom headers based on message file name to custom headers map. Delimeters: " + delimiters + msg.getLogMsgID());
             }
+            String filename = msg.getAttribute(FileAttribute.MA_FILENAME);
             if (delimiters != null) {
                 // Extract the values based on delimiters which means the mime header names are
                 // prefixed with a target
@@ -151,26 +173,20 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             }
         }
         if (logger.isInfoEnabled()) {
-            logger.info("File assigned to message: " + filename + msg.getLogMsgID());
+            logger.info("File assigned to message: " + pendingFile.getName() + msg.getLogMsgID());
         }
 
         if (msg.getData() == null) {
-            throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + filename);
+            throw new InvalidMessageException("Failed to retrieve data for outbound AS2 message for file: " + pendingFile.getName());
         }
         if (logger.isTraceEnabled()) {
             logger.trace("PARTNERSHIP parms: " + msg.getPartnership().getAttributes() + msg.getLogMsgID());
         }
-        // Retry count - first try on partnership then directory polling module
-        String maxRetryCnt = msg.getPartnership().getAttribute(Partnership.PA_RESEND_MAX_RETRIES);
-        if (maxRetryCnt == null || maxRetryCnt.length() < 1) {
-            maxRetryCnt = getSession().getProcessor().getParameters().get(PARAM_RESEND_MAX_RETRIES);
-        }
-        if (logger.isTraceEnabled()) {
-            logger.trace("RESEND COUNT extracted from config: " + maxRetryCnt + msg.getLogMsgID());
-        }
-        Map<Object, Object> options = msg.getOptions();
-        options.put(ResenderModule.OPTION_RETRIES, maxRetryCnt);
-
+        Map<String, Object> options = new HashMap<String, Object>();
+        // Initialise the resend parameters
+        int maxResendCount = AS2Util.getMaxResendCount(getSession(), msg);
+        msg.setOption(ResenderModule.OPTION_MAX_RETRY_COUNT, maxResendCount);
+        msg.setOption(ResenderModule.OPTION_RETRIES, "0");
         if (logger.isTraceEnabled()) {
             try {
 
@@ -182,6 +198,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             msg.setStatus(Message.MSG_STATUS_MSG_SEND);
             // Transmit the message
             getSession().getProcessor().handle(SenderModule.DO_SEND, msg, options);
+            if (!msg.isConfiguredForAsynchMDN()) {
+                AS2Util.cleanupFiles(msg, false);
+            }
         } catch (Exception e) {
             msg.setLogMsg("Fatal error sending message: " + org.openas2.logging.Log.getExceptionMsg(e));
             logger.error(msg, e);
@@ -239,11 +258,63 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     }
 
+    /**
+     * Provides support for a random inputstream. 
+     *     NOTE: Ths method should not be used for very large files as it will consume all the available heap and fail to send.
+     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param ip - the generic inputstream
+     * @param filename - name of the file being sent (currently unused)
+     * @throws OpenAS2Exception
+
+     */
     public void buildMessageData(Message msg, InputStream ip, String filename) throws OpenAS2Exception {
+            String contentType = getMessageContentType(msg);
+            javax.mail.util.ByteArrayDataSource byteSource;
+            try {
+                byteSource = new javax.mail.util.ByteArrayDataSource(ip, contentType);
+            } catch (IOException e) {
+                throw new OpenAS2Exception("Failed to set up datasource from input stream: " + e.getMessage(), e);
+            }
+            buildMessageData(msg, byteSource, contentType);
+
+    }
+
+    /**
+     * This method will minimise the memory usage when creating the MimeBodyPart
+     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param fileObject - a File object that will provide the file content
+     * @param contentType - the Content-Type for the sent data - can be null and fall back to the OpenAS2 default
+     * @throws OpenAS2Exception
+     */
+    public void buildMessageData(Message msg, File fileObject, String contentType) throws OpenAS2Exception {
+        buildMessageData(msg, new FileDataSource(fileObject), contentType);
+    }
+
+    /**
+     * This method will minimise the memory usage when creating the MimeBodyPart
+     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param dataSource - a DatsSource object that will provide the file content
+     * @param contentType - the Content-Type for the sent data - can be null and fall back to the OpenAS2 default
+     * @throws OpenAS2Exception
+     */
+    public void buildMessageData(Message msg, DataSource dataSource, String contentType) throws OpenAS2Exception {
+        if (contentType == null) {
+            contentType = getMessageContentType(msg);
+        }
+        MimeBodyPart body = new MimeBodyPart();
+        try {
+            body.setDataHandler(new DataHandler(dataSource));
+            body.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, contentType);
+        } catch (MessagingException e) {
+            throw new OpenAS2Exception("Failed to set properties on mime body part: " + e.getMessage(), e);
+        }
+        setAdditionalMetaData(msg, body);
+        msg.setData(body);
+    }
+
+    private String getMessageContentType(Message msg) throws OpenAS2Exception {
         MessageParameters params = new MessageParameters(msg);
 
-        try {
-            // byte[] data = IOUtilOld.getFileBytes(file);
             // Allow Content-Type to be overridden at partnership level or as property
             String contentType = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TYPE, null);
             if (contentType == null) {
@@ -258,46 +329,38 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                     throw new OpenAS2Exception("Bad content-type" + contentType, e);
                 }
             }
-            javax.mail.util.ByteArrayDataSource byteSource = new javax.mail.util.ByteArrayDataSource(ip, contentType);
-            MimeBodyPart body = new MimeBodyPart();
-            body.setDataHandler(new DataHandler(byteSource));
+            return contentType;
+    }
 
-            // below statement is not filename related, just want to make it
-            // consist with the parameter "mimetype="application/EDI-X12""
-            // defined in config.xml 2007-06-01
+    private void setAdditionalMetaData(Message msg, MimeBodyPart mimeBodyPart) throws OpenAS2Exception {
 
-            body.setHeader("Content-Type", contentType);
-
+        try {
             // add below statement will tell the receiver to save the filename
             // as the one sent by sender. 2007-06-01
             String sendFileName = getParameter("sendfilename", false);
             if (sendFileName != null && sendFileName.equals("true")) {
                 String contentDisposition = "Attachment; filename=\"" + msg.getAttribute(FileAttribute.MA_FILENAME) + "\"";
-                body.setHeader("Content-Disposition", contentDisposition);
+                mimeBodyPart.setHeader("Content-Disposition", contentDisposition);
                 msg.setContentDisposition(contentDisposition);
             }
+            /*
+             * Not sure it should be set at this level as there is no encoding of the
+             * content at this point so make it configurable
+             */
+            if (msg.getPartnership().isSetTransferEncodingOnInitialBodyPart()) {
+                String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
+                if (contentTxfrEncoding == null) {
+                    contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                }
+                try {
+                    mimeBodyPart.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
+                } catch (MessagingException e) {
+                    throw new OpenAS2Exception("Failed to set content transfer encoding in created MimeBodyPart: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                }
+            }
 
-            msg.setData(body);
         } catch (MessagingException me) {
             throw new WrappedException(me);
-        } catch (IOException ioe) {
-            throw new WrappedException(ioe);
-        }
-
-        /*
-         * Not sure it should be set at this level as there is no encoding of the
-         * content at this point so make it configurable
-         */
-        if (msg.getPartnership().isSetTransferEncodingOnInitialBodyPart()) {
-            String contentTxfrEncoding = msg.getPartnership().getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
-            if (contentTxfrEncoding == null) {
-                contentTxfrEncoding = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-            }
-            try {
-                msg.getData().setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
-            } catch (MessagingException e) {
-                throw new OpenAS2Exception("Failed to set content transfer encoding in created MimeBodyPart: " + org.openas2.logging.Log.getExceptionMsg(e), e);
-            }
         }
     }
 }

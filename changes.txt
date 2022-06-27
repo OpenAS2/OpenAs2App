@@ -1,9 +1,81 @@
-Version 2.12.0 - 2021-04-04
-This is a minor enhancement release and bugfix:
-       **IMPORTANT NOTE**: Please review upgrade notes  in the RELEASE-NOTES.md if you are upgrading
+Version 3.2.0 - 2022-06-21
+This is a minor enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-  1. Upgrade libraries to latest release versions (IMPORTANT: See release notes for this upgrade)
-  2. Register successfully sent MDN in DB tracking.
+  1. Support "prevent_chunking" attribute on partnership to support older AS2 systems.
+  2. Fix copying the sent file to the sent folder when successfully sent.
+  
+Version 3.1.0 - 2022-06-04
+This is a minor enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support embedded $properties.xxx$ within property element values.
+  2. Support setting unix executables in ZIP file when packaging new release in Maven.
+  3. Fix asynchronous MDN sending and receiving.
+  
+Version 3.0.1 - 2022-05-30
+This is a bugfix and minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+
+  1. Fix partnership directory poller cache not refreshing when partnerships file is modified on a live system.
+  2. Fix the support for bypassing proxy hosts.
+  3. Fix access via the web application. See the README here for using it: https://github.com/OpenAS2/OpenAs2App/blob/master/WebUI/README.md
+  4. Support setting the valid days count and start date for certificate generation in the gen_p12_key_par.sh script.
+  5. Provide a more useful message when parsing dynamic strings throws an error.
+  
+
+Version 3.0.0 - 2022-04-10
+This is a major enhancement release:
+       **READ THE UPGRADE NOTES FOR THIS RELEASE**
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading from any older version.
+
+  1. Enhance the directory polling capability so that the configuration can be done in the partnership instead of the config.xml. The partnerships.xml file is now used to store directories to be polled using an attribute instead of the individual entries in config.xml. See the "Sending Files" section of the OpenAS2HowTo for details.
+  2. Enhance dynamic variables to support property variables in any configuration string that allows the use of dynamic variables. This allows using the properties to further simplify repeated dynamic variable strings in config.
+  2. Support overriding the default storage location for received files specified in the config.xml MessageFileMoule with a partnership attribute "store_received_file_to". The attribute supports the use of dynamic variables.
+  4. Change the HTTP error when an invalid message format is received from error to a warning and allow it to be suppressed using the "log_invalid_http_request" property.
+  5. Expand the classpath in the startup scripts instead of using file globbing expansion in the java command as it seems to mess with Mailcap loading causing DCH missing error.
+  6. Enhance documentation for areas that have user questions related to them to improve new user ease of configuring a new system.
+  7. Fixed the command processor so that it does not write the XML back to disk from objects that have been enhanced in the loader and therefore losing the generic config.
+  8. Rationalised the exception logging when significant errors occur so that there is less "noise" in the logging.
+  9. Added dependency management plugin to make it easier to keep the project updated with latest release versions.
+
+Version 2.14.0 - 2021-12-10
+This is a enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Add an additional way to filter files based on a regular expression. This allows filtering files based on text within the file name and not just the file extension. See the section **Restricting Directory Files By Extension Or Name** in the documentation for details of use.
+  2. Fix directory polling module not releasing file handles and eventually starving the OS of file handles.
+
+Version 2.13.1 - 2021-12-02
+This is a bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix error when resender is invoked.
+  2. Fix directory polling module dying when specific errors occur that are not caught at source and end up in the module base invocation.
+
+Version 2.13.0 - 2021-10-21
+This is a minor enhancement release and windows bat files bugfix:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Enhance the directory polling module to use the NIO library.
+  2. Fix the startup.bat file for Windows where in newer versions of Java the JAVA environment variable is set with quotes surrounding it.
+  3. Fix the windows service installer bat file so that it reliably installs as a service that will start.
+  4. Support CI/CD for Java 8 thru 17
+  5. Add Windows bat script to import files from a source keystore to the main keystore including private key if in the source store.
+
+Version 2.12.0 - 2021-10-15
+This is a minor enhancement release, bug fixes and library upgrades:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix resend tracking in the tracking DB and add missing columns (https://github.com/OpenAS2/OpenAs2App/issues/195)
+  2. Changed error message to info message and support not rendering the error message when an invalid HTTP request is detected.
+  3. Support overriding the "remove_http_header_folding" property at partnership level. See OpenAS2HowTo section on "Header Folding" for details. (contributed by Claudio Degioanni claudio.degioanni@bmeweb.it)
+  4. Fix HTTP timeout configuration - the timeout configuration was  not correctly reading any user specific setting.
+  5. Enhance documentation based on user feedback.
+  6. Register successfully sent MDN in DB tracking.
+  7. Add a helper script to import certificates from a source keystore to a target keystore (import_alias_from_keystore.sh)
+  8. Change the way the receiver handler finds the private key. backwards compatibility was maintained through the use of a partnership attribute or system property (use_new_certificate_lookup_mode). It defaults to new mode but setting to false reverts the behaviour.
 
 Version 2.11.0 - 2020-09-19
 This is a minor enhancement release:

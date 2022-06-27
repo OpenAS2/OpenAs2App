@@ -30,57 +30,22 @@ rem set EXTRA_PARMS=%EXTRA_PARMS% -Djavax.net.debug=SSL
 rem  set EXTRA_PARMS=%EXTRA_PARMS% -DCmdProcessorSocketCipher=SSL_DH_anon_WITH_RC4_128_MD5
 
 rem Setup the Java Virtual Machine
-if not "%JAVA%" == "" goto :Check_JAVA_END
-    if not "%JAVA_HOME%" == "" goto :TryJDKEnd
-        call :warn JAVA_HOME not set; results may vary
-:TryWOWJRE
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\WOW6432NODE\JavaSoft\Java Runtime Environment" /s /v CurrentVersion ^| find "CurrentVersion"`) DO (
-       set JAVA_VERSION=%%A
-    )
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\WOW6432NODE\JavaSoft\Java Runtime Environment\%JAVA_VERSION%" /s /v JavaHome ^| find "JavaHome"`) DO (
-       set JAVA_HOME=%%A %%B
-    )
-    if not exist "%JAVA_HOME%" goto :TryWOWJDK
-    goto TryJDKEnd
-:TryWOWJDK
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\WOW6432NODE\JavaSoft\Java Development Kit" /s /v CurrentVersion  ^| find "CurrentVersion"`) DO (
-       set JAVA_VERSION=%%A
-    )
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\WOW6432NODE\JavaSoft\Java Development Kit\%JAVA_VERSION%" /s /v JavaHome ^| find "JavaHome"`) DO (
-       set JAVA_HOME=%%A %%B
-    )
-    if not exist "%JAVA_HOME%" goto :TryJRE
-    goto TryJDKEnd
-:TryJRE
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\JavaSoft\Java Runtime Environment" /s /v CurrentVersion  ^| find "CurrentVersion"`) DO (
-       set JAVA_VERSION=%%A
-    )
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\JavaSoft\Java Runtime Environment\%JAVA_VERSION%" /s /v JavaHome ^| find "JavaHome"`) DO (
-       set JAVA_HOME=%%A %%B
-    )
-    if not exist "%JAVA_HOME%" goto :TryJDK
-    goto TryJDKEnd
-:TryJDK
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\JavaSoft\Java Development Kit" /s /v CurrentVersion  ^| find "CurrentVersion"`) DO (
-       set JAVA_VERSION=%%A
-    )
-    FOR /F "usebackq tokens=3*" %%A IN (`REG QUERY "HKLM\Software\JavaSoft\Java Development Kit\%JAVA_VERSION%" /s /v JavaHome ^| find "JavaHome"`) DO (
-       set JAVA_HOME=%%A %%B
-    )
-    if not exist "%JAVA_HOME%" (
-       call :warn Unable to retrieve JAVA_HOME from Registry
-    )
-:TryJDKEnd
-    if not exist "%JAVA_HOME%" (
-        call :warn JAVA_HOME is not valid: "%JAVA_HOME%"
-        goto END
-    )
-    set JAVA=%JAVA_HOME%\bin\java
-:Check_JAVA_END
-set LIB_JARS=%OPENAS2_BASE_DIR%/lib/*
-rem    
-"%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server ../config/config.xml
+call "%OPENAS2_BASE_DIR%\bin\find_java.bat"
+if %ERRORLEVEL% NEQ 0 exit /B 1
+
+rem Using file globbing via * in classpath causes Mailcap loading issues so build full path
+rem set LIB_JARS=%OPENAS2_BASE_DIR%/lib/*
+setLocal EnableDelayedExpansion
+set LIB_JARS=
+for /R %OPENAS2_BASE_DIR%/lib %%a in (*.jar) do (
+  set LIB_JARS=!LIB_JARS!;%%a
+)
+set LIB_JARS=".!LIB_JARS!"
+setLocal disableDelayedExpansion
+rem  Include the bin dir so that commons-logging.properties is found
+CLASSPATH=.;%LIB_JARS%;%OPENAS2_BASE_DIR%/bin
+rem echo Running: "%JAVA%" %EXTRA_PARMS%  -cp %CLASSPATH% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
+"%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
 
 :warn
 :END
-

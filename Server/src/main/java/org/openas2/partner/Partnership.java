@@ -1,5 +1,7 @@
 package org.openas2.partner;
 
+import org.openas2.OpenAS2Exception;
+import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.util.Properties;
 
 import java.io.Serializable;
@@ -12,9 +14,18 @@ import java.util.Set;
 
 public class Partnership implements Serializable {
 
+    /* Partnership configuration nodes */
+    public static final String PNODE_PARTNER = "partner"; //The node that encapsulates a single partner definition
+    public static final String PNODE_PARTNERSHIP = "partnership"; //The node that encapsulates a single partnership definition
+
     /* identifier to define if context is sending or receiving */
     public static final String PTYPE_SENDER = "sender"; // Sender partner type
     public static final String PTYPE_RECEIVER = "receiver"; // Receiver partner type
+
+    /* Partnership configuration nodes */
+    public static final String PCFG_POLLER = "pollerConfig"; // Directory poller config node
+    public static final String PCFG_SENDER = PTYPE_SENDER; // Sender config node
+    public static final String PCFG_RECEIVER = PTYPE_RECEIVER; // Receiver config node
 
     /* partner definition attributes */
     public static final String PID_AS2 = "as2_id"; // AS2 ID
@@ -44,7 +55,11 @@ public class Partnership implements Serializable {
     public static final String PA_CUSTOM_MIME_HEADER_NAMES_REGEX_ON_FILENAME = "custom_mime_header_names_regex_on_filename"; // Regex to split filename into values
     public static final String PAIB_NAMES_FROM_FILENAME = "attribute_names_from_filename"; // List of attribute names to be set from parsed filename
     public static final String PAIB_VALUES_REGEX_ON_FILENAME = "attribute_values_regex_on_filename"; // Regex to split filename into values
-    public static final String PA_HTTP_NO_CHUNKED_MAX_SIZE = "no_chunked_max_size"; // Disables chunked HTTP transfer when file size is set larger as 0
+    public static final String PA_HTTP_NO_CHUNKED_MAX_SIZE = "no_chunked_max_size"; // Disables chunked HTTP transfer when file size is set larger than the value in this param
+    public static final String PA_HTTP_PREVENT_CHUNKING = "prevent_chunking"; // Will try to force the send without using chunked HTTP transfer
+    public static final String PA_STORE_RECEIVED_FILE_TO = "store_received_file_to"; // Allows overriding the MessageFileModule "filename" parameter per partnership
+    // A hopefully temporary key to maintain backwards compatibility
+    public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
 
     /*
      * If set and an error occurs while processing a document, an error MDN will not be sent. This
@@ -72,6 +87,10 @@ public class Partnership implements Serializable {
         getAttributes().put(id, value);
     }
 
+    /** Gets the value of the attribute for the provided key
+     * @param id
+     * @return Returns the value to which the specified key is mapped, or null if this map contains no mapping for the key.
+     */
     public String getAttribute(String id) {
         return getAttributes().get(id);
     }
@@ -148,6 +167,25 @@ public class Partnership implements Serializable {
 
     }
 
+    public String getAlias(String partnershipType) throws OpenAS2Exception {
+        String alias = null;
+
+        if (partnershipType == PTYPE_RECEIVER) {
+            alias = getReceiverID(Partnership.PID_X509_ALIAS);
+        } else if (partnershipType == PTYPE_SENDER) {
+            alias = getSenderID(Partnership.PID_X509_ALIAS);
+        }
+
+        if (alias == null) {
+            throw new CertificateNotFoundException(
+                 "Lookup failed for X509 alias for AS2 ID: " + getReceiverID(Partnership.PID_AS2 + " :: Partnership type: " + partnershipType),
+                 null
+            );
+        }
+
+        return alias;
+    }
+
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append("Partnership " + getName());
@@ -221,10 +259,6 @@ public class Partnership implements Serializable {
         return "true".equalsIgnoreCase(getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));
     }
 
-    public boolean isNoChunkedTransfer() {
-        return (getNoChunkedMaxSize() > 0L);
-    }
-
     public long getNoChunkedMaxSize() {
         long max = 0L;
         try {
@@ -234,4 +268,8 @@ public class Partnership implements Serializable {
         return max;
     }
 
+    public boolean isPreventChunking(boolean defaultPreference) {
+        String preventChunking = getAttribute(Partnership.PA_HTTP_PREVENT_CHUNKING);
+        return preventChunking == null?defaultPreference:"true".equalsIgnoreCase(preventChunking);
+    }
 }

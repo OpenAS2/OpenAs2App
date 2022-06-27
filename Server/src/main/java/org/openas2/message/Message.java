@@ -22,6 +22,7 @@ public interface Message extends Serializable {
     String MSG_STATUS_MDN_PARSE = "parsing_mdn";
     String MSG_STATUS_MDN_VERIFY = "verifying_mdn";
     String MSG_STATUS_MDN_PROCESS_INIT = "init_processing_mdn";
+    String MSG_STATUS_MDN_RESEND = "resending_mdn";
     String MSG_STATUS_MSG_CLEANUP = "cleanup";
     String MSG_STATUS_MSG_TERMINATED_IN_ERROR = "terminated_in_error";
 
@@ -35,6 +36,7 @@ public interface Message extends Serializable {
     String MSG_STATE_MDN_ERROR_RESPONSE_START = "msg_receive_error_sending_mdn_error";
     String MSG_STATE_MDN_SENDING_EXCEPTION = "mdn_sending_exception";
     String MSG_STATE_MDN_RECEIVING_EXCEPTION = "mdn_receiving_exception";
+    String MSG_STATE_MDN_SEND_FAIL_RESEND_QUEUED = "msg_rxd_asyn_mdn_send_fail_resend_queued";
     String MSG_STATE_MDN_SEND_START = "mdn_send_start";
     String MSG_STATE_MDN_RECEIVE_START = "mdn_receive_start";
     String MSG_STATE_MDN_ASYNC_RECEIVE_FAIL = "mdn_asyn_receive_fail";
@@ -87,11 +89,11 @@ public interface Message extends Serializable {
 
     void addCustomOuterMimeHeader(String key, String value);
 
-    Map<Object, Object> getOptions();
+    Map<String, Object> getOptions();
 
-    void setOption(Object key, Object value);
+    void setOption(String key, Object value);
 
-    Object getOption(Object key);
+    Object getOption(String key);
 
     void setAttribute(String key, String value);
 

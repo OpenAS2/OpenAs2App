@@ -19,13 +19,13 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
     public static final String PARAM_PROTOCOL = "protocol";
     public static final String PARAM_TEMPDIR = "tempdir";
 
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
+    public boolean canHandle(String action, Message msg, Map<String, Object> options) {
         try {
-            if (!action.equals(getModuleAction())) {
+            if (!super.canHandle(action, msg, options)) {
                 return false;
             }
 
-            String modProtocol = getParameter(PARAM_PROTOCOL, false);
+            String modProtocol = getParameter(PARAM_PROTOCOL, true);
             String msgProtocol = msg.getProtocol();
 
             if (modProtocol != null) {
@@ -42,8 +42,6 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
         super.init(session, options);
         getParameter(PARAM_FILENAME, true);
     }
-
-    protected abstract String getModuleAction();
 
 
     /**
@@ -72,7 +70,7 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
      * @throws IOException      - IO system has a problem
      * @throws OpenAS2Exception - internally handled error condition occurred
      */
-    protected File getFile(Message msg, String fileParam, String action) throws IOException, OpenAS2Exception {
+    public File getFile(Message msg, String fileParam, String action) throws IOException, OpenAS2Exception {
         String filename = getFilename(msg, fileParam, action);
         filename = IOUtil.cleanFilename(filename);
 

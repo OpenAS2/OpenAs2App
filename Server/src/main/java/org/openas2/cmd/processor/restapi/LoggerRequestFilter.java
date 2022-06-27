@@ -7,32 +7,47 @@ package org.openas2.cmd.processor.restapi;
 
 import org.apache.commons.logging.Log;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 
 /**
  * @author javier
  */
 @Provider
-public class LoggerRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
-    protected Log logger;
 
-    public LoggerRequestFilter(Log logger) {
-        this.logger = logger;
+public class LoggerRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
+    private static Log logger;
+
+    public LoggerRequestFilter() {
+        
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        this.logger.info("API Request: " + requestContext.getMethod() + " /" + requestContext.getUriInfo().getPath());
+        getLogger().info("API Request: " + requestContext.getMethod() + " /" + requestContext.getUriInfo().getPath());
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        this.logger.info("API Response: " + responseContext.getStatus() + responseContext.getHeaders().toString());
+        getLogger().info("API Response: " + responseContext.getStatus() + responseContext.getHeaders().toString());
+    }
+
+    /**
+     * @return the logger
+     */
+    public static Log getLogger() {
+        return logger;
+    }
+
+    /**
+     * @param aLogger the logger to set
+     */
+    public static void setLogger(Log aLogger) {
+        logger = aLogger;
     }
 
 }

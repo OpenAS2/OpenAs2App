@@ -3,6 +3,7 @@ package org.openas2.params;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.util.Properties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,31 +12,23 @@ import java.util.StringTokenizer;
 
 public class CompositeParameters extends ParameterParser {
     private Map<String, ParameterParser> parameterParsers;
-    private boolean ignoreMissingParsers;
+
     private Log logger = LogFactory.getLog(CompositeParameters.class.getSimpleName());
 
-    public CompositeParameters(boolean ignoreMissingParsers) {
+    public CompositeParameters(boolean returnEmptyStringForMissingParsers) {
         super();
-        this.ignoreMissingParsers = ignoreMissingParsers;
+        setReturnEmptyStringForMissingParsers(returnEmptyStringForMissingParsers);
     }
 
-    public CompositeParameters(boolean ignoreMissingParsers, Map<String, ParameterParser> parameterParsers) {
+    public CompositeParameters(boolean returnEmptyStringForMissingParsers, Map<String, ParameterParser> parameterParsers) {
         super();
-        this.ignoreMissingParsers = ignoreMissingParsers;
+        setReturnEmptyStringForMissingParsers(returnEmptyStringForMissingParsers);
         getParameterParsers().putAll(parameterParsers);
     }
 
     public CompositeParameters add(String key, ParameterParser param) {
         getParameterParsers().put(key, param);
         return this;
-    }
-
-    public void setIgnoreMissingParsers(boolean ignoreMissingParsers) {
-        this.ignoreMissingParsers = ignoreMissingParsers;
-    }
-
-    public boolean getIgnoreMissingParsers() {
-        return ignoreMissingParsers;
     }
 
     public void setParameter(String key, String value) throws InvalidParameterException {
@@ -57,7 +50,7 @@ public class CompositeParameters extends ParameterParser {
             }
 
             parser.setParameter(keyBuf.toString(), value);
-        } else if (!getIgnoreMissingParsers()) {
+        } else if (!getReturnEmptyStringForMissingParsers()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Failed to find a parser for: " + key + "  ::: Parser list: " + getParameterParsers().keySet().toString());
             }
@@ -69,6 +62,18 @@ public class CompositeParameters extends ParameterParser {
         StringTokenizer keyParts = new StringTokenizer(key, ".", false);
 
         String parserID = keyParts.nextToken();
+        // support "properties" key for all parser calls
+        if ("properties".equals(parserID)) {
+            String propKey = keyParts.nextToken();
+            if (propKey == null) {
+                throw new InvalidParameterException("Invalid property key format. Missing a property name.", this, key, null);
+            }
+            String val = Properties.getProperty(propKey, null);
+            if (val == null) {
+                throw new InvalidParameterException("Property is null when parsing property string to value", this, propKey, null);
+            }
+            return val;
+        }
         ParameterParser parser = getParameterParsers().get(parserID);
 
         if (parser != null) {
@@ -84,9 +89,9 @@ public class CompositeParameters extends ParameterParser {
             }
 
             return parser.getParameter(keyBuf.toString());
-        } else if (!getIgnoreMissingParsers()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Failed to find a parser for: " + key + "  ::: Parser list: " + getParameterParsers().keySet().toString());
+        } else if (!getReturnEmptyStringForMissingParsers()) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Failed to find a parser for: " + key + "  ::: Available parser list: " + getParameterParsers().keySet().toString());
             }
             throw new InvalidParameterException("Invalid parser identifier", this, key, null);
         } else {

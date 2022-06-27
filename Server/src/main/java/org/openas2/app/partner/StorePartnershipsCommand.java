@@ -38,7 +38,7 @@ public class StorePartnershipsCommand extends BaseCommand {
                 return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current partnership store, must be XML");
             }
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
+            oae.log();
 
             return new CommandResult(oae);
         }

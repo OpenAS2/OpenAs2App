@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class StringUtil {
 
+    @SuppressWarnings("unchecked")
     public static String mapToString(Map<Object, Object> map, String keyValContenator, String entryConcatenator) {
         if (map == null) {
             return null;
@@ -25,7 +26,7 @@ public class StringUtil {
             if (val instanceof String) {
                 strBuf.append(val);
             } else if (val instanceof List) {
-                listToString((List) val, ",");
+                strBuf.append(listToString((List<String>) val, ","));
             } else {
                 strBuf.append(val.toString());
             }
@@ -34,7 +35,7 @@ public class StringUtil {
         return strBuf.toString();
     }
 
-    public static String listToString(List myList, String entryConcatenator) {
+    public static String listToString(List<String> myList, String entryConcatenator) {
         StringBuffer strBuf = new StringBuffer(10);
         for (int i = 0; i < myList.size() - 1; i++) {
             strBuf.append(myList.get(i)).append(entryConcatenator);
@@ -42,6 +43,7 @@ public class StringUtil {
         return strBuf.append(myList.get(myList.size() - 1)).toString();
     }
 
+    @SuppressWarnings("unchecked")
     public static String mapToString(Map<String, List<String>> map, String keyValContenator, String entryConcatenator, String listConcatenator) {
         if (map == null) {
             return null;
@@ -53,7 +55,7 @@ public class StringUtil {
             if (val instanceof String) {
                 strBuf.append(val);
             } else if (val instanceof List) {
-                listToString((List) val, listConcatenator);
+                listToString((List<String>) val, listConcatenator);
             } else {
                 strBuf.append(val.toString());
             }

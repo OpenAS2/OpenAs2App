@@ -35,7 +35,7 @@ public abstract class FileMonitorAdapter implements FileMonitorListener {
                 try {
                     onConfigFileChanged();
                 } catch (OpenAS2Exception oae) {
-                    oae.terminate();
+                    oae.log();
                 }
                 break;
         }

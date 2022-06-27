@@ -8,6 +8,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.DataHistoryItem;
@@ -20,6 +21,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.util.AS2Util;
@@ -37,6 +39,7 @@ import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -46,27 +49,40 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
     private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
 
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
-        if (!action.equals(SenderModule.DO_SEND)) {
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return SenderModule.DO_SEND;
+        }
+        return action;
+    }
+
+    public boolean canHandle(String action, Message msg, Map<String, Object> options) {
+        if (!super.canHandle(action, msg, options)) {
             return false;
         }
-
+        // So generally supports the action. Check if specifically for AS2 messages
         return (msg instanceof AS2Message);
     }
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         if (logger.isInfoEnabled()) {
-            logger.info("message sender invoked" + msg.getLogMsgID());
+            logger.info("Message sender invoked for log ID: " + msg.getLogMsgID());
         }
         boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
-        options.put("DIRECTION", "SEND");
-        options.put("IS_RESEND", isResend ? "Y" : "N");
+        options.put(FIELDS.DIRECTION, "SEND");
+        options.put(FIELDS.IS_RESEND, isResend ? "Y" : "N");
         if (!(msg instanceof AS2Message)) {
             throw new OpenAS2Exception("Can't send non-AS2 message");
         }
@@ -78,11 +94,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             msg.getOptions().putAll(options);
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("Retry count from options: " + options);
+            logger.trace("Retry count from options: " + msg.getOptions());
         }
-        // Get the resend retry count
-        String retries = AS2Util.retries(options, getParameter(SenderModule.SOPT_RETRIES, false));
-
         // Get any static custom headers
         addCustomHeaders(msg);
         // encrypt and/or sign and/or compress the message if needed
@@ -118,10 +131,10 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             msg.setOption("STATE", Message.MSG_STATE_SEND_START);
             msg.trackMsgState(getSession());
 
-            sendMessage(url, msg, securedData, retries);
+            sendMessage(url, msg, securedData);
         } catch (HttpResponseException hre) {
             // Will have been logged so just resend
-            resend(msg, hre, retries, false);
+            resend(msg, hre, false);
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
             msg.trackMsgState(getSession());
@@ -135,7 +148,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         } catch (Exception e) {
             msg.setLogMsg("Unexpected error sending file: " + org.openas2.logging.Log.getExceptionMsg(e));
             logger.error(msg, e);
-            resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), retries, false);
+            resend(msg, new OpenAS2Exception(org.openas2.logging.Log.getExceptionMsg(e)), false);
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
             msg.trackMsgState(getSession());
@@ -160,7 +173,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         }
     }
 
-    private void sendMessage(String url, Message msg, MimeBodyPart securedData, String retries) throws Exception {
+    private void sendMessage(String url, Message msg, MimeBodyPart securedData) throws Exception {
         URL urlObj = new URL(url);
         InternetHeaders ih = getHttpHeaders(msg, securedData);
         msg.setAttribute(NetAttribute.MA_DESTINATION_IP, urlObj.getHost());
@@ -174,7 +187,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
         httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
         long maxSize = msg.getPartnership().getNoChunkedMaxSize();
-        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih.getAllHeaders(), null, securedData.getInputStream(), httpOptions, maxSize);
+        boolean preventChunking = msg.getPartnership().isPreventChunking(false);
+        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih, null, securedData.getInputStream(), httpOptions, maxSize, preventChunking);
         if (logger.isInfoEnabled()) {
             logger.info("Message sent and response received in " + resp.getTransferTimeMs() + "ms" + msg.getLogMsgID());
         }
@@ -198,7 +212,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             return;
         }
         // Check if it will be a Sync or AsyncMDN
-        if (msg.getPartnership().getAttribute(Partnership.PA_AS2_RECEIPT_OPTION) != null) {
+        if (msg.getPartnership().isAsyncMDN()) {
             // Async MDN
             msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
         } else {
@@ -214,7 +228,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
             try {
-                AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this);
+                AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
                 msg.trackMsgState(getSession());
@@ -244,8 +258,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         }
     }
 
-    private void resend(Message msg, OpenAS2Exception cause, String tries, boolean keepRestoredData) throws OpenAS2Exception {
-        AS2Util.resend(getSession(), this, SenderModule.DO_SEND, msg, cause, tries, false, keepRestoredData);
+    private void resend(Message msg, OpenAS2Exception cause, boolean keepRestoredData) throws OpenAS2Exception {
+        AS2Util.resend(getSession(), this.getClass(), SenderModule.DO_SEND, msg, cause, false, keepRestoredData);
     }
 
     /**
@@ -439,9 +453,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         ih.addHeader("Mime-Version", "1.0"); // make sure this is the
         // encoding used in the msg, run TBF1
         try {
-            ih.addHeader(HTTPUtil.HEADER_CONTENT_TYPE, securedData.getContentType());
+            ih.addHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, securedData.getContentType());
         } catch (MessagingException e) {
-            ih.addHeader(HTTPUtil.HEADER_CONTENT_TYPE, msg.getContentType());
+            ih.addHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, msg.getContentType());
         }
         // AS2 V1.2 additionally supports EDIINT-Features
         // ih.addHeader("EDIINT-Features","CEM,multiple-attachments");
@@ -540,8 +554,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             oos = new ObjectOutputStream(new FileOutputStream(pendingInfoFile));
             oos.writeObject(msg.getCalculatedMIC());
-            String retries = (String) msg.getOption(ResenderModule.OPTION_RETRIES);
-            oos.writeObject((retries == null ? "" : retries));
+            int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
+            oos.writeObject("" + retries);
 
             if (logger.isInfoEnabled()) {
                 logger.info("Save Original mic & message id information into file: " + pendingInfoFile + msg.getLogMsgID());
@@ -558,10 +572,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
 
             msg.setAttribute(FileAttribute.MA_STATUS, FileAttribute.MA_PENDING);
-            // If ASYNC MDN is requested, set up a file watcher in case partner MDN is not
-            // received
+            // If ASYNC MDN is requested, set up a file watcher in case partner MDN is not received
             if (msg.isConfiguredForAsynchMDN()) {
-                // Create a listener that will force resend if the pendinginfo file is still
+                // TODO: Create a listener that will force resend if the pendinginfo file is still
                 // there after set amount of time
 
             }
@@ -611,11 +624,14 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             logger.warn("Failed to retrieve the name of the pending info folder for sent messages in trying to run the failed message detection method.", e);
             return;
         }
-        File pendingDir;
+        File pendingDir=null;
         try {
             pendingDir = IOUtil.getDirectoryFile(dir);
         } catch (IOException e) {
             logger.warn("Failed to open the pending info folder for sent messages in trying to run the failed message detection method.", e);
+            return;
+        } catch (InvalidParameterException ex) {
+            Logger.getLogger(AS2SenderModule.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
         // We are interested in files older than configured seconds

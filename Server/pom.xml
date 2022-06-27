@@ -7,7 +7,8 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>2.12.0</version>
+        <version>3.2.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>openas2-server</artifactId>
@@ -27,6 +28,7 @@
         <help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
         <release.notes>${project.basedir}/../RELEASE-NOTES.md</release.notes>
         <release.history>${project.basedir}/../changes.txt</release.history>
+        <package.assembly.dir>${project.build.directory}/dist</package.assembly.dir>
     </properties>
 
     <distributionManagement>
@@ -64,39 +66,51 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <copy todir="${project.build.directory}/dist/bin"
+                                <copy todir="${package.assembly.dir}/bin"
                                       verbose="true">
                                     <fileset dir="${project.basedir}/src/bin"/>
                                 </copy>
-                                <!--Copy config directory to assembly directory -->
-                                <copy todir="${project.build.directory}/dist/config"
+                                <echo message="OS Name: ${os.name}"/>
+								<exec executable="sh" osfamily="unix">
+								    <arg value="-c"/> 
+								    <arg line="'chmod uga+x ${package.assembly.dir}/bin/*.sh'"/>
+								</exec>
+								<!--Copy config directory to assembly directory -->
+                                <copy todir="${package.assembly.dir}/config"
                                       verbose="true">
                                     <fileset dir="${project.basedir}/src/config"/>
                                 </copy>
                                 <!--Copy resources directory to assembly directory -->
-                                <copy todir="${project.build.directory}/dist/resources"
+                                <copy todir="${package.assembly.dir}/resources"
                                       verbose="true">
                                     <fileset dir="${project.basedir}/src/resources"/>
                                 </copy>
-                                <!--Copy artifact to build lib dicetory -->
+                                <!--Copy artifact to build lib directory -->
                                 <copy
                                     file="${project.build.directory}/${project.build.finalName}.jar"
-                                    todir="${project.build.directory}/dist/lib" verbose="true"/>
+                                    todir="${package.assembly.dir}/lib" verbose="true"/>
                                 <!-- Add the help PDF version to the distro -->
                                 <copy file="${help.file.src}"
-                                      todir="${project.build.directory}/dist" verbose="true"/>
+                                      todir="${package.assembly.dir}" verbose="true"/>
                                 <!-- Add the release notes files -->
                                 <copy file="${release.notes}"
-                                      todir="${project.build.directory}/dist" verbose="true"/>
+                                      todir="${package.assembly.dir}" verbose="true"/>
                                 <copy file="${release.history}"
-                                      todir="${project.build.directory}/dist" verbose="true"/>
+                                      todir="${package.assembly.dir}" verbose="true"/>
                                 <!-- Add the remote jar for connecting to the server command interface -->
                                 <copy file="${remote.connect.jar}"
-                                      todir="${project.build.directory}/dist/bin/remote" verbose="true"/>
+                                      todir="${package.assembly.dir}/bin/remote" verbose="true"/>
                                 <!-- create distribution package -->
                                 <zip
                                     destfile="${project.basedir}/dist/${project.dist.package.name}"
-                                    basedir="${project.build.directory}/dist"/>
+                                    basedir="${package.assembly.dir}"
+                                    update="true">
+                                        <zipfileset dir="${package.assembly.dir}" encoding="UTF-8"
+                                                 includes="**/*.sh" filemode="755"/>
+                                        <zipfileset dir="${package.assembly.dir}" encoding="UTF-8"
+                                                 excludes="**/*.sh"/>
+
+                                </zip>
                             </target>
                         </configuration>
                     </execution>
@@ -109,6 +123,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <!-- Configures the content of the created manifest -->
+                                <manifest>
+                                    <!-- Adds the classpath to the created manifest -->
+                                    <addClasspath>true</addClasspath>
+                                    <!-- Specifies that all dependencies of our application are found -->
+                                    <!-- Configures the main class of the application -->
+                                    <mainClass>org.openas2.app.OpenAS2Server</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -157,7 +183,7 @@
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
         </dependency>
-        <dependency>
+       <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
@@ -175,7 +201,17 @@
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
-            <artifactId>findbugs</artifactId>
+		    <artifactId>findbugs</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			    <exclusion>
+			        <groupId>jaxen</groupId>
+			        <artifactId>jaxen</artifactId>
+			    </exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -199,52 +235,45 @@
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry</artifactId>
-            <version>4.4.0-alpha.1</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-grizzly2-http</artifactId>
-            <version>3.0.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.12.2</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>3.0.1</version>
             <type>jar</type>
         </dependency>
 		<dependency>
 		    <groupId>org.glassfish.jersey.inject</groupId>
 		    <artifactId>jersey-hk2</artifactId>
-		    <version>3.0.1</version>
         </dependency>
         <!-- Removed JavaEE APIs removed from Java 9+ -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.4.0-b180830.0359</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>3.0.0</version>
         </dependency>
+        <!--
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
-            <version>1.1.1</version>
         </dependency>
+        -->
 		<!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
 		<dependency>
 		    <groupId>javax.ws.rs</groupId>

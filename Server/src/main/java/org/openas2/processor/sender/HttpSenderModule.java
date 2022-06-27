@@ -6,7 +6,7 @@ import java.util.Map;
 import org.openas2.OpenAS2Exception;
 import org.openas2.util.HTTPUtil;
 
-public abstract class HttpSenderModule extends BaseSenderModule implements SenderModule {
+public abstract class HttpSenderModule extends BaseSenderModule {
 
     public static final String PARAM_READ_TIMEOUT = "readtimeout";
     public static final String PARAM_CONNECT_TIMEOUT = "connecttimeout";

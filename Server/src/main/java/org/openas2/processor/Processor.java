@@ -10,7 +10,7 @@ import java.util.Map;
 public interface Processor extends Component {
     String COMPID_PROCESSOR = "processor";
 
-    void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception;
+    void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception;
 
     List<ProcessorModule> getModules();
 
@@ -23,4 +23,6 @@ public interface Processor extends Component {
     List<ActiveModule> getActiveModulesByClass(Class<?> clazz);
 
     boolean checkActiveModules(List<String> failures);
+
+    public List<ProcessorModule> getModulesSupportingAction(String action);
 }

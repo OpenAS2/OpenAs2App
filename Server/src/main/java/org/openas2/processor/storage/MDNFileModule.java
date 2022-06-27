@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class MDNFileModule extends BaseStorageModule {
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         // store mdn data
         if (msg.getMDN() == null) {
             throw new OpenAS2Exception("Message has no MDN");
@@ -36,10 +36,16 @@ public class MDNFileModule extends BaseStorageModule {
         }
     }
 
-    protected String getModuleAction() {
-        return DO_STOREMDN;
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return DO_STOREMDN;
+        }
+        return action;
     }
-
 
     /**
      * @since 2007-06-01

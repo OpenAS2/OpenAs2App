@@ -7,6 +7,7 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.processor.sender.MDNSenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
@@ -20,10 +21,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class DirectoryResenderModule extends BaseResenderModule {
@@ -39,11 +43,18 @@ public class DirectoryResenderModule extends BaseResenderModule {
     private Log logger = LogFactory.getLog(DirectoryResenderModule.class.getSimpleName());
 
 
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
-        return action.equals(ResenderModule.DO_RESEND);
-    }
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    *
+    */
+   public String getModuleAction() {
+       String action = super.getModuleAction();
+       if (action == null) {
+           return ResenderModule.DO_RESEND;
+       }
+       return action;
+   }
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         ObjectOutputStream oos = null;
         try {
             File resendDir = IOUtil.getDirectoryFile(resendDirPath);
@@ -53,15 +64,12 @@ public class DirectoryResenderModule extends BaseResenderModule {
             if (method == null) {
                 method = SenderModule.DO_SEND;
             }
-            String retries = (String) options.get(ResenderModule.OPTION_RETRIES);
-            if (retries == null) {
-                retries = "-1";
-            }
+            int retries = Integer.parseInt((String)options.get(ResenderModule.OPTION_RETRIES));
             oos.writeObject(method);
-            oos.writeObject(retries);
+            oos.writeObject("" + retries);
             oos.writeObject(msg);
 
-            logger.info("message put in resend queue" + msg.getLogMsgID());
+            logger.info("Message put in resend queue" + msg.getLogMsgID());
             if (logger.isTraceEnabled()) {
                 try {
                     logger.trace("Message object in resender module for storage. Content-Disposition: " + msg.getContentDisposition() + "\n      Content-Type : " + msg.getContentType() + "\n      Retries : " + retries + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders()) + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType() + "\n        Attributes: " + msg.getAttributes() + msg.getLogMsgID());
@@ -104,8 +112,8 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 throw new WrappedException(ioe);
             }
         } catch (OpenAS2Exception oae) {
-            oae.terminate();
-            forceStop(oae);
+            oae.log();
+            //forceStop(oae);
         }
     }
 
@@ -115,6 +123,9 @@ public class DirectoryResenderModule extends BaseResenderModule {
             IOUtil.getDirectoryFile(resendDirPath);
         } catch (IOException e) {
             failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + resendDirPath);
+            return false;
+        } catch (InvalidParameterException ex) {
+            Logger.getLogger(DirectoryResenderModule.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
         return true;
@@ -156,7 +167,8 @@ public class DirectoryResenderModule extends BaseResenderModule {
             try {
                 ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
                 String method = (String) ois.readObject();
-                String retries = (String) ois.readObject();
+                int retries = Integer.parseInt((String) ois.readObject());
+                retries++;
                 msg = (Message) ois.readObject();
                 ois.close();
 
@@ -170,10 +182,11 @@ public class DirectoryResenderModule extends BaseResenderModule {
                     } catch (Exception e) {
                     }
                 }
-                msg.setOption(SenderModule.SOPT_RETRIES, retries);
-                msg.setStatus(Message.MSG_STATUS_MSG_RESEND);
+                Map<String, Object> options = new HashMap<String, Object>();
+                msg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
+                msg.setStatus(method.equals(MDNSenderModule.DO_SENDMDN)?Message.MSG_STATUS_MDN_RESEND:Message.MSG_STATUS_MSG_RESEND);
                 try {
-                    getSession().getProcessor().handle(method, msg, msg.getOptions());
+                    getSession().getProcessor().handle(method, msg, options);
                 } catch (OpenAS2Exception e) {
                     // Just log and ignore since it will have been handled upstream
                     logger.error("Error resending message", e);
@@ -194,8 +207,8 @@ public class DirectoryResenderModule extends BaseResenderModule {
         } catch (OpenAS2Exception oae) {
             oae.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             oae.addSource(OpenAS2Exception.SOURCE_FILE, file);
-            oae.terminate();
-            IOUtil.handleError(file, getParameter(PARAM_ERROR_DIRECTORY, true));
+            oae.log();
+            IOUtil.handleArchive(file, getParameter(PARAM_ERROR_DIRECTORY, true));
         }
     }
 

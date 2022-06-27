@@ -15,26 +15,31 @@ import java.util.Map;
 
 public abstract class BaseMsgTrackingModule extends BaseProcessorModule implements TrackingModule {
 
-    public void handle(String action, Message msg, Map<Object, Object> options) throws OpenAS2Exception {
+    public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         Map<String, String> fields = buildMap(msg, options);
         persist(msg, fields);
 
     }
 
-    public boolean canHandle(String action, Message msg, Map<Object, Object> options) {
-        return action.equals(getModuleAction());
-    }
-
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
     }
 
-    protected abstract String getModuleAction();
+    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+     *
+     */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return DO_TRACK_MSG;
+        }
+        return action;
+    }
 
     protected abstract void persist(Message msg, Map<String, String> map);
 
-    protected Map<String, String> buildMap(Message msg, Map<Object, Object> options) {
+    protected Map<String, String> buildMap(Message msg, Map<String, Object> options) {
         Map<String, String> map = new HashMap<String, String>();
         String msgId = msg.getMessageID();
         MessageMDN mdn = msg.getMDN();
@@ -55,16 +60,16 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
         String isResend = (String) options.get(FIELDS.IS_RESEND);
         if (isResend != null) {
             map.put(FIELDS.IS_RESEND, isResend);
-            map.put(FIELDS.RESEND_COUNT, (String) options.get(ResenderModule.OPTION_RETRIES));
+            map.put(FIELDS.RESEND_COUNT, "" + msg.getOption(ResenderModule.OPTION_RETRIES));
         }
         //map.put(FIELDS.RESEND_COUNT, );
         String sender = msg.getPartnership().getSenderID(Partnership.PID_AS2);
-        if (sender == null) {
+        if (sender == null && mdn != null) {
             sender = mdn.getPartnership().getSenderID(Partnership.PID_AS2);
         }
         map.put(FIELDS.SENDER_ID, sender);
         String receiver = msg.getPartnership().getReceiverID(Partnership.PID_AS2);
-        if (receiver == null) {
+        if (receiver == null && mdn != null) {
             receiver = mdn.getPartnership().getReceiverID(Partnership.PID_AS2);
         }
         map.put(FIELDS.RECEIVER_ID, receiver);
