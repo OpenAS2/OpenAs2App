@@ -104,7 +104,7 @@ public class AS2Util {
         }
 
         try {
-            MimeMultipart reportParts = (MimeMultipart)mainPart.getContent();
+            MimeMultipart reportParts = new MimeMultipart(mainPart.getDataHandler().getDataSource());
 
             if (reportParts != null) {
                 ContentType reportType = new ContentType(reportParts.getContentType());

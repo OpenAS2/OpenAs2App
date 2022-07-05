@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -100,10 +100,11 @@
                                 <!-- Add the remote jar for connecting to the server command interface -->
                                 <copy file="${remote.connect.jar}"
                                       todir="${package.assembly.dir}/bin/remote" verbose="true"/>
-                                <!-- create distribution package -->
+                                <!-- create distribution package
+                                    basedir="${package.assembly.dir}"
+ -->
                                 <zip
                                     destfile="${project.basedir}/dist/${project.dist.package.name}"
-                                    basedir="${package.assembly.dir}"
                                     update="true">
                                         <zipfileset dir="${package.assembly.dir}" encoding="UTF-8"
                                                  includes="**/*.sh" filemode="755"/>
