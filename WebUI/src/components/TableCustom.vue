@@ -2,7 +2,7 @@
 <template>
   <div>
     <b-row>
-      <template >
+      <template>
         <b-col v-if="showFilter" sm="12" lg="12" md="12" class="my-3">
           <b-form-group
             label="Filter"
@@ -77,6 +77,7 @@
     >
       <template #cell(actions)="row">
         <b-button
+          :disabled="loading"
           v-if="row.item.actions.edit ? row.item.actions.edit.show : false"
           variant="primary"
           size="sm"
@@ -86,6 +87,7 @@
           {{ row.item.actions.edit ? row.item.actions.edit.name : "Edit" }}
         </b-button>
         <b-button
+          :disabled="loading"
           v-if="row.item.actions.delete ? row.item.actions.delete.show : false"
           variant="danger"
           @click="deleteItem(row.item)"
@@ -96,6 +98,7 @@
           }}
         </b-button>
         <b-button
+          :disabled="loading"
           v-if="row.item.actions.show ? row.item.actions.show.show : false"
           variant="secondary"
           size="sm"
@@ -148,9 +151,13 @@ export default {
     },
     filter: {
       type: Object,
-       default(rawProps) {
-        return { text: '' }
-      }
+      default(rawProps) {
+        return { text: "" };
+      },
+    },
+    loading: {
+      type: Boolean,
+      default: false,
     },
   },
   mounted() {

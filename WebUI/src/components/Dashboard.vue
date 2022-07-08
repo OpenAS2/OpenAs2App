@@ -1,5 +1,7 @@
 <template>
   <div id="dashboard">
+    <b-breadcrumb :items="breadcrumbs"></b-breadcrumb>
+
     <div
       class="
         d-flex
@@ -12,6 +14,7 @@
         border-bottom
       "
     >
+
       <h1 class="h2">Dashboard</h1>
     </div>
     <b-row>
@@ -44,7 +47,7 @@
             <b-row align-h="between">
               <b-col> <b-icon icon="people" font-scale="3 "></b-icon></b-col>
               <b-col>
-                <h1>{{ countCertificates }}</h1></b-col
+                <h1>{{ countPartnerships }}</h1></b-col
               >
             </b-row>
           </b-card-text>
@@ -62,7 +65,7 @@
             <b-row align-h="between">
               <b-col> <b-icon icon="file-earmark-richtext" font-scale="3 "></b-icon></b-col>
               <b-col>
-                <h1>{{ countPartnerships }}</h1></b-col
+                <h1>{{countCertificates  }}</h1></b-col
               >
             </b-row>
             </b-card-text
@@ -137,6 +140,14 @@ export default {
   },
   data() {
     return {
+      breadcrumbs: [
+        {
+          text: "Dashboard",
+          to: { name: "Dashboard" },
+          active: true,
+
+        },
+      ],
       length: 10,
       messages: {
         sent: [],

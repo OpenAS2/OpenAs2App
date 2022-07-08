@@ -163,8 +163,8 @@
     <b-row>
       <!-- <b-col col > -->
       <b-button-group>
-        <b-button type="submit" variant="success" size="sm">Save</b-button>
-        <b-button @click="cancelForm" size="sm">Cancel</b-button>
+        <b-button :disabled="loading" type="submit" variant="success" size="sm">Save</b-button>
+        <b-button :disabled="loading" @click="cancelForm" size="sm">Cancel</b-button>
       </b-button-group>
       <!-- </b-col> -->
     </b-row>
@@ -185,6 +185,10 @@ export default {
       type: String,
       required: false,
     },
+    loading:{
+      type:Boolean,
+      default:false
+    }
   },
   data() {
     return {

@@ -27,26 +27,38 @@
         </div>
       </div>
     </div>
-    <template  v-if="$route.params.id">
-      <certificate-editor v-if="$route.params.id" 
-            title="Certificate Editor"
-            :schema="schema"
-            :model="getObject($route.params.id)"
-            @commit="saveObject" 
-            @delete="(id)=>this.deleteObject(id)" 
-            @revert="resetModal">
-        </certificate-editor>
+    <template v-if="$route.params.id">
+      <certificate-editor
+        v-if="$route.params.id"
+        title="Certificate Editor"
+        :schema="schema"
+        :model="getObject($route.params.id)"
+        @commit="saveObject"
+        @delete="(id) => this.deleteObject(id)"
+        @revert="resetModal"
+      >
+      </certificate-editor>
     </template>
 
     <template v-else>
       <table-custom
+        :loading="loadingTable"
         :items="items"
         :fields="fields"
         @deleteObject="deleteObject"
         @editObject="editObject"
       ></table-custom>
-      <b-modal hide-footer :id="infoModal.id" :title="infoModal.title" ok-only>
+      <b-modal
+        hide-footer
+        :id="infoModal.id"
+        :title="infoModal.title"
+        ok-only
+        @hidden="resetModal"
+        no-close-on-esc
+        no-close-on-backdrop
+      >
         <form-custom
+          :loading="loadingForm"
           v-if="infoModal.title"
           title="Partner Editor"
           :schema="schema"
@@ -138,7 +150,7 @@ export default {
             name: "subject",
             label: "Subject",
             placeholder: "Subject",
-            disabled:true,
+            disabled: true,
             show: true,
             _validate: {},
           },
@@ -187,20 +199,22 @@ export default {
       item: {
         _id: null,
         alias: "",
-        data:"",
-        serial:"",
-        issuerNam:"",
-        validNotBefore:"",
-        validNotAfter:"",
-        subject:"",
-        fingerPrint:"",
+        data: "",
+        serial: "",
+        issuerNam: "",
+        validNotBefore: "",
+        validNotAfter: "",
+        subject: "",
+        fingerPrint: "",
       },
+      loadingForm: false,
+      loadingTable: false,
     };
   },
   components: {
     FormCustom,
     TableCustom,
-    CertificateEditor
+    CertificateEditor,
   },
   computed: {
     isPathPartnerList() {
@@ -215,28 +229,41 @@ export default {
     await this.getList();
   },
   methods: {
-     getObject: async function(index) {
-            var newObj = this.getNewObject();
-            var obj = await Utils.Crud.getObject("cert",index,newObj);
-            return obj;
-        },
+    getObject: async function (index) {
+      var newObj = this.getNewObject();
+      var obj = await Utils.Crud.getObject("cert", index, newObj);
+      return obj;
+    },
     resetModal: function () {
       this.infoModal.title = "";
       this.item = {
         _id: null,
         alias: "",
-        data:"",
-        serial:"",
-        issuerNam:"",
-        validNotBefore:"",
-        validNotAfter:"",
-        subject:"",
-        fingerPrint:"",
+        data: "",
+        serial: "",
+        issuerNam: "",
+        validNotBefore: "",
+        validNotAfter: "",
+        subject: "",
+        fingerPrint: "",
       };
       this.$root.$emit("bv::hide::modal", this.infoModal.id);
+      this.loadingForm = this.loadingTable = false;
+    },
+   async existCertificate(cert){
+      let _items = await Utils.Crud.getObjectFilter("partner",cert.key,cert);
+      console.log("items",_items);
+      // .then((results) => {
+        let _item= _.find(_items, (item, index) => {
+          return item==cert.name
+        });
+      // });
+      console.log("existe",_item);
+      return true;
     },
     deleteObject: async function (item) {
       try {
+        this.loadingTable = true;
         Swal.fire({
           title: "Are you sure to delete?",
           html: `a cert  ${item.name}`,
@@ -246,16 +273,23 @@ export default {
           cancelButtonText: "No",
         }).then(async (result) => {
           if (result.isConfirmed) {
-            Utils.Crud.deleteObject("cert", item.key)
-              .then((response) => {
-                Swal.fire("Deleted!", "", "success");
-                this.getList();
-              })
-              .catch((e) => {
-                console.log("delete parner", e);
-                Swal.fire("Error!", e, "error");
-              });
+            // let exist=await this.existCertificate(item);
+            // if(!exist){
+              Utils.Crud.deleteObject("cert", item.key)
+                .then((response) => {
+                  Swal.fire("Deleted!", "", "success");
+                  this.getList();
+                })
+                .catch((e) => {
+                  console.log("delete parner", e);
+                  Swal.fire("Error!", e, "error");
+                });
+            // }else{
+            //       Swal.fire("Warning!","The certificate is registered with a partner", "warning");
+
+            // }
           }
+          this.loadingTable = false;
         });
       } catch (e) {
         console.log(e);
@@ -263,33 +297,34 @@ export default {
       }
     },
     newObject: function () {
-      this.infoModal.title = "New cert";
+      this.infoModal.title = "New certificate";
       this.item = {
         _id: null,
         alias: "",
-        data:"",
-        serial:"",
-        issuerNam:"",
-        validNotBefore:"",
-        validNotAfter:"",
-        subject:"",
-        fingerPrint:"",
+        data: "",
+        serial: "",
+        issuerNam: "",
+        validNotBefore: "",
+        validNotAfter: "",
+        subject: "",
+        fingerPrint: "",
       };
-      this.schema.fields[this.schema.fields.length-1]._validate=true;
+      this.schema.fields[this.schema.fields.length - 1]._validate = true;
       this.$root.$emit("bv::show::modal", this.infoModal.id);
     },
     editObject: async function (_item) {
-      console.log("item_edit",_item);
-      this.infoModal.title = "Partner Edit";
+      console.log("item_edit", _item);
+      this.infoModal.title = "Edit certificate";
       var newObj = this.getNewObject();
       const result = await Utils.Crud.getObject("cert", _item.key, newObj);
       console.log("resutl al editar", result);
       this.item = Object.assign(this.item, result);
       this.changedCert();
-      this.schema.fields[this.schema.fields.length-1]._validate=false;
+      this.schema.fields[this.schema.fields.length - 1]._validate = false;
       this.$root.$emit("bv::show::modal", this.infoModal.id);
     },
     getNewObject: function () {
+     this.loadingTable = true;
       var obj = { _id: null };
       this.schema.fields.forEach((f) => (obj[f.name] = f.value));
       return obj;
@@ -301,29 +336,30 @@ export default {
             key: index,
             name: item,
             actions: {
-              edit:{name:"Edit",show:true},
-              delete:{name:"Delete",show:true},
+              edit: { name: "Edit", show: true },
+              delete: { name: "Delete", show: true },
             },
           };
         });
       });
     },
     saveObject: async function (data) {
-      console.log(data);
+      this.loadingForm = this.loadingTable = true;
       try {
-        let _data={
-          _id:null,
-          alias:data.alias,
-          data:data.data
-        }
+        let _data = {
+          _id: null,
+          alias: data.alias,
+          data: data.data,
+        };
         console.log("Saving", data);
         var old_id = data._id;
         // delete data._id;
-        console.log("old_id",old_id);
+        console.log("old_id", old_id);
         if (old_id !== null) {
-          await Utils.Crud.deleteObject("cert", old_id).then(async () =>
-            // this.importCertificate(data)
-            await Utils.Crud.importCertificate(_data)
+          await Utils.Crud.deleteObject("cert", old_id).then(
+            async () =>
+              // this.importCertificate(data)
+              await Utils.Crud.importCertificate(_data)
           );
         } else {
           await Utils.Crud.importCertificate(_data);
@@ -331,12 +367,14 @@ export default {
         // await Utils.Crud.saveObject("cert", data);
         this.resetModal();
         await this.getList();
+        this.loadingForm = this.loadingTable = false;
       } catch (e) {
         Swal.fire("Error!", e, "error");
+        this.loadingForm = false;
       }
     },
-    fileUpload: function ({file,e}) {
-      console.log("item.....",this.item);
+    fileUpload: function ({ file, e }) {
+      console.log("item.....", this.item);
       var oFile = file;
       console.log(file);
       // filter for image files
@@ -345,51 +383,55 @@ export default {
         alert("Error invalid file-type");
         return;
       }
-      if (  oFile.size == 0) {
+      if (oFile.size == 0) {
         alert("Error unable to read file, empty?");
         return;
       }
       var oReader = new FileReader();
       var that = this;
       oReader.onload = function (e) {
-        console.log("edit---->",e.target.result);
+        console.log("edit---->", e.target.result);
         var PEM = e.target.result;
-        PEM=PEM.replace('-----BEGIN CERTIFICATE-----','').replace('-----END CERTIFICATE-----','');
-        PEM=PEM.replace(/[^A-Za-z0-9+/=]+/gm,'');
-        that.item.data  = PEM;
+        PEM = PEM.replace("-----BEGIN CERTIFICATE-----", "").replace(
+          "-----END CERTIFICATE-----",
+          ""
+        );
+        PEM = PEM.replace(/[^A-Za-z0-9+/=]+/gm, "");
+        that.item.data = PEM;
         that.changedCert();
       };
       oReader.readAsText(oFile);
     },
-    changedCert: function() {
-            var cert = new X509();
-            console.log("this.item.data",this.item.data);
-            var PEM = this.item.data;
-            console.log("item.....",this.item);
-            if(this.item.data == null) {
-                this.item.serial = '';
-                this.item.issuerName='';
-                this.item.validNotBefore = null;
-                this.item.validNotAfter = null;
-                this.item.subject = '';
-                this.item.fingerPrint = '';
-                return;
-            }
-            if(PEM.substr(0,4) !== '----'){
-                PEM = '-----BEGIN CERTIFICATE-----\n' + PEM + '\n-----END CERTIFICATE-----';
-            }
+    changedCert: function () {
+      var cert = new X509();
+      console.log("this.item.data", this.item.data);
+      var PEM = this.item.data;
+      console.log("item.....", this.item);
+      if (this.item.data == null) {
+        this.item.serial = "";
+        this.item.issuerName = "";
+        this.item.validNotBefore = null;
+        this.item.validNotAfter = null;
+        this.item.subject = "";
+        this.item.fingerPrint = "";
+        return;
+      }
+      if (PEM.substr(0, 4) !== "----") {
+        PEM =
+          "-----BEGIN CERTIFICATE-----\n" + PEM + "\n-----END CERTIFICATE-----";
+      }
 
-            console.log("PEM changedCert",PEM);
-            cert.readCertPEM(PEM);
-            this.item.serial = cert.getSerialNumberHex();
-            this.item.issuerName=cert.getIssuerString();
-            this.item.validNotBefore = zulutodate(cert.getNotBefore());
-            this.item.validNotAfter = zulutodate(cert.getNotAfter());
-            this.item.subject = cert.getSubjectString();
-            this.item.fingerPrint = KJUR.crypto.Util.hashHex(cert.hex, 'sha1');
-            console.log("item changedCert",this.item);
-            console.log("cert changedCert",cert);
-        }
+      console.log("PEM changedCert", PEM);
+      cert.readCertPEM(PEM);
+      this.item.serial = cert.getSerialNumberHex();
+      this.item.issuerName = cert.getIssuerString();
+      this.item.validNotBefore = zulutodate(cert.getNotBefore());
+      this.item.validNotAfter = zulutodate(cert.getNotAfter());
+      this.item.subject = cert.getSubjectString();
+      this.item.fingerPrint = KJUR.crypto.Util.hashHex(cert.hex, "sha1");
+      console.log("item changedCert", this.item);
+      console.log("cert changedCert", cert);
+    },
   },
 };
 </script>

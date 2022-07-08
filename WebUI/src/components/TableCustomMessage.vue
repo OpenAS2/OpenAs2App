@@ -62,6 +62,7 @@
       </template>
     </b-row>
     <b-table
+     responsive
       :items="filteredItems"
       :fields="fields"
       :current-page="currentPage"

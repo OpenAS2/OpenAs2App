@@ -16,19 +16,35 @@
       <h1 class="h2">Connections</h1>
       <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group mr-2">
-            <b-button v-if="isPathPartnerList" @click="newObject()" variant="success" size="sm" >New</b-button>
+          <b-button
+            v-if="isPathPartnerList"
+            @click="newObject()"
+            variant="success"
+            size="sm"
+            >New</b-button
+          >
           <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Export</button> -->
         </div>
       </div>
     </div>
     <table-custom
+      :loading="loadingTable"
       :items="items"
       :fields="fields"
       @deleteObject="deleteObject"
       @editObject="editObject"
     ></table-custom>
-    <b-modal hide-footer :id="infoModal.id" :title="infoModal.title" ok-only>
+    <b-modal
+      hide-footer
+      :id="infoModal.id"
+      :title="infoModal.title"
+      ok-only
+      @hidden="resetModal"
+      no-close-on-esc
+      no-close-on-backdrop
+    >
       <form-custom
+        :loading="loadingForm"
         v-if="infoModal.title"
         title="Partner Editor"
         :schema="schema"
@@ -262,6 +278,8 @@ export default {
         resend_max_retries: "",
         protocol: "",
       },
+      loadingTable: false,
+      loadingForm: false,
     };
   },
   components: {
@@ -311,8 +329,10 @@ export default {
       this.infoModal.title = "";
       this.clearItem();
       this.$root.$emit("bv::hide::modal", this.infoModal.id);
+      this.loadingForm = this.loadingTable = false;
     },
     deleteObject: async function (item) {
+      this.loadingTable = true;
       try {
         Swal.fire({
           title: "Are you sure to delete?",
@@ -331,20 +351,27 @@ export default {
                 console.log("delete parner", e);
                 Swal.fire("Error!", e, "error");
               });
+            this.loadingTable = false;
+          } else {
+            this.loadingTable = false;
           }
         });
       } catch (e) {
         console.log(e);
         Swal.fire("Error!", e, "error");
+        this.loadingTable = false;
       }
     },
     newObject: function () {
-      this.infoModal.title = "New partnership";
+      this.loadingTable = true;
+      this.infoModal.title = "New connection";
       this.clearItem();
       this.$root.$emit("bv::show::modal", this.infoModal.id);
     },
     editObject: async function (_item) {
-      this.infoModal.title = "Partner Edit";
+      this.loadingTable = true;
+
+      this.infoModal.title = "Edit connection";
       // var newObj = this.getNewObject();
       const result = await this.getObject(_item.key);
       console.log("result santos", result);
@@ -390,15 +417,18 @@ export default {
       });
     },
     saveObject: async function (data) {
-      console.log("save data", data);
+      this.loadingForm = true;
       try {
         data._prefix = `0=${data.senderIDs}&1=${data.receiverIDs}`;
         console.log("save data222", data);
-        await Utils.Crud.saveObject("partnership", data);
+        await Utils.Crud.saveObject("partnership", data).then(()=>{
+          this.loadingTable = this.loadingForm = true;
+        });
         this.resetModal();
         await this.getList();
       } catch (e) {
         Swal.fire("Error!", e, "error");
+         this.loadingForm = true;
       }
     },
   },

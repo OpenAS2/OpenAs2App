@@ -16,18 +16,25 @@
       <h1 class="h2">Partners</h1>
       <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group mr-2">
-            <b-button v-if="isPathPartnerList" @click="newObject()" variant="success" size="sm" >New</b-button>
+          <b-button
+            v-if="isPathPartnerList"
+            @click="newObject()"
+            variant="success"
+            size="sm"
+            >New</b-button
+          >
           <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Export</button> -->
         </div>
       </div>
     </div>
     <table-custom
+      :loading="loadingTable"
       :items="items"
       :fields="fields"
       @deleteObject="deleteObject"
       @editObject="editObject"
     ></table-custom>
-    <b-modal hide-footer :id="infoModal.id" :title="infoModal.title" ok-only>
+    <b-modal hide-footer :id="infoModal.id" :title="infoModal.title" ok-only @hidden="resetModal" no-close-on-esc no-close-on-backdrop >
       <form-custom
         v-if="infoModal.title"
         title="Partner Editor"
@@ -35,6 +42,7 @@
         :model="item"
         @commit="saveObject"
         @revert="resetModal"
+        :loading="loadingForm"
       >
       </form-custom>
     </b-modal>
@@ -88,7 +96,7 @@ export default {
             placeholder: "Trading Partner's Email Address",
             _validate: {
               required: true,
-              email:true
+              email: true,
             },
           },
           {
@@ -130,6 +138,8 @@ export default {
         email: "",
         x509_alias: "",
       },
+      loadingTable: false,
+      loadingForm: false,
     };
   },
   components: {
@@ -159,13 +169,17 @@ export default {
         x509_alias: "",
       };
       this.$root.$emit("bv::hide::modal", this.infoModal.id);
+      this.loadingTable=false;
+      this.loadingForm=false;
+
     },
     deleteObject: async function (item) {
       try {
+        this.loadingTable = true;
         Swal.fire({
           title: "Are you sure to delete?",
           html: `a partner  ${item.name}`,
-          icon:"warning",
+          icon: "warning",
           showCancelButton: true,
           confirmButtonText: "Yes",
           cancelButtonText: "No",
@@ -174,22 +188,28 @@ export default {
             Utils.Crud.deleteObject("partner", item.key)
               .then((response) => {
                 Swal.fire("Deleted!", "", "success");
+                this.loadingTable = false;
                 this.getList();
               })
               .catch((e) => {
                 console.log("delete parner", e);
                 Swal.fire("Error!", e, "error");
+                this.loadingTable = false;
               });
+          } else {
+            this.loadingTable = false;
           }
         });
       } catch (e) {
         console.log(e);
         Swal.fire("Error!", e, "error");
+        this.loadingTable = false;
       }
     },
     newObject: function () {
+      this.loadingTable=true;
       this.infoModal.title = "New partner";
-       this.item = {
+      this.item = {
         _id: null,
         name: "",
         as2_id: "",
@@ -199,7 +219,8 @@ export default {
       this.$root.$emit("bv::show::modal", this.infoModal.id);
     },
     editObject: async function (_item) {
-      this.infoModal.title = "Partner Edit";
+      this.loadingTable = true;
+      this.infoModal.title = "Edit partner";
       var newObj = this.getNewObject();
       const result = await Utils.Crud.getObject("partner", _item.key, newObj);
       console.log("resutl", result);
@@ -218,21 +239,25 @@ export default {
             key: index,
             name: item,
             actions: {
-              edit:{name:"Edit",show:true},
-              delete:{name:"Delete",show:true},
+              edit: { name: "Edit", show: true },
+              delete: { name: "Delete", show: true },
             },
           };
         });
       });
     },
     saveObject: async function (data) {
-      console.log(data);
+      this.loadingForm = true;
       try {
-        await Utils.Crud.saveObject("partner", data);
+        await Utils.Crud.saveObject("partner", data).then(() => {
+          this.loadingForm = false;
+          this.loadingTable = false;
+        });
         this.resetModal();
         await this.getList();
       } catch (e) {
         Swal.fire("Error!", e, "error");
+        this.loadingForm = false;
       }
     },
   },

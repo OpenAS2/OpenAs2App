@@ -11,12 +11,12 @@
       menu-custom
     "
   >
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"> OpenAS2 </a>
+    <a class="navbar-brand col-sm-3 col-md-2 col-lg-2  mr-0" href="#"> OpenAS2 </a>
     <div class="p-2" @click="openSidemenu">
       <b-icon icon="menu-button-wide" variant="white"></b-icon>
     </div>
     <ul class="navbar-nav px-3 ml-auto">
-      <b-nav-item-dropdown right>
+      <b-nav-item-dropdown block right>
         <template #button-content>
           <b-avatar variant="primary" :text="abbreviationName" size="sm"></b-avatar>
         <small class="ml-2 text-white">{{userName}}</small>

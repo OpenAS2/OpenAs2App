@@ -234,7 +234,81 @@ export default {
           },
         ],
       },
-      fields: [
+      
+      infoModal: {
+        id: "info-modal",
+        title: "",
+      },
+      items: [],
+
+      item: {
+        _id: null,
+        name: "",
+        as2_id: "",
+        email: "",
+        x509_alias: "",
+      },
+    };
+  },
+  components: {
+    FormCustom,
+    TableCustomMessage,
+    FilterMessageTable,
+  },
+  computed: {
+    isPathMessageList() {
+      return this.$route.name == "Messages";
+    },
+    getFilterItems() {
+      let _list = this.items;
+      if (this.filter.sender_id != "") {
+        _list = _.filter(_list, (item) => {
+          return item.sender_id == this.filter.sender_id;
+        });
+      }
+      if (this.filter.receiver_id != "") {
+        _list = _.filter(_list, (item) => {
+          return item.receiver_id == this.filter.receiver_id;
+        });
+      }
+      if (this.filter.states.length == 0) {
+        _list = [];
+      } else {
+        let _list2 = [];
+        this.filter.states.forEach((display) => {
+          let aux = _.filter(_list, (item) => {
+            return (
+              _.find(this.stateMap[display], (m) => {
+                return item.state == m;
+              }) && item
+            );
+          });
+          _list2 = _.concat(_list2, aux);
+        });
+        _list = _list2;
+      }
+      // if (this.filter.dateTime != "") {
+      //   _list.forEach((item) => {
+      //     item.create_dt =
+      //       this.filter.dateTime == "America/Caracas"
+      //         ? 
+      //         // moment( item.create_dt)
+      //         //     .utc(item.create_dt)
+      //         //     .toDate()
+      //             moment(item.create_dt).zone("-08:00")
+      //             .format("YYYY-DD-MM H:mm:ss")
+      //         :
+      //         moment(item.create_dt).zone("-04:00")
+      //             .format("YYYY-DD-MM H:mm:ss")
+      //         // moment()
+      //         //     .utc(this.filter.dateTime, item.create_dt)
+      //         //     .format("YYYY-DD-MM H:mm:ss");
+      //   });
+      // }
+      return _list;
+    },
+    fields() {
+      return [
         {
           key: "key",
           label: "#",
@@ -256,6 +330,19 @@ export default {
           label: "Timestamp",
           sortable: true,
           class: "text-center",
+          formatter: (value, key, item) => {
+              return this.filter.dateTime == "America/Caracas"
+              ? 
+              moment.tz(value, this.filter.dateTime).utc()
+                  // moment(value).zone("-04:00")
+                  .format("YYYY-DD-MM H:mm:ss")
+              :
+               moment.tz(value, this.filter.dateTime).utc()
+                  // moment(value).zone("-04:00")
+                  .format("YYYY-DD-MM H:mm:ss")
+              // moment(value).zone("+02:00")
+              //     .format("YYYY-DD-MM H:mm:ss")
+          },
           filter: true,
           export: true,
         },
@@ -315,79 +402,8 @@ export default {
           filter: false,
           export: true,
         },
-        // {
-        //   key: "actions",
-        //   label: "Actions",
-        //   class: "text-center",
-        //   export: false,
-        // },
-      ],
-      infoModal: {
-        id: "info-modal",
-        title: "",
-      },
-      items: [],
-
-      item: {
-        _id: null,
-        name: "",
-        as2_id: "",
-        email: "",
-        x509_alias: "",
-      },
-    };
-  },
-  components: {
-    FormCustom,
-    TableCustomMessage,
-    FilterMessageTable,
-  },
-  computed: {
-    isPathMessageList() {
-      return this.$route.name == "Messages";
-    },
-    getFilterItems() {
-      let _list = this.items;
-      if (this.filter.sender_id != "") {
-        _list = _.filter(_list, (item) => {
-          return item.sender_id == this.filter.sender_id;
-        });
-      }
-      if (this.filter.receiver_id != "") {
-        _list = _.filter(_list, (item) => {
-          return item.receiver_id == this.filter.receiver_id;
-        });
-      }
-      if (this.filter.states.length == 0) {
-        _list = [];
-      } else {
-        let _list2 = [];
-        this.filter.states.forEach((display) => {
-          let aux = _.filter(_list, (item) => {
-            return (
-              _.find(this.stateMap[display], (m) => {
-                return item.state == m;
-              }) && item
-            );
-          });
-          _list2 = _.concat(_list2, aux);
-        });
-        _list = _list2;
-      }
-      if (this.filter.dateTime != "") {
-        _list.forEach((item) => {
-          item.create_dt =
-            this.filter.dateTime == "America/Caracas"
-              ? moment()
-                  .tz(this.filter.dateTime, item.create_dt)
-                  .format("YYYY-DD-MM H:mm:ss")
-              : moment()
-                  .tz(this.filter.dateTime, item.create_dt)
-                  .format("YYYY-DD-MM H:mm:ss");
-        });
-      }
-      return _list;
-    },
+     
+      ]}
   },
   mounted: async function () {
     var list = await Utils.Crud.getList("cert");
@@ -481,7 +497,8 @@ export default {
       // doc.autoPrint(this.fields, this.items2);
       // doc.save("two-by-four.pdf");
     },
-    filterItems: function (data) {},
+    filterItems: function (data) {
+    },
     resetModal: function () {
       this.infoModal.title = "";
       this.item = {
