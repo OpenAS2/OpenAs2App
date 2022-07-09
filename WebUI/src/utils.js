@@ -66,6 +66,23 @@ const Utils = {
                 throw(`Error loading Object ${index}:\n${e}`);
             }
         },
+        getObjectFilter: async function(resource, index, empty) {
+            var url=store.state.server +  `/${resource}/filter/${empty.name}`;
+            console.log(url);
+            try {
+                var response= await axios.get(url ,{  auth: { username: store.state.username, password: store.state.password } });
+                if(response.data.type == 'OK') {
+                    var results=response.data.results[0];
+                    results._id = index;
+                    return results;
+                }else{
+                    throw response.data.result;
+                }
+            }catch(e) {
+                console.log(e);
+                throw(`Error loading Object ${index}:\n${e}`);
+            }
+        },
         saveObject: function(resource, data) {
             console.log('Saving',data);
             var old_id=data._id;

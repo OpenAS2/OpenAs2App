@@ -250,16 +250,16 @@ export default {
       this.$root.$emit("bv::hide::modal", this.infoModal.id);
       this.loadingForm = this.loadingTable = false;
     },
-   async existCertificate(cert){
-      let _items = await Utils.Crud.getObjectFilter("partner",cert.key,cert);
-      console.log("items",_items);
-      // .then((results) => {
-        let _item= _.find(_items, (item, index) => {
-          return item==cert.name
+    async existCertificate(cert) {
+      let exist = false;
+      await Utils.Crud.getObjectFilter("partner", cert.key, cert)
+        .then((value) => {
+          exist = true;
+        })
+        .catch(() => {
+          exist = false;
         });
-      // });
-      console.log("existe",_item);
-      return true;
+      return exist;
     },
     deleteObject: async function (item) {
       try {
@@ -273,8 +273,8 @@ export default {
           cancelButtonText: "No",
         }).then(async (result) => {
           if (result.isConfirmed) {
-            // let exist=await this.existCertificate(item);
-            // if(!exist){
+            let exist = await this.existCertificate(item);
+            if (!exist) {
               Utils.Crud.deleteObject("cert", item.key)
                 .then((response) => {
                   Swal.fire("Deleted!", "", "success");
@@ -284,10 +284,13 @@ export default {
                   console.log("delete parner", e);
                   Swal.fire("Error!", e, "error");
                 });
-            // }else{
-            //       Swal.fire("Warning!","The certificate is registered with a partner", "warning");
-
-            // }
+            } else {
+              Swal.fire(
+                "Warning!",
+                "The certificate is registered with a partner",
+                "warning"
+              );
+            }
           }
           this.loadingTable = false;
         });
@@ -324,7 +327,7 @@ export default {
       this.$root.$emit("bv::show::modal", this.infoModal.id);
     },
     getNewObject: function () {
-     this.loadingTable = true;
+      this.loadingTable = true;
       var obj = { _id: null };
       this.schema.fields.forEach((f) => (obj[f.name] = f.value));
       return obj;
