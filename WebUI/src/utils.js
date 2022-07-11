@@ -28,6 +28,21 @@ const Utils = {
                 throw(`Error getting ${resource} list:\n${e}`);
             }
         },
+        getListChart: async function(resource,range) {
+            var url =store.state.server +  `/${resource}/data_charts?startDate=${range.startDate}&endDate=${range.endDate}`;
+            try {
+                var response= await axios.get(url,{ auth: { username: store.state.username, password: store.state.password }});
+                if(response.data.type === 'OK') {
+                    return response.data.results;
+                    
+                }else{
+                    throw response.data.result;
+                }
+            }catch(e) {
+                console.log(e);
+                throw(`Error getting ${resource} list:\n${e}`);
+            }
+        },
         getObject: async function(resource, index, empty) {
             console.log(`Loading Object ${index} from ${resource}`);
             var emptyObject = Object.assign({}, empty , {"_id":null });
@@ -42,7 +57,23 @@ const Utils = {
                 if(response.data.type == 'OK') {
                     var results=response.data.results[0];
                     results._id = index;
-                    console.log(results);
+                    return results;
+                }else{
+                    throw response.data.result;
+                }
+            }catch(e) {
+                console.log(e);
+                throw(`Error loading Object ${index}:\n${e}`);
+            }
+        },
+        getObjectFilter: async function(resource, index, empty) {
+            var url=store.state.server +  `/${resource}/filter/${empty.name}`;
+            console.log(url);
+            try {
+                var response= await axios.get(url ,{  auth: { username: store.state.username, password: store.state.password } });
+                if(response.data.type == 'OK') {
+                    var results=response.data.results[0];
+                    results._id = index;
                     return results;
                 }else{
                     throw response.data.result;
@@ -55,7 +86,7 @@ const Utils = {
         saveObject: function(resource, data) {
             console.log('Saving',data);
             var old_id=data._id;
-            delete data._id;
+            // delete data._id;
             if(old_id !== null) {
                 return this.deleteObject(resource,old_id).then( () => this.createObject(resource,data));
             }else{

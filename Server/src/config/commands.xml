@@ -14,6 +14,7 @@
 		<command classname="org.openas2.app.partner.AddPartnerCommand"/>
 		<command classname="org.openas2.app.partner.DeletePartnerCommand"/>
 		<command classname="org.openas2.app.partner.ViewPartnerCommand"/>
+		<command classname="org.openas2.app.partner.FilterCertPartnerCommand"/>
 	</multicommand>
 	<multicommand name="partnership"
 		description="Partnership commands">
@@ -27,6 +28,11 @@
 	<multicommand name="log"
 		description="Logging Levels commands">
 		<command classname="org.openas2.app.logging.SetLogLevelCommand"/>
+	</multicommand>
+	<multicommand name="messages" description="Messages commands">
+		<command classname="org.openas2.app.message.ListMessagesCommand"/>
+		<command classname="org.openas2.app.message.ViewMessageCommand"/>
+		<command classname="org.openas2.app.message.GetDataForCharts"/>
 	</multicommand>
 	
 </commands>

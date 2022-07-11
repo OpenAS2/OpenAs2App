@@ -1,5 +1,6 @@
 package org.openas2;
 
+import org.openas2.message.MessageFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
@@ -74,6 +75,16 @@ public interface Session {
      * @see Component
      */
     PartnershipFactory getPartnershipFactory() throws ComponentNotFoundException;
+
+    /**
+     * Short-cut method to retrieve a message factory.
+     *
+     * @return the currently registered <code>MessageFactory</code> component
+     * @throws ComponentNotFoundException If a <code>MessageFactory</code> component has not been registered
+     * @see MessageFactory
+     * @see Component
+     */
+    MessageFactory getMessageFactory() throws ComponentNotFoundException;
 
     /**
      * Short-cut method to retrieve a processor.

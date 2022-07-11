@@ -3,7 +3,6 @@
   <div id="app" class="container-fluid">
     <div v-if="is_logged">
       <admin-layout/>
-      
     </div>
     <div v-else >
       <login-screen />

@@ -12,11 +12,14 @@ import org.openas2.util.DateUtil;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -181,6 +184,127 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         }
+
+    }
+
+    public ArrayList<HashMap<String,String>> listMessages() {
+
+        Connection conn = null;
+        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
+
+        try {
+            if (useEmbeddedDB) {
+                conn = dbHandler.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            }
+
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT ID,CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM msg_metadata");
+            ResultSetMetaData meta = rs.getMetaData();
+
+            while(rs.next()){
+                HashMap<String,String> row = new HashMap<String,String>();
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    String key = meta.getColumnName(i);
+                    String value = rs.getString(key);
+                    row.put(key, value);
+                }
+                rows.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return rows;
+
+    }
+
+    public HashMap<String, String> showMessage(String msg_id) {
+
+        Connection conn = null;
+        HashMap<String, String> row = new HashMap<String,String>();
+
+        try {
+            if (useEmbeddedDB) {
+                conn = dbHandler.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            }
+            PreparedStatement s = conn.prepareStatement("SELECT * FROM msg_metadata WHERE msg_id = ?");
+            s.setString(1, msg_id);
+            ResultSet rs = s.executeQuery();            
+            ResultSetMetaData meta = rs.getMetaData();
+            while (rs.next()) {
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    String key = meta.getColumnName(i);
+                    String value = rs.getString(key);
+                    row.put(key, value);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return row;
+
+    }
+
+    public ArrayList<HashMap<String,String>> getDataCharts(HashMap<String, String> map) {
+
+        Connection conn = null;
+        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
+
+        try {
+            if (useEmbeddedDB) {
+                conn = dbHandler.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            }
+
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery("SELECT MSG_ID,STATE,STATUS,CREATE_DT FROM msg_metadata WHERE CREATE_DT BETWEEN '"+map.get("startDate").toString()+" 01:00:00' AND '"+map.get("endDate").toString()+" 23:59:59'");
+            ResultSetMetaData meta = rs.getMetaData();
+            while(rs.next()){
+                HashMap<String,String> row = new HashMap<String,String>();
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    String key = meta.getColumnName(i);
+                    String value = rs.getString(key);
+                    row.put(key, value);
+                }
+                rows.add(row);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return rows;
 
     }
 

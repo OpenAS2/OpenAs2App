@@ -111,27 +111,30 @@ public class ApiResource {
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
-    public CommandResult getCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId) throws Exception {
+    public Response getCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId) throws Exception {
         try {
+            CommandResult output=null;
             // TODO: Figure out a better way to return proper JSON objects instead of this hack
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert") && (itemId != null && itemId.length() > 1)) {
-                return this.getCertificate(itemId.substring(1));
+                output=this.getCertificate(itemId.substring(1));
+            } else {
+                List<String> params = new ArrayList<>();
+                if (action != null) {
+                    params.add(action);
+                }
+                if (itemId != null && itemId.length() > 1) {
+                    params.add(itemId.substring(1));
+                }
+                Iterator<String> iter = ui.getQueryParameters().keySet().iterator();
+                while (iter.hasNext()) {
+                    String valueKey = iter.next();
+                    String valueParam = ui.getQueryParameters().getFirst(valueKey);
+                    params.add(valueKey + "=" + valueParam);
+                }
+                output = getProcessor().feedCommand(resource, params);
             }
-            List<String> params = new ArrayList<>();
-            if (action != null) {
-                params.add(action);
-            }
-            if (itemId != null && itemId.length() > 1) {
-                params.add(itemId.substring(1));
-            }
-            Iterator<String> iter = ui.getQueryParameters().keySet().iterator();
-            while (iter.hasNext()) {
-                String valueKey = iter.next();
-                String valueParam = ui.getQueryParameters().getFirst(valueKey);
-                params.add(valueKey + "=" + valueParam);
-            }
-            CommandResult output = getProcessor().feedCommand(resource, params);
-            return output;
+            String jsonResult = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
+            return Response.status(200).entity(jsonResult).type(MediaType.APPLICATION_JSON).build();
         } catch (Exception ex) {
             Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
             throw ex;
@@ -145,43 +148,45 @@ public class ApiResource {
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public CommandResult postCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
+    public Response postCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         try {
+            CommandResult output=null;
             // TODO: Figure out a better way to return proper JSON objects instead of this hack
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert")) {
-                return this.getCertificate(itemId);
-            }
-            if (action.equalsIgnoreCase("importbystream") && resource.equalsIgnoreCase("cert")) {
-                return this.importCertificateByStream(itemId.substring(1), formParams);
-            }
-            List<String> params = new ArrayList<String>();
-            if (action != null) {
-                params.add(action);
-            }
-            if (itemId != null && itemId.length() > 1) {
-                params.add(itemId.substring(1));
-            }
-            Iterator<String> iter = ui.getQueryParameters().keySet().iterator();
-            while (iter.hasNext()) {
-                String valueKey = iter.next();
-                String valueParam = ui.getQueryParameters().getFirst(valueKey);
-                params.add(valueKey + "=" + valueParam);
-            }
-            int length = formParams.size();
-            for (int index = 0; index < length; index++) {
-                if (formParams.containsKey(String.valueOf(index))) {
-                    params.add(formParams.getFirst(String.valueOf(index)));
-                    formParams.remove(index);
+                output= this.getCertificate(itemId);
+            } else if (action.equalsIgnoreCase("importbystream") && resource.equalsIgnoreCase("cert")) {
+                output= this.importCertificateByStream(itemId.substring(1), formParams);
+            } else {
+                List<String> params = new ArrayList<String>();
+                if (action != null) {
+                    params.add(action);
                 }
+                if (itemId != null && itemId.length() > 1) {
+                    params.add(itemId.substring(1));
+                }
+                Iterator<String> iter = ui.getQueryParameters().keySet().iterator();
+                while (iter.hasNext()) {
+                    String valueKey = iter.next();
+                    String valueParam = ui.getQueryParameters().getFirst(valueKey);
+                    params.add(valueKey + "=" + valueParam);
+                }
+                int length = formParams.size();
+                for (int index = 0; index < length; index++) {
+                    if (formParams.containsKey(String.valueOf(index))) {
+                        params.add(formParams.getFirst(String.valueOf(index)));
+                        formParams.remove(index);
+                    }
+                }
+                iter = formParams.keySet().iterator();
+                while (iter.hasNext()) {
+                    String valueKey = iter.next();
+                    String valueParam = formParams.getFirst(valueKey);
+                    params.add(valueKey + "=" + valueParam);
+                }
+                output = getProcessor().feedCommand(resource, params);
             }
-            iter = formParams.keySet().iterator();
-            while (iter.hasNext()) {
-                String valueKey = iter.next();
-                String valueParam = formParams.getFirst(valueKey);
-                params.add(valueKey + "=" + valueParam);
-            }
-            CommandResult output = getProcessor().feedCommand(resource, params);
-            return output;
+            String jsonResult = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
+            return Response.status(200).entity(jsonResult).type(MediaType.APPLICATION_JSON).build();
         } catch (Exception ex) {
             Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
             throw ex;
@@ -194,7 +199,7 @@ public class ApiResource {
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public CommandResult putCommand(@PathParam("param") String resource, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
+    public Response putCommand(@PathParam("param") String resource, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         return postCommand(resource, "add", itemId, formParams);
     }
 
@@ -202,7 +207,7 @@ public class ApiResource {
     @DELETE
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public CommandResult deleteCommand(@PathParam("resource") String resource, @PathParam("id") String itemId) throws Exception {
+    public Response deleteCommand(@PathParam("resource") String resource, @PathParam("id") String itemId) throws Exception {
         return getCommand(resource, "delete", itemId);
     }
 
