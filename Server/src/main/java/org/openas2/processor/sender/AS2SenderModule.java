@@ -32,9 +32,9 @@ import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
 import org.openas2.util.ResponseWrapper;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;

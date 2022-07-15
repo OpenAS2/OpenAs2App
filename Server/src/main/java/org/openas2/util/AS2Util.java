@@ -22,14 +22,14 @@ import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 
-import javax.mail.BodyPart;
-import javax.mail.Header;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Header;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
@@ -199,7 +199,7 @@ public class AS2Util {
                 // Something wrong detected so flag it for later use
                 dispositionHasWarning = true;
                 de.setText(msg.getMDN().getText());
-    
+
                 if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
                     // Do not throw error in this case ... just log it
                     de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);

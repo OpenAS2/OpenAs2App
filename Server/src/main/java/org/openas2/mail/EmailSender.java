@@ -12,11 +12,11 @@ import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,7 +43,7 @@ public class EmailSender extends BaseComponent {
 
 
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
-        // copy system properties then allow override by javax.mail.properties.file 
+        // copy system properties then allow override by jakarta.mail.properties.file
         props.putAll(System.getProperties());
         String filename = "Emailer.Parameters.getJavaxMailPropFile";
         if (filename != null) {
@@ -54,10 +54,10 @@ public class EmailSender extends BaseComponent {
                 in = new FileInputStream(filename);
                 props.load(in);
             } catch (FileNotFoundException e) {
-                System.out.println("File not found for attribute javax.mail.properties.file: " + filename);
+                System.out.println("File not found for attribute jakarta.mail.properties.file: " + filename);
                 e.printStackTrace();
             } catch (IOException e) {
-                System.out.println("File for attribute javax.mail.properties.file cannot be accessed: " + filename);
+                System.out.println("File for attribute jakarta.mail.properties.file cannot be accessed: " + filename);
                 e.printStackTrace();
             } finally {
                 if (in != null) {
@@ -152,7 +152,7 @@ public class EmailSender extends BaseComponent {
         String userName = null;
         String password = null;
         boolean isAuth = false;
-        javax.mail.Session jmSession = null;
+        jakarta.mail.Session jmSession = null;
         try {
             isAuth = "true".equalsIgnoreCase(getParameter("smtpauth", "false"));
         } catch (InvalidParameterException e) {
@@ -179,13 +179,13 @@ public class EmailSender extends BaseComponent {
         final String pwd = password;
         if (isAuth) {
             props.put("mail." + protocol + ".user", uid);
-            jmSession = javax.mail.Session.getDefaultInstance(props, new javax.mail.Authenticator() {
+            jmSession = jakarta.mail.Session.getDefaultInstance(props, new jakarta.mail.Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(uid, pwd);
                 }
             });
         } else {
-            jmSession = javax.mail.Session.getDefaultInstance(props);
+            jmSession = jakarta.mail.Session.getDefaultInstance(props);
         }
 
         if (isDebugOn) {
@@ -207,7 +207,7 @@ public class EmailSender extends BaseComponent {
                 m.setFrom(new InternetAddress(from));
             }
             m.setSender(new InternetAddress(getParameter(PARAM_FROM, true)));
-            m.setRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(getParameter(PARAM_TO, true)));
+            m.setRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(getParameter(PARAM_TO, true)));
 
             m.setSentDate(new Date());
             m.setSubject(subject);

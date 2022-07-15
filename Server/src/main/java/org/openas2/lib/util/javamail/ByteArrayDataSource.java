@@ -1,6 +1,6 @@
 package org.openas2.lib.util.javamail;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

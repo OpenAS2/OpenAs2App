@@ -12,12 +12,12 @@ import org.openas2.processor.msgtracking.TrackingModule;
 import org.openas2.util.Properties;
 import org.openas2.util.IOUtil;
 
-import javax.mail.Header;
-import javax.mail.MessagingException;
-import javax.mail.internet.ContentDisposition;
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.ParseException;
+import jakarta.mail.Header;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.ContentDisposition;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.ParseException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -332,7 +332,7 @@ public abstract class BaseMessage implements Message {
             // read in message headers
             headers = new InternetHeaders(in);
 
-            // read in mime body 
+            // read in mime body
             if (in.read() == 1) {
                 data = new MimeBodyPart(in);
             }
@@ -466,7 +466,7 @@ public abstract class BaseMessage implements Message {
             return null;
         }
         try {
-          tmpFilename = IOUtil.getSafeFilename(tmpFilename);          
+          tmpFilename = IOUtil.getSafeFilename(tmpFilename);
         } catch (OpenAS2Exception oae) {
           ParseException pe = new ParseException("Unable to extract a usable filename");
           pe.initCause(oae);
@@ -474,5 +474,5 @@ public abstract class BaseMessage implements Message {
         }
         return tmpFilename;
     }
-    
+
 }

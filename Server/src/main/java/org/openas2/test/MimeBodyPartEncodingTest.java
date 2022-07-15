@@ -14,9 +14,9 @@ import org.openas2.partner.Partnership;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 
-import javax.activation.DataHandler;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.activation.DataHandler;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;

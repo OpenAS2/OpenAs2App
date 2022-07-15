@@ -22,11 +22,11 @@ import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.IOUtil;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -80,11 +80,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             logger.error(": " + e.getMessage(), e);
             throw new OpenAS2Exception("Failed to move the inbound file " + fileToSend.getPath() + " to the processing location " + pendingFile.getName());
         }
-        return processDocument(pendingFile, msg); 
+        return processDocument(pendingFile, msg);
     }
 
     /**
-     * Take the file input stream and write it to a file system file in the processing folder. 
+     * Take the file input stream and write it to a file system file in the processing folder.
      * Use this method if the file is produced in real time through a stream.
      * @param ip
      * @param filename
@@ -259,7 +259,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     }
 
     /**
-     * Provides support for a random inputstream. 
+     * Provides support for a random inputstream.
      *     NOTE: Ths method should not be used for very large files as it will consume all the available heap and fail to send.
      * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
      * @param ip - the generic inputstream
@@ -269,9 +269,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
      */
     public void buildMessageData(Message msg, InputStream ip, String filename) throws OpenAS2Exception {
             String contentType = getMessageContentType(msg);
-            javax.mail.util.ByteArrayDataSource byteSource;
+            jakarta.mail.util.ByteArrayDataSource byteSource;
             try {
-                byteSource = new javax.mail.util.ByteArrayDataSource(ip, contentType);
+                byteSource = new jakarta.mail.util.ByteArrayDataSource(ip, contentType);
             } catch (IOException e) {
                 throw new OpenAS2Exception("Failed to set up datasource from input stream: " + e.getMessage(), e);
             }
