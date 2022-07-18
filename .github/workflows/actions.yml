@@ -32,7 +32,9 @@ jobs:
              $ENV:cert_file=gci -Path $ENV:JAVA_HOME -Filter cacerts -File -Recurse  -ErrorAction SilentlyContinue | %{$_.FullName}
              copy cacerts "$ENV:cert_file"
       - name: Build with Maven
-        run: ./mvnw test -e --debug --file pom.xml --log-file maven.log
+        run: |
+             x=$(./mvnw test -e --debug --file pom.xml --log-file maven.log)
+             echo $x
       - name: Make Maven Wrapper and Java finder executable. Copy cacerts
         run: |
              ls -l maven.log
