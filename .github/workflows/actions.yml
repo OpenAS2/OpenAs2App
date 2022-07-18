@@ -33,8 +33,8 @@ jobs:
              copy cacerts "$ENV:cert_file"
       - name: Build with Maven
         run: |
-             x=$(./mvnw test -e --debug --file pom.xml --log-file maven.log)
-             echo $x
+             ./mvnw clean -e --debug --file pom.xml --log-file maven.log
+             ./mvnw test -e --debug --file pom.xml --log-file maven.log
       - name: Make Maven Wrapper and Java finder executable. Copy cacerts
         run: |
              ls -l maven.log
