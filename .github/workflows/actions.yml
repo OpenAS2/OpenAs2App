@@ -33,6 +33,10 @@ jobs:
              copy cacerts "$ENV:cert_file"
       - name: Build with Maven
         run: ./mvnw test -V --file pom.xml --log-file maven.log
+      - name: Make Maven Wrapper and Java finder executable. Copy cacerts
+        run: |
+             ls -l maven.log
+             cat maven.log
       - name: Archive logs
         uses: actions/upload-artifact@v3
         with:
