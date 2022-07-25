@@ -28,8 +28,10 @@ public class Partnership implements Serializable {
     public static final String PCFG_RECEIVER = PTYPE_RECEIVER; // Receiver config node
 
     /* partner definition attributes */
+    public static final String PID_NAME = "name"; // Partner name
     public static final String PID_AS2 = "as2_id"; // AS2 ID
     public static final String PID_X509_ALIAS = "x509_alias"; // Alias to an X509 Certificate
+    public static final String PID_X509_ALIAS_FALLBACK = "x509_alias_fallback"; // Fallback alias to an X509 Certificate
     public static final String PID_EMAIL = "email"; // Email address
 
     /* partnership definition attributes */
@@ -183,6 +185,18 @@ public class Partnership implements Serializable {
             );
         }
 
+        return alias;
+    }
+
+    public String getAliasFallback(String partnershipType) throws OpenAS2Exception {
+        String alias = null;
+
+        if (partnershipType == PTYPE_RECEIVER) {
+            alias = getReceiverID(Partnership.PID_X509_ALIAS_FALLBACK);
+        } else if (partnershipType == PTYPE_SENDER) {
+            alias = getSenderID(Partnership.PID_X509_ALIAS_FALLBACK);
+        }
+        // The fallback is not guaranteed to be there so return null if not set
         return alias;
     }
 

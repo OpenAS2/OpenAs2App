@@ -46,6 +46,8 @@ public abstract class BaseMessage implements Message {
     private String status = MSG_STATUS_MSG_INIT;
     private Map<String, String> customOuterMimeHeaders = new HashMap<String, String>();
     private String payloadFilename = null;
+    private String senderX509Alias;
+    private String receiverX509Alias;
 
 
     public BaseMessage() {
@@ -54,6 +56,23 @@ public abstract class BaseMessage implements Message {
 
     public String getAppTitle() {
         return Properties.getProperty(Properties.APP_TITLE_PROP, "OpenAS2 Server");
+    }
+
+    public String getSenderX509Alias() {
+        return senderX509Alias;
+    }
+
+    public void setSenderX509Alias(String alias) {
+        senderX509Alias = alias;
+    }
+
+    public String getReceiverX509Alias() {
+        return receiverX509Alias;
+    }
+
+    public void setReceiverX509Alias(String alias) {
+        receiverX509Alias = alias;
+        
     }
 
     public Map<String, Object> getOptions() {

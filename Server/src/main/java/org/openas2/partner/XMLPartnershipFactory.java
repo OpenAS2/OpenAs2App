@@ -149,10 +149,10 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
     public void loadPartner(Map<String, Object> partners, Node node) throws OpenAS2Exception {
-        String[] requiredAttributes = {"name"};
+        String[] requiredAttributes = {Partnership.PID_NAME};
 
         Map<String, String> newPartner = XMLUtil.mapAttributes(node, requiredAttributes);
-        String name = newPartner.get("name");
+        String name = newPartner.get(Partnership.PID_NAME);
 
         if (partners.get(name) != null) {
             throw new OpenAS2Exception("Partner is defined more than once: " + name);
@@ -172,7 +172,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         Map<String, String> partnerAttr = XMLUtil.mapAttributes(partnerNode);
 
         // check for a partner name, and look up in partners list if one is found
-        String partnerName = partnerAttr.get("name");
+        String partnerName = partnerAttr.get(Partnership.PID_NAME);
 
         if (partnerName != null) {
             @SuppressWarnings("unchecked")

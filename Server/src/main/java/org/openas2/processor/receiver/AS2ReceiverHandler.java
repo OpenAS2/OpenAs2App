@@ -52,8 +52,10 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AS2ReceiverHandler implements NetModuleHandler {
@@ -329,13 +331,27 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("decrypting :::" + msg.getLogMsgID());
                 }
-
-                X509Certificate receiverCert = null;
-                PrivateKey receiverKey = null;
                 String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
-                receiverCert = certFx.getCertificate(x509_alias);
-                receiverKey = certFx.getPrivateKey(x509_alias);
-                msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
+                X509Certificate receiverCert = certFx.getCertificate(x509_alias);
+                PrivateKey receiverKey = certFx.getPrivateKey(x509_alias);
+                try {
+                    msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
+                    msg.setReceiverX509Alias(x509_alias);
+                } catch (Exception e) {
+                    // Something went wrong - possibly a certificate change so try the backup if configured
+                    String x509_alias_fallback = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                    if (x509_alias_fallback == null) {
+                        // No fallback so just throw the original exception
+                        throw e;
+                    }
+                    receiverCert = certFx.getCertificate(x509_alias_fallback);
+                    receiverKey = certFx.getPrivateKey(x509_alias_fallback);
+                    msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
+                    // success so the sender must have updated the receiver certificate
+                    msg.setReceiverX509Alias(x509_alias_fallback);
+                    // Send a message so that the certificate can be updated.
+                    LOG.warn("Partner has updated our certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getReceiverID(Partnership.PID_NAME));
+                }
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
                 }
@@ -371,7 +387,22 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 }
                 String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
                 X509Certificate senderCert = certFx.getCertificate(x509_alias);
-                msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
+                try {
+                    msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
+                    msg.setSenderX509Alias(x509_alias);
+                } catch (Exception e) {
+                    // Something went wrong - possibly a certificate change so try the backup if configured
+                    String x509_alias_fallback = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
+                    if (x509_alias_fallback == null) {
+                        // No fallback so just throw the original exception
+                        throw e;
+                    }
+                    senderCert = certFx.getCertificate(x509_alias_fallback);
+                    msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
+                    msg.setSenderX509Alias(x509_alias_fallback);
+                       // Send a message so that the certificate can be updated.
+                    LOG.warn("Partner has updated their certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getSenderID(Partnership.PID_NAME));
+                }
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after signature verification: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
                 }
