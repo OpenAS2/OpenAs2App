@@ -332,15 +332,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
                 X509Certificate receiverCert = null;
                 PrivateKey receiverKey = null;
-                boolean useNewMode = "false".equals(msg.getPartnership().getAttributeOrProperty(Partnership.USE_NEW_CERTIFICATE_LOOKUP_MODE, "true"))?false:true;
-                if (useNewMode) {
-                    String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
-                    receiverCert = certFx.getCertificate(x509_alias);
-                    receiverKey = certFx.getPrivateKey(x509_alias);
-                } else {
-                    receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
-                    receiverKey = certFx.getPrivateKey(msg, receiverCert);
-                }
+                String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                receiverCert = certFx.getCertificate(x509_alias);
+                receiverKey = certFx.getPrivateKey(x509_alias);
                 msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
@@ -375,8 +369,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("verifying signature" + msg.getLogMsgID());
                 }
-
-                X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
+                String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
+                X509Certificate senderCert = certFx.getCertificate(x509_alias);
                 msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after signature verification: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
@@ -601,8 +595,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
             try {
                 // The receiver of the original message is the sender of the MDN - sign with the receivers private key
-                X509Certificate senderCert = certFx.getCertificate(mdn, Partnership.PTYPE_RECEIVER);
-                PrivateKey senderKey = certFx.getPrivateKey(mdn, senderCert);
+                String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                X509Certificate senderCert = certFx.getCertificate(x509_alias);
+                PrivateKey senderKey = certFx.getPrivateKey(x509_alias);
                 Partnership p = mdn.getPartnership();
                 String contentTxfrEncoding = p.getAttribute(Partnership.PA_CONTENT_TRANSFER_ENCODING);
                 boolean isRemoveCmsAlgorithmProtectionAttr = "true".equalsIgnoreCase(p.getAttribute(Partnership.PA_REMOVE_PROTECTION_ATTRIB));

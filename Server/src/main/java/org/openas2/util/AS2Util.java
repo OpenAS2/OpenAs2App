@@ -22,10 +22,8 @@ import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 
-import javax.mail.BodyPart;
 import javax.mail.Header;
 import javax.mail.MessagingException;
-import javax.mail.Multipart;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
@@ -462,7 +460,8 @@ public class AS2Util {
         }
 
         CertificateFactory cFx = session.getCertificateFactory();
-        X509Certificate senderCert = cFx.getCertificate(mdn, Partnership.PTYPE_RECEIVER);
+        String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+        X509Certificate senderCert = cFx.getCertificate(x509_alias);
 
         msg.setStatus(Message.MSG_STATUS_MDN_PARSE);
         if (logger.isTraceEnabled()) {

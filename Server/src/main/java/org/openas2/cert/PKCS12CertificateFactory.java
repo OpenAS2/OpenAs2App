@@ -5,10 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
-import org.openas2.message.Message;
-import org.openas2.message.MessageMDN;
 import org.openas2.params.InvalidParameterException;
-import org.openas2.partner.Partnership;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.support.FileMonitorAdapter;
 import org.openas2.util.AS2Util;
@@ -40,25 +37,6 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
 
     private Log logger = LogFactory.getLog(PKCS12CertificateFactory.class.getSimpleName());
 
-    public String getAlias(Partnership partnership, String partnershipType) throws OpenAS2Exception {
-        String alias = null;
-
-        if (partnershipType == Partnership.PTYPE_RECEIVER) {
-            alias = partnership.getReceiverID(Partnership.PID_X509_ALIAS);
-        } else if (partnershipType == Partnership.PTYPE_SENDER) {
-            alias = partnership.getSenderID(Partnership.PID_X509_ALIAS);
-        }
-
-        if (alias == null) {
-            throw new CertificateNotFoundException(
-                 "Lookup failed for X509 alias for AS2 ID: " + partnership.getReceiverID(Partnership.PID_AS2 + " :: Partnership type: " + partnershipType),
-                 null
-            );
-        }
-
-        return alias;
-    }
-
     public X509Certificate getCertificate(String alias) throws OpenAS2Exception {
         try {
             KeyStore ks = getKeyStore();
@@ -71,24 +49,6 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
             return cert;
         } catch (KeyStoreException kse) {
             throw new WrappedException(kse);
-        }
-    }
-
-    public X509Certificate getCertificate(Message msg, String partnershipType) throws OpenAS2Exception {
-        try {
-            return getCertificate(getAlias(msg.getPartnership(), partnershipType));
-        } catch (CertificateNotFoundException cnfe) {
-            cnfe.setPartnershipType(partnershipType);
-            throw cnfe;
-        }
-    }
-
-    public X509Certificate getCertificate(MessageMDN mdn, String partnershipType) throws OpenAS2Exception {
-        try {
-            return getCertificate(getAlias(mdn.getPartnership(), partnershipType));
-        } catch (CertificateNotFoundException cnfe) {
-            cnfe.setPartnershipType(partnershipType);
-            throw cnfe;
         }
     }
 
@@ -156,6 +116,7 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
         }
     }
 
+    @SuppressWarnings("unused")
     private PrivateKey getPrivateKey(X509Certificate cert) throws OpenAS2Exception {
         KeyStore ks = getKeyStore();
         String alias = null;
@@ -177,14 +138,6 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
         } catch (GeneralSecurityException e) {
             throw new KeyNotFoundException(cert, alias, e);
         }
-    }
-
-    public PrivateKey getPrivateKey(Message msg, X509Certificate cert) throws OpenAS2Exception {
-        return getPrivateKey(cert);
-    }
-
-    public PrivateKey getPrivateKey(MessageMDN mdn, X509Certificate cert) throws OpenAS2Exception {
-        return getPrivateKey(cert);
     }
 
     public void addCertificate(String alias, X509Certificate cert, boolean overwrite) throws OpenAS2Exception {
