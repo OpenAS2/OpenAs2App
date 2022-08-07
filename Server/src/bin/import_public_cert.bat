@@ -88,7 +88,7 @@ goto :END
   echo You must specify the source file, target key store file name and an alias for imported certificate.
   echo By default the script will attemopt to import the designated certificate.
   echo If you wish to replace an existing certificate then specify "replace" as a 4th argument to the script
-  echo usage: %x% <src certificate> <target keystore> <cert alias> [action]
+  echo usage: %~nx0 ^<src certificate^> ^<target keystore^> ^<cert alias^> [action]
   echo             WHERE
   echo                src certificate = name of the file containg the public key to be imported
   echo                target keystore = name of the target keystore file including .p12 extension
@@ -97,9 +97,9 @@ goto :END
   echo                          anything other than "replace" will be interpreted as "import"
 
   echo.
-  echo        eg. $0 partnera.cer as2_certs.p12 partnera
+  echo        eg. %~nx0 partnera.cer as2_certs.p12 partnera
   echo                 OR
-  echo        eg. $0 partnera.cer as2_certs.p12 partnera replace
+  echo        eg. %~nx0 partnera.cer as2_certs.p12 partnera replace
 
 :warn
 :END
