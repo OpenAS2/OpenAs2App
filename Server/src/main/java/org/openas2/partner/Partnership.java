@@ -201,6 +201,10 @@ public class Partnership implements Serializable {
         return alias;
     }
 
+    public boolean isRejectUnsignedMessages() throws OpenAS2Exception {
+        return getAttributeOrProperty(Partnership.PA_REJECT_UNSIGNED_MESSAGES, "false").equals("true");
+    }
+
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append("Partnership " + getName());
