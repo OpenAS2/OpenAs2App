@@ -4,8 +4,6 @@
                log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
                sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
                as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
-               async_mdn_receiver_port="10081"
-               as2_async_mdn_url="http://localhost:$properties.async_mdn_receiver_port$"
                as2_receive_message_filename_fallback="$rand.shortUUID$"
                console.logger.enabled="true"
                file.logger.enabled="true"
@@ -21,14 +19,48 @@
                module.MessageFileModule.enabled="true"
                module.DirectoryResenderModule.enabled="true"
                module.AS2ReceiverModule.http.enabled="true"
+               module.AS2ReceiverModule.http.port="10080"
                module.AS2MDNReceiverModule.http.enabled="true"
+               module.AS2MDNReceiverModule.http.port="10081"
                module.AS2ReceiverModule.https.enabled="false"
+               module.AS2ReceiverModule.https.port="10443"
                module.AS2MDNReceiverModule.https.enabled="false"
+               module.AS2MDNReceiverModule.https.port="10444"
                module.HealthCheckModule.enabled="false"
-               />
+               async_mdn_receiver_port="$properties.module.AS2MDNReceiverModule.http.port$"
+               as2_async_mdn_url="http://localhost:$properties.async_mdn_receiver_port$"
+               as2_keystore="%home%/as2_certs.p12"
+               as2_keystore_password="testas2"
+               ssl_keystore="%home%/ssl_certs.jks"
+               ssl_keystore_password="testas2"
+               partnership_file="%home%/partnerships.xml"
+               javax.mail.properties.file="%home%/java.mail.properties"
+               email.from="openas2server"
+               email.to="your email address"
+               email.smtpserver="your smtp server"
+               email.smtpport="your smtp server port"
+               email.smtpauth="true"
+               email.smtpuser="mySmtpUserId"
+               email.smtppwd="mySmtpPwd"
+               email.subject="$exception.name$: $exception.message$"
+               email.bodytemplate="%home%/emailtemplate.txt"
+               file.logger.filename="%home%/../logs/log-$date.yyyyMMdd$.txt"
+               msg_tracking.use_embedded_db="true"
+               msg_tracking.force_load_jdbc_driver="false"
+               msg_tracking.db_user="sa"
+               msg_tracking.db_pwd="OpenAS2"
+               msg_tracking.db_name="openas2"
+               msg_tracking.table_name="msg_metadata"
+               msg_tracking.db_directory="%home%/DB"
+               msg_tracking.jdbc_driver="org.h2.Driver"
+               msg_tracking.jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
+               msg_tracking.sql_escape_character="'"
+               msg_tracking.tcp_server_start="true"
+               msg_tracking.tcp_server_port="9092"
+             />
    <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
-                 filename="%home%/as2_certs.p12"
-                 password="testas2"
+                 filename="$properties.as2_keystore$"
+                 password="$properties.as2_keystore_password$"
                  interval="300"/>
    <loggers>
       <logger classname="org.openas2.logging.ConsoleLogger"
@@ -37,19 +69,19 @@
               enabled="$properties.email.logger.enabled$"
               only_active_msg_transfer_errors="false"
               log_exception_trace="false"
-              javax.mail.properties.file="%home%/java.mail.properties"
-              from="openas2"
-              to="your email address"
-              smtpserver="your smtp server"
-              smtpport="your smtp server port"
-              smtpauth="true"
-              smtpuser="mySmtpUserId"
-              smtppwd="mySmtpPwd"
-              subject="$exception.name$: $exception.message$"
-              bodytemplate="%home%/emailtemplate.txt"/>
+              javax.mail.properties.file="$properties.javax.mail.properties.file$"
+              from="$properties.email.from$"
+              to="$properties.email.to$"
+              smtpserver="$properties.email.smtpserver$"
+              smtpport="$properties.email.smtpport$"
+              smtpauth="$properties.email.auth$"
+              smtpuser="$properties.email.smtpuser$"
+              smtppwd="$properties.email.smtppwd$"
+              subject="$properties.email.subject$"
+              bodytemplate="$properties.email.bodytemplate$"/>
       <logger classname="org.openas2.logging.FileLogger"
               enabled="$properties.file.logger.enabled$"
-              filename="%home%/../logs/log-$date.yyyyMMdd$.txt"/>
+              filename="$properties.file.logger.filename$"/>
       <logger classname="org.openas2.logging.SocketLogger"
               enabled="$properties.socket.logger.enabled$"
               ipaddr="127.0.0.1"
@@ -70,8 +102,8 @@
                         enabled="$properties.restapi.command.processor.enabled$"
                         baseuri="http://localhost:8443"
                         ssl_protocol="TLS"
-                        ssl_keystore="%home%/ssl_certs.jks"
-                        ssl_keystore_password="testas2"
+                        ssl_keystore="$properties.ssl_keystore$"
+                        ssl_keystore_password="$properties.ssl_keystore_password$"
                         userid="userID" 
                         password="pWd" />
    </commandProcessors>
@@ -97,7 +129,7 @@
               format="sender.as2_id, receiver.as2_id, attributes.filename"
               mimetype="application/EDI-X12"/>
       -->
-      <!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
+      <!-- This directory polling module is dedicated to sending to partner PartnerA_OID -->
       <!-- NOTE: This mechanism is no longer the preferred way to add pollers. Use the partnership config as of 3.0.0
                  See "Partnerships XML Defined Directory Poller" in the OpenAS2HowTo for details.
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
@@ -111,32 +143,21 @@
               sendfilename="true"
               mimetype="application/EDI-X12"/>
       -->
-      <!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
-      <!-- NOTE: This mechanism is no longer the preferred way to add pollers. Use the partnership config as of 3.0.0
-                 See "Partnerships XML Defined Directory Poller" in the OpenAS2HowTo for details.
-      <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-              outboxdir="$properties.storageBaseDir$/toPartnerB"
-              errordir="$properties.storageBaseDir$/toPartnerB/error"
-              interval="5"
-              defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerB_OID"
-              sendfilename="true"
-              mimetype="application/EDI-X12"/>
-      -->
       <module enabled="$properties.module.DbTrackingModule.enabled$"
               classname="org.openas2.processor.msgtracking.DbTrackingModule"
-              use_embedded_db="true"
-              force_load_jdbc_driver="false"
-              db_user="sa"
-              db_pwd="OpenAS2"
-              db_name="openas2"
-              table_name="msg_metadata"
-              db_directory="%home%/DB"
-              jdbc_driver="org.h2.Driver"
-              jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
-              sql_escape_character="'"
-              tcp_server_start="true"
-              tcp_server_port="9092"
-              tcp_server_password="openas2"/>
+              use_embedded_db="$properties.msg_tracking.use_embedded_db$"
+              force_load_jdbc_driver="$properties.msg_tracking.force_load_jdbc_driver$"
+              db_user="$properties.msg_tracking.db_user$"
+              db_pwd="$properties.msg_tracking.db_pwd$"
+              db_name="$properties.msg_tracking.db_name$"
+              table_name="$properties.msg_tracking.table_name$"
+              db_directory="$properties.msg_tracking.db_directory$"
+              jdbc_driver="$properties.msg_tracking.jdbc_driver$"
+              jdbc_connect_string="$properties.msg_tracking.jdbc_connect_string$"
+              sql_escape_character="$properties.msg_tracking.sql_escape_character$"
+              tcp_server_start="$properties.msg_tracking.tcp_server_start$"
+              tcp_server_port="$properties.msg_tracking.tcp_server_port$"
+              tcp_server_password="$properties.msg_tracking.tcp_server_password$"/>
       <module enabled="$properties.module.MDNFileModule.enabled$"
               classname="org.openas2.processor.storage.MDNFileModule"
               filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
@@ -150,16 +171,16 @@
               tempdir="$properties.storageBaseDir$/temp"/>
       <module enabled="$properties.module.AS2ReceiverModule.http.enabled$"
               classname="org.openas2.processor.receiver.AS2ReceiverModule"
-              port="10080"
+              port="$properties.module.AS2ReceiverModule.http.port$"
               errordir="$properties.storageBaseDir$/inbox/error"
               errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
       <module enabled="$properties.module.AS2ReceiverModule.https.enabled$"
               classname="org.openas2.processor.receiver.AS2ReceiverModule"
-              port="10443"
+              port="$properties.module.AS2ReceiverModule.https.port$"
               protocol="https"
               ssl_protocol="TLS"
-              ssl_keystore="%home%/ssl_certs.jks"
-              ssl_keystore_password="testas2"
+              ssl_keystore="$properties.ssl_keystore$"
+              ssl_keystore_password="$properties.ssl_keystore_password$"
               errordir="$properties.storageBaseDir$/inbox/error"
               errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
       <module enabled="$properties.module.AS2MDNReceiverModule.http.enabled$"
@@ -167,11 +188,11 @@
               port="$properties.async_mdn_receiver_port$"/>
       <module enabled="$properties.module.AS2MDNReceiverModule.https.enabled$"
               classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
-              port="10444"
+              port="$properties.module.AS2MDNReceiverModule.https.port$"
               protocol="https"
               ssl_protocol="TLS"
-              ssl_keystore="%home%/ssl_certs.jks"
-              ssl_keystore_password="testas2"/>
+              ssl_keystore="$properties.ssl_keystore$"
+              ssl_keystore_password="$properties.ssl_keystore_password$"/>
       <module enabled="$properties.module.DirectoryResenderModule.enabled$"
               classname="org.openas2.processor.resender.DirectoryResenderModule"
               resenddir="$properties.storageBaseDir$/resend"
@@ -190,7 +211,7 @@
            sendfilename="true"
            mimetype="application/EDI-X12"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
-                 filename="%home%/partnerships.xml"
+                 filename="$properties.partnership_file$"
                  interval="120"/>
 
    <messages classname="org.openas2.message.XMLMessageFactory"
