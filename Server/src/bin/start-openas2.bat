@@ -20,6 +20,9 @@ rem set EXTRA_PARMS=%EXTRA_PARMS% -Dsun.net.http.allowRestrictedHeaders=true
 rem When using old (unsecure) certificates (please replace them!) that fail to load from the certificate store.
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dorg.bouncycastle.asn1.allow_unsafe_integer=true
 
+if [%OPENAS2_PROPERTIES_FILE%]==[]] goto skip_properties_file
+set EXTRA_PARMS=%EXTRA_PARMS% -Dopenas2.properties.file="%OPENAS2_PROPERTIES_FILE%"
+:skip_properties_file
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dhttps.protocols=TLSv1.2
 
 rem Uncomment any of the following for enhanced debug
@@ -44,7 +47,7 @@ set LIB_JARS=".!LIB_JARS!"
 setLocal disableDelayedExpansion
 rem  Include the bin dir so that commons-logging.properties is found
 set CLASSPATH=.;%LIB_JARS%;%OPENAS2_BASE_DIR%/bin
-rem echo Running: "%JAVA%" %EXTRA_PARMS%  -cp %CLASSPATH% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
+rem echo Running: "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
 "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_BASE_DIR%/config/config.xml"
 
 :warn
