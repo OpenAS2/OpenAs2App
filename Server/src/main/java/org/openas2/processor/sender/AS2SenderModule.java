@@ -342,9 +342,10 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
                 addCustomOuterMimeHeaders(msg, dataBP);
             }
             calcAndStoreMic(msg, dataBP, (sign || encrypt));
-            X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
+            String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
+            X509Certificate senderCert = certFx.getCertificate(x509_alias);
 
-            PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
+            PrivateKey senderKey = certFx.getPrivateKey(x509_alias);
             String digest = partnership.getAttribute(Partnership.PA_SIGNATURE_ALGORITHM);
 
             if (logger.isDebugEnabled()) {
@@ -379,8 +380,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             // configured
             addCustomOuterMimeHeaders(msg, dataBP);
             String algorithm = partnership.getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM);
-
-            X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
+            String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+            X509Certificate receiverCert = certFx.getCertificate(x509_alias);
             dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm, contentTxfrEncoding);
 
             // Asynch MDN 2007-03-12

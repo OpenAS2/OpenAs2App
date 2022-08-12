@@ -30,6 +30,7 @@ import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.InternetHeaders;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
@@ -462,7 +463,8 @@ public class AS2Util {
         }
 
         CertificateFactory cFx = session.getCertificateFactory();
-        X509Certificate senderCert = cFx.getCertificate(mdn, Partnership.PTYPE_RECEIVER);
+        String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+        X509Certificate senderCert = cFx.getCertificate(x509_alias);
 
         msg.setStatus(Message.MSG_STATUS_MDN_PARSE);
         if (logger.isTraceEnabled()) {

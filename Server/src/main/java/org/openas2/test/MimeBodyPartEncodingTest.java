@@ -110,10 +110,10 @@ public class MimeBodyPartEncodingTest {
             msg.updateMessageID();
 
             CertificateFactory certFx = session.getCertificateFactory();
+            String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
+            X509Certificate senderCert = certFx.getCertificate(x509_alias);
 
-            X509Certificate senderCert = certFx.getCertificate(msg, Partnership.PTYPE_SENDER);
-
-            PrivateKey senderKey = certFx.getPrivateKey(msg, senderCert);
+            PrivateKey senderKey = certFx.getPrivateKey(x509_alias);
             String digest = msg.getPartnership().getAttribute(Partnership.PA_SIGNATURE_ALGORITHM);
 
             System.out.println("Params for creating signed body part:: SIGN DIGEST: " + digest + "\n CERT ALG NAME EXTRACTED: " + senderCert.getSigAlgName() + "\n CERT PUB KEY ALG NAME EXTRACTED: " + senderCert.getPublicKey().getAlgorithm() + msg.getLogMsgID());
@@ -132,7 +132,8 @@ public class MimeBodyPartEncodingTest {
             System.out.println("MimeBodyPart written to: " + testFile);
 
             String algorithm = msg.getPartnership().getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM);
-            X509Certificate receiverCert = certFx.getCertificate(msg, Partnership.PTYPE_RECEIVER);
+            String x509_alias_receiver = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
+            X509Certificate receiverCert = certFx.getCertificate(x509_alias_receiver);
             signedMbp = AS2Util.getCryptoHelper().encrypt(signedMbp, receiverCert, algorithm, contentTxfrEncoding);
             testFile = TestConfig.TEST_OUTPUT_FOLDER + "/" + TestConfig.TEST_DEFAULT_TGT_FILE_NAME + ".encrypted";
             fos = new FileOutputStream(testFile);
