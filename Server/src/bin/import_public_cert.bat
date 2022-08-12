@@ -81,7 +81,7 @@ echo.
 echo   Sucessfully Imported certificate from file "%srcFile%" using alias "%certAlias%" to: %tgtStore%
 echo. 
 
-goto :END
+goto END
 
 :Usage
   echo Import a public certificate to a PKCS12 key store.
