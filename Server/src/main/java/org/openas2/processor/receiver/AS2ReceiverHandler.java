@@ -52,10 +52,8 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AS2ReceiverHandler implements NetModuleHandler {
@@ -339,7 +337,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     msg.setReceiverX509Alias(x509_alias);
                 } catch (Exception e) {
                     // Something went wrong - possibly a certificate change so try the backup if configured
-                    String x509_alias_fallback = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                    String x509_alias_fallback = msg.getPartnership().getAliasFallback(Partnership.PTYPE_RECEIVER);
                     if (x509_alias_fallback == null) {
                         // No fallback so just throw the original exception
                         throw e;
@@ -349,6 +347,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     msg.setData(AS2Util.getCryptoHelper().decrypt(msg.getData(), receiverCert, receiverKey));
                     // success so the sender must have updated the receiver certificate
                     msg.setReceiverX509Alias(x509_alias_fallback);
+                    // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback
                     // Send a message so that the certificate can be updated.
                     LOG.warn("Partner has updated our certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getReceiverID(Partnership.PID_NAME));
                 }
@@ -392,7 +391,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     msg.setSenderX509Alias(x509_alias);
                 } catch (Exception e) {
                     // Something went wrong - possibly a certificate change so try the backup if configured
-                    String x509_alias_fallback = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
+                    String x509_alias_fallback = msg.getPartnership().getAliasFallback(Partnership.PTYPE_SENDER);
                     if (x509_alias_fallback == null) {
                         // No fallback so just throw the original exception
                         throw e;
@@ -400,7 +399,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     senderCert = certFx.getCertificate(x509_alias_fallback);
                     msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
                     msg.setSenderX509Alias(x509_alias_fallback);
-                       // Send a message so that the certificate can be updated.
+                    // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback   
+                    // Send a message so that the certificate can be updated.
                     LOG.warn("Partner has updated their certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getSenderID(Partnership.PID_NAME));
                 }
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
@@ -412,7 +412,13 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             LOG.error(msg, e);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "integrity-check-failed"), AS2ReceiverModule.DISP_VERIFY_SIGNATURE_FAILED, e);
         }
-
+        if (!msg.isRxdMsgWasSigned() && msg.getPartnership().isRejectUnsignedMessages()) {
+        	// Configured to reject unsigned messages and this was not signed so...
+        	throw new DispositionException(
+        			new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "signed-message-required"),
+        			AS2ReceiverModule.DISP_ONLY_SIGNED_MESSAGES
+        	);
+        }
         if (LOG.isTraceEnabled()) {
             try {
                 LOG.trace("SMIME Decrypted Content-Disposition: " + msg.getContentDisposition() + "\n      Content-Type received: " + msg.getContentType() + "\n      HEADERS after decryption: " + msg.getData().getAllHeaders() + "\n      Content-Disposition in MSG getData() MIMEPART after decryption: " + msg.getData().getContentType());
