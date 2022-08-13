@@ -27,6 +27,7 @@ import java.util.Map;
 
 
 public abstract class BaseMessage implements Message {
+
     /**
      *
      */
@@ -40,6 +41,7 @@ public abstract class BaseMessage implements Message {
     private String compressionType = ICryptoHelper.COMPRESSION_NONE;
     private boolean rxdMsgWasSigned = false;
     private boolean rxdMsgWasEncrypted = false;
+    private boolean fileCleanupCompleted = false;
     private Map<String, Object> options = new HashMap<String, Object>();
     private String calculatedMIC = null;
     private String logMsg = null;
@@ -73,6 +75,16 @@ public abstract class BaseMessage implements Message {
     public void setReceiverX509Alias(String alias) {
         receiverX509Alias = alias;
         
+    }
+
+    @Override
+    public boolean isFileCleanupCompleted() {
+        return fileCleanupCompleted;
+    }
+
+    @Override
+    public void setFileCleanupCompleted(boolean cleanupDone) {
+        fileCleanupCompleted = cleanupDone;
     }
 
     public Map<String, Object> getOptions() {

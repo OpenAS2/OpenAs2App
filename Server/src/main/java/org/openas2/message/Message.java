@@ -157,6 +157,10 @@ public interface Message extends Serializable {
 
     boolean isConfiguredForAsynchMDN();
 
+    boolean isFileCleanupCompleted();
+
+    void setFileCleanupCompleted(boolean cleanupDone);
+
     String getSubject();
 
     void setSubject(String subject);
