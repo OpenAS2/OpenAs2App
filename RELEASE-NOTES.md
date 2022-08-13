@@ -1,20 +1,25 @@
 #              OpenAS2 Server
-#              Version 3.2.1
+#              Version 3.3.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.2.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.3.0
 
-The release download file is: OpenAS2Server-3.2.1.zip
+The release download file is: OpenAS2Server-3.3.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 3.2.1 - 2022-07-06
-This is a minor enhancement and bugfix release:
+Version 3.3.0 - 2022-08-13
+This is a significant enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Fix extracting the MDN bodypart from the multipart.
-  2. Fix creating a zip bomb package.
+  1. Support rejecting messages being sent that are unsigned. See section "Reject Unsigned Messages" in the documentation.
+  2. Support having 2 certificates for your partner definition. This allows switch over of your own certificate to be zero down time. See section "Overlapping Old And New Certificates When Changing" in the documentation.
+  3. Support overriding most of the config.xml attribute values using the external property file. This allows custom configuration to be restricted to a single properties file and makes version upgrades much simpler.
+  4. Enhance shell and bat scripts to prepare for install and upgrade scripts to simplify managing the install and upgrade of OpenAS2 in the future.
+  5. Enhance the properties parser to support periods in the property name.
+  6. Fix the erroneous error when cleaning up files due to a duplicate call to the file cleanup function.
+
 
 
 ##Upgrade Notes

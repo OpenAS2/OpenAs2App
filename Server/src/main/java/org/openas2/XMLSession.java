@@ -191,6 +191,9 @@ public class XMLSession extends BaseSession {
         parser.setReturnParamStringForMissingParsers(true);
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             String val = entry.getValue();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Parsing property: " + entry.getKey() + " : " + val);
+            }
             String parsedVal = ParameterParser.parse(val, parser);
             // Parser will return empty string if there is an unmatched parser ID in the string
             if (parsedVal.length() > 0 && !val.equals(parsedVal)) {

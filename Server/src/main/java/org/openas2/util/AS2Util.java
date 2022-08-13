@@ -641,7 +641,12 @@ public class AS2Util {
 
     public static void cleanupFiles(Message msg, boolean isError) {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
-
+        if (msg.isFileCleanupCompleted()) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("File cleanup already called for " + msg.getMessageID());
+            }
+            return;
+        }
         String pendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
         if (pendingInfoFileName != null) {
             File fPendingInfoFile = new File(pendingInfoFileName);
@@ -727,6 +732,7 @@ public class AS2Util {
                 logger.error(msg, e);
             }
         }
+        msg.setFileCleanupCompleted(true);
     }
 
     private static String removeAngleBrackets(String srcString) {

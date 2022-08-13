@@ -64,7 +64,8 @@ public class CompositeParameters extends ParameterParser {
         String parserID = keyParts.nextToken();
         // support "properties" key for all parser calls
         if ("properties".equals(parserID)) {
-            String propKey = keyParts.nextToken();
+            // The property value could be a period separated string so get the original and drop "properties."
+            String propKey = key.replace("properties.", "");
             if (propKey == null) {
                 throw new InvalidParameterException("Invalid property key format. Missing a property name.", this, key, null);
             }

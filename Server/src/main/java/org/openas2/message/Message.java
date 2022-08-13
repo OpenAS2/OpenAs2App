@@ -157,6 +157,10 @@ public interface Message extends Serializable {
 
     boolean isConfiguredForAsynchMDN();
 
+    boolean isFileCleanupCompleted();
+
+    void setFileCleanupCompleted(boolean cleanupDone);
+
     String getSubject();
 
     void setSubject(String subject);
@@ -181,4 +185,11 @@ public interface Message extends Serializable {
 
     String getAppTitle();
 
+    String getSenderX509Alias();
+
+    void setSenderX509Alias(String alias);
+
+    String getReceiverX509Alias();
+
+    void setReceiverX509Alias(String alias);
 }

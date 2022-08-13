@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.sf.openas2</groupId>
     <artifactId>OpenAS2</artifactId>
-    <version>3.2.1</version>
+    <version>3.3.0</version>
     <name>OpenAS2</name>
     <packaging>pom</packaging>
 
@@ -51,28 +51,28 @@
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcmail-jdk15on</artifactId>
-                <version>1.70</version>
+                <artifactId>bcmail-jdk18on</artifactId>
+                <version>1.71</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15on</artifactId>
-                <version>1.70</version>
+                <artifactId>bcpkix-jdk18on</artifactId>
+                <version>1.71</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.70</version>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.71</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-ext-jdk15on</artifactId>
-                <version>1.70</version>
+                <artifactId>bcprov-ext-jdk18on</artifactId>
+                <version>1.71</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpg-jdk15on</artifactId>
-                <version>1.70</version>
+                <artifactId>bcpg-jdk18on</artifactId>
+                <version>1.71</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -196,7 +196,7 @@
             <dependency>
                 <groupId>io.sentry</groupId>
                 <artifactId>sentry</artifactId>
-                <version>6.1.4</version>
+                <version>6.3.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
