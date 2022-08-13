@@ -413,11 +413,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "integrity-check-failed"), AS2ReceiverModule.DISP_VERIFY_SIGNATURE_FAILED, e);
         }
         if (!msg.isRxdMsgWasSigned() && msg.getPartnership().isRejectUnsignedMessages()) {
-        	// Configured to reject unsigned messages and this was not signed so...
-        	throw new DispositionException(
-        			new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "signed-message-required"),
-        			AS2ReceiverModule.DISP_ONLY_SIGNED_MESSAGES
-        	);
+            // Configured to reject unsigned messages and this was not signed so...
+            throw new DispositionException(
+                    new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "signed-message-required"),
+                    AS2ReceiverModule.DISP_ONLY_SIGNED_MESSAGES
+            );
         }
         if (LOG.isTraceEnabled()) {
             try {
