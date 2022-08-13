@@ -57,6 +57,7 @@
                msg_tracking.sql_escape_character="'"
                msg_tracking.tcp_server_start="true"
                msg_tracking.tcp_server_port="9092"
+               msg_tracking.tcp_server_password="openas2"
                reject_unsigned_messages="false"
              />
    <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
