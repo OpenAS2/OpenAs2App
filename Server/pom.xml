@@ -66,7 +66,7 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <copy todir="${package.assembly.dir}/bin"
+                               <copy todir="${package.assembly.dir}/bin"
                                       verbose="true">
                                     <fileset dir="${project.basedir}/src/bin"/>
                                 </copy>
@@ -106,10 +106,7 @@
                                 <!--
                                     Pre-delete the package otherwise it keeps old files in it
                                 -->
-								<exec executable="sh" osfamily="unix">
-								    <arg value="-c"/> 
-								    <arg line="'rm -f ${project.basedir}/dist/${project.dist.package.name}'"/>
-								</exec>
+ 							    <delete file="${project.basedir}/dist/${project.dist.package.name}"/>
                                 <zip
                                     destfile="${project.basedir}/dist/${project.dist.package.name}"
                                     update="true">
