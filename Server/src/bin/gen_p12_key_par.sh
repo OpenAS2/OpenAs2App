@@ -44,8 +44,7 @@ if [ -n "$CERT_START_DATE" ]; then
 fi
 
 if [ -z $JAVA_HOME ]; then
-  OS=$(uname -s)
-
+  OS=$(uname -s)  echo "Looking for JAVA_HOME on OS: ${OS}..."
   if [[ "${OS}" == *Darwin* ]]; then
     # Mac OS X platform
     JAVA_HOME=$(/usr/libexec/java_home)
@@ -57,12 +56,12 @@ if [ -z $JAVA_HOME ]; then
     echo "Windows not supported by this script"
   fi
 fi
-
 if [ -z $JAVA_HOME ]; then
   echo "ERROR: Cannot find JAVA_HOME"
-  exit
+  exit 1
 fi
 
+echo "Using JAVA_HOME: ${JAVA_HOME}"
 if [ "1" != "$IS_AUTOMATED_EXEC" ]; then
   echo "Generate a certificate to a PKCS12 key store."
   echo "Generating certificate:  using alias $certAlias to ${tgtStore}.p12 $PRE_GEN_MSG_ADDITIONAL"

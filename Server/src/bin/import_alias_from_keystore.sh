@@ -45,7 +45,7 @@ fi
 
 if [ -z $JAVA_HOME ]; then
   echo "ERROR: Cannot find JAVA_HOME"
-  exit
+  exit 1
 fi
 
 echo "Executing action \"${action}\" on certificate from key \"${srcKeystore}\" using alias \"${tgtAlias}\" to: ${tgtKeystore}"

@@ -11,7 +11,7 @@ set CertValidDays=2900
 
 rem Setup the Java Virtual Machine
 call "%OPENAS2_BASE_DIR%\bin\find_java.bat"
-if %ERRORLEVEL% NEQ 0 exit /B 1
+if %ERRORLEVEL% NEQ 0 EXIT /B 1
 
 echo        Generate a certificate to a PKCS12 key store.
 echo        Generating certificate:  using alias %certAlias% to %tgtStore%.p12"
@@ -21,18 +21,18 @@ set /p ksPwd=Enter password for keystore:%=%
 "%JAVA_HOME%\bin\keytool" -genkeypair -alias %certAlias% -validity %CertValidDays%  -keyalg RSA -sigalg %sigAlg% -keystore %tgtStore%.p12 -storepass %ksPwd% -storetype pkcs12 -dname %dName%
 if errorlevel 1 (
     echo Failed to generate keystore
-    goto END
+    EXIT /B 1
 )
 "%JAVA_HOME%\bin\keytool" -selfcert -alias %certAlias% -validity %CertValidDays%  -sigalg %sigAlg% -keystore %tgtStore%.p12 -storepass %ksPwd% -storetype pkcs12
 if errorlevel 1 (
     echo Failed to self certify certificate
-    goto END
+    EXIT /B 1
 )
 
 "%JAVA_HOME%\bin\keytool" -export -rfc -file %certAlias%.cer -alias %certAlias%  -keystore %tgtStore%.p12 -storepass %ksPwd% -storetype pkcs12
 if errorlevel 1 (
     echo Failed to export public key from keystore
-    goto END
+    EXIT /B 1
 )
 
 echo.
@@ -58,7 +58,7 @@ goto :END
   echo      Expected OUTPUT: as2_certs.p12 -  keystore containing both public and private key
   echo                      partnera.cer - public key certificate file .
 
-:warn
+  EXIT /B 1
 
 :END
 
