@@ -102,7 +102,14 @@
                                       todir="${package.assembly.dir}/bin/remote" verbose="true"/>
                                 <!-- create distribution package
                                     basedir="${package.assembly.dir}"
- -->
+                                -->
+                                <!--
+                                    Pre-delete the package otherwise it keeps old files in it
+                                -->
+								<exec executable="sh" osfamily="unix">
+								    <arg value="-c"/> 
+								    <arg line="'rm -f ${project.basedir}/dist/${project.dist.package.name}'"/>
+								</exec>
                                 <zip
                                     destfile="${project.basedir}/dist/${project.dist.package.name}"
                                     update="true">
