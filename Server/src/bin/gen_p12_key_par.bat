@@ -9,6 +9,12 @@ set dName=%4%
 
 set CertValidDays=2900
 
+SET tmppath=%~dp0
+pushd %tmppath%
+cd ..
+set OPENAS2_BASE_DIR=%CD%
+popd
+
 rem Setup the Java Virtual Machine
 call "%OPENAS2_BASE_DIR%\bin\find_java.bat"
 if %ERRORLEVEL% NEQ 0 EXIT /B 1
@@ -16,7 +22,14 @@ if %ERRORLEVEL% NEQ 0 EXIT /B 1
 echo        Generate a certificate to a PKCS12 key store.
 echo        Generating certificate:  using alias %certAlias% to %tgtStore%.p12"
 
-set /p ksPwd=Enter password for keystore:%=%
+setLocal EnableDelayedExpansion
+if /I "!IS_AUTOMATED_EXEC!" == "1" (
+  set ksPwd=$KEYSTORE_PASSWORD
+)
+else (
+  set /p ksPwd=Enter password for keystore:%=%
+)
+
 
 "%JAVA_HOME%\bin\keytool" -genkeypair -alias %certAlias% -validity %CertValidDays%  -keyalg RSA -sigalg %sigAlg% -keystore %tgtStore%.p12 -storepass %ksPwd% -storetype pkcs12 -dname %dName%
 if errorlevel 1 (

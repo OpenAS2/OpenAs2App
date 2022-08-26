@@ -49,13 +49,18 @@ if [ -z $JAVA_HOME ]; then
 fi
 
 echo "Executing action \"${action}\" on certificate from key \"${srcKeystore}\" using alias \"${tgtAlias}\" to: ${tgtKeystore}"
-read -p "Do you wish to execute this request? [Y/N]" Response
-if [  $Response != "Y" -a $Response != "y"  ] ; then
-  exit 1
+if [ "1" != "$IS_AUTOMATED_EXEC" ]; then
+  read -p "Do you wish to execute this request? [Y/N]" Response
+  if [  $Response != "Y" -a $Response != "y"  ] ; then
+    exit 1
+  fi
+  read -p "Enter password for source keystore:" srcksPwd
+  read -p "Enter password for destination keystore:" destksPwd
+else
+  srcksPwd=${KEYSTORE_PASSWORD}
+  destksPwd=${KEYSTORE_PASSWORD}
 fi
 
-read -p "Enter password for source keystore:" srcksPwd
-read -p "Enter password for destination keystore:" destksPwd
 
 if [ "${action}" = "replace" ]; then
     $JAVA_HOME/bin/keytool -delete -alias ${tgtAlias} -keystore ${tgtKeystore} -storepass $destksPwd -storetype pkcs12
