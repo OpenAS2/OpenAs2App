@@ -10,6 +10,8 @@ import java.util.Map;
 public interface AliasedCertificateFactory extends CertificateFactory {
     X509Certificate getCertificate(String alias) throws OpenAS2Exception;
 
+    boolean hasPrivateKey(String alias) throws OpenAS2Exception;
+
     Map<String, X509Certificate> getCertificates() throws OpenAS2Exception;
 
     void addCertificate(String alias, X509Certificate cert, boolean overwrite) throws OpenAS2Exception;
