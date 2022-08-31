@@ -9,6 +9,7 @@ import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.cmd.processor.restapi.apiv2.Certificate;
 import org.openas2.cmd.processor.restapi.apiv2.CertificateImport;
 import org.openas2.cmd.processor.restapi.apiv2.ErrorObject;
+import org.openas2.cmd.processor.restapi.apiv2.Pkcs12Export;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.XMLPartnershipFactory;
@@ -22,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -47,14 +49,6 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("api/v2/")
 public class ApiV2Resource {
-    public ApiV2Resource() {
-        if (mapper == null) {
-            mapper = new ObjectMapper();
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-            mapper.setDateFormat(df);
-        }
-    }
-
     private static Session session;
 
     public static Session getSession() {
@@ -94,7 +88,16 @@ public class ApiV2Resource {
         return certificateFactory;
     }
 
-    private static ObjectMapper mapper;
+    private static ObjectMapper mapper = getMapper();
+
+    private static ObjectMapper getMapper()
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+        mapper.setDateFormat(df);
+
+        return mapper;
+    }
 
     private Response getEmptyOkResponse() {
         return Response.ok("{}").type(MediaType.APPLICATION_JSON).build();
@@ -157,7 +160,7 @@ public class ApiV2Resource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/certificates/{alias}/")
-    public Response getCertificate(@PathParam("alias") String alias) throws JsonProcessingException, OpenAS2Exception {
+    public Response getCertificate(@PathParam("alias") String alias) throws JsonProcessingException, OpenAS2Exception, CertificateEncodingException {
         AliasedCertificateFactory certFx = getCertificateFactory();
 
         Certificate certificate;
@@ -169,7 +172,7 @@ public class ApiV2Resource {
             }
 
             certificate = Certificate.fromX509Certificate(cert, alias, certFx.hasPrivateKey(alias));
-            certificate.setPublicKey(cert.getPublicKey().getEncoded());
+            certificate.setPublicKey(cert.getEncoded());
         }
 
         return getOkResponse(certificate);
@@ -184,10 +187,11 @@ public class ApiV2Resource {
      * @throws Exception
      */
     @RolesAllowed({ "ADMIN" })
-    @GET
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/certificates/{alias}/privatekey/{exportpassword}/")
-    public Response getPrivateKey(@PathParam("alias") String alias, @PathParam("exportpassword") String exportPassword)
+    @Path("/certificates/{alias}/privatekey/")
+    public Response getPrivateKey(@PathParam("alias") String alias, Pkcs12Export export)
             throws Exception {
         AliasedCertificateFactory certFx = getCertificateFactory();
 
@@ -203,10 +207,10 @@ public class ApiV2Resource {
 
             KeyStore ks = AS2Util.getCryptoHelper().getKeyStore();
             ks.load(null, null);
-            ks.setKeyEntry(alias, key, exportPassword.toCharArray(), new java.security.cert.Certificate[] { cert });
+            ks.setKeyEntry(alias, key, export.getExportPassword().toCharArray(), new java.security.cert.Certificate[] { cert });
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            ks.store(os, exportPassword.toCharArray());
+            ks.store(os, export.getExportPassword().toCharArray());
 
             certificate = Certificate.fromX509Certificate(cert, alias, true);
             certificate.setPublicKey(cert.getEncoded());
@@ -280,7 +284,7 @@ public class ApiV2Resource {
 
         synchronized (certFx) {
             if (certFx.getCertificates().get(certificate.getAlias()) != null) {
-                return getErrorResponse("A certificate with that name exists.", Status.CONFLICT);
+                return getErrorResponse("A certificate with that alias exists.", Status.CONFLICT);
             }
 
             try {

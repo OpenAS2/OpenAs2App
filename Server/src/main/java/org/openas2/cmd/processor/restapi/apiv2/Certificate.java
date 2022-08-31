@@ -4,9 +4,6 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 
 public class Certificate {
-    public Certificate() {
-    }
-
     public static Certificate fromX509Certificate(X509Certificate x509, String alias, boolean hasPrivateKey) {
         Certificate cert = new Certificate();
 

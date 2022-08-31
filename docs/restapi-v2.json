@@ -326,12 +326,13 @@
         }
       }
     },
-    "/certificates/{alias}/privatekey/{exportpassword}/": {
-      "get": {
+    "/certificates/{alias}/privatekey/": {
+      "post": {
         "tags": [
           "certificates"
         ],
         "summary": "Gets a certificate with the private key",
+        "description": "This could be solved with a simple get request. But then the export password would be in the URL and appear in logs.",
         "parameters": [
           {
             "name": "alias",
@@ -344,11 +345,11 @@
           },
           {
             "name": "exportpassword",
-            "in": "path",
+            "in": "body",
             "description": "The password that is used to encrypt the pkcs12 container",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/Pkcs12Export"
             }
           }
         ],
@@ -517,7 +518,7 @@
             "example": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwHfWL/WOpz3deXgsdaf93wr3SZMTza6Npvw4XtTf7bw+iaor77r8pObK4HZWY6ZkfNgXwmPexfwWf12g/nbmkxEsJQ23WIXOBuZJcqZk1SP7zJCSri3rX4hFeVKI7f0ftS22NJWPQ+ykPfBRVbon4Iy1impCUHBsc5IIzDO9ei4l5Y9LBDwI74jCnjnCwZZDYs5d92yQeZ57N0my2cegAqLiGbBkZz2XM9pD3YfHNVHermQFr6XYuPqtf0tSsCFAvAh7UBbeEboaoIwj+4DWUFTWRezgDhX4IHtZMZrl+4y42a3ADMtrtfngkflh4nOUnGjHONB3gDs4dm7AtTQmoQIDAQAB",
             "description": "The base64-encoded public key. Only set when requesting this certificate, not for a list of certificates"
           },
-          "pkcs12container": {
+          "pkcs12Container": {
             "type": "string",
             "format": "byte",
             "example": null,
@@ -548,6 +549,15 @@
             "type": "string",
             "example": "mypassword",
             "description": "The password for the pkcs12Container. Only set when importing a certificate with private key."
+          }
+        }
+      },
+      "Pkcs12Export": {
+        "type": "object",
+        "properties": {
+          "exportPassword": {
+            "type": "string",
+            "description": "The password that is used to encrypt the pkcs12 container"
           }
         }
       },
