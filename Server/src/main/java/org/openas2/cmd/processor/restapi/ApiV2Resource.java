@@ -90,8 +90,7 @@ public class ApiV2Resource {
 
     private static ObjectMapper mapper = getMapper();
 
-    private static ObjectMapper getMapper()
-    {
+    private static ObjectMapper getMapper() {
         ObjectMapper mapper = new ObjectMapper();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
         mapper.setDateFormat(df);
