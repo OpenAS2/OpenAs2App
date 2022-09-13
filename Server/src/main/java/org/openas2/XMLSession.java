@@ -205,11 +205,11 @@ public class XMLSession extends BaseSession {
         @SuppressWarnings({ "unchecked", "rawtypes" })
         Map<String, String> sysProps = (Map)System.getProperties();
         for (Map.Entry<String, String> entry : sysProps.entrySet()) {
-			String key = entry.getKey();
-			if (Properties.getProperty(key, null) == null) {
-			    Properties.setProperty(key, entry.getValue());
-			}
-		}
+            String key = entry.getKey();
+            if (Properties.getProperty(key, null) == null) {
+                Properties.setProperty(key, entry.getValue());
+            }
+        }
     }
 
     private void loadCertificates(Node rootNode) throws OpenAS2Exception {
