@@ -65,6 +65,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     /**
      * Move the file into the processing folder then invoke the sending process.
+     * This method supports splitting files if configured to do so
      * @param fileToSend
      * @param filename
      * @return
@@ -72,8 +73,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
      * @throws FileNotFoundException
      */
     protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {
-        Message msg = buildMessageMetadata(filename);
-        File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
+        long fileSize = fileToSend.length();
+        
+        Message msg = buildBaseMessage(filename);
+           addMessageMetadata(msg, filename);
+               File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
         try {
             IOUtil.moveFile(fileToSend, pendingFile, false);
         } catch (IOException e) {
@@ -93,7 +97,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
      * @throws FileNotFoundException
      */
     protected Message processDocument(InputStream ip, String filename) throws OpenAS2Exception, FileNotFoundException {
-        Message msg = buildMessageMetadata(filename);
+        Message msg = buildBaseMessage(filename);
+        addMessageMetadata(msg, filename);
         File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
         FileOutputStream fo = null;
         try {
@@ -212,10 +217,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     protected abstract Message createMessage();
 
-    public Message buildMessageMetadata(String filename) throws OpenAS2Exception {
+    public Message buildBaseMessage(String filename) throws OpenAS2Exception {
         Message msg = createMessage();
-        msg.setAttribute(FileAttribute.MA_FILENAME, filename);
-        msg.setPayloadFilename(filename);
         MessageParameters params = new MessageParameters(msg);
 
         // Get the parameter that should provide the link between the polled directory
@@ -226,19 +229,24 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         if (defaults != null) {
             params.setParameters(defaults);
         }
-
         String format = getParameter(PARAM_FORMAT, false);
-
         if (format != null) {
+            // Must be a poller that contains the AS2 ID's plus other meta data in the source filename
             String delimiters = getParameter(PARAM_DELIMITERS, ".-");
             String mergeExtra = getParameter(PARAM_MERGE_EXTRA, "false");
             boolean mergeExtraTokens = "true".equalsIgnoreCase(mergeExtra);
             params.setParameters(format, delimiters, filename, mergeExtraTokens);
         }
-
         // Should have sender/receiver now so update the message's partnership with any
         // stored information based on the identified partner IDs
         getSession().getPartnershipFactory().updatePartnership(msg, true);
+        return msg;
+    }
+
+    public void addMessageMetadata(Message msg, String filename) throws OpenAS2Exception {
+        msg.setAttribute(FileAttribute.MA_FILENAME, filename);
+        msg.setPayloadFilename(filename);
+        // Set a new message ID
         msg.updateMessageID();
         // Set the sender and receiver in the Message object headers
         msg.setHeader("AS2-To", msg.getPartnership().getReceiverID(Partnership.PID_AS2));
@@ -254,13 +262,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             msg.setAttribute(FileAttribute.MA_SENT_DIR, ParameterParser.parse(getParameter(PARAM_SENT_DIRECTORY, false), parser));
             msg.setAttribute(FileAttribute.MA_SENT_FILENAME, getParameter(PARAM_SENT_FILENAME, false));
         }
-        return msg;
-
     }
 
     /**
-     * Provides support for a random inputstream. 
-     *     NOTE: Ths method should not be used for very large files as it will consume all the available heap and fail to send.
+     * Provides support for a random InputStream. 
+     *     NOTE: This method should not be used for very large files as it will consume all the available heap and fail to send.
      * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
      * @param ip - the generic inputstream
      * @param filename - name of the file being sent (currently unused)
