@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public abstract class BaseCommandProcessor implements CommandProcessor, Component, HasSchedule {
@@ -89,7 +91,11 @@ public abstract class BaseCommandProcessor implements CommandProcessor, Componen
             @Override
             public Void call() throws Exception {
                 while (running) {
-                    processCommand();
+                    try {
+                        processCommand();
+                    } catch (Exception ex) {
+                        Logger.getLogger(BaseCommandProcessor.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+                    }
                 }
                 return VOID;
             }
