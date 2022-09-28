@@ -11,7 +11,6 @@ import org.openas2.processor.ProcessorModule;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * list messages entries
