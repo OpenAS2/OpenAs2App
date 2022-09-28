@@ -6,9 +6,11 @@ import org.openas2.cmd.CommandResult;
 
 import org.openas2.message.MessageFactory;
 import org.openas2.processor.msgtracking.DbTrackingModule;
-
+import org.openas2.processor.msgtracking.TrackingModule;
+import org.openas2.processor.ProcessorModule;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,14 +41,14 @@ public class GetDataForCharts extends AliasedMessagesCommand {
                 String value = object.toString().split("=")[1];
                 map.put(name, value);
             }
-            DbTrackingModule db = new DbTrackingModule();
-            HashMap<String, String> options = new HashMap<String, String>();
+            List<ProcessorModule> mpl = getSession().getProcessor().getModulesSupportingAction(TrackingModule.DO_TRACK_MSG);
+            if (mpl == null || mpl.isEmpty()) {
+                CommandResult cmdRes = new CommandResult(CommandResult.TYPE_ERROR);
+                cmdRes.getResults().add("No DB tracking module available.");
+            }
+            // Assume we only load one DB tracking module - not sure it makes sense if more than 1 was loaded
+            DbTrackingModule db = (DbTrackingModule) mpl.get(0);
 
-            options.put("jdbc_connect_string", "jdbc:h2:tcp://localhost:9092/openas2");
-            options.put("db_user", "sa");
-            options.put("db_pwd", "OpenAS2");
-
-            db.init(getSession(), options);
             ArrayList<HashMap<String, String>> data = db.getDataCharts(map);
 
             CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK);
