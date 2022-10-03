@@ -21,15 +21,20 @@ import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.IOUtil;
+import org.openas2.util.StringUtil;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -72,19 +77,114 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
      * @throws OpenAS2Exception
      * @throws FileNotFoundException
      */
-    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {
-        long fileSize = fileToSend.length();
-        
+    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {       
         Message msg = buildBaseMessage(filename);
-           addMessageMetadata(msg, filename);
-               File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
-        try {
-            IOUtil.moveFile(fileToSend, pendingFile, false);
-        } catch (IOException e) {
-            logger.error(": " + e.getMessage(), e);
-            throw new OpenAS2Exception("Failed to move the inbound file " + fileToSend.getPath() + " to the processing location " + pendingFile.getName());
+        String maxFileSizeStr = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILES_INTO_MAX_BYTES);
+        long maxFileSize = 0;
+        if (maxFileSizeStr != null && maxFileSizeStr.length() > 0) {
+            maxFileSize = Long.parseLong(maxFileSizeStr);
         }
-        return processDocument(pendingFile, msg); 
+        if (maxFileSize > 0 && fileToSend.length() > maxFileSize) {
+            boolean containsHeaderRow = "true".equals(msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_CONTAINS_HEADER_ROW));
+            FileReader fileReader = new FileReader(fileToSend);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            try {
+                byte[] headerRow = new byte[0];
+                if (containsHeaderRow) {
+                    try {
+                        String headerLine = bufferedReader.readLine();
+                        if (headerLine != null) {
+                            headerRow = (headerLine + "\n").getBytes();
+                        }
+                    } catch (IOException e1) {
+                        throw new OpenAS2Exception("Failed to read header row from input file.", e1);
+                    }
+                }
+                long headerRowByteCount = headerRow.length;
+                if (maxFileSize < headerRowByteCount) {
+                    // Would just write header repeatedly so throw error
+                    throw new OpenAS2Exception("Split file size is less than the header row size.");
+                }
+                long expectedFileCnt = Math.floorDiv(fileToSend.length(), maxFileSize);
+                // Figure out how many digits to pad the filename with - add 1 to cater for header row
+                int fileCntDigits = Long.toString(expectedFileCnt).length() +1;
+                int fileCount = 0;
+                boolean notEof = true;
+                while (notEof) {
+                    fileCount += 1;
+                    long fileSize = 0;
+                    String newFilename = StringUtil.padLeftZeros(Integer.toString(fileCount), fileCntDigits) + "-" + filename;
+                    addMessageMetadata(msg, newFilename);
+                    File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
+                    BufferedOutputStream fos = null;
+                    try {
+                        try {
+                            fos = new BufferedOutputStream(new FileOutputStream(pendingFile));
+                        } catch (IOException e) {
+                            throw new OpenAS2Exception("Failed to initialise output file for file splitting on file " + fileCount, e);
+                        }
+                        if (containsHeaderRow) {
+                            try {
+                                fos.write(headerRow);
+                            } catch (IOException e) {
+                                throw new OpenAS2Exception("Failed to write header row to output file for file splitting on file " + fileCount, e);
+                            }
+                            fileSize += headerRowByteCount;
+                        }
+                        while (fileSize < maxFileSize) {
+                            String line = null;
+                            try {
+                                line = bufferedReader.readLine();
+                            } catch (IOException e) {
+                                throw new OpenAS2Exception("Failed to write output file for file splitting on file " + fileCount, e);
+                            }
+                            if (line == null) {
+                                notEof = false;
+                                break;
+                            }
+                            byte[] lineBytes = (line + "\n").getBytes();
+                            fos.write(lineBytes);
+                            fileSize += lineBytes.length;
+                        }
+                        fos.flush();
+                        fos.close();
+                        processDocument(pendingFile, msg); 
+                    } catch (IOException e) {
+                        throw new OpenAS2Exception("Failed to write output file for file splitting on file " + fileCount, e);
+                    } finally {
+                        try {
+                            if (fos != null) {
+                                fos.close();
+                            }
+                        } catch (IOException e) {
+                        }
+                    }
+                }
+            } finally {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    throw new OpenAS2Exception("Failed to close reader for input file.", e);
+                }
+            }
+            // Must have been successful so remove the original file
+            try {
+                IOUtil.deleteFile(fileToSend);
+            } catch (IOException e) {
+                throw new OpenAS2Exception("Failed to delete file after split processing: " + fileToSend.getAbsolutePath(), e);
+            }
+            return msg;
+        } else {
+            addMessageMetadata(msg, filename);
+            File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
+            try {
+                IOUtil.moveFile(fileToSend, pendingFile, false);
+            } catch (IOException e) {
+                logger.error(": " + e.getMessage(), e);
+                throw new OpenAS2Exception("Failed to move the inbound file " + fileToSend.getPath() + " to the processing location " + pendingFile.getName());
+            }
+            return processDocument(pendingFile, msg); 
+        }
     }
 
     /**
@@ -217,6 +317,13 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     protected abstract Message createMessage();
 
+    /**
+     * Creates a Message object and sets up the sender and receiver to identify the partnership.
+     * @param filename - the name of the file to be processed.
+     *                   Only used if the poller is a filename based poller to identify sender and receiver.
+     * @return - the Message object
+     * @throws OpenAS2Exception
+     */
     public Message buildBaseMessage(String filename) throws OpenAS2Exception {
         Message msg = createMessage();
         MessageParameters params = new MessageParameters(msg);
