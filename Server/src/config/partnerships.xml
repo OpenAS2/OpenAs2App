@@ -60,6 +60,12 @@
         <attribute name="attribute_names_from_filename" value="P-DynamicParm1,P-DynamicParm2"/>
         <attribute name="attribute_values_regex_on_filename" value="([A-Za-z]*)([^.]*).edi"/>
 		-->
+		<!--
+		Example attributes to support splitting files into smaller chunks
+		-->
+        <attribute name="split_file_threshold_size_in_bytes" value="1024"/>
+        <attribute name="split_file_contains_header_row" value="true"/>
+        <attribute name="split_file_name_prefix" value="SF"/>
     </partnership>
     <partnership name="PartnerA-to-MyCompany">
         <sender name="PartnerA"/>

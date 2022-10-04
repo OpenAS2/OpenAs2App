@@ -79,12 +79,16 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
      */
     protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {       
         Message msg = buildBaseMessage(filename);
-        String maxFileSizeStr = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILES_INTO_MAX_BYTES);
-        long maxFileSize = 0;
-        if (maxFileSizeStr != null && maxFileSizeStr.length() > 0) {
-            maxFileSize = Long.parseLong(maxFileSizeStr);
+        String fileSizeThresholdStr = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_THRESHOLD_SIZE_IN_BYTES);
+        long fileSizeThreshold = 0;
+        if (fileSizeThresholdStr != null && fileSizeThresholdStr.length() > 0) {
+            fileSizeThreshold = Long.parseLong(fileSizeThresholdStr);
         }
-        if (maxFileSize > 0 && fileToSend.length() > maxFileSize) {
+        if (fileSizeThreshold > 0 && fileToSend.length() > fileSizeThreshold) {
+        	String newFileNamePrefix = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_NAME_PREFIX);
+        	if (newFileNamePrefix == null) {
+        		newFileNamePrefix = "";
+        	}
             boolean containsHeaderRow = "true".equals(msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_CONTAINS_HEADER_ROW));
             FileReader fileReader = new FileReader(fileToSend);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -101,11 +105,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                     }
                 }
                 long headerRowByteCount = headerRow.length;
-                if (maxFileSize < headerRowByteCount) {
+                if (fileSizeThreshold < headerRowByteCount) {
                     // Would just write header repeatedly so throw error
                     throw new OpenAS2Exception("Split file size is less than the header row size.");
                 }
-                long expectedFileCnt = Math.floorDiv(fileToSend.length(), maxFileSize);
+                long expectedFileCnt = Math.floorDiv(fileToSend.length(), fileSizeThreshold);
                 // Figure out how many digits to pad the filename with - add 1 to cater for header row
                 int fileCntDigits = Long.toString(expectedFileCnt).length() +1;
                 int fileCount = 0;
@@ -113,7 +117,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                 while (notEof) {
                     fileCount += 1;
                     long fileSize = 0;
-                    String newFilename = StringUtil.padLeftZeros(Integer.toString(fileCount), fileCntDigits) + "-" + filename;
+                    String newFilename = newFileNamePrefix + StringUtil.padLeftZeros(Integer.toString(fileCount), fileCntDigits) + "-" + filename;
                     addMessageMetadata(msg, newFilename);
                     File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
                     BufferedOutputStream fos = null;
@@ -131,7 +135,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                             }
                             fileSize += headerRowByteCount;
                         }
-                        while (fileSize < maxFileSize) {
+                        while (fileSize < fileSizeThreshold) {
                             String line = null;
                             try {
                                 line = bufferedReader.readLine();

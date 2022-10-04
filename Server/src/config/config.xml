@@ -3,7 +3,7 @@
    <properties storageBaseDir="%home%/../data"
                log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
                sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
-               as2_message_id_format="OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$"
+               as2_message_id_format="$date.yyyyMMddHHmmssZ$-$rand.123$-$msg.sender.as2_id$_$msg.receiver.as2_id$_$msg.attributes.filename$"
                as2_receive_message_filename_fallback="$rand.shortUUID$"
                console.logger.enabled="true"
                file.logger.enabled="true"
@@ -162,13 +162,13 @@
               tcp_server_password="$properties.msg_tracking.tcp_server_password$"/>
       <module enabled="$properties.module.MDNFileModule.enabled$"
               classname="org.openas2.processor.storage.MDNFileModule"
-              filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.content-disposition.filename$-$mdn.msg.headers.message-id$"
+              filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$"
               protocol="as2"
               tempdir="$properties.storageBaseDir$/temp"/>
       <module enabled="$properties.module.MessageFileModule.enabled$"
               classname="org.openas2.processor.storage.MessageFileModule"
-              filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$"
-              header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.content-disposition.filename$-$msg.headers.message-id$"
+              filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$"
+              header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$"
               protocol="as2"
               tempdir="$properties.storageBaseDir$/temp"/>
       <module enabled="$properties.module.AS2ReceiverModule.http.enabled$"

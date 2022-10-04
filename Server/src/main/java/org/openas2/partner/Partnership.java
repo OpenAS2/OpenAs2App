@@ -61,8 +61,9 @@ public class Partnership implements Serializable {
     public static final String PA_HTTP_PREVENT_CHUNKING = "prevent_chunking"; // Will try to force the send without using chunked HTTP transfer
     public static final String PA_STORE_RECEIVED_FILE_TO = "store_received_file_to"; // Allows overriding the MessageFileModule "filename" parameter per partnership
     public static final String PA_REJECT_UNSIGNED_MESSAGES = "reject_unsigned_messages"; // Reject any messages that are sent to the partnership unisgned
-    public static final String PA_SPLIT_FILES_INTO_MAX_BYTES = "split_files_into_max_bytes";
+    public static final String PA_SPLIT_FILE_THRESHOLD_SIZE_IN_BYTES = "split_file_threshold_size_in_bytes";
     public static final String PA_SPLIT_FILE_CONTAINS_HEADER_ROW = "split_file_contains_header_row";
+    public static final String PA_SPLIT_FILE_NAME_PREFIX = "split_file_name_prefix";
     // A hopefully temporary key to maintain backwards compatibility
     public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
 
