@@ -16,7 +16,7 @@ This is an enhancement and minor bugfix release:
   1. Support for splitting line based files into multiple file. This is useful for very large files where encryption consumes too much memory.
   2. Support other databases than H2 for the WebUI commands.
   3. Catch exceptions in the strm command processor to avoid crashing the command processor.
-
+  4. Pre-enhance AS2 properties before adding system properties to cater for $ in system properties
 
 
 ##Upgrade Notes
