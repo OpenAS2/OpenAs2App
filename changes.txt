@@ -1,3 +1,11 @@
+Version 3.4.0 - 2022-10-04
+This is an enhancement and minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support for splitting line based files into multiple file. This is useful for very large files where encryption consumes too much memory.
+  2. Support other databases than H2 for the WebUI commands.
+  3. Catch exceptions in the strm command processor to avoid crashing the command processor.
+
 Version 3.3.0 - 2022-08-13
 This is a significant enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
