@@ -103,11 +103,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             }
             Statement s = conn.createStatement();
             String msgIdField = FIELDS.MSG_ID;
-            ResultSet rs = s.executeQuery("SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
+            ResultSet rs = s.executeQuery(
+                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
             ResultSetMetaData meta = rs.getMetaData();
             boolean isUpdate = rs.next(); // Record already exists so update
             if (logger.isTraceEnabled()) {
-                logger.trace("\t\t *** Tracking record found: " + isUpdate + "\n\t\t *** Tracking record metadata: " + meta);
+                logger.trace(
+                        "\t\t *** Tracking record found: " + isUpdate + "\n\t\t *** Tracking record metadata: " + meta);
             }
             StringBuffer fieldStmt = new StringBuffer();
             StringBuffer valuesStmt = new StringBuffer();
@@ -124,11 +126,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                     if (isUpdate) {
                         map.remove(FIELDS.CREATE_DT);
                     } else {
-                        appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt, meta.getColumnType(i + 1));
+                        appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt,
+                                meta.getColumnType(i + 1));
                     }
                 } else if (isUpdate) {
-                    /* Only write unchanged field values.
-                     * Map is field names in LOWER case so convert in case DB server returns column names in uppercase
+                    /*
+                     * Only write unchanged field values. Map is field names in LOWER case so
+                     * convert in case DB server returns column names in uppercase
                      */
                     String mapVal = map.get(colName.toLowerCase());
                     if (mapVal == null) {
@@ -152,9 +156,11 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             if (fieldStmt.length() > 0) {
                 String stmt = "";
                 if (isUpdate) {
-                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '" + map.get(msgIdField) + "'";
+                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
+                            + map.get(msgIdField) + "'";
                 } else {
-                    stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES (" + valuesStmt.toString() + ")";
+                    stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES ("
+                            + valuesStmt.toString() + ")";
                 }
                 if (s.executeUpdate(stmt) > 0) {
                     if (logger.isTraceEnabled()) {
@@ -172,7 +178,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         } catch (Exception e) {
-            msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.logging.Log.getExceptionMsg(e) + " ::: Data map: " + map);
+            msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.logging.Log.getExceptionMsg(e)
+                    + " ::: Data map: " + map);
             logger.error(msg, e);
         } finally {
             if (conn != null) {
@@ -187,10 +194,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
     }
 
-    public ArrayList<HashMap<String,String>> listMessages() {
+    public ArrayList<HashMap<String, String>> listMessages() {
 
         Connection conn = null;
-        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
+        ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
 
         try {
             if (useEmbeddedDB) {
@@ -200,11 +207,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             }
 
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT ID,CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM msg_metadata");
+            ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID
+                    + ",CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM "
+                    + tableName);
             ResultSetMetaData meta = rs.getMetaData();
 
-            while(rs.next()){
-                HashMap<String,String> row = new HashMap<String,String>();
+            while (rs.next()) {
+                HashMap<String, String> row = new HashMap<String, String>();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String key = meta.getColumnName(i);
                     String value = rs.getString(key);
@@ -232,7 +241,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     public HashMap<String, String> showMessage(String msg_id) {
 
         Connection conn = null;
-        HashMap<String, String> row = new HashMap<String,String>();
+        HashMap<String, String> row = new HashMap<String, String>();
 
         try {
             if (useEmbeddedDB) {
@@ -240,9 +249,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             } else {
                 conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             }
-            PreparedStatement s = conn.prepareStatement("SELECT * FROM msg_metadata WHERE msg_id = ?");
+            PreparedStatement s = conn
+                    .prepareStatement("SELECT * FROM " + tableName + " WHERE " + FIELDS.MSG_ID + " msg_id = ?");
             s.setString(1, msg_id);
-            ResultSet rs = s.executeQuery();            
+            ResultSet rs = s.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
             while (rs.next()) {
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
@@ -267,10 +277,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
     }
 
-    public ArrayList<HashMap<String,String>> getDataCharts(HashMap<String, String> map) {
+    public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
 
         Connection conn = null;
-        ArrayList<HashMap<String,String>> rows = new ArrayList<HashMap<String,String>>(); 
+        ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
 
         try {
             if (useEmbeddedDB) {
@@ -280,10 +290,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             }
 
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT MSG_ID,STATE,STATUS,CREATE_DT FROM msg_metadata WHERE CREATE_DT BETWEEN '"+map.get("startDate").toString()+" 01:00:00' AND '"+map.get("endDate").toString()+" 23:59:59'");
+            ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
+                    + " WHERE CREATE_DT BETWEEN TIMESTAMP '" + map.get("startDate").toString()
+                    + " 00:00:00' AND TIMESTAMP '" + map.get("endDate").toString() + " 23:59:59'");
             ResultSetMetaData meta = rs.getMetaData();
-            while(rs.next()){
-                HashMap<String,String> row = new HashMap<String,String>();
+            while (rs.next()) {
+                HashMap<String, String> row = new HashMap<String, String>();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String key = meta.getColumnName(i);
                     String value = rs.getString(key);
@@ -313,34 +325,34 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             return "NULL";
         }
         switch (dataType) {
-            case Types.BIGINT:
-            case Types.DECIMAL:
-            case Types.DOUBLE:
-            case Types.FLOAT:
-            case Types.INTEGER:
-            case Types.NUMERIC:
-            case Types.REAL:
-            case Types.SMALLINT:
-            case Types.BINARY:
-            case Types.TINYINT:
-                //case Types.ROWID:
-                return value;
-            case Types.TIME_WITH_TIMEZONE:
-            case Types.TIMESTAMP_WITH_TIMEZONE:
-            case Types.DATE:
-            case Types.TIME:
-            case Types.TIMESTAMP:
-                if ("oracle".equalsIgnoreCase(dbPlatform)) {
-                    if (value.length() > 19) {
-                        return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
-                    } else {
-                        return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
-                    }
-                } else if ("mssql".equalsIgnoreCase(dbPlatform)) {
-                    return ("CAST('" + value + "' AS DATETIME)");
+        case Types.BIGINT:
+        case Types.DECIMAL:
+        case Types.DOUBLE:
+        case Types.FLOAT:
+        case Types.INTEGER:
+        case Types.NUMERIC:
+        case Types.REAL:
+        case Types.SMALLINT:
+        case Types.BINARY:
+        case Types.TINYINT:
+            // case Types.ROWID:
+            return value;
+        case Types.TIME_WITH_TIMEZONE:
+        case Types.TIMESTAMP_WITH_TIMEZONE:
+        case Types.DATE:
+        case Types.TIME:
+        case Types.TIMESTAMP:
+            if ("oracle".equalsIgnoreCase(dbPlatform)) {
+                if (value.length() > 19) {
+                    return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
                 } else {
-                    return "'" + value + "'";
+                    return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
                 }
+            } else if ("mssql".equalsIgnoreCase(dbPlatform)) {
+                return ("CAST('" + value + "' AS DATETIME)");
+            } else {
+                return "'" + value + "'";
+            }
 
         }
         // Must be some kind of string value if it gets here
@@ -357,7 +369,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
     }
 
-    private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values, int dataType) {
+    private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values,
+            int dataType) {
         if (names.length() > 0) {
             names.append(",");
             values.append(",");
@@ -406,7 +419,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             Statement s = conn.createStatement();
             s.executeQuery("SELECT COUNT(*) FROM " + tableName);
         } catch (Exception e) {
-            failures.add(this.getClass().getSimpleName() + " - Failed to check DB tracking module connection to DB: " + e.getMessage() + " :: Connect String: " + jdbcConnectString);
+            failures.add(this.getClass().getSimpleName() + " - Failed to check DB tracking module connection to DB: "
+                    + e.getMessage() + " :: Connect String: " + jdbcConnectString);
             return false;
         } finally {
             if (conn != null) {

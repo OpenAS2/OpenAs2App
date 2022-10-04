@@ -28,8 +28,10 @@ public class Partnership implements Serializable {
     public static final String PCFG_RECEIVER = PTYPE_RECEIVER; // Receiver config node
 
     /* partner definition attributes */
+    public static final String PID_NAME = "name"; // Partner name
     public static final String PID_AS2 = "as2_id"; // AS2 ID
     public static final String PID_X509_ALIAS = "x509_alias"; // Alias to an X509 Certificate
+    public static final String PID_X509_ALIAS_FALLBACK = "x509_alias_fallback"; // Fallback alias to an X509 Certificate
     public static final String PID_EMAIL = "email"; // Email address
 
     /* partnership definition attributes */
@@ -58,6 +60,10 @@ public class Partnership implements Serializable {
     public static final String PA_HTTP_NO_CHUNKED_MAX_SIZE = "no_chunked_max_size"; // Disables chunked HTTP transfer when file size is set larger than the value in this param
     public static final String PA_HTTP_PREVENT_CHUNKING = "prevent_chunking"; // Will try to force the send without using chunked HTTP transfer
     public static final String PA_STORE_RECEIVED_FILE_TO = "store_received_file_to"; // Allows overriding the MessageFileModule "filename" parameter per partnership
+    public static final String PA_REJECT_UNSIGNED_MESSAGES = "reject_unsigned_messages"; // Reject any messages that are sent to the partnership unisgned
+    public static final String PA_SPLIT_FILE_THRESHOLD_SIZE_IN_BYTES = "split_file_threshold_size_in_bytes";
+    public static final String PA_SPLIT_FILE_CONTAINS_HEADER_ROW = "split_file_contains_header_row";
+    public static final String PA_SPLIT_FILE_NAME_PREFIX = "split_file_name_prefix";
     // A hopefully temporary key to maintain backwards compatibility
     public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
 
@@ -184,6 +190,22 @@ public class Partnership implements Serializable {
         }
 
         return alias;
+    }
+
+    public String getAliasFallback(String partnershipType) throws OpenAS2Exception {
+        String alias = null;
+
+        if (partnershipType == PTYPE_RECEIVER) {
+            alias = getReceiverID(Partnership.PID_X509_ALIAS_FALLBACK);
+        } else if (partnershipType == PTYPE_SENDER) {
+            alias = getSenderID(Partnership.PID_X509_ALIAS_FALLBACK);
+        }
+        // The fallback is not guaranteed to be there so return null if not set
+        return alias;
+    }
+
+    public boolean isRejectUnsignedMessages() throws OpenAS2Exception {
+        return getAttributeOrProperty(Partnership.PA_REJECT_UNSIGNED_MESSAGES, "false").equals("true");
     }
 
     public String toString() {

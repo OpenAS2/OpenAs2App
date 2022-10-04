@@ -92,4 +92,16 @@ public class StringUtil {
         return srcString.replaceAll("^\"([^\"]+)\"$", "$1");
     }
 
+    public static String padLeftZeros(String inputString, int length) {
+        if (inputString.length() >= length) {
+            return inputString;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int x=0; x < length - inputString.length(); x++) {
+            sb.append('0');
+        }
+        sb.append(inputString);
+
+        return sb.toString();
+    }
 }

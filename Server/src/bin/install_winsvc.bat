@@ -1,10 +1,17 @@
+@echo off
+setLocal EnableDelayedExpansion
+if /I "!IS_AUTOMATED_EXEC!" == "1" goto CheckOk 
 goto CheckRun
 
 :CheckOk
 
 REM Set the key config strings
-
+if /I not "!SERVICE_NAME!" == "" goto ServiceNameSet
 set SERVICE_NAME=OpenAS2Server
+echo No override for service name specified. Using default service name...
+
+:ServiceNameSet
+echo Using service name: !SERVICE_NAME!
 SET tmppath=%~dp0
 pushd %tmppath%
 cd ..
@@ -15,7 +22,8 @@ REM If the directory structure was changed from the OpenAS2 standard set path di
 REM set OPENAS2_BASE_DIR=c:\opt\OpenAS2
 set APACHE_COMMONS_DAEMON=%OPENAS2_BASE_DIR%\bin\commons-daemon
 set PR_INSTALL=%APACHE_COMMONS_DAEMON%\amd64\prunsrv.exe
-set config_file=%OPENAS2_BASE_DIR%\config\config.xml
+set STARTUP_ARGS=%OPENAS2_BASE_DIR%\config\config.xml
+set CUSTOM_SERVICE_PARAMS=
 set PR_CLASSPATH=%OPENAS2_BASE_DIR%\lib\*
 REM If using a specific JVM then uncomment & set JAVA_HOME below
 REM set JAVA_HOME=C:\Program Files\Java\jre1.8.0_171
@@ -36,16 +44,26 @@ set PR_LOGLEVEL=Error
 REM Path to java installation
 REM If the auto mode does not work then you can explicitly set the path to the Java install DLL 
 set PR_JVM=auto
-rem set PR_JVM=%JAVA_HOME%\bin\server\jvm.dll
- 
+if /I "%CUSTOM_JAVA_HOME%" == "" goto SkipCustomJava
+rem remove any enclosing quotes
+set CUSTOM_JAVA_HOME=%CUSTOM_JAVA_HOME:"=%
+set PR_JVM=%CUSTOM_JAVA_HOME%\bin\server\jvm.dll
+:SkipCustomJava
+
+SET PR_JVM_OPTS="-Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
+if /I "!OPENAS2_PROPERTIES_FILE!" == "" goto SkipArgsAdd
+rem Add the property arg to JVM options
+echo Setting custom properties file for service startup: !OPENAS2_PROPERTIES_FILE!
+set PR_JVM_OPTS=%PR_JVM_OPTS% ++JvmOptions="-Dopenas2.properties.file=%OPENAS2_PROPERTIES_FILE%"
+:SkipArgsAdd
+setLocal DisableDelayedExpansion
+
 REM Startup configuration
 set PR_STARTUP=auto
 set PR_STARTMODE=jvm
 set PR_STARTCLASS=org.openas2.app.OpenAS2WindowsService
 set PR_STARTMETHOD=start
-REM 1 way to add multiple params for some systems where it seems the StartMethod does not work
-REM set PR_STARTPARAMS=start ++StartParams=%config_file%
-set PR_STARTPARAMS=%config_file%
+set PR_STARTPARAMS=%STARTUP_ARGS%
  
 REM Shutdown configuration
 set PR_STOPMODE=jvm
@@ -55,9 +73,13 @@ set PR_STOPPARAMS=stop
  
 REM  Add the below line into the install command if using a specific JVM
 REM  --JavaHome="%JAVA_HOME%" ^
-
-REM Make the folder accessible to the "Local Service" user running the servioce
-icacls "%OPENAS2_BASE_DIR%" /grant *S-1-5-19:(OI)(CI)(M)
+if /I "!CUSTOM_JAVA_HOME!" == "" goto NoCustomJVM
+rem Add the property arg to JVM options
+echo Setting custom properties file for service startup: !OPENAS2_PROPERTIES_FILE!
+set CUSTOM_SERVICE_PARAMS=%CUSTOM_SERVICE_PARAMS% ++JavaHome="%CUSTOM_JAVA_HOME%"
+:NoCustomJVM
+REM Make the folder for service creation and control accessible to the "Local Service" user running the servioce
+icacls "%APACHE_COMMONS_DAEMON%" /grant *S-1-5-19:(OI)(CI)(M)
 
 REM Install service
 "%PR_INSTALL%" //IS/%SERVICE_NAME% ^
@@ -73,7 +95,7 @@ REM Install service
   --JvmMs="%PR_JVMMS%" ^
   --JvmMx="%PR_JVMMX%" ^
   --JvmSs="%PR_JVMSS%" ^
-  --JvmOptions="-Dorg.apache.commons.logging.Log=org.openas2.logging.Log" ^
+  --JvmOptions=%PR_JVM_OPTS% ^
   --Classpath="%PR_CLASSPATH%" ^
   --StartMode="%PR_STARTMODE%" ^
   --StartMethod="%PR_STARTMETHOD%" ^
@@ -81,7 +103,7 @@ REM Install service
   --StartParams=%PR_STARTPARAMS% ^
   --StopMode="%PR_STOPMODE%" ^
   --StopClass="%PR_STOPCLASS%" ^
-  --StopParams="stop"
+  --StopParams="stop" %CUSTOM_SERVICE_PARAMS%
 
 goto END
 

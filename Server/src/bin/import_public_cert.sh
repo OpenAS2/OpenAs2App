@@ -43,16 +43,19 @@ fi
 
 if [ -z $JAVA_HOME ]; then
   echo "ERROR: Cannot find JAVA_HOME"
-  exit
-fi
-
-echo "Executing action \"${action}\" on certificate from file \"${srcFile}\" using alias \"${certAlias}\" to: ${tgtStore}"
-read -p "Do you wish to execute this request? [Y/N]" Response
-if [  $Response != "Y" -a $Response != "y"  ] ; then
   exit 1
 fi
 
-read -p "Enter password for keystore:" ksPwd
+if [ "1" != "$IS_AUTOMATED_EXEC" ]; then
+  echo "Executing action \"${action}\" on certificate from file \"${srcFile}\" using alias \"${certAlias}\" to: ${tgtStore}"
+  read -p "Do you wish to execute this request? [Y/N]" Response
+  if [  $Response != "Y" -a $Response != "y"  ] ; then
+    exit 1
+  fi
+  read -p "Enter password for keystore:" ksPwd
+else
+  ksPwd=$KEYSTORE_PASSWORD
+fi
 
 if [ "${action}" = "replace" ]; then
     $JAVA_HOME/bin/keytool -delete -alias ${certAlias} -keystore ${tgtStore} -storepass $ksPwd -storetype pkcs12

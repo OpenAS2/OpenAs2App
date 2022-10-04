@@ -30,6 +30,11 @@ if [ -z $OPENAS2_CONFIG_FILE ]; then
 fi
 EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${OPENAS2_CONFIG_FILE}"
 
+# Set the properties file if set to a valid file
+if [ ! -z "$OPENAS2_PROPERTIES_FILE" ] && [ -f $OPENAS2_PROPERTIES_FILE ]; then
+  EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.properties.file=${OPENAS2_PROPERTIES_FILE}"
+fi
+
 # For versions of Java that prevent restricted HTTP headers (see documentation for discussion on this)
 #EXTRA_PARMS="$EXTRA_PARMS -Dsun.net.http.allowRestrictedHeaders=true"
 
@@ -65,7 +70,7 @@ if [ -z $JAVA_HOME ]; then
 fi
 # Expand the classpath instead of using file globbing expansion in the java command as it seems to mess with Mailcap loading
 CLASSPATH=$(echo "${binDir}/../lib/"*".jar" | tr ' ' ':')
-# Include the bin dir so that icommons-logging.properties is always found
+# Include the bin dir so that commons-logging.properties is always found
 CLASSPATH=${CLASSPATH}:${binDir}
 CMD=$(echo "${JAVA_HOME}/bin/java ${PWD_OVERRIDE} ${EXTRA_PARMS} -cp .:${CLASSPATH} org.openas2.app.OpenAS2Server")
 echo

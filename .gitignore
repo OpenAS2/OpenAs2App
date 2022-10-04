@@ -12,3 +12,7 @@ pom.xml.versionsBackup
 /Bundle/target/
 /lib/
 /Server/src/logs/
+**/.DS_Store
+**/.settings
+**/*.class
+.metadata/*

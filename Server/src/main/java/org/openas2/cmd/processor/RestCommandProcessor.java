@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
@@ -42,8 +43,13 @@ public class RestCommandProcessor extends BaseCommandProcessor {
     private HttpServer server;
 
     @Override
+    public void schedule(ScheduledExecutorService executor) throws OpenAS2Exception {
+        // Do nothing. Everything is set up in the method init.
+    } 
+
+    @Override
     public void processCommand() throws Exception {
-        //throw new UnsupportedOperationException("Commands received by HTTP Server thread");
+        // This method is never called because schedule is overriden.
     }
 
     public CommandResult feedCommand(String commandText, List<String> params) throws Exception {
