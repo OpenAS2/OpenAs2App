@@ -85,10 +85,10 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             fileSizeThreshold = Long.parseLong(fileSizeThresholdStr);
         }
         if (fileSizeThreshold > 0 && fileToSend.length() > fileSizeThreshold) {
-        	String newFileNamePrefix = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_NAME_PREFIX);
-        	if (newFileNamePrefix == null) {
-        		newFileNamePrefix = "";
-        	}
+            String newFileNamePrefix = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_NAME_PREFIX);
+            if (newFileNamePrefix == null) {
+                newFileNamePrefix = "";
+            }
             boolean containsHeaderRow = "true".equals(msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_CONTAINS_HEADER_ROW));
             FileReader fileReader = new FileReader(fileToSend);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
