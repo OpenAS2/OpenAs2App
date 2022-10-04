@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -66,7 +66,7 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <copy todir="${package.assembly.dir}/bin"
+                               <copy todir="${package.assembly.dir}/bin"
                                       verbose="true">
                                     <fileset dir="${project.basedir}/src/bin"/>
                                 </copy>
@@ -102,7 +102,11 @@
                                       todir="${package.assembly.dir}/bin/remote" verbose="true"/>
                                 <!-- create distribution package
                                     basedir="${package.assembly.dir}"
- -->
+                                -->
+                                <!--
+                                    Pre-delete the package otherwise it keeps old files in it
+                                -->
+ 							    <delete file="${project.basedir}/dist/${project.dist.package.name}"/>
                                 <zip
                                     destfile="${project.basedir}/dist/${project.dist.package.name}"
                                     update="true">

@@ -44,7 +44,9 @@ set PR_LOGLEVEL=Error
 REM Path to java installation
 REM If the auto mode does not work then you can explicitly set the path to the Java install DLL 
 set PR_JVM=auto
-if /I "!CUSTOM_JAVA_HOME!" == "" goto SkipCustomJava
+if /I "%CUSTOM_JAVA_HOME%" == "" goto SkipCustomJava
+rem remove any enclosing quotes
+set CUSTOM_JAVA_HOME=%CUSTOM_JAVA_HOME:"=%
 set PR_JVM=%CUSTOM_JAVA_HOME%\bin\server\jvm.dll
 :SkipCustomJava
 
@@ -71,13 +73,13 @@ set PR_STOPPARAMS=stop
  
 REM  Add the below line into the install command if using a specific JVM
 REM  --JavaHome="%JAVA_HOME%" ^
-if /I "!CUSTOM_JAVA_HOME!" == "" goto SkipCustomJavaHome
+if /I "!CUSTOM_JAVA_HOME!" == "" goto NoCustomJVM
 rem Add the property arg to JVM options
 echo Setting custom properties file for service startup: !OPENAS2_PROPERTIES_FILE!
 set CUSTOM_SERVICE_PARAMS=%CUSTOM_SERVICE_PARAMS% ++JavaHome="%CUSTOM_JAVA_HOME%"
-:SkipCustomJavaHome
-REM Make the folder accessible to the "Local Service" user running the servioce
-icacls "%OPENAS2_BASE_DIR%" /grant *S-1-5-19:(OI)(CI)(M)
+:NoCustomJVM
+REM Make the folder for service creation and control accessible to the "Local Service" user running the servioce
+icacls "%APACHE_COMMONS_DAEMON%" /grant *S-1-5-19:(OI)(CI)(M)
 
 REM Install service
 "%PR_INSTALL%" //IS/%SERVICE_NAME% ^
