@@ -1,6 +1,8 @@
 #!/bin/sh
 
 x=`basename $0`
+baseDir=`dirname $0`
+
 if test $# -ne 4; then
   echo "Generate a certificate to a PKCS12 key store."
   echo "You must supply a target key store without the extension (extension will be added as .p12) and an alias for generated certificate."
@@ -43,6 +45,9 @@ if [ -n "$CERT_START_DATE" ]; then
   PRE_GEN_MSG_ADDITIONAL=" with a start date of $CERT_START_DATE"
 fi
 
+if [ -z $JAVA_HOME ]; then
+  . ${baseDir}/find_java
+fi
 if [ -z $JAVA_HOME ]; then
   OS=$(uname -s)  echo "Looking for JAVA_HOME on OS: ${OS}..."
   if [[ "${OS}" == *Darwin* ]]; then
