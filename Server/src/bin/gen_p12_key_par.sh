@@ -50,13 +50,13 @@ if [ -z $JAVA_HOME ]; then
 fi
 if [ -z $JAVA_HOME ]; then
   OS=$(uname -s)  echo "Looking for JAVA_HOME on OS: ${OS}..."
-  if [[ "${OS}" == *Darwin* ]]; then
+  if [ "${OS}" == *Darwin* ]; then
     # Mac OS X platform
     JAVA_HOME=$(/usr/libexec/java_home)
-  elif [[ "${OS}" == *Linux* ]]; then
+  elif [ "${OS}" == *Linux* ]; then
     # Linux platform
     JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-  elif [[ "${OS}" == *MINGW* ]]; then
+  elif [ "${OS}" == *MINGW* ]; then
     # Windows NT platform
     echo "Windows not supported by this script"
   fi
