@@ -29,18 +29,8 @@ tgtAlias=$4
 action=$5
 
 if [ -z $JAVA_HOME ]; then
-  OS=$(uname -s)
-
-  if [ "${OS}" == *Darwin* ]; then
-    # Mac OS X platform
-    JAVA_HOME=$(/usr/libexec/java_home)
-  elif [ "${OS}" == *Linux* ]; then
-    # Linux platform
-    JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-  elif [ "${OS}" == *MINGW* ]; then
-    # Windows NT platform
-    echo "Windows not supported by this script"
-  fi
+  baseDir=`dirname $0`
+  . ${baseDir}/find_java
 fi
 
 if [ -z $JAVA_HOME ]; then

@@ -1,7 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
 x=`basename $0`
-baseDir=`dirname $0`
 
 if test $# -ne 4; then
   echo "Generate a certificate to a PKCS12 key store."
@@ -46,20 +45,8 @@ if [ -n "$CERT_START_DATE" ]; then
 fi
 
 if [ -z $JAVA_HOME ]; then
+  baseDir=`dirname $0`
   . ${baseDir}/find_java
-fi
-if [ -z $JAVA_HOME ]; then
-  OS=$(uname -s)  echo "Looking for JAVA_HOME on OS: ${OS}..."
-  if [ "${OS}" == *Darwin* ]; then
-    # Mac OS X platform
-    JAVA_HOME=$(/usr/libexec/java_home)
-  elif [ "${OS}" == *Linux* ]; then
-    # Linux platform
-    JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-  elif [ "${OS}" == *MINGW* ]; then
-    # Windows NT platform
-    echo "Windows not supported by this script"
-  fi
 fi
 if [ -z $JAVA_HOME ]; then
   echo "ERROR: Cannot find JAVA_HOME"
