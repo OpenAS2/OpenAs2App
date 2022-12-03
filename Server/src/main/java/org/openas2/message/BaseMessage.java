@@ -493,7 +493,11 @@ public abstract class BaseMessage implements Message {
                 }
             }
         }
-        if (tmpFilename == null || tmpFilename.length() < 1) {
+        if (tmpFilename == null || tmpFilename.length() < 1 || tmpFilename.indexOf("*") >= 0) {
+            return null;
+        }
+        if (tmpFilename.indexOf("*") >= 0) {
+            LogFactory.getLog(BaseMessage.class.getSimpleName()).warn("The 'filename' in disposition contains an asterisk. Setting to null.");
             return null;
         }
         try {
