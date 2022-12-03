@@ -589,10 +589,14 @@ public class AS2Util {
             }
         }
         msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendinginfofile);
-        getMetaData(msg, iFile);
+        try {
+            getMetaData(msg, iFile);
+        } catch (EOFException e) {
+            throw new OpenAS2Exception("Could not parse pending info file. Appears to be invalid: " + iFile.getAbsolutePath(), e);
+        }
     }
 
-    public static void getMetaData(AS2Message msg, File inFile) throws OpenAS2Exception {
+    public static void getMetaData(AS2Message msg, File inFile) throws OpenAS2Exception, EOFException {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
         ObjectInputStream pifois;
         try {
