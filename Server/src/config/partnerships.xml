@@ -36,6 +36,7 @@
               Example below uses a property from the config.xml to facilitate centralised management of the URL
             <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
          -->
+         
         <attribute name="encrypt" value="3DES"/>
         <attribute name="sign" value="SHA256"/>
         <attribute name="resend_max_retries" value="3"/>
@@ -71,6 +72,7 @@
         <sender name="PartnerA"/>
         <receiver name="MyCompany"/>
         <attribute name="store_received_file_to" value="$properties.storageBaseDir$/inbox/$msg.receiver.as2_id$/inbox/$msg.sender.as2_id$-$rand.12345$-$msg.content-disposition.filename$"/>
+        <attribute name="reject_unsigned_messages" value="true"/>
     </partnership>
 
     <partnership name="MyCompany-to-PartnerB">
@@ -99,6 +101,7 @@
     <partnership name="PartnerB-to-MyCompany">
         <sender name="PartnerB"/>
         <receiver name="MyCompany"/>
+        <attribute name="reject_unsigned_messages" value="true"/>
     </partnership>
 
 
