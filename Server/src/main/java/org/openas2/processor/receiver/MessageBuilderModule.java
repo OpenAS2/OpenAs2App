@@ -152,6 +152,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                         }
                         fos.flush();
                         fos.close();
+                        // Update the message's partnership with any additional attributes since initial call in case dynamic variables were not set initially
+                        getSession().getPartnershipFactory().updatePartnership(msg, true);
                         processDocument(pendingFile, msg); 
                     } catch (IOException e) {
                         throw new OpenAS2Exception("Failed to write output file for file splitting on file " + fileCount, e);
@@ -187,6 +189,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                 logger.error(": " + e.getMessage(), e);
                 throw new OpenAS2Exception("Failed to move the inbound file " + fileToSend.getPath() + " to the processing location " + pendingFile.getName());
             }
+            // Update the message's partnership with any additional attributes since initial call in case dynamic variables were not set initially
+            getSession().getPartnershipFactory().updatePartnership(msg, true);
             return processDocument(pendingFile, msg); 
         }
     }

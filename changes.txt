@@ -1,3 +1,13 @@
+Version 3.4.1 - 2022-12-04
+This is an enhancement and minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix message attributes not being available to partnership config (eg attributes.filename)
+  2. Add defensie coding for highly questionnable file names sent by partner containing an asterisk such as ".*"
+  3. Further enhancements to the confog.xml extracting key values to properties to facilitate auto upgrades.
+  4. Enhance helper scripts to support non-prompting execution allowing invocation from other scripts.
+  5. Disable the WebUI module by default as it only runs with Java 11 and above.
+
 Version 3.4.0 - 2022-10-04
 This is an enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading

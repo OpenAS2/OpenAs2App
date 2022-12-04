@@ -11,13 +11,18 @@
                email.logger.enabled="false"
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
-               restapi.command.processor.enabled="true"
+               restapi.command.processor.enabled="false"
                module.AS2SenderModule.enabled="true"
+               module.AS2SenderModule.readtimeout="60000"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
                module.MDNFileModule.enabled="true"
+               module.MDNFileModule.filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$"
                module.MessageFileModule.enabled="true"
+               module.MessageFileModule.filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$"
+               module.MessageFileModule.header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$"
                module.DirectoryResenderModule.enabled="true"
+               module.DirectoryResenderModule.resenddelay="60"
                module.AS2ReceiverModule.http.enabled="true"
                module.AS2ReceiverModule.http.port="10080"
                module.AS2MDNReceiverModule.http.enabled="true"
@@ -27,6 +32,7 @@
                module.AS2MDNReceiverModule.https.enabled="false"
                module.AS2MDNReceiverModule.https.port="10444"
                module.HealthCheckModule.enabled="false"
+               module.HealthCheckModule.port="10099"
                async_mdn_receiver_port="$properties.module.AS2MDNReceiverModule.http.port$"
                as2_async_mdn_url="http://localhost:$properties.async_mdn_receiver_port$"
                as2_keystore="%home%/as2_certs.p12"
@@ -114,7 +120,8 @@
               pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"
               resend_max_retries="5">
       <module enabled="$properties.module.AS2SenderModule.enabled$"
-              classname="org.openas2.processor.sender.AS2SenderModule"/>
+              classname="org.openas2.processor.sender.AS2SenderModule"
+              readtimeout="$properties.module.AS2SenderModule.readtimeout$" />
       <module enabled="$properties.module.MDNSenderModule.enabled$"
               classname="org.openas2.processor.sender.MDNSenderModule"/>
       <!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
@@ -162,13 +169,13 @@
               tcp_server_password="$properties.msg_tracking.tcp_server_password$"/>
       <module enabled="$properties.module.MDNFileModule.enabled$"
               classname="org.openas2.processor.storage.MDNFileModule"
-              filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$"
+              filename="$properties.module.MDNFileModule.filename$"
               protocol="as2"
               tempdir="$properties.storageBaseDir$/temp"/>
       <module enabled="$properties.module.MessageFileModule.enabled$"
               classname="org.openas2.processor.storage.MessageFileModule"
-              filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$"
-              header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$"
+              filename="$properties.module.MessageFileModule.filename$"
+              header="$properties.module.MessageFileModule.header$"
               protocol="as2"
               tempdir="$properties.storageBaseDir$/temp"/>
       <module enabled="$properties.module.AS2ReceiverModule.http.enabled$"
@@ -199,10 +206,10 @@
               classname="org.openas2.processor.resender.DirectoryResenderModule"
               resenddir="$properties.storageBaseDir$/resend"
               errordir="$properties.storageBaseDir$/resend/error"
-              resenddelay="60"/>
+              resenddelay="$properties.module.DirectoryResenderModule.resenddelay$"/>
       <module enabled="$properties.module.HealthCheckModule.enabled$"
               classname="org.openas2.processor.receiver.HealthCheckModule"
-              port="10099"/>
+              port="$properties.module.HealthCheckModule.port$"/>
    </processor>
    <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->
    <pollerConfigBase classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"

@@ -1,0 +1,81 @@
+storageBaseDir=/opt/MyCompanyAS2/data
+as2_keystore=$properties.storageBaseDir$/as2_certs.p12
+partnership_file=$properties.storageBaseDir$/partnerships.xml
+as2_keystore_password=032scali
+log_date_format=yyyy-MM-dd HH:mm:ss.SSS
+sql_timestamp_format=yyyy-MM-dd HH:mm:ss.SSS
+as2_message_id_format=$date.ddMMyyyyHHmmssZ$-$rand.UUID$
+as2_receive_message_filename_fallback=$rand.shortUUID$
+log_invalid_http_request=false
+# Logging to the console where the server is started. NOT to be used for production deployments.
+console.logger.enabled=false
+# enable logging to a file on a file system
+file.logger.enabled=true
+# set the location and file name format for logging
+file.logger.filename=$properties.storageBaseDir$/logs/log-$date.yyyyMMdd$.txt
+socket.logger.enabled=false
+email.logger.enabled=false
+# The command processor that works within the command line console after startup. NOT to be used for production deployments.
+console.command.processor.enabled=false
+# The command processor that works via a socket connection. Not very secure so ensure it is in a private network if used.
+socket.command.processor.enabled=false
+# The command processor that works via a HTTP requests.
+restapi.command.processor.enabled=false
+# Manage the AS2 Sender module - if not sending files to partners it can be turned off
+module.AS2SenderModule.enabled=true
+# Time for the HTTP handler to wait for a response from the partner
+module.AS2SenderModule.readtimeout=3000000
+# Manage the MDN Sender module - if not receiving files from partners it can be turned off
+module.MDNSenderModule.enabled=true
+# Module for tracking inbound and outbound messages in a database in addition to normal logging.
+module.DbTrackingModule.enabled=true
+# Module to store received and sent MDN's. Can be switched off if you do not need to keep a record of MDN's
+module.MDNFileModule.enabled=true
+# Module to store received AS2 messages. Unless you plug in another handler for received files, this module is required to be enabled.
+module.MessageFileModule.enabled=true
+module.MessageFileModule.filename=$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.headers.message-id$
+# Handles resending AS2 messages if there are any failures in sending the AS2 message include failure to receive an MDN
+module.DirectoryResenderModule.enabled=true
+# How long in seconds before the resender module attempts to resend a failed tranmission of an AS2 message
+module.DirectoryResenderModule.resenddelay=60
+# The HTTP receiver of AS2 messages. Only required if you are receiving AS2 messages. Can be switched off if you only send AS2 messages to other partners
+module.AS2ReceiverModule.http.enabled=true
+# The port on which the HTTP receiver will listen on if it is enabled
+module.AS2ReceiverModule.http.port=5080
+# The HTTP receiver of AS2 messages. Only required if you are receiving ASYNC MDN's. Can be switched off if you do not use ASYNC MDN mode.
+module.AS2MDNReceiverModule.http.enabled=true
+# The port on which the HTTP MDN receiver will listen on if it is enabled
+module.AS2MDNReceiverModule.http.port=5081
+# The HTTPS receiver of AS2 messages. Only required if you are receiving AS2 messages. Can be switched off if you only send AS2 messages to other partners
+module.AS2ReceiverModule.https.enabled=false
+# The port on which the HTTPS receiver will listen on if it is enabled
+module.AS2ReceiverModule.https.port=443
+# The HTTPS receiver of AS2 messages. Only required if you are receiving ASYNC MDN's. Can be switched off if you do not use ASYNC MDN mode.
+module.AS2MDNReceiverModule.https.enabled=false
+# The port on which the HTTPS MDN receiver will listen on if it is enabled
+module.AS2MDNReceiverModule.https.port=10444
+# Supports a healthcheck API to monitor the OpenAS2 server
+module.HealthCheckModule.enabled=false
+# What port can the healthcheck module run on
+module.HealthCheckModule.port="10099"
+# The ASYNC URL that will be used if you tunr on ASYN mode MDN for a partner. Can be overridden explicitly in the partnership definition
+#as2_async_mdn_url=https://myas2.mycomany.com:$properties.module.AS2MDNReceiverModule.https.port$
+# The keystore for SSL certificates if SSL is enabled
+ssl_keystore=$properties.storageBaseDir$/ssl_certs.jks
+# The SSL certificates keystore password
+ssl_keystore_password=Fantini0101
+# The location of the DB tracking database if using the H@ database which is the default in OpenAS2
+msg_tracking.db_directory=$properties.storageBaseDir$/DB
+msg_tracking.use_embedded_db=true
+msg_tracking.force_load_jdbc_driver=false
+msg_tracking.db_user=sa
+msg_tracking.db_pwd=OpenAS2
+msg_tracking.db_name=openas2
+msg_tracking.table_name=msg_metadata
+msg_tracking.jdbc_driver=org.h2.Driver
+msg_tracking.jdbc_connect_string=jdbc:h2:$component.db_directory$/$component.db_name$
+msg_tracking.sql_escape_character='
+msg_tracking.tcp_server_start=true
+msg_tracking.tcp_server_port=10092
+msg_tracking.tcp_server_password=openas2
+reject_unsigned_messages=true

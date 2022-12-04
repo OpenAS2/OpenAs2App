@@ -1,22 +1,23 @@
 #              OpenAS2 Server
-#              Version 3.4.0
+#              Version 3.4.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.4.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.4.1
 
-The release download file is: OpenAS2Server-3.4.0.zip
+The release download file is: OpenAS2Server-3.4.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 3.4.0 - 2022-10-04
+Version 3.4.1 - 2022-12-04
 This is an enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Support for splitting line based files into multiple file. This is useful for very large files where encryption consumes too much memory.
-  2. Support other databases than H2 for the WebUI commands.
-  3. Catch exceptions in the strm command processor to avoid crashing the command processor.
-  4. Pre-enhance AS2 properties before adding system properties to cater for $ in system properties
+  1. Fix message attributes not being available to partnership config (eg attributes.filename)
+  2. Add defensie coding for highly questionnable file names sent by partner containing an asterisk such as ".*"
+  3. Further enhancements to the confog.xml extracting key values to properties to facilitate auto upgrades.
+  4. Enhance helper scripts to support non-prompting execution allowing invocation from other scripts.
+  5. Disable the WebUI module by default as it only runs with Java 11 and above.
 
 
 ##Upgrade Notes

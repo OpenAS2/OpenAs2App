@@ -496,12 +496,15 @@ public abstract class BaseMessage implements Message {
         if (tmpFilename == null || tmpFilename.length() < 1) {
             return null;
         }
+        if (tmpFilename.indexOf("*") >= 0) {
+            LogFactory.getLog(BaseMessage.class.getSimpleName()).warn("The 'filename' in disposition contains an asterisk. Setting to null.");
+            return null;
+        }
         try {
           tmpFilename = IOUtil.getSafeFilename(tmpFilename);          
         } catch (OpenAS2Exception oae) {
-          ParseException pe = new ParseException("Unable to extract a usable filename");
-          pe.initCause(oae);
-          throw pe;
+            LogFactory.getLog(BaseMessage.class.getSimpleName()).warn("Unable to extract a usable filename from: " + tmpFilename);
+            return null;
         }
         return tmpFilename;
     }
