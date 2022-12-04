@@ -137,42 +137,44 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
                 }
-                // TODO store HTTP request, headers, and data to file in Received folder -> use
-                // message-id for filename?
+                // TODO store HTTP request, headers, and data to file in Received folder -> use message-id for filename?
                 try {
                     // Put received data in a MIME body part
                     ContentType receivedContentType = null;
 
                     try {
-                        /*
-                         * receivedPart = new MimeBodyPart(msg.getHeaders(), data);
-                         * msg.setData(receivedPart); receivedContentType = new
-                         * ContentType(receivedPart.getContentType());
-                         */
-                        receivedContentType = new ContentType(msg.getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY));
+                        MimeBodyPart receivedPart = null;
+                        if ("true".equals(msg.getPartnership().getAttributeOrProperty("use_old_mime_deserialise_method", "false"))) {
+                        // TODO: Delete this when the new method is confirmed working reliably. Changed for 3.4.1
+                            receivedContentType = new ContentType(msg.getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY));
 
-                        MimeBodyPart receivedPart = new MimeBodyPart();
-                        receivedPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
+                            receivedPart = new MimeBodyPart();
+                            receivedPart.setDataHandler(new DataHandler(new ByteArrayDataSource(data, receivedContentType.toString(), null)));
+                            // Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the
+                            // HTTP header since it may not be set in the received mime body part
+                            receivedPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, receivedContentType.toString());
+
+                            // Set the transfer encoding if necessary
+                            String cte = receivedPart.getEncoding();
+                            if (cte == null) {
+                                // Not in the MimeBodyPart so try the HTTP headers...
+                                cte = msg.getHeader("Content-Transfer-Encoding");
+                                // Nada ... set to system default
+                                if (cte == null) {
+                                    cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                                }
+                                receivedPart.setHeader("Content-Transfer-Encoding", cte);
+                            } else if (LOG.isTraceEnabled()) {
+                                LOG.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
+                            }
+                        } else {
+                        // We only need the Content-Type to rebuild the mime body part.
+                            InternetHeaders ih = new InternetHeaders();
+                            ih.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, msg.getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY));
+                            receivedPart = new MimeBodyPart(ih, data);
+                        }
                         if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                             LOG.trace("Received MimeBodyPart for inbound message: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(receivedPart, true));
-                        }
-                        // Set "Content-Type" and "Content-Transfer-Encoding" to what is received in the
-                        // HTTP header
-                        // since it may not be set in the received mime body part
-                        receivedPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, receivedContentType.toString());
-
-                        // Set the transfer encoding if necessary
-                        String cte = receivedPart.getEncoding();
-                        if (cte == null) {
-                            // Not in the MimeBodyPart so try the HTTP headers...
-                            cte = msg.getHeader("Content-Transfer-Encoding");
-                            // Nada ... set to system default
-                            if (cte == null) {
-                                cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-                            }
-                            receivedPart.setHeader("Content-Transfer-Encoding", cte);
-                        } else if (LOG.isTraceEnabled()) {
-                            LOG.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
                         }
                         msg.setData(receivedPart);
                     } catch (Exception e) {
