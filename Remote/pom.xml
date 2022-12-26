@@ -4,7 +4,11 @@
     <parent>
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
+<<<<<<< HEAD
         <version>3.5.0</version>
+=======
+        <version>3.4.1</version>
+>>>>>>> branch 'master' of https://github.com/OpenAS2/OpenAs2App.git
     </parent>
 
     <modelVersion>4.0.0</modelVersion>

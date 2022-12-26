@@ -7,7 +7,11 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
+<<<<<<< HEAD
         <version>3.5.0</version>
+=======
+        <version>3.4.1</version>
+>>>>>>> branch 'master' of https://github.com/OpenAS2/OpenAs2App.git
         <relativePath>../pom.xml</relativePath>
     </parent>
 
