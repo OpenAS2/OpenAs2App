@@ -21,7 +21,7 @@ import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.IOUtil;
-import org.openas2.util.StringUtil;
+import org.openas2.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -29,12 +29,9 @@ import javax.activation.FileDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -90,96 +87,18 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                 newFileNamePrefix = "";
             }
             boolean containsHeaderRow = "true".equals(msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_CONTAINS_HEADER_ROW));
-            FileReader fileReader = new FileReader(fileToSend);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String preprocessDir = Properties.getProperty("storageBaseDir", fileToSend.getParent()) + File.separator + "preprocess";
+            // Move the file to a holding folder so it is not processed by the directory poller anymore
+            String movedFilePath = preprocessDir + File.separator + filename;
+            File movedFile = new File(movedFilePath);
             try {
-                byte[] headerRow = new byte[0];
-                if (containsHeaderRow) {
-                    try {
-                        String headerLine = bufferedReader.readLine();
-                        if (headerLine != null) {
-                            headerRow = (headerLine + "\n").getBytes();
-                        }
-                    } catch (IOException e1) {
-                        throw new OpenAS2Exception("Failed to read header row from input file.", e1);
-                    }
-                }
-                long headerRowByteCount = headerRow.length;
-                if (fileSizeThreshold < headerRowByteCount) {
-                    // Would just write header repeatedly so throw error
-                    throw new OpenAS2Exception("Split file size is less than the header row size.");
-                }
-                long expectedFileCnt = Math.floorDiv(fileToSend.length(), fileSizeThreshold);
-                // Figure out how many digits to pad the filename with - add 1 to cater for header row
-                int fileCntDigits = Long.toString(expectedFileCnt).length() +1;
-                int fileCount = 0;
-                boolean notEof = true;
-                while (notEof) {
-                    fileCount += 1;
-                    long fileSize = 0;
-                    String newFilename = newFileNamePrefix + StringUtil.padLeftZeros(Integer.toString(fileCount), fileCntDigits) + "-" + filename;
-                    addMessageMetadata(msg, newFilename);
-                    File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
-                    BufferedOutputStream fos = null;
-                    try {
-                        try {
-                            fos = new BufferedOutputStream(new FileOutputStream(pendingFile));
-                        } catch (IOException e) {
-                            throw new OpenAS2Exception("Failed to initialise output file for file splitting on file " + fileCount, e);
-                        }
-                        if (containsHeaderRow) {
-                            try {
-                                fos.write(headerRow);
-                            } catch (IOException e) {
-                                throw new OpenAS2Exception("Failed to write header row to output file for file splitting on file " + fileCount, e);
-                            }
-                            fileSize += headerRowByteCount;
-                        }
-                        while (fileSize < fileSizeThreshold) {
-                            String line = null;
-                            try {
-                                line = bufferedReader.readLine();
-                            } catch (IOException e) {
-                                throw new OpenAS2Exception("Failed to write output file for file splitting on file " + fileCount, e);
-                            }
-                            if (line == null) {
-                                notEof = false;
-                                break;
-                            }
-                            byte[] lineBytes = (line + "\n").getBytes();
-                            fos.write(lineBytes);
-                            fileSize += lineBytes.length;
-                        }
-                        fos.flush();
-                        fos.close();
-                        // Update the message's partnership with any additional attributes since initial call in case dynamic variables were not set initially
-                        getSession().getPartnershipFactory().updatePartnership(msg, true);
-                        processDocument(pendingFile, msg); 
-                    } catch (IOException e) {
-                        throw new OpenAS2Exception("Failed to write output file for file splitting on file " + fileCount, e);
-                    } finally {
-                        try {
-                            if (fos != null) {
-                                fos.close();
-                            }
-                        } catch (IOException e) {
-                        }
-                    }
-                }
-            } finally {
-                try {
-                    bufferedReader.close();
-                } catch (IOException e) {
-                    throw new OpenAS2Exception("Failed to close reader for input file.", e);
-                }
+                IOUtil.moveFile(fileToSend, movedFile, false);
+            } catch (IOException e1) {
+                throw new OpenAS2Exception("Failed to move file for split processing: " + fileToSend.getAbsolutePath(), e1);
             }
-            // Must have been successful so remove the original file
-            try {
-                IOUtil.deleteFile(fileToSend);
-            } catch (IOException e) {
-                throw new OpenAS2Exception("Failed to delete file after split processing: " + fileToSend.getAbsolutePath(), e);
-            }
-            return msg;
+            FileSplitter fileSplitter = new FileSplitter(movedFile, fileToSend.getParent(), fileSizeThreshold, containsHeaderRow, filename, newFileNamePrefix);
+            new Thread(fileSplitter).start();
+            return null;
         } else {
             addMessageMetadata(msg, filename);
             File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));

@@ -335,7 +335,7 @@ public class XMLSession extends BaseSession {
             String partnershipName = null;
             Node defaultsNode = moduleNode.getAttributes().getNamedItem("defaults");
             if (defaultsNode == null) {
-                // If there is a format nodethen this is a generic poller module
+                // If there is a format node then this is a generic poller module
                 Node formatNode = moduleNode.getAttributes().getNamedItem("format");
                 if (formatNode == null) {
                     throw new OpenAS2Exception("Invalid poller module coniguration: " + moduleNode.toString());
