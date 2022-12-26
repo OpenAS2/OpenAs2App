@@ -5,11 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.sf.openas2</groupId>
     <artifactId>OpenAS2</artifactId>
-<<<<<<< HEAD
     <version>3.5.0</version>
-=======
-    <version>3.4.1</version>
->>>>>>> branch 'master' of https://github.com/OpenAS2/OpenAs2App.git
     <name>OpenAS2</name>
     <packaging>pom</packaging>
 
@@ -137,11 +133,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-<<<<<<< HEAD
                 <version>4.10.0</version>
-=======
-                <version>4.9.0</version>
->>>>>>> branch 'master' of https://github.com/OpenAS2/OpenAs2App.git
                 <scope>test</scope>
             </dependency>
 
@@ -204,11 +196,7 @@
             <dependency>
                 <groupId>io.sentry</groupId>
                 <artifactId>sentry</artifactId>
-<<<<<<< HEAD
                 <version>6.10.0</version>
-=======
-                <version>6.9.1</version>
->>>>>>> branch 'master' of https://github.com/OpenAS2/OpenAs2App.git
             </dependency>
         </dependencies>
     </dependencyManagement>
