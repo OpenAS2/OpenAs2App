@@ -27,7 +27,6 @@ public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_FILE_EXTENSION_EXCLUDE_FILTER = "fileextensionexcludefilter";
     public static final String PARAM_FILE_NAME_EXCLUDE_FILTER = "filenameexcluderegexfilter";
     private Map<String, Long> trackedFiles;
-    private String outboxDir;
     private String errorDir = null;
     private String sentDir = null;
     private List<String> allowExtensions;
@@ -41,8 +40,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
         // Check all the directories are configured and actually exist on the file
         // system
         try {
-            outboxDir = getParameter(PARAM_OUTBOX_DIRECTORY, true);
-            IOUtil.getDirectoryFile(outboxDir);
+            setOutboxDir(getParameter(PARAM_OUTBOX_DIRECTORY, true));
+            IOUtil.getDirectoryFile(getOutboxDir());
             errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
             IOUtil.getDirectoryFile(errorDir);
             sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
@@ -82,9 +81,9 @@ public abstract class DirectoryPollingModule extends PollingModule {
     @Override
     public boolean healthcheck(List<String> failures) {
         try {
-            IOUtil.getDirectoryFile(outboxDir);
+            IOUtil.getDirectoryFile(getOutboxDir());
         } catch (IOException e) {
-            failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + outboxDir);
+            failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + getOutboxDir());
             Logger.getLogger(DirectoryPollingModule.class.getName()).log(Level.SEVERE, null, e);
             return false;
         } catch (InvalidParameterException ex) {
@@ -100,11 +99,11 @@ public abstract class DirectoryPollingModule extends PollingModule {
             updateTracking();
 
             // scan the directory for new files
-            scanDirectory(outboxDir);
+            scanDirectory(getOutboxDir());
         } catch (OpenAS2Exception oae) {
             oae.log();
         } catch (Exception e) {
-            logger.error("Unexpected error occurred polling directory for files to send: " + outboxDir, e);
+            logger.error("Unexpected error occurred polling directory for files to send: " + getOutboxDir(), e);
         }
     }
 
