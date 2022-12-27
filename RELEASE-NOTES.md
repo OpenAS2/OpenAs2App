@@ -1,23 +1,20 @@
 #              OpenAS2 Server
-#              Version 3.4.1
+#              Version 3.5.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.4.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.5.0
 
-The release download file is: OpenAS2Server-3.4.1.zip
+The release download file is: OpenAS2Server-3.5.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 3.4.1 - 2022-12-04
-This is an enhancement and minor bugfix release:
+Version 3.5.0 - 2022-12-27
+This is an enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Fix message attributes not being available to partnership config (eg attributes.filename)
-  2. Add defensie coding for highly questionnable file names sent by partner containing an asterisk such as ".*"
-  3. Further enhancements to the confog.xml extracting key values to properties to facilitate auto upgrades.
-  4. Enhance helper scripts to support non-prompting execution allowing invocation from other scripts.
-  5. Disable the WebUI module by default as it only runs with Java 11 and above.
+  1. Enhance the file splitter to be more flexible supporting execution as a java app or as a new thread when done inline.
+  2. Prevent the onfig.xml based pollers from being stopped when the partnerships are refreshed.
 
 
 ##Upgrade Notes
