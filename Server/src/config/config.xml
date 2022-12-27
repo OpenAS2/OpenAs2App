@@ -130,7 +130,7 @@
       <!-- 
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toAny"
-              errordir="$properties.storageBaseDir$/toAny/error/$msg.sender.as2_id$-$msg.receiver.as2_id$"
+              errordir="$properties.storageBaseDir$/toAny/error"
               interval="5"
               delimiters="-"
               mergeextratokens="true"
