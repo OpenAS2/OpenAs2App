@@ -48,7 +48,7 @@ public abstract class BaseSession implements Session {
 
     @Override
     public void stop() throws Exception {
-        destroyPartnershipPollers();
+        destroyPartnershipPollers(null);
         for (Component component : components.values()) {
             component.destroy();
         }
@@ -151,11 +151,14 @@ public abstract class BaseSession implements Session {
         }
     }
 
-    public void destroyPartnershipPollers() {
+    public void destroyPartnershipPollers(String configSourceFilter) {
         LOGGER.trace("Destroying partnership pollers...");
         List<String> stoppedPollerKeys = new ArrayList<String>();
         for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
             Map<String, Object> meta = entry.getValue();
+            if (configSourceFilter != null && !meta.get("configSource").equals(configSourceFilter)) {
+                continue;
+            }
             DirectoryPollingModule poller = (DirectoryPollingModule) meta.get("pollerInstance");
             try {
                 LOGGER.trace("Destroying poller:" + meta);

@@ -25,6 +25,9 @@ public interface Session {
     String DEFAULT_CONTENT_TRANSFER_ENCODING = "binary";
     String LOG_LEVEL_OVERRIDE_KEY = "logging.level.override";
 
+    public static final String PARTNERSHIP_POLLER = "partnership"; // Poller configured in a partnership.xml
+    public static final String CONFIG_POLLER = "config"; // Poller configured in a config.xml
+
     /**
      * Lifecycle control method.
      *
@@ -108,7 +111,7 @@ public interface Session {
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception;
     
     public void startPartnershipPollers() throws OpenAS2Exception;
-    public void destroyPartnershipPollers();
+    public void destroyPartnershipPollers(String configSourceFilter);
 
     String getBaseDirectory();
 
