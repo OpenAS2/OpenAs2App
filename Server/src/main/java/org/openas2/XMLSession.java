@@ -345,7 +345,7 @@ public class XMLSession extends BaseSession {
                 // Since the partnerships will not have loaded yet, just use the defaults string as the partnership name
                 partnershipName = defaultsNode.getNodeValue();
             }
-            loadPartnershipPoller(moduleNode, partnershipName, "configPoller");
+            loadPartnershipPoller(moduleNode, partnershipName, Session.CONFIG_POLLER);
             return;
         }
         ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);

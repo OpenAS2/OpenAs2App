@@ -13,6 +13,15 @@ public abstract class PollingModule extends MessageBuilderModule {
     private static final String PARAM_POLLING_INTERVAL = "interval";
     private Timer timer;
     private boolean busy;
+    private String outboxDir;
+
+    public String getOutboxDir() {
+        return outboxDir;
+    }
+
+    public void setOutboxDir(String outboxDir) {
+        this.outboxDir = outboxDir;
+    }
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
@@ -52,7 +61,7 @@ public abstract class PollingModule extends MessageBuilderModule {
                 poll();
                 setBusy(false);
             } else {
-                System.out.println("Miss tick");
+                System.out.println("Miss tick: " + getOutboxDir());
             }
         }
     }

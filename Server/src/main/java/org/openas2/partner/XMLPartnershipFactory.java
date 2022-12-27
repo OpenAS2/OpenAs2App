@@ -110,7 +110,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
     void refreshConfig() throws OpenAS2Exception {
-        getSession().destroyPartnershipPollers();
+        getSession().destroyPartnershipPollers(Session.PARTNERSHIP_POLLER);
         try {
             Element root = getPartnershipsXml().getDocumentElement();
             NodeList rootNodes = root.getChildNodes();
@@ -242,7 +242,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 // replace the $parnertship.* placeholders
                 replacePartnershipPlaceHolders(pollerDoc, partnership);
                 // Now launch a directory poller module for this config
-                getSession().loadPartnershipPoller(pollerConfigElem, name, "partnership");
+                getSession().loadPartnershipPoller(pollerConfigElem, name, Session.PARTNERSHIP_POLLER);
             }
         }
     }

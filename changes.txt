@@ -1,3 +1,10 @@
+Version 3.5.0 - 2022-12-27
+This is an enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Enhance the file splitter to be more flexible supporting execution as a java app or as a new thread when done inline.
+  2. Prevent the onfig.xml based pollers from being stopped when the partnerships are refreshed.
+
 Version 3.4.1 - 2022-12-04
 This is an enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
