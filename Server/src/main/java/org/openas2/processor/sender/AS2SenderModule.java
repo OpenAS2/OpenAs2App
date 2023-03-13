@@ -191,7 +191,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         boolean preventChunking = msg.getPartnership().isPreventChunking(false);
         ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih, null, securedData.getInputStream(), httpOptions, maxSize, preventChunking);
         if (logger.isInfoEnabled()) {
-            logger.info("Message sent and response received in " + resp.getTransferTimeMs() + "ms" + msg.getLogMsgID());
+            logger.info("Message sent and response received in " + resp.getTransferTimeMs() + msg.getLogMsgID());
         }
 
         // Check the HTTP Response code
