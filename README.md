@@ -37,15 +37,11 @@ To deploy the released artifacts requires user ID and password for Sonatype. See
 `./mvnw release:perform`
 `./mvnw nexus-staging:release -Ddescription="Some release comment here"`
 
-## How to create docker image
+## How to create the docker image
 
-To create docker image ,use the Dockerfile in the project.
-In terminal, open the folder where Dockerfile is located.
-Use below command to login to your dockerhub account through terminal. 
-
-```console
-$ docker login
-```
+To create the docker image, use the Dockerfile in the project.
+In the terminal, open the folder where the Dockerfile is located.
+Use commands below to login to your dockerhub account through terminal.
 
 Run below command to create image with name and tag.
 
@@ -58,13 +54,13 @@ $ docker build -t openas2:latest .
 Run the default OpenAS2 server:
 
 ```console
-$ docker run -it --rm openas2:latest 
+$ docker run -it --rm openas2:latest
 ```
 
 You can test it by visiting `http://container-ip:10080` in a browser or, if you need access outside the host, on port 4080:
 
 ```console
-$ docker run -it --rm -p 10080:4080 -p 10081:4081 openas2:latest
+$ docker run -it --rm -p 4080:10080 -p 4081:10081 -p 8443:8443 openas2:latest
 ```
 
 You can then go to `http://localhost:4080` or `http://host-ip:4080` in a browser (noting that it will return a 401 since there are no proper AS2 headers sent by the browser by default).
@@ -76,4 +72,21 @@ The default OpenAS2 environment in the image is:
 	OPENAS2_TMPDIR:  /usr/local/tomcat/temp
 	JAVA_HOME:       /usr/local/openjdk-11
 
-The configuration files are available in `/opt/openas2/config/`. 
+The configuration files are available in `/opt/openas2/config/`.
+
+## How to use the WebUI docker image
+
+Build the WebUI docker image:
+
+```console
+$ docker build -t openas2_webui:latest -f Dockerfile_WebUI .
+```
+
+Run the WebUI docker image, using port 8080 on the host:
+
+```console
+$ docker run --rm -p 8080:80 openas2_webui:latest
+```
+
+Visit http://localhost:8080 and login with "userID" and "pWd".
+Note: You may have to login twice if you get a "Network Error" the first time.
