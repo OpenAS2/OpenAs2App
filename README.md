@@ -76,7 +76,19 @@ The configuration files are available in `/opt/openas2/config/`.
 
 ## How to use the WebUI docker image
 
-Build the WebUI docker image:
+Build the server image:
+
+```console
+$ docker build -t openas2:latest .
+```
+
+Run the OpsnAS2 server, with its network set to "host", so that the WebUI can access the server.
+
+```console
+$ docker run -it --rm --net=host -p 4080:10080 -p 4081:10081 -p 8443:8443 openas2:latest
+```
+
+In a separate terminal, build the WebUI docker image:
 
 ```console
 $ docker build -t openas2_webui:latest -f Dockerfile_WebUI .

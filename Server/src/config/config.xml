@@ -108,7 +108,7 @@
                         response_format="xml"/>
       <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
                         enabled="$properties.restapi.command.processor.enabled$"
-                        baseuri="http://0.0.0.0:8443"
+                        baseuri="http://localhost:8443"
                         ssl_protocol="TLS"
                         ssl_keystore="$properties.ssl_keystore$"
                         ssl_keystore_password="$properties.ssl_keystore_password$"
