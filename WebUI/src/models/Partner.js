@@ -39,5 +39,5 @@ class Partner  {
 
     
     
-};
+}
 export default Partner;
