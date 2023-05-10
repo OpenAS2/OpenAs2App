@@ -250,7 +250,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             }
             PreparedStatement s = conn
-                    .prepareStatement("SELECT * FROM " + tableName + " WHERE " + FIELDS.MSG_ID + " msg_id = ?");
+                    .prepareStatement("SELECT * FROM " + tableName + " WHERE " + FIELDS.MSG_ID + " = ?");
             s.setString(1, msg_id);
             ResultSet rs = s.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
