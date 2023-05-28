@@ -16,3 +16,6 @@ pom.xml.versionsBackup
 **/.settings
 **/*.class
 .metadata/*
+/.vs/slnx.sqlite
+/.vs/OpenAs2App/FileContentIndex/4409226e-a8c1-4352-a570-508b063d4a9c.vsidx
+/.vs/OpenAs2App/FileContentIndex/f1c570c4-2109-47e2-9c1e-27f69fd875b4.vsidx
