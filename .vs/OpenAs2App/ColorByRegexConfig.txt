@@ -1,0 +1,9 @@
+// This file contains rules to color document tabs by regular expressions. Each line contains a regular expression that will be tested against a file's path. All files matching a regular expression will share a color.
+// Regular expressions will be matched in the order they appear in this file. See https://docs.microsoft.com/en-us/dotnet/standard/base-types/regular-expressions for syntax.
+// Edit this file and save your changes to see changes immediately applied. Any errors encountered during parsing or evaluating expressions will appear in the Activity Log xml file.
+// You can customize the color assigned to any group of files by right-clicking the tab and choosing "Set Tab Color."
+^.*\.cs$
+^.*\.fs$
+^.*\.vb$
+^.*\.cp?p?$
+^.*\.hp?p?$
