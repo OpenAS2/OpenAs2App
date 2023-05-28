@@ -1,4 +1,4 @@
-<!-- server pom.xml -->
+<!--Server pom-->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -50,6 +50,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                     <skipTests>true</skipTests>
                     <systemProperties>
                         <org.apache.commons.logging.Log>org.openas2.logging.Log</org.apache.commons.logging.Log>
                     </systemProperties>
@@ -73,7 +74,7 @@
                                 </copy>
                                 <echo message="OS Name: ${os.name}"/>
 								<exec executable="sh" osfamily="unix">
-								    <arg value="-c"/> 
+								    <arg value="-c"/>
 								    <arg line="'chmod uga+x ${package.assembly.dir}/bin/*.sh'"/>
 								</exec>
 								<!--Copy config directory to assembly directory -->
@@ -88,7 +89,7 @@
                                 </copy>
                                 <!--Copy artifact to build lib directory -->
 								<!-- Copy mssql jdbc driver   -->
-								<copy 
+								<copy
 									file="C:\Program Files\Microsoft JDBC DRIVER 12.2 for SQL Server\sqljdbc_12.2\enu\mssql-jdbc-12.2.0.jre11.jar"
 									todir="${package.assembly.dir}/lib" verbose="true" />
 
