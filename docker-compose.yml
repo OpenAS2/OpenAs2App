@@ -1,0 +1,21 @@
+version: '3'
+services:
+  openas2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 4080:10080
+      - 4081:10081
+      - 8443:8443
+    tty: true
+    stdin_open: true
+
+  openas2_webui:
+    build:
+      context: .
+      dockerfile: Dockerfile_WebUI
+    ports:
+      - 8080:80
+    tty: true
+    stdin_open: true

@@ -102,3 +102,30 @@ $ docker run --rm -p 8080:80 openas2_webui:latest
 
 Visit http://localhost:8080 and login with "userID" and "pWd".
 Note: You may have to login twice if you get a "Network Error" the first time.
+
+## Docker Compose
+
+Build the images:
+
+```console
+$ docker compose build
+```
+
+Run the images:
+
+```console
+$ docker compose up
+```
+
+Run the images in the background:
+
+```console
+$ docker compose up -d
+```
+
+View specific container logs:
+
+```console
+$ docker compose logs openas2
+$ docker compose logs openas2_webui
+```
