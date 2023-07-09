@@ -71,7 +71,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
     String getFilename() throws InvalidParameterException {
         String fn = getParameter(PARAM_FILENAME, true);
-        logger.info("gotten filename=" + fn);
+        logger.debug("gotten filename=" + fn);
         return fn;
     }
 
@@ -102,7 +102,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
         try (FileInputStream inputStream = new FileInputStream(getFilename())) {
 
-            logger.info(" ******************************loadPartnership" + inputStream.getFD().toString());
+            logger.debug(" ******************************loadPartnership" + inputStream.getFD().toString());
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder parser = factory.newDocumentBuilder();
