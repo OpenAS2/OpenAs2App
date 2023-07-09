@@ -10,7 +10,7 @@
                socket.logger.enabled="false"
                email.logger.enabled="false"
                console.command.processor.enabled="true"
-               socket.command.processor.enabled="false"
+               socket.command.processor.enabled="true"
                restapi.command.processor.enabled="true"
                module.AS2SenderModule.enabled="true"
                module.AS2SenderModule.readtimeout="60000"
@@ -221,9 +221,9 @@
            mimetype="application/EDI-X12"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                  filename="$properties.partnership_file$"
-                 interval="1"/>
+                 interval="120"/>
 
    <messages classname="org.openas2.message.XMLMessageFactory"
                  filename="%home%/messages.xml"
-                 interval="5"/>
+                 interval="120"/>
 </openas2>

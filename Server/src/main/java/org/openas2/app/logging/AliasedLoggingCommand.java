@@ -12,6 +12,9 @@ public abstract class AliasedLoggingCommand extends BaseCommand {
 
         try {
             Log logger = LogFactory.getLog(this.getClass().getName());
+         
+            
+
             if (logger instanceof org.openas2.logging.Log) {
                 return execute(logger, params);
             }

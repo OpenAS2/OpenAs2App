@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\Server",
+    "\\Server\\src",
+    "\\Server\\src\\main",
+    "\\Server\\src\\main\\java",
+    "\\Server\\src\\main\\java\\org\\openas2",
+    "\\Server\\src\\main\\java\\org\\openas2\\cmd\\processor",
+    "\\Server\\src\\main\\java\\org\\openas2\\cmd\\processor\\restapi",
+    "\\WebUI"
+  ],
+  "SelectedNode": "\\WebUI\\package.json",
+  "PreviewInSolutionExplorer": false
+}

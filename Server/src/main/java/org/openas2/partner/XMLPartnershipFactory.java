@@ -15,6 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.NamedNodeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,11 +45,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * original author unknown
  * <p>
- * this release added logic to store partnerships and provide methods for partner/partnership command line processor
+ * this release added logic to store partnerships and provide methods for
+ * partner/partnership command line processor
  *
  * @author joseph mcverry
  */
@@ -59,18 +60,19 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
     private Document partnershipsXml = null;
 
-
     private Map<String, Object> partners;
 
     private Log logger = LogFactory.getLog(XMLPartnershipFactory.class.getSimpleName());
 
-
     private int getRefreshInterval() throws InvalidParameterException {
+
         return getParameterInt(PARAM_INTERVAL, false);
     }
 
     String getFilename() throws InvalidParameterException {
-        return getParameter(PARAM_FILENAME, true);
+        String fn = getParameter(PARAM_FILENAME, true);
+        logger.info("gotten filename=" + fn);
+        return fn;
     }
 
     public Map<String, Object> getPartners() {
@@ -96,15 +98,18 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         refreshConfig();
     }
 
-
     void loadPartnershipsFile() throws OpenAS2Exception {
+
         try (FileInputStream inputStream = new FileInputStream(getFilename())) {
+
+            logger.info(" ******************************loadPartnership" + inputStream.getFD().toString());
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             DocumentBuilder parser = factory.newDocumentBuilder();
             Document document = parser.parse(inputStream);
             setPartnershipsXml(document);
         } catch (Exception e) {
+            logger.error(e, e);
             throw new WrappedException(e);
         }
     }
@@ -149,7 +154,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
     public void loadPartner(Map<String, Object> partners, Node node) throws OpenAS2Exception {
-        String[] requiredAttributes = {Partnership.PID_NAME};
+        String[] requiredAttributes = { Partnership.PID_NAME };
 
         Map<String, String> newPartner = XMLUtil.mapAttributes(node, requiredAttributes);
         String name = newPartner.get(Partnership.PID_NAME);
@@ -161,12 +166,13 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         partners.put(name, newPartner);
     }
 
-
-    private void loadPartnerIDs(Map<String, Object> partners, String partnershipName, Node partnershipNode, String partnerType, Map<String, Object> idMap) throws OpenAS2Exception {
+    private void loadPartnerIDs(Map<String, Object> partners, String partnershipName, Node partnershipNode,
+            String partnerType, Map<String, Object> idMap) throws OpenAS2Exception {
         Node partnerNode = XMLUtil.findChildNode(partnershipNode, partnerType);
 
         if (partnerNode == null) {
-            throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing a node entry for the " +  partnerType + ".");
+            throw new OpenAS2Exception(
+                    "Partnership \"" + partnershipName + "\" is missing a node entry for the " + partnerType + ".");
         }
 
         Map<String, String> partnerAttr = XMLUtil.mapAttributes(partnerNode);
@@ -180,7 +186,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             Map<String, Object> partner = map;
 
             if (partner == null) {
-                throw new OpenAS2Exception("Partnership " + partnershipName + " has an undefined " + partnerType + ": " + partnerName);
+                throw new OpenAS2Exception(
+                        "Partnership " + partnershipName + " has an undefined " + partnerType + ": " + partnerName);
             }
 
             idMap.putAll(partner);
@@ -190,9 +197,10 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         idMap.putAll(partnerAttr);
     }
 
-    public void loadPartnership(Map<String, Object> partners, List<Partnership> partnerships, Node node) throws OpenAS2Exception {
+    public void loadPartnership(Map<String, Object> partners, List<Partnership> partnerships, Node node)
+            throws OpenAS2Exception {
         Partnership partnership = new Partnership();
-        String[] requiredAttributes = {"name"};
+        String[] requiredAttributes = { "name" };
 
         Map<String, String> psAttributes = XMLUtil.mapAttributes(node, requiredAttributes);
         String name = psAttributes.get("name");
@@ -212,21 +220,23 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
         // add the partnership to the list of available partnerships
         partnerships.add(partnership);
-        
+
         // Now check if we need to add a directory polling module
         Node pollerCfgNode = XMLUtil.findChildNode(node, Partnership.PCFG_POLLER);
         if (pollerCfgNode != null) {
             // Load a poller configuration
-            String[] requiredPollerAttributes = {"enabled"};
-            Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
+            String[] requiredPollerAttributes = { "enabled" };
+            Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode,
+                    requiredPollerAttributes);
             if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
                 if (logger.isTraceEnabled()) {
-                        logger.trace("Found partnership poller for partnership: " + name);
+                    logger.trace("Found partnership poller for partnership: " + name);
                 }
                 // Create a copy of the base config node
-                Node basePollerConfigNode = ((XMLSession)getSession()).getBasePartnershipPollerConfig();
+                Node basePollerConfigNode = ((XMLSession) getSession()).getBasePartnershipPollerConfig();
                 if (basePollerConfigNode == null) {
-                    throw new OpenAS2Exception("Missing base poller config node in config.xml to configure partnership poller.");
+                    throw new OpenAS2Exception(
+                            "Missing base poller config node in config.xml to configure partnership poller.");
                 }
                 Document pollerDoc;
                 try {
@@ -248,19 +258,58 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
     /**
-     * Appends the passed element as a child of the root in the partnership document.
+     * Appends the passed element as a child of the root in the partnership
+     * document.
      * It does NOT check if the passed element is a valid element.
+     * 
      * @param newElement - the element to be added.
      */
     public void addElement(Element newElement) {
         Document doc = getPartnershipsXml();
+        logger.debug("addElement **********" + doc.toString());
+        logElement(newElement);
         Node importedNode = doc.importNode(newElement, true);
         doc.getDocumentElement().appendChild(importedNode);
+        try {
+            storePartnership();
+        } catch (OpenAS2Exception e) {
+            logger.error("Failed to store partnership: " + e.getMessage());
+            // Handle the exception as needed
+        }
+
+    }
+
+    private void logElement(Element element) {
+        logger.info("@logElement");
+        logger.info("Element: " + element.getTagName());
+
+        // Log attributes of the current element
+        NamedNodeMap attributes = element.getAttributes();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node attribute = attributes.item(i);
+            logger.info("Attribute: " + attribute.getNodeName() + "=" + attribute.getNodeValue());
+        }
+
+        // Log text content of the current element
+        String textContent = element.getTextContent();
+        if (!textContent.trim().isEmpty()) {
+            logger.info("Text Content: " + textContent);
+        }
+
+        // Log information for child elements
+        NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                logElement((Element) child);
+            }
+        }
     }
 
     public void storePartnership() throws OpenAS2Exception {
         String fn = getFilename();
 
+        logger.debug("@storePartnership  fn=" + fn);
         DecimalFormat df = new DecimalFormat("0000000");
         long l = 0;
         File f = null;
@@ -270,9 +319,8 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 break;
             }
             l++;
+            logger.debug("Backing up " + fn + " to " + f.getName());
         }
-
-        logger.info("Backing up " + fn + " to " + f.getName());
 
         File fr = new File(fn);
         fr.renameTo(f);
@@ -286,6 +334,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             StreamResult result = new StreamResult(writer);
             transformer.transform(source, result);
         } catch (IOException | TransformerException e) {
+            logger.error(e, e);
             throw new WrappedException(e);
         }
     }
@@ -335,24 +384,24 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                     String[] keys = matcher.group(1).split("\\.");
                     if (keys.length == 1) {
                         switch (keys[0]) {
-                        case "name":
-                            value = partnership.getName();
-                            break;
-                        default:
-                            throw new OpenAS2Exception(
-                                    "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
+                            case "name":
+                                value = partnership.getName();
+                                break;
+                            default:
+                                throw new OpenAS2Exception(
+                                        "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
                         }
                     } else if (keys.length == 2) {
                         switch (keys[0]) {
-                        case "receiver":
-                            value = partnership.getReceiverID(keys[1]);
-                            break;
-                        case "sender":
-                            value = partnership.getSenderID(keys[1]);
-                            break;
-                        default:
-                            throw new OpenAS2Exception(
-                                    "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
+                            case "receiver":
+                                value = partnership.getReceiverID(keys[1]);
+                                break;
+                            case "sender":
+                                value = partnership.getSenderID(keys[1]);
+                                break;
+                            default:
+                                throw new OpenAS2Exception(
+                                        "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
                         }
                     } else {
                         // don't know how to handle this

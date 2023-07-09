@@ -117,7 +117,8 @@ const Utils = {
             }
         },
         createObject: async function(resource,data) {
-            console.log('Creating',data);
+            console.log('Creating', data);
+            alert("create object" + data);
             var url=store.state.server +  `/${resource}/add/${data.name}` ;
             try {
                 var form = '';
@@ -134,7 +135,8 @@ const Utils = {
                     throw response.data.result;
                 }
             }catch(e) {
-                console.log(e,url);
+                console.log(e, url);
+                alert('error creating data \n${e}' + e);
                 throw(`Error Creating Object:\n${e}`);
             }
         },
