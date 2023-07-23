@@ -57,7 +57,7 @@ public class XMLSession extends BaseSession {
     private CommandRegistry commandRegistry;
     private CommandManager cmdManager = new CommandManager();
 
-    // Poller base confog that will be used for partnership based pollers. Can be overridden in the partnership
+    // Poller base config that will be used for partnership based pollers. Can be overridden in the partnership
     private Node basePollerConfigNode = null;
 
     private Attributes manifestAttributes = null;
