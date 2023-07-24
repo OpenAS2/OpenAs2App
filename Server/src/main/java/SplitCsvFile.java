@@ -20,7 +20,6 @@
         public static final String MAX_FILE_SIZE = "m";
         public static final String HAS_HEADER_ROW = "h";
         public static final String DEBUG = "d";
-        public static final String HELP_OPT = "h";
 
         /*
          * Options in this format: short-opt, long-opt, has-argument, required,
@@ -32,8 +31,7 @@
                 {HAS_HEADER_ROW, "has_header", "false", "false", "if set, the file has a header row that wil be replicated into every file"},
                 {OUT_FILENAME_PREFIX, "out_file_prefix", "true", "false", "the prefix for the split file names"},
                 {OUTPUT_DIR, "out_dir", "true", "false", "output directory for the split files - defaults to current dir"},
-                {DEBUG, "debug", "true", "false", "Enabling debug logging"},
-                {HELP_OPT, "help", "false", "false", "print this help"}
+                {DEBUG, "debug", "true", "false", "Enabling debug logging"}
         };
 
         private void usage(Options options) {

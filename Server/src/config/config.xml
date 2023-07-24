@@ -8,10 +8,18 @@
                console.logger.enabled="true"
                file.logger.enabled="true"
                socket.logger.enabled="false"
+               socket.logger.ipaddr="127.0.0.1"
+               socket.logger.portid="19999"
                email.logger.enabled="false"
+               email.logger.only_active_msg_transfer_errors="false"
+               email.logger.properties.log_exception_trace="false"
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
                restapi.command.processor.enabled="true"
+               restapi.command.processor.baseuri="http://localhost:8443"
+               restapi.command.processor.userid="userID"
+               restapi.command.processor.password="pWd"
+               processor.resend_max_retries="5"
                module.AS2SenderModule.enabled="true"
                module.AS2SenderModule.readtimeout="60000"
                module.MDNSenderModule.enabled="true"
@@ -65,6 +73,14 @@
                msg_tracking.tcp_server_port="9092"
                msg_tracking.tcp_server_password="openas2"
                reject_unsigned_messages="false"
+               pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
+               pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
+               pollerConfigBase.interval="5"
+               pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
+               pollerConfigBase.sendfilename="true"
+               pollerConfigBase.mimetype="application/EDI-X12"
+               partnerships.polling.interval="120"
+               messages.polling.interval="120"
              />
    <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
                  filename="$properties.as2_keystore$"
@@ -75,8 +91,8 @@
               enabled="$properties.console.logger.enabled$"/>
       <logger classname="org.openas2.logging.EmailLogger"
               enabled="$properties.email.logger.enabled$"
-              only_active_msg_transfer_errors="false"
-              log_exception_trace="false"
+              only_active_msg_transfer_errors="$properties.email.logger.only_active_msg_transfer_errors$"
+              log_exception_trace="properties.email.logger.log_exception_trace$"
               javax.mail.properties.file="$properties.javax.mail.properties.file$"
               from="$properties.email.from$"
               to="$properties.email.to$"
@@ -92,8 +108,8 @@
               filename="$properties.file.logger.filename$"/>
       <logger classname="org.openas2.logging.SocketLogger"
               enabled="$properties.socket.logger.enabled$"
-              ipaddr="127.0.0.1"
-              portid="19999"/>
+              ipaddr="$properties.socket.logger.ipaddr$"
+              portid="$properties.socket.logger.portid$"/>
    </loggers>
    <commands classname="org.openas2.cmd.XMLCommandRegistry"
              filename="%home%/commands.xml"/>
@@ -108,17 +124,17 @@
                         response_format="xml"/>
       <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
                         enabled="$properties.restapi.command.processor.enabled$"
-                        baseuri="http://localhost:8443"
+                        baseuri="$properties.restapi.command.processor.baseuri$"
                         ssl_protocol="TLS"
                         ssl_keystore="$properties.ssl_keystore$"
                         ssl_keystore_password="$properties.ssl_keystore_password$"
-                        userid="userID" 
-                        password="pWd" />
+                        userid="$properties.restapi.command.processor.userid$" 
+                        password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
               pendingMDN="$properties.storageBaseDir$/pendingMDN3"
               pendingMDNinfo="$properties.storageBaseDir$/pendinginfoMDN3"
-              resend_max_retries="5">
+              resend_max_retries="$properties.processor.resend_max_retries$">
       <module enabled="$properties.module.AS2SenderModule.enabled$"
               classname="org.openas2.processor.sender.AS2SenderModule"
               readtimeout="$properties.module.AS2SenderModule.readtimeout$" />
@@ -213,17 +229,17 @@
    </processor>
    <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->
    <pollerConfigBase classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-           outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
-           errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
-           interval="5"
-           defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
-           sendfilename="true"
-           mimetype="application/EDI-X12"/>
+           outboxdir="$properties.pollerConfigBase.outboxdir$"
+           errordir="$properties.pollerConfigBase.errordir$"
+           interval="$properties.pollerConfigBase.interval$"
+           defaults="$properties.pollerConfigBase.defaults$"
+           sendfilename="$properties.pollerConfigBase.sendfilename$"
+           mimetype="$properties.pollerConfigBase.mimetype$"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                  filename="$properties.partnership_file$"
-                 interval="120"/>
+                 interval="$properties.partnerships.polling.interval$"/>
 
    <messages classname="org.openas2.message.XMLMessageFactory"
                  filename="%home%/messages.xml"
-                 interval="120"/>
+                 interval="$properties.messages.polling.interval$"/>
 </openas2>
