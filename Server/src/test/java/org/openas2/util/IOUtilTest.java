@@ -1,15 +1,16 @@
 package org.openas2.util;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.message.AS2Message;
 import org.openas2.params.MessageParameters;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,12 +19,12 @@ import java.util.regex.Pattern;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class IOUtilTest {
     private AS2Message message = new AS2Message();
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    public static File tmp;
 
     private class Record {
         String filename;
@@ -61,9 +62,9 @@ public class IOUtilTest {
         // Tests that should not return a file
         {"File4.txt", "edi", "", "0"}, {"File5.edi", "txt, edint", "", "0"}, {"File6.tmp", "", "tmp", "0"}, {"File7.tmp", "", "part , tmp", "0"}};
 
-    @Before
-    public void setUp() throws Exception {
-
+    @BeforeAll
+    public static void setUp() throws Exception {
+    	tmp = Files.createTempDirectory("testResources").toFile();
     }
 
     @Test
@@ -90,7 +91,7 @@ public class IOUtilTest {
     public void filePollingFilters() throws Exception {
 
         for (String[] strings : testFilePollingFilters) {
-            File name = tmp.newFile(strings[0]);
+            File name = Files.createFile(Paths.get(tmp.toString(), strings[0])).toFile();
             List<String> allow = new ArrayList<String>();
             if (strings[1] != null && strings[1].length() > 0) {
                 allow = Arrays.asList(strings[1].split("\\s*,\\s*"));
@@ -99,7 +100,7 @@ public class IOUtilTest {
             if (strings[2] != null && strings[2].length() > 0) {
                 exclude = Arrays.asList(strings[2].split("\\s*,\\s*"));
             }
-            File[] files = IOUtil.getFiles(tmp.getRoot(), allow, exclude);
+            File[] files = IOUtil.getFiles(tmp, allow, exclude);
             assertThat("Check that a file is detected for " + name.getName() + ":" + allow + ":" + exclude, files.length == Integer.parseInt(strings[3]), is(true));
             // Cleanup for next loop
             name.delete();

@@ -1,9 +1,9 @@
 package org.openas2.util;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.w3c.dom.Document;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -19,16 +19,16 @@ import java.util.regex.Pattern;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class XMLUtilTest {
     private static final String[][] TEST_ENVS = {{"ENV1", "SOMETHING"}, {"ENV2", "$ENV{ENV1}"}};
-    private Map<String, String> envMap = new HashMap<String, String>();
+    private static Map<String, String> envMap = new HashMap<String, String>();
 
     private String[][] positiveTests = {{"<tests><test>$ENV{" + TEST_ENVS[1][0] + "}</test></tests>", "<tests><test>" + TEST_ENVS[1][1] + "</test></tests>"}, {"<tests><test testEnvVal=\"$ENV{" + TEST_ENVS[0][0] + "}\"/></tests>", "<tests><test testEnvVal=\"" + TEST_ENVS[0][1] + "\"/></tests>"}, {"<tests><test testEnvVal=\"TEXT-BEFORE-$ENV{" + TEST_ENVS[0][0] + "}\"/></tests>", "<tests><test testEnvVal=\"TEXT-BEFORE-" + TEST_ENVS[0][1] + "\"/></tests>"}, {"<tests><test testEnvVal=\"$ENV{" + TEST_ENVS[0][0] + "}-SOME-AFTER\"/></tests>", "<tests><test testEnvVal=\"" + TEST_ENVS[0][1] + "-SOME-AFTER\"/></tests>"}, {"<tests><test testEnvVal=\"TEXT-BEFORE-$ENV{" + TEST_ENVS[0][0] + "}-SOME-AFTER\"/></tests>", "<tests><test testEnvVal=\"TEXT-BEFORE-" + TEST_ENVS[0][1] + "-SOME-AFTER\"/></tests>"}, {"<tests><test testEnvVal=\"$ENV{" + TEST_ENVS[0][0] + "}\">$ENV{" + TEST_ENVS[1][0] + "}</test></tests>", "<tests><test testEnvVal=\"" + TEST_ENVS[0][1] + "\">" + TEST_ENVS[1][1] + "</test></tests>"}};
     private String[][] negativeTests = {{"<tests><test testEnvVal=\"$ENV{NON_EXISTENT}\"/></tests>", "<tests><test testEnvVal=\"NON_EXISTENT\"/></tests>"}};
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeAll
+    public static void setUp() throws Exception {
         for (int i = 0; i < TEST_ENVS.length; i++) {
             envMap.put(TEST_ENVS[i][0], TEST_ENVS[i][1]);
         }

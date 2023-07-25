@@ -1,10 +1,10 @@
 package org.openas2.params;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.message.AS2Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.partner.Partnership;
@@ -16,7 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ParameterParserTest {
 
     private static final String senderId = "MySenderId";
@@ -34,7 +34,7 @@ public class ParameterParserTest {
     @Mock
     private Partnership partnership;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         when(message.getMDN()).thenReturn(mdn);
         when(mdn.getMessage()).thenReturn(message);

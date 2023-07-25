@@ -4,11 +4,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.PrefixFileFilter;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.TestPartner;
 import org.openas2.TestResource;
@@ -21,6 +20,8 @@ import org.openas2.util.Properties;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,11 +49,12 @@ public class OpenAS2ServerTest {
     private final int msgCnt = 2;
 
     private static ExecutorService executorService;
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @TempDir
+    public static File tmp;
 
-    @BeforeClass
+    @BeforeAll
     public static void startServers() throws Exception {
+    	tmp = Files.createTempDirectory("testResources").toFile();
         //System.setProperty("org.openas2.logging.defaultlog", "TRACE");
         System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
         try {
@@ -123,7 +125,7 @@ public class OpenAS2ServerTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         //executorService.awaitTermination(15, TimeUnit.SECONDS);
         executorService.shutdown();
@@ -144,7 +146,7 @@ public class OpenAS2ServerTest {
     private TestMessage sendMessage(TestPartner fromPartner, TestPartner toPartner) throws IOException {
         String outgoingMsgFileName = RandomStringUtils.randomAlphanumeric(10) + ".txt";
         String outgoingMsgBody = RandomStringUtils.randomAlphanumeric(1024);
-        File outgoingMsg = tmp.newFile(outgoingMsgFileName);
+        File outgoingMsg = Files.createFile(Paths.get(tmp.toString(), outgoingMsgFileName)).toFile();
         FileUtils.write(outgoingMsg, outgoingMsgBody, "UTF-8");
         System.out.println("Copying a file to send to:" + fromPartner.getOutbox());
         FileUtils.copyFileToDirectory(outgoingMsg, fromPartner.getOutbox());
