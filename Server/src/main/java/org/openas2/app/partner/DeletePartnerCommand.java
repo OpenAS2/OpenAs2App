@@ -45,7 +45,7 @@ public class DeletePartnerCommand extends AliasedPartnershipsCommand {
             }
 
             if (found == false) {
-                return new CommandResult(CommandResult.TYPE_ERROR, "Unknown partner name");
+                return new CommandResult(CommandResult.TYPE_ERROR, "Unknown partner name: " + name);
             }
 
             Iterator<Partnership> partnerships = partFx.getPartnerships().iterator();
