@@ -13,6 +13,9 @@
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
                restapi.command.processor.enabled="false"
+               restapi.command.processor.baseuri="http://127.0.0.1:8080"
+               restapi.command.processor.userid="userID"
+               restapi.command.processor.password="pWd"
                module.AS2SenderModule.enabled="true"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
@@ -67,9 +70,9 @@
                         response_format="xml"/>
       <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
                         enabled="$properties.restapi.command.processor.enabled$"
-                        baseuri="http://127.0.0.1:8080" 
-                        userid="userID" 
-                        password="pWd" />
+                        baseuri="$properties.restapi.command.processor.baseuri$"
+                        userid="$properties.restapi.command.processor.userid$" 
+                        password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
               pendingMDN="$properties.storageBaseDir$/pendingMDN3"
