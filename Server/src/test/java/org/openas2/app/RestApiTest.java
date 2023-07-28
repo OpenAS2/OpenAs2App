@@ -120,15 +120,8 @@ public class RestApiTest {
         try (CloseableHttpClient httpClient = httpClientBuilder.build();
             CloseableHttpResponse response = httpClient.execute(request)) {
             HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                long len = entity.getContentLength();
-                if (len != -1) {
-                    // Just ignore the rest for now;
-                    buffer = len < MAX_RESPONSE_SIZE?EntityUtils.toString(entity):EntityUtils.toString(entity).substring(0, MAX_RESPONSE_SIZE);
-                }
-            }
+            return entity != null ? EntityUtils.toString(entity) : "";
         }
-        return buffer;
     }
 
     public String doPost(String uriSuffix, boolean withAuth, List<NameValuePair> params) throws IOException {
@@ -138,22 +131,14 @@ public class RestApiTest {
         if (withAuth) {
             httpClientBuilder = httpClientBuilder.setDefaultCredentialsProvider(getCredentials());
         }
-        String buffer = "";
         try (CloseableHttpClient httpClient = httpClientBuilder.build();
             CloseableHttpResponse response = httpClient.execute(httpPost)) {
 
             final int statusCode = response.getStatusLine().getStatusCode();
             assertThat(statusCode, equalTo(HttpStatus.SC_OK));
             HttpEntity entity = response.getEntity();
-            if (entity != null) {
-                long len = entity.getContentLength();
-                if (len != -1) {
-                    // Just ignore the rest for now;
-                    buffer = len < MAX_RESPONSE_SIZE?EntityUtils.toString(entity):EntityUtils.toString(entity).substring(0, MAX_RESPONSE_SIZE);
-                }
-            }
+            return entity != null ? EntityUtils.toString(entity) : "";
         }
-        return buffer;
     }
     /*
     @Test
@@ -195,7 +180,7 @@ public class RestApiTest {
 
     @Test
     public void shouldRespondWith_E_AddPartnerStored() throws Exception {
-    	List<NameValuePair> params = new ArrayList<NameValuePair>();
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         params.add(new BasicNameValuePair("as2_id", "PX_OID"));
         String buffer = this.doPost("partner/add", true, params);
@@ -204,7 +189,7 @@ public class RestApiTest {
 
     @Test
     public void shouldRespondWith_F_AddPartnerFailed() throws Exception {
-    	List<NameValuePair> params = new ArrayList<NameValuePair>();
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         params.add(new BasicNameValuePair("as2_id", "PX_OID"));
         String buffer = this.doPost("partner/add", true, params);
@@ -213,7 +198,7 @@ public class RestApiTest {
 
     @Test
     public void shouldRespondWith_G_DeletePartnerStored() throws Exception {
-    	List<NameValuePair> params = new ArrayList<NameValuePair>();
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         String buffer = this.doPost("partner/delete", true, params);
         assertThat("Delete partnership API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
