@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: openas2-server-osgi.jar,
  Server/lib/commons-lang3-3.4.jar,
  Server/lib/commons-logging-1.2.jar,
- Server/lib/javax.mail.jar,
+ Server/lib/jakarta.mail.jar,
  Server/lib/bcmail-jdk15on-154.jar,
  Server/lib/bcpg-jdk15on-154.jar,
  Server/lib/bcpkix-jdk15on-154.jar,

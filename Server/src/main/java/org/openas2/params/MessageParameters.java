@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.message.Message;
 import org.openas2.util.Properties;
 
-import javax.mail.internet.ParseException;
+import jakarta.mail.internet.ParseException;
 import java.util.StringTokenizer;
 
 public class MessageParameters extends ParameterParser {

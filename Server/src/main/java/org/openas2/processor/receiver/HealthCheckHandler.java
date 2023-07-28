@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.app.HealthCheck;
 import org.openas2.util.HTTPUtil;
 
-import javax.mail.internet.InternetHeaders;
+import jakarta.mail.internet.InternetHeaders;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;

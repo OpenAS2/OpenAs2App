@@ -2,12 +2,12 @@ package org.openas2.lib.util.javamail;
 
 import org.openas2.lib.message.AS2Standards;
 
-import javax.activation.ActivationDataFlavor;
-import javax.activation.DataContentHandler;
-import javax.activation.DataSource;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.ActivationDataFlavor;
+import jakarta.activation.DataContentHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import java.awt.datatransfer.DataFlavor;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -18,11 +18,11 @@ import java.io.OutputStream;
 
 public class DispositionDataContentHandler implements DataContentHandler {
     private static final ActivationDataFlavor ADF1;
-    private static final DataFlavor[] ADFs;
+    private static final ActivationDataFlavor[] ADFs;
 
     static {
         ADF1 = new ActivationDataFlavor(MimeBodyPart.class, AS2Standards.DISPOSITION_TYPE, "Disposition Notification");
-        ADFs = new DataFlavor[]{ADF1};
+        ADFs = new ActivationDataFlavor[]{ADF1};
     }
 
     public DispositionDataContentHandler() {
@@ -54,8 +54,13 @@ public class DispositionDataContentHandler implements DataContentHandler {
         return null;
     }
 
-    public DataFlavor[] getTransferDataFlavors() {
+        public ActivationDataFlavor[] getTransferDataFlavors() {
         return ADFs;
+    }
+
+    @Override
+    public Object getTransferData(ActivationDataFlavor activationDataFlavor, DataSource dataSource) throws IOException {
+        return null;
     }
 
     public void writeTo(Object obj, String mimeType, OutputStream os) throws IOException {

@@ -5,7 +5,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.openas2.OpenAS2Exception;
 
-import javax.mail.internet.InternetHeaders;
+import jakarta.mail.internet.InternetHeaders;
 import java.io.IOException;
 
 public class ResponseWrapper {

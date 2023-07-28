@@ -6,7 +6,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeBodyPart;
 import java.io.InputStream;
 import java.security.Key;
 import java.security.KeyStore;

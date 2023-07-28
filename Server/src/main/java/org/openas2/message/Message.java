@@ -5,9 +5,9 @@ import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.ParseException;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.ParseException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

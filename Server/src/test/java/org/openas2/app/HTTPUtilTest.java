@@ -8,7 +8,7 @@ import org.openas2.message.Message;
 import org.openas2.partner.Partnership;
 import org.openas2.util.HTTPUtil;
 
-import javax.mail.internet.InternetHeaders;
+import jakarta.mail.internet.InternetHeaders;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
