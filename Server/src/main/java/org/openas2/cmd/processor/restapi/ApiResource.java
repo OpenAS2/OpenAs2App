@@ -138,7 +138,6 @@ public class ApiResource {
                 params.add(valueKey + "=" + valueParam);
             }
         }
-        System.out.println("\n\n\n********************\n" + params);
         CommandResult output = getProcessor().feedCommand(resource, params);
         if (CommandResult.TYPE_OK.equals(output.getType()) && resource.startsWith("partner") && ("add".equals(action) || "delete".equals(action))) {
             // Store the partnership XML since a successful change was made to the partnerships
