@@ -4,6 +4,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.CommandResult;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
+import org.openas2.partner.XMLPartnershipFactory;
 
 import java.util.Iterator;
 
@@ -56,11 +57,12 @@ public class DeletePartnerCommand extends AliasedPartnershipsCommand {
             }
 
             if (partnershipFound) {
-                return new CommandResult(CommandResult.TYPE_ERROR, "Can not delete partner; it is tied to some partnerships");
+                return new CommandResult(CommandResult.TYPE_ERROR, "Cannot delete partner; it is tied to some partnerships");
             }
-
             partFx.getPartners().remove(name);
-
+            if (!((XMLPartnershipFactory) partFx).deleteElement("/partnerships/partner[@name='" + name + "']")) {
+                new CommandResult(CommandResult.TYPE_ERROR, "Partner delete failed in XML document for partner name: " + name);
+            }
             return new CommandResult(CommandResult.TYPE_OK);
         }
     }
