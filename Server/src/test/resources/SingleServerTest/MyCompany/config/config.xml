@@ -27,7 +27,9 @@
                module.AS2ReceiverModule.https.enabled="false"
                module.AS2MDNReceiverModule.https.enabled="false"
                module.HealthCheckModule.enabled="false"
-               />
+               partnerships.polling.interval="120"
+               messages.polling.interval="120"
+              />
    <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
                  filename="%home%/as2_certs.p12"
                  password="testas2"
@@ -183,5 +185,5 @@
            mimetype="application/EDI-X12"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                  filename="%home%/partnerships.xml"
-                 interval="120"/>
+                 interval="$properties.partnerships.polling.interval$"/>
 </openas2>
