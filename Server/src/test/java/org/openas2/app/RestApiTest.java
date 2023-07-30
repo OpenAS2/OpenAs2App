@@ -50,6 +50,7 @@ public class RestApiTest {
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
     private static String TEST_PARTNER_NAME = "partnerX";
+    private static String TEST_PARTNERSHIP_NAME = "partnerX-partnerA";
     @TempDir
     private static Path scratchpad;
     private static CloseableHttpClient httpclient;
@@ -184,7 +185,7 @@ public class RestApiTest {
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         params.add(new BasicNameValuePair("as2_id", "PX_OID"));
         String buffer = this.doPost("partner/add", true, params);
-        assertThat("Add partnership API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+        assertThat("Add partner via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
     }
 
     @Test
@@ -193,14 +194,34 @@ public class RestApiTest {
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         params.add(new BasicNameValuePair("as2_id", "PX_OID"));
         String buffer = this.doPost("partner/add", true, params);
-        assertThat("Add partnership API ", buffer.replaceAll("[\\n\\r]+",  ":"), containsString("Partner is defined more than once"));
+        assertThat("Add partner fails via API ", buffer.replaceAll("[\\n\\r]+",  ":"), containsString("Partner is defined more than once"));
     }
 
     @Test
-    public void shouldRespondWith_G_DeletePartnerStored() throws Exception {
+    public void shouldRespondWith_G_AddPartnerShipStored() throws Exception {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("0", TEST_PARTNERSHIP_NAME));
+        params.add(new BasicNameValuePair("1", TEST_PARTNER_NAME)); // the sender
+        params.add(new BasicNameValuePair("2", "PartnerA")); // the receiver
+        params.add(new BasicNameValuePair("as2_url", "http://my.as2host.io:10080"));
+        params.add(new BasicNameValuePair("pollerConfig.enabled", "true"));
+        String buffer = this.doPost("partnership/add", true, params);
+        assertThat("Add partnership via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+    }
+
+    @Test
+    public void shouldRespondWith_H_DeletePartnershipStored() throws Exception {
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("0", TEST_PARTNERSHIP_NAME));
+        String buffer = this.doPost("partnership/delete", true, params);
+        assertThat("Delete partnership via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+    }
+
+    @Test
+    public void shouldRespondWith_I_DeletePartnerStored() throws Exception {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         String buffer = this.doPost("partner/delete", true, params);
-        assertThat("Delete partnership API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+        assertThat("Delete partnership via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
     }
 }
