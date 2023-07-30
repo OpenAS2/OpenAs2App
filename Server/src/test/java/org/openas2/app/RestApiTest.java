@@ -58,7 +58,6 @@ public class RestApiTest {
     private static String baseUrl = restHostAddr + "/api/";
     private static String authUser = "admin";
     private static String authPwd = "admin";
-    private static int MAX_RESPONSE_SIZE = 4096;
 
     @BeforeAll
     public static void start_A_Server() throws Exception {
