@@ -1,9 +1,19 @@
+Version 3.6.0 - 2023-07-27
+This is an enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Enhance shell scripts to better support certificate management and creation.
+  2. Extract all confog.xml values to properties allowing complete server config thru custom properties.
+  3. Deploy fixes for reported CVE on H2 database (see release notes for upgrade of this item).
+  3. Upgrade to Junit 5 for enhanced unit test features.
+  4. Various WebUI bug fixes including persisting changes to the parnerships configurations.
+
 Version 3.5.0 - 2022-12-27
 This is an enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
   1. Enhance the file splitter to be more flexible supporting execution as a java app or as a new thread when done inline.
-  2. Prevent the onfig.xml based pollers from being stopped when the partnerships are refreshed.
+  2. Prevent the config.xml based pollers from being stopped when the partnerships are refreshed.
 
 Version 3.4.1 - 2022-12-04
 This is an enhancement and minor bugfix release:

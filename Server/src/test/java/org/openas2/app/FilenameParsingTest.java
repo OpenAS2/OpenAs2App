@@ -1,13 +1,11 @@
 package org.openas2.app;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.TestResource;
 import org.openas2.XMLSession;
 import org.openas2.message.AS2Message;
@@ -15,11 +13,10 @@ import org.openas2.message.FileAttribute;
 import org.openas2.message.Message;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
-
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class FilenameParsingTest {
     private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
@@ -39,10 +36,7 @@ public class FilenameParsingTest {
     private static XMLSession session;
     private static Message msg;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         try {
             System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
@@ -71,7 +65,7 @@ public class FilenameParsingTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         session = null;
     }

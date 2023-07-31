@@ -1,38 +1,42 @@
 package org.openas2.support.config;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.openas2.TestUtils;
 import org.openas2.support.FileMonitor;
 import org.openas2.support.FileMonitorListener;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * Created by nick on 08.04.17.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FileMonitorTest {
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @TempDir
+    public static File tmp;
     @Mock
     private FileMonitorListener listener;
 
     @Test
     public void shouldTriggerListenersWhenFileChanged() throws Exception {
-        File fileToObserve = Mockito.spy(temp.newFile());
+    	tmp = Files.createTempDirectory("testResources").toFile();
+        File fileToObserve = spy(Files.createFile(Paths.get(tmp.toString(), "test.txt")).toFile());
         doReturn(true).when(fileToObserve).exists();
         doReturn(true).when(fileToObserve).isFile();
         doReturn(new Date().getTime()).when(fileToObserve).lastModified();
@@ -51,5 +55,10 @@ public class FileMonitorTest {
 
         fileMonitor.run();
         verifyNoInteractions(listener);
+    }
+
+    @AfterAll
+    public static void tearDown() throws Exception {
+        TestUtils.deleteDirectory(tmp);
     }
 }

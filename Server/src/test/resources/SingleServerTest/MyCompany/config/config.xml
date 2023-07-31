@@ -13,6 +13,9 @@
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
                restapi.command.processor.enabled="false"
+               restapi.command.processor.baseuri="http://127.0.0.1:8080"
+               restapi.command.processor.userid="userID"
+               restapi.command.processor.password="pWd"
                module.AS2SenderModule.enabled="true"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
@@ -24,7 +27,9 @@
                module.AS2ReceiverModule.https.enabled="false"
                module.AS2MDNReceiverModule.https.enabled="false"
                module.HealthCheckModule.enabled="false"
-               />
+               partnerships.polling.interval="120"
+               messages.polling.interval="120"
+              />
    <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
                  filename="%home%/as2_certs.p12"
                  password="testas2"
@@ -67,9 +72,9 @@
                         response_format="xml"/>
       <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
                         enabled="$properties.restapi.command.processor.enabled$"
-                        baseuri="http://127.0.0.1:8080" 
-                        userid="userID" 
-                        password="pWd" />
+                        baseuri="$properties.restapi.command.processor.baseuri$"
+                        userid="$properties.restapi.command.processor.userid$" 
+                        password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
               pendingMDN="$properties.storageBaseDir$/pendingMDN3"
@@ -180,5 +185,5 @@
            mimetype="application/EDI-X12"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                  filename="%home%/partnerships.xml"
-                 interval="120"/>
+                 interval="$properties.partnerships.polling.interval$"/>
 </openas2>

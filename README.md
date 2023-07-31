@@ -37,6 +37,11 @@ To deploy the released artifacts requires user ID and password for Sonatype. See
 `./mvnw release:perform`
 `./mvnw nexus-staging:release -Ddescription="Some release comment here"`
 
+## Web UI for configuration
+IMPORTANT: The WebUI will NOT work with Java 8 - you need Java 11 or newer
+Follow the instructions in the WebUI/README.md file for confoguring and using it.
+
+
 ## How to create the docker image
 
 To create the docker image, use the Dockerfile in the project.
@@ -82,7 +87,7 @@ Build the server image:
 $ docker build -t openas2:latest .
 ```
 
-Run the OpsnAS2 server, with its network set to "host", so that the WebUI can access the server.
+Run the OpenAS2 server, with its network set to "host", so that the WebUI can access the server.
 
 ```console
 $ docker run -it --rm --net=host -p 4080:10080 -p 4081:10081 -p 8443:8443 openas2:latest

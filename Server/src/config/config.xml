@@ -16,7 +16,7 @@
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
                restapi.command.processor.enabled="true"
-               restapi.command.processor.baseuri="http://localhost:8443"
+               restapi.command.processor.baseuri="http://localhost:8080"
                restapi.command.processor.userid="userID"
                restapi.command.processor.password="pWd"
                processor.resend_max_retries="5"

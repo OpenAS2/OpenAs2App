@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -219,13 +219,13 @@
 			</exclusions>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -233,6 +233,11 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+		<dependency>
+		    <groupId>org.mockito</groupId>
+		    <artifactId>mockito-junit-jupiter</artifactId>
+		    <scope>test</scope>
+		</dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -251,6 +256,10 @@
             <artifactId>jackson-databind</artifactId>
             <type>jar</type>
         </dependency>
+	    <dependency>
+	        <groupId>com.fasterxml.jackson.module</groupId>
+	        <artifactId>jackson-module-jaxb-annotations</artifactId>
+	    </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>

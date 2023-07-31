@@ -258,6 +258,33 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         doc.getDocumentElement().appendChild(importedNode);
     }
 
+    /**
+     * Appends the passed element as a child of the root in the partnership document.
+     * It does NOT check if the passed element is a valid element.
+     * @param newElement - the element to be added.
+     */
+    public boolean deleteElement(String xpath) {
+        Document doc = getPartnershipsXml();
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        NodeList nodes;
+        try {
+            nodes = (NodeList)xPath.evaluate(xpath, doc, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            logger.error("Error trying to find any nodes in the XPATH expression: " + xpath, e);
+            return false;
+        }
+        int nodeCount = nodes.getLength();
+        if (nodeCount == 0) {
+            logger.error(" Failed to find a node using XPATH expression: " + xpath);
+            return false;
+        } else if (nodeCount > 1) {
+            logger.error(" Delete aborted. More than 1 node found using XPATH expression: " + xpath);
+            return false;
+        }
+        nodes.item(0).getParentNode().removeChild(nodes.item(0));
+        return true;
+    }
+
     public void storePartnership() throws OpenAS2Exception {
         String fn = getFilename();
 

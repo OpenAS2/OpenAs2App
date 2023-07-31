@@ -1,19 +1,22 @@
 package org.openas2.app;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.TestResource;
+import org.openas2.TestUtils;
 import org.openas2.processor.ActiveModule;
 import org.openas2.processor.receiver.NetModule;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -22,23 +25,21 @@ import java.util.concurrent.Executors;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HealthCheckTest {
     private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
     private static ExecutorService executorService;
-    private static TemporaryFolder scratchpad = new TemporaryFolder();
+    @TempDir
+    private static Path scratchpad;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
-
-    @BeforeClass
+    @BeforeAll
     public static void startServer() throws Exception {
         // Set up some override properties so we can use the standard config in tests
         // to make sure the release package is fully tested
-        scratchpad.create();
-        File customPropsFile = scratchpad.newFile("openas2.properties");
+    	scratchpad = Files.createTempDirectory("testResources");
+        File customPropsFile = Files.createFile(Paths.get(scratchpad.toString(), "openas2.properties")).toFile();
         System.setProperty("openas2.properties.file", customPropsFile.getAbsolutePath());
         FileOutputStream fos = new FileOutputStream(customPropsFile);
         fos.write("module.HealthCheckModule.enabled=true\n".getBytes());
@@ -57,12 +58,12 @@ public class HealthCheckTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         serverInstance.shutdown();
         executorService.shutdown();
         System.clearProperty("openas2.properties.file");
-        scratchpad.delete();
+        TestUtils.deleteDirectory(scratchpad.toFile());
     }
 
     @Test
