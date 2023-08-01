@@ -216,7 +216,13 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         // Now check if we need to add a directory polling module
         Node pollerCfgNode = XMLUtil.findChildNode(node, Partnership.PCFG_POLLER);
         if (pollerCfgNode != null) {
-            // Load a poller configuration
+            /* Load a poller configuration.
+             * This will require fetching the base configuration for the pollers loaded from
+             * the config.xml and merging with the configured setup in the partnership 
+             * overriding the base attribute values with any found in the partnership
+             * pollerConfig element then enhancing the attribute values to cater for embedded
+             * dynamic variables before activating the poller.
+             */
             String[] requiredPollerAttributes = {"enabled"};
             Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
             if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
@@ -236,10 +242,15 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 }
                 Element pollerConfigElem = pollerDoc.getDocumentElement();
                 // Merge the attributes from the base config with the partnership specific ones
-                partnershipPollerCfgAttributes.forEach((key, value) -> {
+                Map<String, String> attributes = XMLUtil.mapAttributes(pollerConfigElem);
+                attributes.putAll(partnershipPollerCfgAttributes);
+                // Enhance the attribute values in case they are using dynamic variables
+                AS2Util.attributeEnhancer(attributes);
+                // Now update the XML with the attribute values
+                attributes.forEach((key, value) -> {
                     pollerConfigElem.setAttribute(key, value);
-                });
-                // replace the $parnertship.* placeholders
+                }); 
+                // replace the $partnertship.* placeholders
                 replacePartnershipPlaceHolders(pollerDoc, partnership);
                 // Now launch a directory poller module for this config
                 getSession().loadPartnershipPoller(pollerConfigElem, name, Session.PARTNERSHIP_POLLER);
@@ -354,6 +365,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             for (int i = 0; i < nodes.getLength(); i++) {
                 Node node = nodes.item(i);
                 String val = node.getNodeValue();
+                //logger.debug("Partnership place holder NODE processing: " + val);
                 StringBuffer strBuf = new StringBuffer();
                 Matcher matcher = PATTERN.matcher(val);
                 boolean hasChanged = false;
@@ -392,6 +404,9 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                     } else {
                         hasChanged = true;
                         matcher.appendReplacement(strBuf, Matcher.quoteReplacement(value));
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("Partnership place holder replaced: " + keys + " :: Replaced with: " + value);
+                        }
                     }
                 }
                 if (hasChanged) {
