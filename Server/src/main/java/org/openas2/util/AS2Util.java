@@ -743,8 +743,9 @@ public class AS2Util {
         return (srcString == null ? null : srcString.replaceAll("^<([^>]+)>$", "$1"));
     }
 
-    public static void attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {
+    public static boolean attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {
         Pattern PATTERN = Pattern.compile("\\$attribute\\.([^\\$]++)\\$|\\$properties\\.([^\\$]++)\\$");
+        boolean valuesWereEnhanced = false;
         for (Map.Entry<String, String> entry : attribs.entrySet()) {
             String input = entry.getValue();
             StringBuffer strBuf = new StringBuffer();
@@ -769,8 +770,10 @@ public class AS2Util {
             if (hasChanged) {
                 matcher.appendTail(strBuf);
                 attribs.put(entry.getKey(), strBuf.toString());
+                valuesWereEnhanced = true;
             }
         }
+        return valuesWereEnhanced;
     }
 
     public static String printHeaders(Enumeration<Header> hdrs) {
