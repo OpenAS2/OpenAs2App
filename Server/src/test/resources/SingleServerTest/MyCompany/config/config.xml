@@ -27,6 +27,13 @@
                module.AS2ReceiverModule.https.enabled="false"
                module.AS2MDNReceiverModule.https.enabled="false"
                module.HealthCheckModule.enabled="false"
+               partnership_file="%home%/partnerships.xml"
+               pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
+               pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
+               pollerConfigBase.interval="5"
+               pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
+               pollerConfigBase.sendfilename="true"
+               pollerConfigBase.mimetype="application/EDI-X12"
                partnerships.polling.interval="120"
                messages.polling.interval="120"
               />
@@ -177,13 +184,13 @@
    </processor>
    <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->
    <pollerConfigBase classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-           outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
-           errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
-           interval="5"
-           defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
-           sendfilename="true"
-           mimetype="application/EDI-X12"/>
+           outboxdir="$properties.pollerConfigBase.outboxdir$"
+           errordir="$properties.pollerConfigBase.errordir$"
+           interval="$properties.pollerConfigBase.interval$"
+           defaults="$properties.pollerConfigBase.defaults$"
+           sendfilename="$properties.pollerConfigBase.sendfilename$"
+           mimetype="$properties.pollerConfigBase.mimetype$"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
-                 filename="%home%/partnerships.xml"
+                 filename="$properties.partnership_file$"
                  interval="$properties.partnerships.polling.interval$"/>
 </openas2>
