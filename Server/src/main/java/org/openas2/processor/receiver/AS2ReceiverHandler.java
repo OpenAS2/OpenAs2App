@@ -102,8 +102,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             try {
                 data = HTTPUtil.readData(s.getInputStream(), s.getOutputStream(), msg);
 
-            } catch (Exception e) {
-                msg.setLogMsg("HTTP connection error on inbound message.");
+            } catch (Throwable e) {
+                msg.setLogMsg("HTTP connection error on inbound message. Error is: " + e.getMessage());
                 LOG.error(msg, e);
                 NetException ne = new NetException(s.getInetAddress(), s.getPort(), e);
                 ne.log();
