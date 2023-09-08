@@ -16,6 +16,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,9 +28,15 @@ public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
     public static final String PARAM_FILE_EXTENSION_EXCLUDE_FILTER = "fileextensionexcludefilter";
     public static final String PARAM_FILE_NAME_EXCLUDE_FILTER = "filenameexcluderegexfilter";
+    public static final String PARAM_PROCESS_IN_PARALLEL = "process_files_in_paralllel";
+    public static final String PARAM_MAX_PARALLEL_FILES = "max_parallel_files";
     private Map<String, Long> trackedFiles;
     private String errorDir = null;
     private String sentDir = null;
+    private boolean processFilesAsThreads = false;
+    private int maxProcessingThreads = 20;
+    // support fixed size thread group to run file processing as threads 
+    private ExecutorService executorService = null;
     private List<String> allowExtensions;
     private List<String> excludeExtensions;
     private String excludeFilenameRegexFilter = null;
@@ -47,6 +55,12 @@ public abstract class DirectoryPollingModule extends PollingModule {
             sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
             if(null != sentDir) {
                 IOUtil.getDirectoryFile(sentDir);
+            }
+            processFilesAsThreads = getParameter(PARAM_PROCESS_IN_PARALLEL, "false").equalsIgnoreCase("true");
+            maxProcessingThreads = getParameterInt(PARAM_PROCESS_IN_PARALLEL, false, maxProcessingThreads);
+            if (processFilesAsThreads) {
+                // Create the thread pool
+                executorService = Executors.newFixedThreadPool(maxProcessingThreads);
             }
             
             String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
@@ -187,6 +201,23 @@ public abstract class DirectoryPollingModule extends PollingModule {
         }
     }
 
+    protected void processSingleFile(File file, String fileEntryKey) {
+        try {
+            processFile(file);
+        } catch (OpenAS2Exception e) {
+            e.log();
+            try {
+                IOUtil.handleArchive(file, errorDir);
+            } catch (OpenAS2Exception e1) {
+                logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
+                //forceStop(e1);
+                return;
+            }
+        } finally {
+            trackedFiles.remove(fileEntryKey);
+        }        
+    }
+
     private void updateTracking() {
         // clone the trackedFiles map, iterator through the clone and modify the
         // original to avoid iterator exceptions
@@ -196,33 +227,31 @@ public abstract class DirectoryPollingModule extends PollingModule {
 
         for (Map.Entry<String, Long> fileEntry : trackedFilesClone.entrySet()) {
             // get the file and it's stored length
+            String fileEntryKey = fileEntry.getKey();
             File file = new File(fileEntry.getKey());
             long fileLength = fileEntry.getValue().longValue();
 
             // if the file no longer exists, remove it from the tracker
             if (!checkFile(file)) {
-                trackedFiles.remove(fileEntry.getKey());
+                trackedFiles.remove(fileEntryKey);
             } else {
                 // if the file length has changed, update the tracker
                 long newLength = file.length();
                 if (newLength != fileLength) {
-                    trackedFiles.put(fileEntry.getKey(), Long.valueOf(newLength));
+                    trackedFiles.put(fileEntryKey, Long.valueOf(newLength));
                 } else {
                     // if the file length has stayed the same, process the file
-                    // and stop tracking it
-                    try {
-                        processFile(file);
-                    } catch (OpenAS2Exception e) {
-                        e.log();
-                        try {
-                            IOUtil.handleArchive(file, errorDir);
-                        } catch (OpenAS2Exception e1) {
-                            logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
-                            //forceStop(e1);
-                            return;
-                        }
-                    } finally {
-                        trackedFiles.remove(fileEntry.getKey());
+                    // and then stop tracking it
+                    if (processFilesAsThreads) {
+                        executorService.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                processSingleFile(file, fileEntryKey);
+                            }
+                        });
+
+                    } else {
+                        processSingleFile(file, fileEntryKey);
                     }
                 }
             }
@@ -234,7 +263,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
     protected void processFile(File file) throws OpenAS2Exception {
 
         if (logger.isInfoEnabled()) {
-            logger.info("processing " + file.getAbsolutePath());
+            logger.info("Processing file: " + file.getAbsolutePath());
         }
 
         try {
