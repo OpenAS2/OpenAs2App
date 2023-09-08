@@ -186,13 +186,13 @@ public class AS2Util {
         boolean dispositionHasWarning = false;
         if (disposition != null) {
             if (logger.isInfoEnabled()) {
-                logger.info("received MDN [" + disposition + "]" + msg.getLogMsgID());
+                logger.info("Partner " + msg.getPartnership().getReceiverID(Partnership.PID_AS2) + " responded with MDN [" + disposition + "]" + msg.getLogMsgID());
             }
             try {
                 new DispositionType(disposition).validate();
             } catch (DispositionException de) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("Disposition error detected in MDN. Received disposition: " + disposition + msg.getLogMsgID(), de);
+                    logger.warn("Disposition error detected in MDN. Received disposition: " + disposition + msg.getLogMsgID());
                 }
                 // Something wrong detected so flag it for later use
                 dispositionHasWarning = true;
@@ -217,7 +217,7 @@ public class AS2Util {
             return true;
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("MIC processing start... ");
+            logger.trace("MIC processing start... "  + msg.getLogMsgID());
         }
         // get the returned mic from mdn object
         String returnMIC = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
@@ -498,7 +498,7 @@ public class AS2Util {
             // If a disposition exception occurs then there must have been an
             // error response in the disposition
             if (logger.isErrorEnabled()) {
-                logger.error("Disposition exception processing MDN ..." + msg.getLogMsgID(), de);
+                logger.error("Disposition exception processing MDN: " + de.getText() + msg.getLogMsgID());
             }
             // Hmmmm... Error may require manual intervention but keep
             // trying.... possibly change retry count to 1 or just fail????
@@ -589,14 +589,10 @@ public class AS2Util {
             }
         }
         msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendinginfofile);
-        try {
-            getMetaData(msg, iFile);
-        } catch (EOFException e) {
-            throw new OpenAS2Exception("Could not parse pending info file. Appears to be invalid: " + iFile.getAbsolutePath(), e);
-        }
+        getMetaData(msg, iFile);
     }
 
-    public static void getMetaData(AS2Message msg, File inFile) throws OpenAS2Exception, EOFException {
+    public static void getMetaData(AS2Message msg, File inFile) throws OpenAS2Exception {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
         ObjectInputStream pifois;
         try {
@@ -629,9 +625,9 @@ public class AS2Util {
                 logger.trace("Data retrieved from Pending info file:" + "\n        Original MIC: " + msg.getCalculatedMIC() + "\n        Retry Count: " + retries + "\n        Original file name : " + msg.getPayloadFilename() + "\n        Sent file name : " + msg.getAttribute(FileAttribute.MA_FILENAME) + "\n        Pending message file : " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Error directory: " + msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n        Sent directory: " + msg.getAttribute(FileAttribute.MA_SENT_DIR) + "\n        Attributes: " + msg.getAttributes() + msg.getLogMsgID());
             }
         } catch (IOException e) {
-            throw new OpenAS2Exception("Failed to retrieve the pending MDN information from file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Exception retrieving the pending MDN information: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         } catch (ClassNotFoundException e) {
-            throw new OpenAS2Exception("Failed to rebuild an object from the pending MDN information from file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Failed to rebuild an object from the pending MDN information: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         } finally {
             if (pifois != null) {
                 try {
