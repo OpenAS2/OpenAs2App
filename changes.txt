@@ -1,3 +1,11 @@
+Version 3.7.0 - 2023-09-12
+This is an enhancement and minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support parallel mode processing for the directory polling configuration to achieve high volume throughput.
+  2. Enhance error handling when chacking for files that never received an DMN response.
+  3. Added logging to indicate reading a fixed byte count message from HTTP stream to aid debugging.
+
 Version 3.6.0 - 2023-07-27
 This is an enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
