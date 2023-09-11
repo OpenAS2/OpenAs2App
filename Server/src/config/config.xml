@@ -26,9 +26,11 @@
                module.DbTrackingModule.enabled="true"
                module.MDNFileModule.enabled="true"
                module.MDNFileModule.filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$"
+               module.MDNFileModule.tempdir="$properties.storageBaseDir$/temp"
                module.MessageFileModule.enabled="true"
                module.MessageFileModule.filename="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$"
                module.MessageFileModule.header="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$"
+               module.MessageFileModule.tempdir="$properties.storageBaseDir$/temp"
                module.DirectoryResenderModule.enabled="true"
                module.DirectoryResenderModule.resenddelay="60"
                module.AS2ReceiverModule.http.enabled="true"
@@ -187,13 +189,13 @@
               classname="org.openas2.processor.storage.MDNFileModule"
               filename="$properties.module.MDNFileModule.filename$"
               protocol="as2"
-              tempdir="$properties.storageBaseDir$/temp"/>
+              tempdir="$properties.module.MDNFileModule.tempdir$"/>
       <module enabled="$properties.module.MessageFileModule.enabled$"
               classname="org.openas2.processor.storage.MessageFileModule"
               filename="$properties.module.MessageFileModule.filename$"
               header="$properties.module.MessageFileModule.header$"
               protocol="as2"
-              tempdir="$properties.storageBaseDir$/temp"/>
+              tempdir="$properties.module.MessageFileModule.tempdir$"/>
       <module enabled="$properties.module.AS2ReceiverModule.http.enabled$"
               classname="org.openas2.processor.receiver.AS2ReceiverModule"
               port="$properties.module.AS2ReceiverModule.http.port$"
