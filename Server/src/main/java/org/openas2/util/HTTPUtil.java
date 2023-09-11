@@ -204,6 +204,9 @@ public class HTTPUtil {
             // Receive the transmission's data
             int contentSize = Integer.parseInt(headerCache.getHeader("Content-Length", ","));
             data = new byte[contentSize];
+            if (logger.isTraceEnabled()) {
+                logger.trace("Reading fixed byte count from HTTP stream based on Content-Length: " + contentSize + " - Receiver will wait until full byte count is received unless an IO exception is triggered....");
+            }
             dataIn.readFully(data);
         }
         return data;
