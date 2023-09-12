@@ -57,7 +57,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 IOUtil.getDirectoryFile(sentDir);
             }
             processFilesAsThreads = getParameter(PARAM_PROCESS_IN_PARALLEL, "false").equalsIgnoreCase("true");
-            maxProcessingThreads = getParameterInt(PARAM_PROCESS_IN_PARALLEL, false, maxProcessingThreads);
+            maxProcessingThreads = getParameterInt(PARAM_MAX_PARALLEL_FILES, false, maxProcessingThreads);
             if (processFilesAsThreads) {
                 // Create the thread pool
                 executorService = Executors.newFixedThreadPool(maxProcessingThreads);
