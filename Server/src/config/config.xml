@@ -81,6 +81,8 @@
                pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
                pollerConfigBase.sendfilename="true"
                pollerConfigBase.mimetype="application/EDI-X12"
+               pollerConfigBase.process_files_in_paralllel="false"
+               pollerConfigBase.max_parallel_files="20"
                partnerships.polling.interval="120"
                messages.polling.interval="120"
              />
@@ -236,7 +238,9 @@
            interval="$properties.pollerConfigBase.interval$"
            defaults="$properties.pollerConfigBase.defaults$"
            sendfilename="$properties.pollerConfigBase.sendfilename$"
-           mimetype="$properties.pollerConfigBase.mimetype$"/>
+           mimetype="$properties.pollerConfigBase.mimetype$"
+           process_files_in_paralllel="$properties.pollerConfigBase.process_files_in_paralllel$"
+           max_parallel_files="$properties.pollerConfigBase.max_parallel_files$"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                  filename="$properties.partnership_file$"
                  interval="$properties.partnerships.polling.interval$"/>
