@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openas2>
    <properties storageBaseDir="%home%/../data"
+               configDir="%home%"
                console.logger.enabled="true"
                file.logger.enabled="true"
                socket.logger.enabled="false"
