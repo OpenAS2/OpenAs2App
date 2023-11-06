@@ -209,7 +209,15 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
         // read in the partnership attributes
         loadAttributes(node, partnership);
-
+        // Now check if we need to enable Content-Type mappings for this partnership
+        if ("true".equalsIgnoreCase(partnership.getAttributeOrProperty(Partnership.PA_USE_DYNAMIC_CONTENT_TYPE_MAPPING, "false"))) {
+            try {
+                partnership.setUseDynamicContentTypeLookup(true);
+            } catch (IOException e) {
+                logger.error("Error setting up dynamic Content-Type lookup: " + e.getMessage(), e);
+                throw new OpenAS2Exception("Partnership failed to be set up correctly for dynamic Content-Type lookup: " + getName());
+            }
+        }
         // add the partnership to the list of available partnerships
         partnerships.add(partnership);
         
