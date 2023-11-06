@@ -12,11 +12,13 @@ import org.openas2.params.CompositeParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.ParameterParser;
 import org.openas2.message.MessageFactory;
+import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.receiver.PollingModule;
 import org.openas2.schedule.SchedulerComponent;
+import org.openas2.util.FileUtil;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
@@ -141,8 +143,9 @@ public class XMLSession extends BaseSession {
      * 
      * @param propNode - the "properties" element of the configuration file containing property values
      * @throws InvalidParameterException 
+     * @throws IOException 
      */
-    private void loadProperties(Node propNode) throws InvalidParameterException {
+    private void loadProperties(Node propNode) throws InvalidParameterException, IOException {
         LOGGER.info("Loading properties...");
 
         Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
@@ -151,7 +154,7 @@ public class XMLSession extends BaseSession {
         properties.put(Properties.APP_TITLE_PROP, getAppTitle());
         properties.put(Properties.APP_VERSION_PROP, getAppVersion());
         Properties.setProperties(properties);
-        String appPropsFile = System.getProperty("openas2.properties.file");
+        String appPropsFile = System.getProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP);
         if (appPropsFile != null && appPropsFile.length() > 1) {
             java.util.Properties appProps = new java.util.Properties();
             FileInputStream fis = null;
@@ -209,6 +212,11 @@ public class XMLSession extends BaseSession {
             if (Properties.getProperty(key, null) == null) {
                 Properties.setProperty(key, entry.getValue());
             }
+        }
+        // Now check if we need to load Content-Type mappings
+        String contentTypeMapFilename = Properties.getProperty(Partnership.PA_CONTENT_TYPE_MAPPING_FILE, null);
+        if (contentTypeMapFilename != null) {
+            Properties.setContentTypeMap(FileUtil.loadProperties(contentTypeMapFilename));
         }
     }
 
