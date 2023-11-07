@@ -56,7 +56,7 @@ public class IOUtilTest {
     };
 
     /* Test records for polling filters
-     * Format is <filename>, <allowed fiel extensions list>, "excluded extensions list>, <count of files to return (as a string)
+     * Format is <filename>, <allowed file extensions list>, "excluded extensions list>, <count of files to return (as a string)
      */
     private String[][] testFilePollingFilters = {{"File1.txt", "txt", "", "1"}, {"File2.edi", "txt, edi", "", "1"}, {"File3.tmp", "", "temp", "1"},
         // Tests that should not return a file
