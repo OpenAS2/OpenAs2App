@@ -17,6 +17,7 @@
     <partnership name="MyCompany-to-PartnerA">
         <sender name="MyCompany"/>
         <receiver name="PartnerA"/>
+        <pollerConfig enabled="true"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="binary"/>
         <attribute name="compression_type" value="ZLIB"/>
