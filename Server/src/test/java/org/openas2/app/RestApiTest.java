@@ -50,7 +50,7 @@ public class RestApiTest {
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
     private static String TEST_PARTNER_NAME = "partnerX";
-    private static String TEST_PARTNERSHIP_NAME = "partnerX-partnerA";
+    private static String TEST_PARTNERSHIP_NAME = TEST_PARTNER_NAME + "-partnerA";
     @TempDir
     private static Path scratchpad;
     private static CloseableHttpClient httpclient;
@@ -111,7 +111,6 @@ public class RestApiTest {
     }
 
     protected String doGet(String uriSuffix, boolean withAuth) throws IOException {
-        String buffer = "";
         HttpGet request = new HttpGet(baseUrl + uriSuffix);
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
         if (withAuth) {
