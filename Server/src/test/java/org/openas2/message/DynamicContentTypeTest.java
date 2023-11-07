@@ -56,6 +56,7 @@ public class DynamicContentTypeTest extends BaserServerSetup {
             writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
         }  
         writer.close();
+        System.out.println("\n**************\nWROTE SYSTEM MAPPING FILE: " + systemContentTypesMappingFile.getAbsolutePath());
         // Set up the partnership override mappings
         partnershipContentTypesMappingFile = new File(tmpDir, "override_content_type_map.properties");
         partnershipMappedContentTypes.put(xmlFileExtension,  "application/xml-custom");
@@ -64,6 +65,7 @@ public class DynamicContentTypeTest extends BaserServerSetup {
             writer2.write(entry.getKey() + "=" + entry.getValue() + "\n");
         }  
         writer2.close();
+        System.out.println("\n**************\nWROTE PARTNERSHIP MAPPING FILE: " + partnershipContentTypesMappingFile.getAbsolutePath());
         super.setup();
         this.poller = session.getPartnershipPoller(msg.getPartnership().getName());
     }
@@ -119,7 +121,12 @@ public class DynamicContentTypeTest extends BaserServerSetup {
     public void d_shouldGetSystemMappedContentType() throws Exception {
         // Append the mapping file property to custom load properties
         BufferedWriter propsWriter = new BufferedWriter(new FileWriter(super.openAS2PropertiesFile, true));
-        propsWriter.write("\n" + Partnership.PA_CONTENT_TYPE_MAPPING_FILE + "=" + systemContentTypesMappingFile.getAbsolutePath());
+        String prefix = "";
+        if (super.openAS2PropertiesFile.exists() && super.openAS2PropertiesFile.length() > 0) {
+        	// Need to write to a new line
+        	prefix = "\n";
+        }
+        propsWriter.write(prefix + Partnership.PA_CONTENT_TYPE_MAPPING_FILE + "=" + systemContentTypesMappingFile.getAbsolutePath());
         propsWriter.close();
         // Now reload the session to get new properties file that then loads system mapping
         super.refresh();
