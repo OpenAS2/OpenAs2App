@@ -10,7 +10,7 @@ import java.util.TimerTask;
 
 
 public abstract class PollingModule extends MessageBuilderModule {
-    private static final String PARAM_POLLING_INTERVAL = "interval";
+    protected final String PARAM_POLLING_INTERVAL = "interval";
     private Timer timer;
     private boolean busy;
     private String outboxDir;
