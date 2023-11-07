@@ -1,3 +1,9 @@
+Version 3.8.0 - 2023-11-07
+This is an enhancement and minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+ 1. Support for configurable dynamic Content-Type based on the file extension. See documentation section 7.5 "Setting Content Type"
+ 
 Version 3.7.0 - 2023-09-12
 This is an enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
