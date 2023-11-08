@@ -61,6 +61,8 @@ public class BaserServerSetup {
     @AfterAll
     public void tearDown() throws Exception {
         session.stop();
+        openAS2PropertiesFile.delete();
+        System.clearProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP);
     }
 
 }
