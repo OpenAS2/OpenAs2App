@@ -28,8 +28,8 @@
                module.AS2MDNReceiverModule.https.enabled="false"
                module.HealthCheckModule.enabled="false"
                partnership_file="%home%/partnerships.xml"
-               pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
-               pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
+               pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.sender.as2_id$/$partnership.receiver.as2_id$"
+               pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/$partnership.sender.as2_id$/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
                pollerConfigBase.interval="5"
                pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
                pollerConfigBase.sendfilename="true"
@@ -104,18 +104,7 @@
               sendfilename="true"
               format="sender.as2_id, receiver.as2_id, attributes.filename"
               mimetype="application/EDI-X12"/>
-      <!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
-      <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-              outboxdir="$properties.storageBaseDir$/toPartnerA/"
-              errordir="$properties.storageBaseDir$/toPartnerA/error/$date.YYYY$/$date.MM$"
-              stored_error_filename="$msg.attributes.filename$-$date.YYYY$-$date.MM$-$msg.headers.message-id$"
-              sentdir="$properties.storageBaseDir$/sent/$date.YYYY$/$date.MM$"
-              stored_sent_filename="$msg.attributes.filename$-$msg.headers.message-id$"
-              interval="5"
-              defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerA_OID"
-              sendfilename="true"
-              mimetype="application/EDI-X12"/>
-      <!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
+       <!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toPartnerB"
               errordir="$properties.storageBaseDir$/toPartnerB/error"

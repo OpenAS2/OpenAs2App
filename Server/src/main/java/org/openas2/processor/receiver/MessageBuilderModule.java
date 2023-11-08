@@ -20,6 +20,7 @@ import org.openas2.partner.Partnership;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
+import org.openas2.util.FileUtil;
 import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
 
@@ -280,6 +281,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     public void addMessageMetadata(Message msg, String filename) throws OpenAS2Exception {
         msg.setAttribute(FileAttribute.MA_FILENAME, filename);
         msg.setPayloadFilename(filename);
+        // Set the filename extension if it has one
+        msg.setAttribute(FileAttribute.MA_FILENAME_EXTENSION, FileUtil.getFilenameExtension(filename));
         // Set a new message ID
         msg.updateMessageID();
         // Set the sender and receiver in the Message object headers
@@ -352,24 +355,35 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         msg.setData(body);
     }
 
-    private String getMessageContentType(Message msg) throws OpenAS2Exception {
+    public String getMessageContentType(Message msg) throws OpenAS2Exception {
         MessageParameters params = new MessageParameters(msg);
 
-            // Allow Content-Type to be overridden at partnership level or as property
-            String contentType = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TYPE, null);
-            if (contentType == null) {
-                contentType = getParameter(PARAM_MIMETYPE, false);
-            }
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            } else {
-                try {
-                    contentType = ParameterParser.parse(contentType, params);
-                } catch (InvalidParameterException e) {
-                    throw new OpenAS2Exception("Bad content-type" + contentType, e);
+        // Allow Content-Type to be overridden at partnership level or as property
+        String contentType = msg.getPartnership().getAttributeOrProperty(Partnership.PA_CONTENT_TYPE, null);
+        // The content type could be determined dynamically based on filename extension
+        if (msg.getPartnership().isUseDynamicContentTypeLookup()) {
+            String fileExtension = msg.getAttribute(FileAttribute.MA_FILENAME_EXTENSION);
+            if (fileExtension != null) {
+                String dynamicContentType = msg.getPartnership().getContentTypeFromFileExtension(fileExtension);
+                if (dynamicContentType != null) {
+                    // Dynamic override found so use it
+                    contentType = dynamicContentType;
                 }
             }
-            return contentType;
+        }
+        if (contentType == null) {
+            contentType = getParameter(PARAM_MIMETYPE, false);
+        }
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        } else {
+            try {
+                contentType = ParameterParser.parse(contentType, params);
+            } catch (InvalidParameterException e) {
+                throw new OpenAS2Exception("Bad content-type" + contentType, e);
+            }
+        }
+        return contentType;
     }
 
     private void setAdditionalMetaData(Message msg, MimeBodyPart mimeBodyPart) throws OpenAS2Exception {

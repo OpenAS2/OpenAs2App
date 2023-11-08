@@ -2,8 +2,10 @@ package org.openas2.partner;
 
 import org.openas2.OpenAS2Exception;
 import org.openas2.cert.CertificateNotFoundException;
+import org.openas2.util.FileUtil;
 import org.openas2.util.Properties;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,11 +39,13 @@ public class Partnership implements Serializable {
     /* partnership definition attributes */
     public static final String PA_SUBJECT = "subject"; // Subject sent in messages    
     public static final String PA_CONTENT_TYPE = "content_type"; // optional content type for mime parts
+    public static final String PA_USE_DYNAMIC_CONTENT_TYPE_MAPPING = "use_dynamic_content_type_mapping"; // use file extension to Content-Type mapping
+    public static final String PA_CONTENT_TYPE_MAPPING_FILE = "content_type_mapping_file"; // file containing file extension to Content-Type mapping
     public static final String PA_CONTENT_TRANSFER_ENCODING = "content_transfer_encoding"; // optional content transfer enc value
     public static final String PA_SET_CONTENT_TRANSFER_ENCODING_HTTP = "set_content_transfer_encoding_http_header"; // See as an HTTP header
     public static final String PA_REMOVE_PROTECTION_ATTRIB = "remove_cms_algorithm_protection_attrib"; // Some AS2 systems do not support the attribute
     public static final String PA_SET_CONTENT_TRANSFER_ENCODING_OMBP = "set_content_transfer_encoding_on_outer_mime_bodypart"; // optional content transfer enc value
-    public static final String PA_RESEND_REQUIRES_NEW_MESSAGE_ID = "resend_requires_new_message_id"; // list of nme/value pairs for setting custom mime headers
+    public static final String PA_RESEND_REQUIRES_NEW_MESSAGE_ID = "resend_requires_new_message_id"; // list of name/value pairs for setting custom mime headers
     public static final String PA_COMPRESSION_TYPE = "compression";
     public static final String PA_SIGNATURE_ALGORITHM = "sign";
     public static final String PA_ENCRYPTION_ALGORITHM = "encrypt";
@@ -80,6 +84,9 @@ public class Partnership implements Serializable {
     private Map<String, Object> receiverIDs;
     private Map<String, Object> senderIDs;
     private String name;
+    private java.util.Properties overrideContentTypeFromFileExtensionMap = null;
+    private java.util.Properties contentTypeFromFileExtensionMap = null;
+    private boolean useDynamicContentTypeLookup = false;
 
     public String getName() {
         return name;
@@ -173,7 +180,59 @@ public class Partnership implements Serializable {
 
     }
 
-    public String getAlias(String partnershipType) throws OpenAS2Exception {
+     public boolean isUseDynamicContentTypeLookup() {
+        return useDynamicContentTypeLookup;
+    }
+
+    /** This method is called if the partnership is configured to use dynamic mappings.
+     *  It will check that there are either system or partnership specific mappings available
+     *  load them into a partnership mapping cache.
+     * @param useDynamicContentTypeLookup - if true then enable dynamic mapping
+     * @throws OpenAS2Exception
+     * @throws IOException
+     */
+    public void setUseDynamicContentTypeLookup(boolean useDynamicContentTypeLookup) throws OpenAS2Exception, IOException {
+        if (useDynamicContentTypeLookup) {
+            // Make sure there is a lookup available
+            // If there is a partnership specific override then make the partnership use 
+            // that otherwise point it at the system mapping if available
+            String contentTypeMapFilename = getAttribute(Partnership.PA_CONTENT_TYPE_MAPPING_FILE);
+            if (contentTypeMapFilename != null) {
+                if (Properties.getContentTypeMap() != null) {
+                    // Copy the system level mapping in first then override/add the custom mappings
+                    overrideContentTypeFromFileExtensionMap = new java.util.Properties();
+                    overrideContentTypeFromFileExtensionMap.putAll(Properties.getContentTypeMap());
+                      overrideContentTypeFromFileExtensionMap.putAll(FileUtil.loadProperties(contentTypeMapFilename));
+                  } else {
+                    // Get the override map
+                    setOverrideContentTypeFromFileExtension(FileUtil.loadProperties(contentTypeMapFilename));
+                  }
+                // Configure this partnership to use the override lookup
+                contentTypeFromFileExtensionMap = overrideContentTypeFromFileExtensionMap;
+            } else {
+                // Set the partnership to use the global map
+                contentTypeFromFileExtensionMap = Properties.getContentTypeMap();
+            }
+            // If there is no map to do the lookup throw an excpetion
+            if (this.contentTypeFromFileExtensionMap == null) {
+                throw new OpenAS2Exception("Trying to use Content-Type mapping functionality but no mappings loaded.");
+            }
+        }
+        this.useDynamicContentTypeLookup = useDynamicContentTypeLookup;
+    }
+
+    public String getContentTypeFromFileExtension(String key) {
+        if (contentTypeFromFileExtensionMap == null) {
+            return null;
+        }
+        return (String) contentTypeFromFileExtensionMap.get(key);
+     }
+
+     public void setOverrideContentTypeFromFileExtension(java.util.Properties contentTypeFromFileExtension) {
+         this.overrideContentTypeFromFileExtensionMap = contentTypeFromFileExtension;
+     }
+
+   public String getAlias(String partnershipType) throws OpenAS2Exception {
         String alias = null;
 
         if (partnershipType == PTYPE_RECEIVER) {

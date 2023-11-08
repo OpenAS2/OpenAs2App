@@ -30,6 +30,8 @@
         <attribute name="prevent_canonicalization_for_mic" value="false"/>
         <attribute name="rename_digest_to_old_name" value="true"/>
         <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+        <attribute name="use_dynamic_content_type_mapping" value="true"/>
+        <attribute name="content_type_mapping_file" value="$properties.configDir$/content_type_mappings.properties"/>
     </partnership>
 
     <partnership name="OpenAS2B-to-OpenAS2A">

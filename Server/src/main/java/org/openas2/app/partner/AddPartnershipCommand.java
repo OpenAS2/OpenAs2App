@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * adds a new partnership entry in partneship store
+ * adds a new partnership entry in partnership store
  *
  * @author joseph mcverry
  */
@@ -56,7 +56,7 @@ public class AddPartnershipCommand extends AliasedPartnershipsCommand {
 
             for (int i = 0; i < params.length; i++) {
                 String param = (String) params[i];
-                int pos = param.indexOf('=');
+                int equalsPos = param.indexOf('=');
                 if (i == 0) {
                     partnershipRoot.setAttribute("name", param);
                 } else if (i == 1) {
@@ -67,9 +67,9 @@ public class AddPartnershipCommand extends AliasedPartnershipsCommand {
                     Element elem = doc.createElement(Partnership.PCFG_RECEIVER);
                     elem.setAttribute("name", param);
                     partnershipRoot.appendChild(elem);
-                } else if (pos == 0) {
+                } else if (equalsPos == 0) {
                     return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing name");
-                } else if (pos > 0) {
+                } else if (equalsPos > 0) {
                     if (param.startsWith("pollerConfig.")) {
                         // Add a pollerConfig element
                         String regex = "^pollerConfig.([^=]*)=((?:[^\"']+)|'(?:[^']*)'|\"(?:[^\"]*)\")";
@@ -86,8 +86,8 @@ public class AddPartnershipCommand extends AliasedPartnershipsCommand {
                         pollerConfigElem.setAttribute(name, val);
                     } else {
                         Element elem = doc.createElement("attribute");
-                        elem.setAttribute("name", param.substring(0, pos));
-                        elem.setAttribute("value", param.substring(pos + 1));
+                        elem.setAttribute("name", param.substring(0, equalsPos));
+                        elem.setAttribute("value", param.substring(equalsPos + 1));
                         partnershipRoot.appendChild(elem);
                     }
                 } else {
