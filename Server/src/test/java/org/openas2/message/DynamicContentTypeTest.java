@@ -119,7 +119,8 @@ public class DynamicContentTypeTest extends BaserServerSetup {
     public void d_shouldGetSystemMappedContentType() throws Exception {
         // Append the mapping file property to custom load properties
         BufferedWriter propsWriter = new BufferedWriter(new FileWriter(super.openAS2PropertiesFile, true));
-        propsWriter.write("\n" + Partnership.PA_CONTENT_TYPE_MAPPING_FILE + "=" + systemContentTypesMappingFile.getAbsolutePath().replaceAll("\\", "\\\\"));
+        String propVal = systemContentTypesMappingFile.getAbsolutePath().replace("\\", "\\\\");
+        propsWriter.write("\n" + Partnership.PA_CONTENT_TYPE_MAPPING_FILE + "=" + propVal);
         propsWriter.close();
         // Now reload the session to get new properties file that then loads system mapping
         super.refresh();
