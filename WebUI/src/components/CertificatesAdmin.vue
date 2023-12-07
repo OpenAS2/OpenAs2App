@@ -76,7 +76,6 @@
 import FormCustom from "./FormCustom";
 import TableCustom from "./TableCustom";
 import CertificateEditor from "./CertificateEditor";
-
 import Utils from "../utils";
 import Swal from "sweetalert2";
 var _ = require("lodash");
@@ -380,9 +379,10 @@ export default {
       console.log("item.....", this.item);
       var oFile = file;
       console.log(file);
-      // filter for image files
-      var rFilter = /^(application\/x-x509-ca-cert|application\/x-pkcs12)$/i;
-      if (!rFilter.test(oFile.type)) {
+       // filter for certificate files
+       var rFilter = /\.(pem)$/i;
+       var fileName = oFile.name;
+       if (!rFilter.test(fileName)) {
         alert("Error invalid file-type");
         return;
       }
@@ -395,13 +395,18 @@ export default {
       oReader.onload = function (e) {
         console.log("edit---->", e.target.result);
         var PEM = e.target.result;
-        PEM = PEM.replace("-----BEGIN CERTIFICATE-----", "").replace(
-          "-----END CERTIFICATE-----",
-          ""
-        );
-        PEM = PEM.replace(/[^A-Za-z0-9+/=]+/gm, "");
-        that.item.data = PEM;
-        that.changedCert();
+        try {
+           PEM = PEM.replace("-----BEGIN CERTIFICATE-----", "").replace(
+            "-----END CERTIFICATE-----","");
+            PEM = PEM.replace(/[^A-Za-z0-9+/=]+/gm, "");
+            that.item.data = PEM;
+            that.changedCert();
+            console.log("Read certificate successfully")
+        } catch (ex) {
+            console.log("Error reading certificate", ex)
+            alert("Error reading certificate");
+            return;
+        }
       };
       oReader.readAsText(oFile);
     },
