@@ -1,19 +1,19 @@
 #              OpenAS2 Server
-#              Version 3.8.0
+#              Version 3.9.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.8.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.9.0
 
-The release download file is: OpenAS2Server-3.8.0.zip
+The release download file is: OpenAS2Server-3.9.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 3.8.0 - 2023-11-07
+Version 3.9.0 - 2023-12-20
 This is an enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Support for configurable dynamic Content-Type based on the file extension. See documentation section 7.5 "Setting Content Type"
+ 1. Support for non-standard algorithm strings for partners that do not conform to the RFC standard. See documentation section 7.2.1 "Signing"
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

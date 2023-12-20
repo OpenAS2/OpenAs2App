@@ -81,6 +81,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BCCryptoHelper implements ICryptoHelper {
     private Log logger = LogFactory.getLog(BCCryptoHelper.class.getSimpleName());
@@ -289,7 +291,6 @@ public class BCCryptoHelper implements ICryptoHelper {
         PrivateKey privKey = castKey(key);
         String encryptAlg = cert.getPublicKey().getAlgorithm();
 
-        // Fix copied from https://github.com/phax/as2-lib/commit/ed08dd00b6d721ec3e3e7255f642045c9cbee9c3
         SMIMESignedGenerator sGen = new SMIMESignedGenerator(adjustDigestToOldName ? SMIMESignedGenerator.RFC3851_MICALGS : SMIMESignedGenerator.RFC5751_MICALGS);
         sGen.setContentTransferEncoding(getEncoding(contentTxfrEncoding));
         SignerInfoGenerator sig;
@@ -298,10 +299,8 @@ public class BCCryptoHelper implements ICryptoHelper {
                 logger.debug("Params for creating SMIME signed generator:: SIGN DIGEST: " + digest + " PUB ENCRYPT ALG: " + encryptAlg + " X509 CERT: " + x509Cert);
                 logger.debug("Signing on MIME part containing the following headers: " + AS2Util.printHeaders(part.getAllHeaders()));
             }
-            // Remove the dash for SHA based digest for signing call
-            if (digest.toUpperCase().startsWith("SHA-")) {
-                digest = digest.replaceAll("-", "");
-            }
+            // Standardise identifier and remove the dash for SHA based digest for signing call
+            digest = standardiseAlgorithmIdentifier(digest, false);
             JcaSimpleSignerInfoGeneratorBuilder jSig = new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC");
             sig = jSig.build(digest + "with" + encryptAlg, privKey, x509Cert);
             // Some AS2 systems cannot handle certain OID's ...
@@ -481,14 +480,31 @@ public class BCCryptoHelper implements ICryptoHelper {
         return (PrivateKey) key;
     }
 
-    protected String convertAlgorithm(String algorithm, boolean toBC) throws NoSuchAlgorithmException {
+    /**
+     * Standard for Algorithm identifiers is RFC5751. Cater for non-standard algorithm identifiers by converting the identifier
+     * as needed.
+     * @param algorithm - the string identifier of the algorithm to be used
+     * @param useHyphenSeparator - use the hyphen between SHA and the key size designator or not
+     * @return
+     */
+    public String standardiseAlgorithmIdentifier(String algorithm, boolean useHyphenSeparator) {
+        String matchStr = "(sha)[0-9]+[-_]+(.*)$" + (useHyphenSeparator?"|(sha)([0-9]+)$":"|(sha)-([0-9]+)$");
+        Pattern pttrn = Pattern.compile(matchStr, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pttrn.matcher(algorithm);
+        if (matcher.matches()) {
+            int baseMatchGroup = matcher.group(2) == null?3:1;
+            algorithm = matcher.group(baseMatchGroup) + (useHyphenSeparator?"-":"") + matcher.group(baseMatchGroup+1);
+        }
+        return algorithm;
+
+    }
+
+    public String convertAlgorithm(String algorithm, boolean toBC) throws NoSuchAlgorithmException {
         if (algorithm == null) {
             throw new NoSuchAlgorithmException("Algorithm is null");
         }
+        algorithm = standardiseAlgorithmIdentifier(algorithm, true);
         if (toBC) {
-            if (algorithm.toUpperCase().startsWith("SHA-")) {
-                algorithm = algorithm.replaceAll("-", "");
-            }
             if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
                 return SMIMESignedGenerator.DIGEST_MD5;
             } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
