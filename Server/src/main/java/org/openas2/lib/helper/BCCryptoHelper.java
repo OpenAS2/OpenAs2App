@@ -81,6 +81,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BCCryptoHelper implements ICryptoHelper {
     private Log logger = LogFactory.getLog(BCCryptoHelper.class.getSimpleName());
@@ -481,14 +483,19 @@ public class BCCryptoHelper implements ICryptoHelper {
         return (PrivateKey) key;
     }
 
-    protected String convertAlgorithm(String algorithm, boolean toBC) throws NoSuchAlgorithmException {
+    public String convertAlgorithm(String algorithm, boolean toBC) throws NoSuchAlgorithmException {
         if (algorithm == null) {
             throw new NoSuchAlgorithmException("Algorithm is null");
         }
+        // Standard for MIC is RFC5751. Cater for non-standard algorithm identifiers
+        Pattern pttrn = Pattern.compile("(sha)[0-9]+[-_]+(.*)$|(sha)([0-9]+)$", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pttrn.matcher(algorithm);
+        if (matcher.matches()) {
+            int baseMatchGroup = matcher.group(2) == null?3:1;
+            algorithm = matcher.group(baseMatchGroup) + "-" + matcher.group(baseMatchGroup+1);
+        }
+
         if (toBC) {
-            if (algorithm.toUpperCase().startsWith("SHA-")) {
-                algorithm = algorithm.replaceAll("-", "");
-            }
             if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
                 return SMIMESignedGenerator.DIGEST_MD5;
             } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
