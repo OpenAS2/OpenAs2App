@@ -1,3 +1,9 @@
+Version 3.9.0 - 2023-12-20
+This is an enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+ 1. Support for non-standard algorithm strings for partners that do not conform to the RFC standard. See documentation section 7.2.1 "Signing"
+
 Version 3.8.0 - 2023-11-07
 This is an enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
