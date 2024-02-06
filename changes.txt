@@ -1,3 +1,9 @@
+Version 3.9.1 - 2024-02-06
+This is a minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+ 1. Fix persistence to errordir after all resend attempts fail.
+
 Version 3.9.0 - 2023-12-20
 This is an enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
