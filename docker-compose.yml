@@ -8,6 +8,9 @@ services:
       - 4080:10080
       - 4081:10081
       - 8443:8080
+    volumes:
+      - ./config:/opt/openas2/config
+      - ./data:/opt/openas2/data
     tty: true
     stdin_open: true
 
