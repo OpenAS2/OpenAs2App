@@ -65,7 +65,7 @@ $ docker run -it --rm openas2:latest
 You can test it by visiting `http://container-ip:10080` in a browser or, if you need access outside the host, on port 4080:
 
 ```console
-$ docker run -it --rm -p 4080:10080 -p 4081:10081 -p 8443:8443 openas2:latest
+$ docker run -it --rm -p 4080:10080 -p 4081:10081 -p 8443:8080 openas2:latest
 ```
 
 You can then go to `http://localhost:4080` or `http://host-ip:4080` in a browser (noting that it will return a 401 since there are no proper AS2 headers sent by the browser by default).
@@ -90,7 +90,7 @@ $ docker build -t openas2:latest .
 Run the OpenAS2 server, with its network set to "host", so that the WebUI can access the server.
 
 ```console
-$ docker run -it --rm --net=host -p 4080:10080 -p 4081:10081 -p 8443:8443 openas2:latest
+$ docker run -it --rm --net=host -p 4080:10080 -p 4081:10081 -p 8443:8080 openas2:latest
 ```
 
 In a separate terminal, build the WebUI docker image:
