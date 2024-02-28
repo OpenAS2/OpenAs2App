@@ -106,6 +106,9 @@ $ docker run --rm -p 8080:80 openas2_webui:latest
 ```
 
 Visit http://localhost:8080 and login with "userID" and "pWd".
+
+If the docker images are not locally installed you have to specify the full path at the Server field. (ex. http://192.168.1.100:8443/api) and either use a reverse proxy or allow connections from any location (config.xml restapi.command.processor.baseuri="http://0.0.0.0:8080").
+
 Note: You may have to login twice if you get a "Network Error" the first time.
 
 ## Docker Compose
