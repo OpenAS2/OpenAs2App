@@ -7,7 +7,7 @@ services:
     ports:
       - 4080:10080
       - 4081:10081
-      - 8443:8443
+      - 8443:8080
     tty: true
     stdin_open: true
 
