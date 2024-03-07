@@ -7,18 +7,28 @@ services:
     ports:
       - 4080:10080
       - 4081:10081
-      - 8443:8080
-    volumes:
-      - ./config:/opt/openas2/config
-      - ./data:/opt/openas2/data
+      - ${HOST_RESTAPI_PORT:-8443}:8080
+    environment:
+      - OPENAS2PROP_RESTAPI__COMMAND__PROCESOR__BASEURI="http://0.0.0.0:8080"
+      - OPENAS2PROP_RESTAPI__COMMAND__PROCESOR__USERID="userID"
+      - OPENAS2PROP_RESTAPI__COMMAND__PROCESOR__PASSWORD="pWd"
     tty: true
     stdin_open: true
+    volumes:
+      - config:/opt/openas2/config:rw
+      - data:/opt/openas2/data:rw
+
 
   openas2_webui:
     build:
       context: .
       dockerfile: Dockerfile_WebUI
+      args:
+        - VUE_APP_RESTAPI_URL=http://localhost:${HOST_RESTAPI_PORT:-8443}/api
     ports:
-      - 8080:80
+      - ${HOST_WEBUI_PORT:-8080}:80
     tty: true
     stdin_open: true
+volumes:
+  config:
+  data:

@@ -12,6 +12,12 @@ This is a simple implementation of Web-based user interface that interacts with 
 yarn install
 ```
 
+### Environment Variables
+The OpenAS2 public REST api Endpoint needs to be configured with the VUE_APP_RESTAPI_URL env variable
+```
+VUE_APP_RESTAPI_URL=https://openas2/rest/api
+```
+
 ### Compiles and hot-reloads for development
 ```
 yarn run serve

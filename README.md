@@ -137,3 +137,38 @@ View specific container logs:
 $ docker compose logs openas2
 $ docker compose logs openas2_webui
 ```
+
+## Dynamically configure your container using environment variables
+
+Here is a short explaination how to override properties in the container's `config.xml` file using environment variables. 
+
+**Prerequisites:**
+
+* The container environment needs to have environment variables starting with the prefix `OPENAS2PROP_`.
+
+**Process:**
+
+1. **Start the container**: Start the container using your preferred method (e.g., Docker run command).
+2. **Environment variables take precedence**: The script running within the container (assumed to be `start-container.sh`) checks for the existence of `config.xml` in the `$OPENAS2_BASE/config` directory. 
+3. **Missing `config.xml`**: If `config.xml` is missing, the script:
+   - Copies the contents of the `config_template` directory into the `config` directory.
+4. **Missing `OPENAS2_PROPERTIES_FILE`**: If the `OPENAS2_PROPERTIES_FILE` is not found:
+   - The script logs a warning message using the defined colorized `echo_warn` function.
+   - It processes environment variables to generate properties file content.
+     - Environment variables starting with the prefix `OPENAS2PROP_` are considered.
+     - For each environment variable:
+       - The script removes the prefix using string manipulation.
+       - It replaces double underscores with dots (`__` to `.`) in the variable name.
+       - The name is converted to lowercase.
+       - The value of the environment variable is retrieved.
+       - The script logs the processed name and value with color using the `echo_ok` function.
+       - Finally, it writes the processed name and value in the format `"name=value"` to the `OPENAS2_PROPERTIES_FILE`.
+5. **Start OpenAS2**: After processing (if any), the script continues by calling the `start-openas2.sh` script located in the same directory to launch the OpenAS2 server.
+
+**Notes:**
+
+* This script provides a way to . 
+* Ensure the environment variables have appropriate access permissions and values within your container environment.
+* The script uses color-coded output (if the terminal supports it) to differentiate between warnings and successful operations. 
+* You can customize the color definitions or remove the colorization logic if not needed.
+* Remember to adjust the script path and variable names based on your specific container setup.
