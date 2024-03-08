@@ -5,11 +5,16 @@
  */
 package org.openas2.cmd.processor.restapi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
+
+import org.openas2.logging.Log;
+import org.openas2.util.Properties;
 
 import javax.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
@@ -38,12 +43,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,6 +52,7 @@ import java.util.logging.Logger;
  */
 @Path("api")
 public class ApiResource {
+    private final Log logger = (Log) LogFactory.getLog(ApiResource.class.getSimpleName());
 
     /**
      * @return the processor
@@ -71,11 +72,11 @@ public class ApiResource {
     @Context
     UriInfo ui;
     @Context
-    Request request;
+    //Request request;
     private final ObjectMapper mapper;
-    
+
     public ApiResource() {
-                
+
         mapper = new ObjectMapper();
         // enable pretty printing
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -248,5 +249,26 @@ public class ApiResource {
             // return Response.status(506).entity( ex.getMessage()).build();
         }
     }
+//----------------a.p
+@GET
+@RolesAllowed({"ADMIN"})
+@Path("/v2/configuration/propertylist")
+@Produces(MediaType.APPLICATION_JSON)
+public Response getPropertyList() {
+    Map<String, String> result = new HashMap<>();
+    result = (Map<String, String>) Properties.getProperties();
+    ObjectMapper om = new ObjectMapper();
+    try {
+        String js = om.writeValueAsString(result);
+        return Response.ok(js, MediaType.APPLICATION_JSON).build();
+    } catch (JsonProcessingException e) {
+        logger.error(e);
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+            .entity("error")
+            .type(MediaType.APPLICATION_JSON)
+            .build();
+    }
+}
+
 
 }
