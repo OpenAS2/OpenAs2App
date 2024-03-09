@@ -61,15 +61,15 @@
                email.subject="$exception.name$: $exception.message$"
                email.bodytemplate="%home%/emailtemplate.txt"
                file.logger.filename="%home%/../logs/log-$date.yyyyMMdd$.txt"
-               msg_tracking.use_embedded_db="true"
-               msg_tracking.force_load_jdbc_driver="false"
-               msg_tracking.db_user="sa"
-               msg_tracking.db_pwd="OpenAS2"
-               msg_tracking.db_name="openas2"
+               msg_tracking.use_embedded_db="false"
+               msg_tracking.force_load_jdbc_driver="true"
+               msg_tracking.db_user="OpenAS2"
+               msg_tracking.db_pwd="Ap@22051954"
+               msg_tracking.db_name="AS2"
                msg_tracking.table_name="msg_metadata"
                msg_tracking.db_directory="%home%/DB"
-               msg_tracking.jdbc_driver="org.h2.Driver"
-               msg_tracking.jdbc_connect_string="jdbc:h2:$component.db_directory$/$component.db_name$"
+               msg_tracking.jdbc_driver="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+               msg_tracking.jdbc_connect_string="jdbc:sqlserver://127.0.0.1:1434;databaseName=AS2;user=openAS2;password=Ap@22051954;encrypt=true;trustServerCertificate=true"
                msg_tracking.sql_escape_character="'"
                msg_tracking.tcp_server_start="true"
                msg_tracking.tcp_server_port="9092"
@@ -126,13 +126,13 @@
                         userid="userID"
                         password="pWd"
                         response_format="xml"/>
-      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
+      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor"
                         enabled="$properties.restapi.command.processor.enabled$"
                         baseuri="$properties.restapi.command.processor.baseuri$"
                         ssl_protocol="TLS"
                         ssl_keystore="$properties.ssl_keystore$"
                         ssl_keystore_password="$properties.ssl_keystore_password$"
-                        userid="$properties.restapi.command.processor.userid$" 
+                        userid="$properties.restapi.command.processor.userid$"
                         password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
@@ -147,7 +147,7 @@
       <!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
 		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
 		     The name of the file sent to the partner will be "OrderID-745634.edi" -->
-      <!-- 
+      <!--
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toAny"
               errordir="$properties.storageBaseDir$/toAny/error"
