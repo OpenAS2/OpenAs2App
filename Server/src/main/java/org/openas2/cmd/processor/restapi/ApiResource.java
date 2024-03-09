@@ -8,12 +8,12 @@ package org.openas2.cmd.processor.restapi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
 
-import org.openas2.logging.Log;
 import org.openas2.util.Properties;
 
 import javax.annotation.security.RolesAllowed;
@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  */
 @Path("api")
 public class ApiResource {
-    private final Log logger = (Log) LogFactory.getLog(ApiResource.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(ApiResource.class.getSimpleName());
 
     /**
      * @return the processor
@@ -72,7 +72,7 @@ public class ApiResource {
     @Context
     UriInfo ui;
     @Context
-    //Request request;
+    Request request;
     private final ObjectMapper mapper;
 
     public ApiResource() {
@@ -249,26 +249,43 @@ public class ApiResource {
             // return Response.status(506).entity( ex.getMessage()).build();
         }
     }
-//----------------a.p
-@GET
-@RolesAllowed({"ADMIN"})
-@Path("/v2/configuration/propertylist")
-@Produces(MediaType.APPLICATION_JSON)
-public Response getPropertyList() {
-    Map<String, String> result = new HashMap<>();
-    result = (Map<String, String>) Properties.getProperties();
-    ObjectMapper om = new ObjectMapper();
-    try {
-        String js = om.writeValueAsString(result);
-        return Response.ok(js, MediaType.APPLICATION_JSON).build();
-    } catch (JsonProcessingException e) {
-        logger.error(e);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-            .entity("error")
-            .type(MediaType.APPLICATION_JSON)
-            .build();
+
+    //--------------------------------------------
+    @POST
+    @RolesAllowed({"ADMIN"})
+    @Path("/v2/ClearConsole")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response ClearConsole() {
+        try {
+            // For Windows OS
+            logger.debug("clearconsole");
+            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            return Response.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.serverError().entity("Error occured while clearing console").build();
+        }
     }
-}
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/v2/configuration/propertylist")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPropertyList() {
+        Map<String, String> result = new HashMap<>();
+        result = (Map<String, String>) Properties.getProperties();
+        ObjectMapper om = new ObjectMapper();
+        try {
+            String js = om.writeValueAsString(result);
+            return Response.ok(js, MediaType.APPLICATION_JSON).build();
+        } catch (JsonProcessingException e) {
+            logger.error(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity("error")
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+        }
+    }
 
 
 }
