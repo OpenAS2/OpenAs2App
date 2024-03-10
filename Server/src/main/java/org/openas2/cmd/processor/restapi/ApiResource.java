@@ -10,10 +10,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openas2.ComponentNotFoundException;
+import org.openas2.Session;
 import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
 
+import org.openas2.partner.Partnership;
+import org.openas2.partner.PartnershipFactory;
 import org.openas2.util.Properties;
 
 import javax.annotation.security.RolesAllowed;
@@ -280,6 +284,38 @@ public class ApiResource {
             return Response.ok(js, MediaType.APPLICATION_JSON).build();
         } catch (JsonProcessingException e) {
             logger.error(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity("error")
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+        }
+    }
+
+    private List<Partnership> getSessionPartnerships() {
+        Session s = getProcessor().getSession();
+        PartnershipFactory pfx = null;
+        try {
+            pfx = s.getPartnershipFactory();
+        } catch (ComponentNotFoundException e) {
+            logger.error(e);
+        }
+        List<Partnership> partnerships = pfx.getPartnerships();
+        return partnerships;
+    }
+
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/v2/partnership/list")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listPartnerships() {
+        List<Partnership> partnerships = getSessionPartnerships();
+        Map<String, List<Partnership>> result = new HashMap<>();
+        result.put("partnership", partnerships);
+        try {
+            String json = mapper.writeValueAsString(result);
+            return Response.ok(json, MediaType.APPLICATION_JSON).build();
+        } catch (JsonProcessingException e) {
+            logger.error("Error converting Partnership list to JSON", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity("error")
                 .type(MediaType.APPLICATION_JSON)

@@ -68,7 +68,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             try {
 
                 Class.forName(jdbcDriver);
-                logger.info(" is " + Class.forName(jdbcDriver).getName());
+                logger.info(Class.forName(jdbcDriver).getName());
             } catch (ClassNotFoundException e) {
 
                 logger.error("Failed to load JDBC driver: " + jdbcDriver, e);
