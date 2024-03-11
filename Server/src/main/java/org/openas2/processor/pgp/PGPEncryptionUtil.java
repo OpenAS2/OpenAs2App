@@ -1,4 +1,4 @@
-package org.openas2.pgp;
+package org.openas2.processor.pgp;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.PGPCompressedData;
