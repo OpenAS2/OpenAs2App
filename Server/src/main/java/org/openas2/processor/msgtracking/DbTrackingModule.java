@@ -427,4 +427,34 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         return true;
     }
 
+    public void persistPayload(String msgId, String payload) {
+        Connection conn = null;
+        try {
+            if (useEmbeddedDB) {
+                conn = dbHandler.getConnection();
+            } else {
+                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
+            }
+            Statement s = conn.createStatement();
+            String msgIdField = FIELDS.MSG_ID;
+            logger.debug("here comes the stmt================================================");
+            String stmt = "UPDATE " + tableName + " SET payload='" + payload + "'  WHERE " + msgIdField + " = '" + msgId + "'";
+            logger.debug("stmt=" + stmt);
+            s.executeUpdate(stmt);
+            logger.debug("====================================================================\n");
+
+        } catch (Exception e) {
+            logger.error(e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 }

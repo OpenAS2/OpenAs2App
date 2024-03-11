@@ -13,15 +13,16 @@ import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.ProcessorModule;
+import org.openas2.processor.msgtracking.DbTrackingModule;
+import org.openas2.processor.msgtracking.TrackingModule;
 import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.DispositionType;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class MessageFileModule extends BaseStorageModule {
@@ -42,7 +43,38 @@ public class MessageFileModule extends BaseStorageModule {
             File msgFile = getFile(msg, store_message_to, action);
             InputStream in = msg.getData().getInputStream();
             store(msgFile, in);
-            logger.info("stored message to " + msgFile.getAbsolutePath() + msg.getLogMsgID());
+
+            //String fileContent = new String(Files.readAllBytes(msgFile.toPath()), StandardCharsets.UTF_8);
+            in.reset();
+            StringBuilder fileContentBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    fileContentBuilder.append(line).append("\n");
+                }
+            }
+            logger.debug("msg.getMessageID()="+msg.getMessageID());
+            logger.debug("msg.getLogMsg()="+msg.getLogMsg());
+            logger.debug(fileContentBuilder.toString());
+
+            ///dbtracking update the message entry with the payload
+
+
+            // Convert StringBuilder to String
+            String fileContent = fileContentBuilder.toString();
+
+            List<ProcessorModule> mpl = getSession().getProcessor().getModulesSupportingAction(TrackingModule.DO_TRACK_MSG);
+
+            DbTrackingModule db = (DbTrackingModule) mpl.get(0);
+
+            db.setParameter("msg_id",msg.getMessageID());
+            db.setParameter("payload",fileContent);
+            db.persistPayload(msg.getMessageID(),fileContent);
+            logger.info("content persisted for msg_id="+msg.getMessageID());
+            // Log the content of msgFile
+           // logger.debug("stored message to " + msgFile.getAbsolutePath() + msg.getLogMsgID() + ". Content: " + fileContent);
+
+
         } catch (Exception e) {
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "Error storing transaction"), AS2ReceiverModule.DISP_STORAGE_FAILED, e);
         }
