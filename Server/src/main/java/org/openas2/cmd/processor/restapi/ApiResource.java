@@ -121,12 +121,16 @@ public class ApiResource {
         }
         if (itemId != null && itemId.length() > 1) {
             params.add(itemId.substring(1));
+            logger.debug("itemId"+itemId);
+
         }
         Iterator<String> iter = ui.getQueryParameters().keySet().iterator();
         while (iter.hasNext()) {
             String valueKey = iter.next();
             String valueParam = ui.getQueryParameters().getFirst(valueKey);
             params.add(valueKey + "=" + valueParam);
+            logger.debug(valueKey + "=" + valueParam);
+
         }
         if (formParams != null) {
             int length = formParams.size();
@@ -142,6 +146,7 @@ public class ApiResource {
                 String valueKey = iter.next();
                 String valueParam = formParams.getFirst(valueKey);
                 params.add(valueKey + "=" + valueParam);
+                logger.debug(valueKey + "=" + valueParam);
             }
         }
         CommandResult output = getProcessor().feedCommand(resource, params);
@@ -160,6 +165,7 @@ public class ApiResource {
     public Response getCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId) throws Exception {
         try {
             CommandResult output=null;
+            logger.debug("resource="+resource+" action="+ action+" id"+itemId);
             // TODO: Figure out a better way to return proper JSON objects instead of this hack
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert") && (itemId != null && itemId.length() > 1)) {
                 output=this.getCertificate(itemId.substring(1));
@@ -175,7 +181,6 @@ public class ApiResource {
         }
 
     }
-
     @RolesAllowed({"ADMIN"})
     @POST
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
@@ -200,7 +205,6 @@ public class ApiResource {
             // return Response.status(506).entity( ex.getMessage()).build();
         }
     }
-
     @RolesAllowed({"ADMIN"})
     @PUT
     @Path("/{resource}/{id}")
@@ -209,7 +213,6 @@ public class ApiResource {
     public Response putCommand(@PathParam("param") String resource, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         return postCommand(resource, "add", itemId, formParams);
     }
-
     @RolesAllowed({"ADMIN"})
     @DELETE
     @Path("/{resource}/{id}")
@@ -217,7 +220,6 @@ public class ApiResource {
     public Response deleteCommand(@PathParam("resource") String resource, @PathParam("id") String itemId) throws Exception {
         return getCommand(resource, "delete", itemId);
     }
-
     @RolesAllowed({"ADMIN"})
     @HEAD
     @Path("/{resource}{action:(/[^/]+?)?}{id:(/[^/]+?)?}")
@@ -225,7 +227,6 @@ public class ApiResource {
         // Just an Empty response
         return Response.status(200).build();
     }
-
     private CommandResult importCertificateByStream(String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         try {
             List<String> params = new ArrayList<String>();
@@ -254,7 +255,6 @@ public class ApiResource {
             // return Response.status(506).entity( ex.getMessage()).build();
         }
     }
-
     //--------------------------------------------
     @POST
     @RolesAllowed({"ADMIN"})
@@ -272,7 +272,6 @@ public class ApiResource {
             return Response.serverError().entity("Error occured while clearing console").build();
         }
     }
-
     @POST
     @RolesAllowed({"ADMIN"})
     @Path("/v2/WriteToConsole")
@@ -306,7 +305,6 @@ public class ApiResource {
                 .build();
         }
     }
-
     private List<Partnership> getSessionPartnerships() {
         Session s = getProcessor().getSession();
         PartnershipFactory pfx = null;
@@ -318,7 +316,6 @@ public class ApiResource {
         List<Partnership> partnerships = pfx.getPartnerships();
         return partnerships;
     }
-
     @GET
     @RolesAllowed({"ADMIN"})
     @Path("/v2/partnership/list")
@@ -338,6 +335,4 @@ public class ApiResource {
                 .build();
         }
     }
-
-
 }

@@ -1,9 +1,12 @@
 package org.openas2.app.message;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
 
 import org.openas2.cmd.CommandResult;
 
+import org.openas2.cmd.processor.RestCommandProcessor;
 import org.openas2.message.MessageFactory;
 import org.openas2.processor.msgtracking.DbTrackingModule;
 import org.openas2.processor.msgtracking.TrackingModule;
@@ -18,10 +21,11 @@ import java.util.List;
  * @author cristiam henriquez
  */
 public class GetDataForCharts extends AliasedMessagesCommand {
-
+    private final Log logger = LogFactory.getLog(GetDataForCharts.class.getSimpleName());
     public String getDefaultDescription() {
         return "View data for charts.";
     }
+
 
     public String getDefaultName() {
         return "data_charts";
@@ -39,6 +43,7 @@ public class GetDataForCharts extends AliasedMessagesCommand {
                 String name = object.toString().split("=")[0];
                 String value = object.toString().split("=")[1];
                 map.put(name, value);
+                logger.debug(name+"="+value);
             }
             List<ProcessorModule> mpl = getSession().getProcessor().getModulesSupportingAction(TrackingModule.DO_TRACK_MSG);
             if (mpl == null || mpl.isEmpty()) {
