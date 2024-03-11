@@ -37,7 +37,8 @@ public class Partnership implements Serializable {
     public static final String PID_EMAIL = "email"; // Email address
 
     /* partnership definition attributes */
-    public static final String PA_SUBJECT = "subject"; // Subject sent in messages    
+    public static final String PA_SUBJECT = "subject"; // Subject sent in messages
+
     public static final String PA_CONTENT_TYPE = "content_type"; // optional content type for mime parts
     public static final String PA_USE_DYNAMIC_CONTENT_TYPE_MAPPING = "use_dynamic_content_type_mapping"; // use file extension to Content-Type mapping
     public static final String PA_CONTENT_TYPE_MAPPING_FILE = "content_type_mapping_file"; // file containing file extension to Content-Type mapping
@@ -90,6 +91,7 @@ public class Partnership implements Serializable {
 
     public String getName() {
         return name;
+
     }
 
     public void setName(String name) {
@@ -194,7 +196,7 @@ public class Partnership implements Serializable {
     public void setUseDynamicContentTypeLookup(boolean useDynamicContentTypeLookup) throws OpenAS2Exception, IOException {
         if (useDynamicContentTypeLookup) {
             // Make sure there is a lookup available
-            // If there is a partnership specific override then make the partnership use 
+            // If there is a partnership specific override then make the partnership use
             // that otherwise point it at the system mapping if available
             String contentTypeMapFilename = getAttribute(Partnership.PA_CONTENT_TYPE_MAPPING_FILE);
             if (contentTypeMapFilename != null) {

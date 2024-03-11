@@ -134,7 +134,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     LOG.info("received " + IOUtil.getTransferRate(data.length, transferStub) + getClientInfo(s) + msg.getLogMsgID());
                 }
 
-                if (LOG.isTraceEnabled()) {
+                if (LOG.isDebugEnabled()) {
                     LOG.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
                 }
                 // TODO store HTTP request, headers, and data to file in Received folder -> use message-id for filename?
@@ -401,7 +401,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     senderCert = certFx.getCertificate(x509_alias_fallback);
                     msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
                     msg.setSenderX509Alias(x509_alias_fallback);
-                    // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback   
+                    // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback
                     // Send a message so that the certificate can be updated.
                     LOG.warn("Partner has updated their certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getSenderID(Partnership.PID_NAME));
                 }

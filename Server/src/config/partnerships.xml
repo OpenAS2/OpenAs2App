@@ -1,22 +1,22 @@
 <partnerships>
-    <partner name="MyCompany"
-             as2_id="MyCompany_OID"
+    <partner name="mycompany"
+             as2_id="mycompany"
              x509_alias="mycompany"
-             email="as2msgs@openas2.com"/>
+             email="mycompany@openas2.com"/>
 
-    <partner name="PartnerA"
-             as2_id="PartnerA_OID"
+    <partner name="partnera"
+             as2_id="partnera"
              x509_alias="partnera"
-             email="as2msgs@partnera.com"/>
+             email="partnera@openas2.com"/>
 
-    <partner name="PartnerB"
-             as2_id="PartnerB_OID"
+    <partner name="partnerb"
+             as2_id="partnerb"
              x509_alias="partnerb"
              email="as2msgs@partnerb.com"/>
 
-    <partnership name="MyCompany-to-PartnerA">
-        <sender name="MyCompany"/>
-        <receiver name="PartnerA"/>
+    <partnership name="mycompany-to-partnera">
+        <sender name="mycompany"/>
+        <receiver name="partnera"/>
         <!--  The pollerConfig node defines whether this partnership will receive files to send to the "receiver" partner via a directory poller.
               Remove this node or set enabled="false" if the "sender" partner is not your own organisation or you want to prevent the poller running for this partnership.
               Attributes from the "pollerConfigBase" node above can be overridden by defining them in this node. 
@@ -38,7 +38,7 @@
          -->
          
         <attribute name="encrypt" value="3DES"/>
-        <attribute name="sign" value="SHA-256"/>
+        <attribute name="sign" value="SHA256"/>
         <attribute name="resend_max_retries" value="3"/>
         <attribute name="prevent_canonicalization_for_mic" value="false"/>
         <attribute name="rename_digest_to_old_name" value="false"/>
@@ -68,16 +68,16 @@
         <attribute name="split_file_name_prefix" value="SF"/>
 		-->
     </partnership>
-    <partnership name="PartnerA-to-MyCompany">
-        <sender name="PartnerA"/>
-        <receiver name="MyCompany"/>
+    <partnership name="partnera-to-mycompany">
+        <sender name="partnera"/>
+        <receiver name="mycompany"/>
         <attribute name="store_received_file_to" value="$properties.storageBaseDir$/inbox/$msg.receiver.as2_id$/inbox/$msg.sender.as2_id$-$rand.12345$-$msg.content-disposition.filename$"/>
         <attribute name="reject_unsigned_messages" value="true"/>
     </partnership>
 
     <partnership name="MyCompany-to-PartnerB">
-        <sender name="MyCompany"/>
-        <receiver name="PartnerB"/>
+        <sender name="mycompany"/>
+        <receiver name="partnerb"/>
         <pollerConfig enabled="true"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="8bit"/>
@@ -92,15 +92,15 @@
             <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
          -->
         <attribute name="encrypt" value="3DES"/>
-        <attribute name="sign" value="SHA-1"/>
+        <attribute name="sign" value="SHA1"/>
         <attribute name="resend_max_retries" value="3"/>
         <attribute name="prevent_canonicalization_for_mic" value="false"/>
         <attribute name="rename_digest_to_old_name" value="false"/>
         <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
     </partnership>
     <partnership name="PartnerB-to-MyCompany">
-        <sender name="PartnerB"/>
-        <receiver name="MyCompany"/>
+        <sender name="partnerb"/>
+        <receiver name="mycompany"/>
         <attribute name="reject_unsigned_messages" value="true"/>
     </partnership>
 

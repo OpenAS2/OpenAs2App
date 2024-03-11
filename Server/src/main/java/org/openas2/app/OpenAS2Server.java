@@ -2,6 +2,8 @@ package org.openas2.app;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.wadl.WadlFeature;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.XMLSession;
@@ -119,7 +121,7 @@ public class OpenAS2Server {
                     } else {
                         LOGGER.warn("MANIFEST input stream not opened for: " + url.toString());
                     }
-                    
+
                 } catch (Exception e) {
                     LOGGER.info("MANIFEST not accessed: " + e.getMessage(), e);
                 }
@@ -178,10 +180,8 @@ public class OpenAS2Server {
                 LOGGER.fatal(ICryptoHelper.JCE_LIMITATION_ERROR);
                 System.exit(1);
             }
-
             XMLSession session = new XMLSession(findConfig(args).getAbsolutePath());
             final OpenAS2Server server = new OpenAS2Server(session);
-
             registerShutdownHookIfNeeded(server);
 
             server.start();

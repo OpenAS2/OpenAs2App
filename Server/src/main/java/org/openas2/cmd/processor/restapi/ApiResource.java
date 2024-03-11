@@ -45,6 +45,7 @@ import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
+import java.io.PrintWriter;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -270,6 +271,21 @@ public class ApiResource {
             e.printStackTrace();
             return Response.serverError().entity("Error occured while clearing console").build();
         }
+    }
+
+    @POST
+    @RolesAllowed({"ADMIN"})
+    @Path("/v2/WriteToConsole")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response WriteToConsole(String str) {
+        logger.debug("Received Post Request with parametr=str:" + str);
+        // You can perform additional processing or return a response as needed
+        // For now, let's just return a simple response
+        PrintWriter w = System.console().writer();
+        w.println(str);
+        w.flush();
+        return Response.ok("[" + str + "] written to console..").build();
     }
     @GET
     @RolesAllowed({"ADMIN"})
