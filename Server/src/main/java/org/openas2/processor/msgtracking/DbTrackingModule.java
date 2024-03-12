@@ -201,7 +201,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID
-                + ",CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM "
+                + ",CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE,PAYLOAD FROM "
                 + tableName);
             ResultSetMetaData meta = rs.getMetaData();
 
