@@ -11,9 +11,9 @@
     
     <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
     <label for="inputUsername" class="sr-only">Username</label>
-    <input v-model="username" type="text" id="inputUsername" class="form-control" placeholder="Username" required="" autofocus="">
+    <input v-model="username" type="text" id="inputUsername" class="form-control" placeholder="" required="false" autofocus="">
     <label for="inputPassword" class="sr-only">Password</label>
-    <input v-model="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+    <input v-model="password" type="password" id="inputPassword" class="form-control" placeholder="" required="false">
     <label for="inputServer" class="sr-only">Server</label>
     <input v-model="server" type="text" id="inputServer" class="form-control" placeholder="Server" required="" autofocus="">
     <div class="checkbox mb-3">
@@ -30,15 +30,13 @@
 <script>
 import { mapState } from 'vuex';
 import store from '../store';
-import axios from 'axios';
-
-export default {
+import axios from 'axios';ort default {
     name: 'login-screen',
     data: function() {return {
-        username: '',
-        password: '',
-        server: process.env.VUE_APP_RESTAPI_URL || 'http://127.0.0.1:8443/api',
-        rememberme: false,
+        username: 'userID',
+        password: 'pWd',
+        server: process.env.VUE_APP_RESTAPI_URL || 'http://127.0.0.1:8080/api',
+        rememberme: true,
         loading: false,
         errormsg: '',
         errored: false
