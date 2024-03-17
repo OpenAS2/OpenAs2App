@@ -291,8 +291,8 @@ public class BCCryptoHelper implements ICryptoHelper {
         PrivateKey privKey = castKey(key);
         String encryptAlg = cert.getPublicKey().getAlgorithm();
         if (encryptAlg.equalsIgnoreCase("EC")) {
-        	// Adjust algorithm name to support Elliptic Curve in Bouncy Castle
-        	encryptAlg = "ECDSA";
+            // Adjust algorithm name to support Elliptic Curve in Bouncy Castle
+            encryptAlg = "ECDSA";
         }
 
         SMIMESignedGenerator sGen = new SMIMESignedGenerator(adjustDigestToOldName ? SMIMESignedGenerator.RFC3851_MICALGS : SMIMESignedGenerator.RFC5751_MICALGS);
