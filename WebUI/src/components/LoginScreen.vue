@@ -30,7 +30,8 @@
 <script>
 import { mapState } from 'vuex';
 import store from '../store';
-import axios from 'axios';ort default {
+import axios from 'axios';
+export default {
     name: 'login-screen',
     data: function() {return {
         username: 'userID',

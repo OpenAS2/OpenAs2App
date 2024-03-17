@@ -19,7 +19,8 @@ export default {
   name: 'app',
   components: {
     LoginScreen,
-    AdminLayout
+    AdminLayout,
+    
   },
   data: function() {
     return { 
@@ -29,7 +30,11 @@ export default {
   computed: mapState({
       is_logged: state =>  { console.log('is_logged',state); return (state.username !=null && state.password !=null && state.server !=null) }
   }),  
+  configureWebpack: {
+    devtool: 'source-map'
+  }
 }
+
 </script>
 
 <style>
