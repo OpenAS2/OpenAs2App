@@ -41,7 +41,7 @@
                module.AS2ReceiverModule.https.port="10443"
                module.AS2MDNReceiverModule.https.enabled="false"
                module.AS2MDNReceiverModule.https.port="10444"
-               module.HealthCheckModule.enabled="false"
+               module.HealthCheckModule.enabled="true"
                module.HealthCheckModule.port="10099"
                async_mdn_receiver_port="$properties.module.AS2MDNReceiverModule.http.port$"
                as2_async_mdn_url="http://localhost:$properties.async_mdn_receiver_port$"
