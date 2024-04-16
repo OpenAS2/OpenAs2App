@@ -8,5 +8,5 @@ ARG VUE_APP_API_URL
 ENV VUE_APP_API_URL=${VUE_APP_API_URL:-http://localhost:8080}
 RUN yarn run build
 
-FROM nginx
+FROM nginx:stable-alpine
 COPY --from=web-builder /usr/src/webui/dist /usr/share/nginx/html
