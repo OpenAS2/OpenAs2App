@@ -105,7 +105,7 @@ public class MDNSenderModule extends HttpSenderModule {
                 throw new WrappedException(we);
             }
             // make sure to set the content-length header
-            //mdn.setHeader("Content-Length", Integer.toString(data.size()));
+            mdn.setHeader("Content-Length", Integer.toString(dataStream.size()));
             try {
                 HTTPUtil.sendHTTPResponse(httpOutputStream, HttpURLConnection.HTTP_OK, dataStream, mdn.getHeaders().getAllHeaderLines());
                 msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
