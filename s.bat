@@ -1,2 +1,2 @@
-Server\target\dist\bin\start-openas2
-rem Server\target\dist\bin\vsStart
+rem Server\target\dist\bin\start-openas2
+Server\target\dist\bin\vsStart

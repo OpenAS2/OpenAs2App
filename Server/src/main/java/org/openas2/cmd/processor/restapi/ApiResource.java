@@ -46,6 +46,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -335,4 +337,35 @@ public class ApiResource {
                 .build();
         }
     }
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/v2/getAnnotatedMehtods")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPathAnnotatedMethods() {
+        Map<String, String> annotatedMethods = new HashMap<>();
+        Method[] methods = this.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(Path.class)) {
+                String methodName = method.getName();
+                Path pathAnnotation = method.getAnnotation(Path.class);
+                String pathValue = pathAnnotation.value();
+                annotatedMethods.put(methodName, pathValue);
+            }
+        }
+            try {
+                String json = mapper.writeValueAsString(annotatedMethods);
+                return Response.ok(json, MediaType.APPLICATION_JSON).build();
+            } catch(JsonProcessingException e){
+                logger.error("Error converting Partnership list to JSON", e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("error")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+            }
+        }
 }
+
+
+
+
+
