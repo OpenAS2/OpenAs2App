@@ -160,6 +160,7 @@ public class ApiResource {
         return output;
     }
 
+
     @RolesAllowed({"ADMIN"})
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
