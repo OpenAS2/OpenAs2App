@@ -55,7 +55,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     public static final String PARAM_MIMETYPE = "mimetype";
     public static final String PARAM_RESEND_MAX_RETRIES = "resend_max_retries";
 
-    private Log logger = LogFactory.getLog(MessageBuilderModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(MessageBuilderModule.class.getSimpleName());
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
@@ -75,7 +75,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
      * @throws OpenAS2Exception
      * @throws FileNotFoundException
      */
-    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {       
+    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {
         Message msg = buildBaseMessage(filename);
         String fileSizeThresholdStr = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_THRESHOLD_SIZE_IN_BYTES);
         long fileSizeThreshold = 0;
@@ -111,12 +111,12 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             }
             // Update the message's partnership with any additional attributes since initial call in case dynamic variables were not set initially
             getSession().getPartnershipFactory().updatePartnership(msg, true);
-            return processDocument(pendingFile, msg); 
+            return processDocument(pendingFile, msg);
         }
     }
 
     /**
-     * Take the file input stream and write it to a file system file in the processing folder. 
+     * Take the file input stream and write it to a file system file in the processing folder.
      * Use this method if the file is produced in real time through a stream.
      * @param ip
      * @param filename
@@ -302,7 +302,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     }
 
     /**
-     * Provides support for a random InputStream. 
+     * Provides support for a random InputStream.
      *     NOTE: This method should not be used for very large files as it will consume all the available heap and fail to send.
      * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
      * @param ip - the generic inputstream

@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HealthCheckHandler implements NetModuleHandler {
-    private HealthCheckModule module;
+    private final HealthCheckModule module;
 
-    private Log logger = LogFactory.getLog(HealthCheckHandler.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(HealthCheckHandler.class.getSimpleName());
 
     public HealthCheckHandler(HealthCheckModule module) {
         super();
@@ -42,7 +42,7 @@ public class HealthCheckHandler implements NetModuleHandler {
             List<String> request = new ArrayList<String>(2);
             data = HTTPUtil.readHTTP(s.getInputStream(), s.getOutputStream(), headers, request);
             if (logger.isDebugEnabled()) {
-                logger.debug("HealthCheck received request: " + request.toString() + "\n\tHeaders: " + HTTPUtil.printHeaders(headers.getAllHeaders(), "==", ";;") + "\n\tData: " + data);
+                logger.debug("HealthCheck received request: " + request + "\n\tHeaders: " + HTTPUtil.printHeaders(headers.getAllHeaders(), "==", ";;") + "\n\tData: " + data);
             }
             // Invoke the healthcheck
             List<String> failures = new HealthCheck().runCheck(module);
@@ -75,7 +75,6 @@ public class HealthCheckHandler implements NetModuleHandler {
             }
             String msg = "Unhandled error condition receiving healthcheck.";
             logger.error(msg, e);
-            return;
         }
 
     }

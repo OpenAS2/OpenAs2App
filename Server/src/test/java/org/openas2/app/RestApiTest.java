@@ -49,15 +49,15 @@ public class RestApiTest {
     private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
-    private static String TEST_PARTNER_NAME = "partnerX";
-    private static String TEST_PARTNERSHIP_NAME = TEST_PARTNER_NAME + "-partnerA";
+    private static final String TEST_PARTNER_NAME = "partnerX";
+    private static final String TEST_PARTNERSHIP_NAME = TEST_PARTNER_NAME + "-partnerA";
     @TempDir
     private static Path scratchpad;
     private static CloseableHttpClient httpclient;
-    private static String restHostAddr = "http://127.0.0.1:8080";
-    private static String baseUrl = restHostAddr + "/api/";
-    private static String authUser = "admin";
-    private static String authPwd = "admin";
+    private static final String restHostAddr = "http://127.0.0.1:8080";
+    private static final String baseUrl = restHostAddr + "/api/";
+    private static final String authUser = "admin";
+    private static final String authPwd = "admin";
 
     @BeforeAll
     public static void start_A_Server() throws Exception {

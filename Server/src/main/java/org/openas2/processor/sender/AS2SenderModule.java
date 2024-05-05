@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 
 public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
-    private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
 
     /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
     *
@@ -138,13 +138,11 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
             msg.trackMsgState(getSession());
-            return;
         } catch (SSLHandshakeException e) {
             msg.setLogMsg("Failed to connect to partner using SSL certificate. Please run the SSL certificate checker utility to identify the issue: " + url);
             logger.error(msg, e);
             msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
             msg.trackMsgState(getSession());
-            return;
         } catch (Exception e) {
             msg.setLogMsg("Unexpected error sending file: " + org.openas2.logging.Log.getExceptionMsg(e));
             logger.error(msg, e);
@@ -152,7 +150,6 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
             msg.trackMsgState(getSession());
-            return;
         }
     }
 
@@ -315,12 +312,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
         }
         String compressionMode = msg.getPartnership().getAttribute("compression_mode");
-        boolean isCompressBeforeSign = true; // Defaults to compressing the
+        boolean isCompressBeforeSign = compressionMode == null || !compressionMode.equalsIgnoreCase("compress-after-signing"); // Defaults to compressing the
         // entire message before signing
         // and encryption
-        if (compressionMode != null && compressionMode.equalsIgnoreCase("compress-after-signing")) {
-            isCompressBeforeSign = false;
-        }
         if (isCompress && isCompressBeforeSign) {
             if (logger.isTraceEnabled()) {
                 logger.trace("Compressing outbound message before signing...");
@@ -637,7 +631,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         }
         // We are interested in files older than configured seconds
         int maxWaitMdnResponseSecs = Integer.parseInt(Properties.getProperty(Properties.AS2_MDN_RESP_MAX_WAIT_SECS, "4560"));
-        long cutoff = System.currentTimeMillis() - (maxWaitMdnResponseSecs * 1000);
+        long cutoff = System.currentTimeMillis() - (maxWaitMdnResponseSecs * 1000L);
         String[] files = pendingDir.list(new AgeFileFilter(cutoff));
         for (int i = 0; i < files.length; i++) {
             File inFile = new File(pendingDir + File.separator + files[i]);
@@ -659,7 +653,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
                 AS2Util.cleanupFiles(msg, true);
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MDN_ASYNC_RECEIVE_FAIL);
-                msg.trackMsgState(getSession());                
+                msg.trackMsgState(getSession());
             }
         }
     }

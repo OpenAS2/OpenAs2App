@@ -35,7 +35,7 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
     public static final String PARAM_INTERVAL = "interval";
     private KeyStore keyStore;
 
-    private Log logger = LogFactory.getLog(PKCS12CertificateFactory.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(PKCS12CertificateFactory.class.getSimpleName());
 
     public X509Certificate getCertificate(String alias) throws OpenAS2Exception {
         try {

@@ -85,7 +85,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BCCryptoHelper implements ICryptoHelper {
-    private Log logger = LogFactory.getLog(BCCryptoHelper.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(BCCryptoHelper.class.getSimpleName());
 
     public boolean isEncrypted(MimeBodyPart part) throws MessagingException {
         ContentType contentType = new ContentType(part.getContentType());
@@ -192,10 +192,8 @@ public class BCCryptoHelper implements ICryptoHelper {
 
         byte[] mic = digIn.getMessageDigest().digest();
         String micString = new String(Base64.encode(mic));
-        StringBuffer micResult = new StringBuffer(micString);
-        micResult.append(", ").append(digest);
 
-        return micResult.toString();
+        return micString + ", " + digest;
     }
 
     public MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
@@ -379,7 +377,7 @@ public class BCCryptoHelper implements ICryptoHelper {
                             strBuf.append(asn1s[i]).append(";");
                         }
                     }
-                    logger.trace("Signer Attributes: " + strBuf.toString());
+                    logger.trace("Signer Attributes: " + strBuf);
 
                     AttributeTable attributes = signer.getSignedAttributes();
                     Attribute attribute = attributes.get(CMSAttributes.messageDigest);

@@ -270,13 +270,12 @@ public class Partnership implements Serializable {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("Partnership " + getName());
-        buf.append(" Sender IDs = ").append(getSenderIDs());
-        buf.append(" Receiver IDs = ").append(getReceiverIDs());
-        buf.append(" Attributes = ").append(getAttributes());
+        String buf = "Partnership " + getName() +
+            " Sender IDs = " + getSenderIDs() +
+            " Receiver IDs = " + getReceiverIDs() +
+            " Attributes = " + getAttributes();
 
-        return buf.toString();
+        return buf;
     }
 
     protected boolean compareIDs(Map<String, Object> ids, Map<String, Object> compareTo) {
@@ -330,12 +329,12 @@ public class Partnership implements Serializable {
 
     public boolean isPreventCanonicalization() {
         String preventCanonicalization = getAttribute("prevent_canonicalization_for_mic");
-        return (preventCanonicalization != null && "true".equals(preventCanonicalization));
+        return ("true".equals(preventCanonicalization));
     }
 
     public boolean isRenameDigestToOldName() {
         String removeDash = getAttribute("rename_digest_to_old_name");
-        return (removeDash != null && "true".equals(removeDash));
+        return ("true".equals(removeDash));
     }
 
     public boolean isRemoveCmsAlgorithmProtectionAttr() {

@@ -36,7 +36,7 @@ public abstract class PollingModule extends MessageBuilderModule {
 
     public void doStart() throws OpenAS2Exception {
         timer = new Timer(getName(), false);
-        timer.scheduleAtFixedRate(new PollTask(), 0, getInterval() * 1000);
+        timer.scheduleAtFixedRate(new PollTask(), 0, getInterval() * 1000L);
     }
 
     public void doStop() throws OpenAS2Exception {

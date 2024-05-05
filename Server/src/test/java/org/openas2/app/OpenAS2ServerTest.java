@@ -45,7 +45,7 @@ public class OpenAS2ServerTest {
     private static TestPartner serverAPartnerReceiver;
     private static OpenAS2Server serverA;
     private static OpenAS2Server serverB;
-    private static String[] dataFolders = new String[2];
+    private static final String[] dataFolders = new String[2];
     private final int msgCnt = 2;
 
     private static ExecutorService executorService;
@@ -184,7 +184,7 @@ public class OpenAS2ServerTest {
         PartnershipFactory pf = server.getSession().getPartnershipFactory();
         List<Partnership> partnerships = pf.getPartnerships();
         for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
-            Partnership partnership = (Partnership) iterator.next();
+            Partnership partnership = iterator.next();
             DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
             if (pollerModule != null) {
                 return new TestPartner(server, partnership, pollerModule);
@@ -197,7 +197,7 @@ public class OpenAS2ServerTest {
         PartnershipFactory pf = server.getSession().getPartnershipFactory();
         List<Partnership> partnerships = pf.getPartnerships();
         for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
-            Partnership partnership = (Partnership) iterator.next();
+            Partnership partnership = iterator.next();
             if (senderAs2Id.equals(partnership.getSenderID(Partnership.PID_AS2)) && receiverAs2Id.equals(partnership.getReceiverID(Partnership.PID_AS2))) {
                 DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
                 return new TestPartner(server, partnership, pollerModule);
@@ -212,7 +212,7 @@ public class OpenAS2ServerTest {
             return dirPollMod;
         }
         // Try to find a module defined poller since there is no matching poller by name. (config.xml defined pollers do not have the correct partnership name in the poller cache)
-        return session.getPartnershipPoller(partnership.getSenderID(Partnership.PID_AS2), partnership.getReceiverID(Partnership.PID_AS2));        
+        return session.getPartnershipPoller(partnership.getSenderID(Partnership.PID_AS2), partnership.getReceiverID(Partnership.PID_AS2));
     }
 
     @SuppressWarnings("unused")

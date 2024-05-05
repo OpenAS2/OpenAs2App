@@ -42,7 +42,7 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
 
     private Map<String, Object> messages;
 
-    private Log logger = LogFactory.getLog(XMLMessageFactory.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(XMLMessageFactory.class.getSimpleName());
 
 
     private int getRefreshInterval() throws InvalidParameterException {
@@ -60,7 +60,7 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
 
         return messages;
     }
-    
+
     private void setMessages(Map<String,Object> map) {
         messages = map;
     }
@@ -88,7 +88,7 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
         }
     }
 
-    void refreshConfig() throws OpenAS2Exception {     
+    void refreshConfig() throws OpenAS2Exception {
         try {
             Element root = getMessageXml().getDocumentElement();
             NodeList rootNodes = root.getChildNodes();

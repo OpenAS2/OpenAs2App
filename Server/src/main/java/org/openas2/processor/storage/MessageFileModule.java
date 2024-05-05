@@ -28,7 +28,7 @@ import java.util.Map;
 public class MessageFileModule extends BaseStorageModule {
     public static final String PARAM_HEADER = "header";
 
-    private Log logger = LogFactory.getLog(MessageFileModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(MessageFileModule.class.getSimpleName());
 
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {

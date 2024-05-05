@@ -10,12 +10,12 @@ import org.openas2.util.FileUtil;
 import org.openas2.util.IOUtil;
 
 public class FileSplitter implements Runnable {
-    private File sourceFile;
-    private String outputDir;
-    private long maxFileSize;
-    private boolean containsHeaderRow;
-    private String newFileBaseName;
-    private String filenamePrefix;
+    private final File sourceFile;
+    private final String outputDir;
+    private final long maxFileSize;
+    private final boolean containsHeaderRow;
+    private final String newFileBaseName;
+    private final String filenamePrefix;
 
     private static final Log logger = LogFactory.getLog(FileUtil.class.getSimpleName());
 

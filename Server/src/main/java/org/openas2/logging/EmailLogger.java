@@ -39,7 +39,7 @@ public class EmailLogger extends BaseLogger {
     public static final String PARAM_BODYTEMPLATE = "bodytemplate";
     public static final String PARAM_ONLY_ACTIVE_MSG_TRANSFER_ERRORS = "only_active_msg_transfer_errors";
 
-    private Properties props = new Properties();
+    private final Properties props = new Properties();
     private boolean isDebugOn = false;
     private boolean onlyActiveMsgTransferErrors = false;
 
@@ -152,9 +152,8 @@ public class EmailLogger extends BaseLogger {
         } else {
             subj = msg;
         }
-        StringBuffer subject = new StringBuffer("OpenAS2 Log (" + level.getName() + "): " + subj);
 
-        return subject.toString();
+        return "OpenAS2 Log (" + level.getName() + "): " + subj;
     }
 
     protected String getSubject(Throwable t) {

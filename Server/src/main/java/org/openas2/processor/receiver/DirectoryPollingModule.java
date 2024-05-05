@@ -35,13 +35,13 @@ public abstract class DirectoryPollingModule extends PollingModule {
     private String sentDir = null;
     private boolean processFilesAsThreads = false;
     private int maxProcessingThreads = 20;
-    // support fixed size thread group to run file processing as threads 
+    // support fixed size thread group to run file processing as threads
     private ExecutorService executorService = null;
     private List<String> allowExtensions;
     private List<String> excludeExtensions;
     private String excludeFilenameRegexFilter = null;
 
-    private Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(DirectoryPollingModule.class.getSimpleName());
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
@@ -62,13 +62,13 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 // Create the thread pool
                 executorService = Executors.newFixedThreadPool(maxProcessingThreads);
             }
-            
+
             String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
             IOUtil.getDirectoryFile(pendingInfoFolder);
             String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
             IOUtil.getDirectoryFile(pendingFolder);
-            
-            
+
+
             String allowExtensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
             String excludeExtensionFilter = getParameter(PARAM_FILE_EXTENSION_EXCLUDE_FILTER, "");
             String excludeFilenameRegexFilter = getParameter(PARAM_FILE_NAME_EXCLUDE_FILTER, "");
@@ -211,11 +211,10 @@ public abstract class DirectoryPollingModule extends PollingModule {
             } catch (OpenAS2Exception e1) {
                 logger.error("Error handling file error for file: " + file.getAbsolutePath(), e1);
                 //forceStop(e1);
-                return;
             }
         } finally {
             trackedFiles.remove(fileEntryKey);
-        }        
+        }
     }
 
     private void updateTracking() {

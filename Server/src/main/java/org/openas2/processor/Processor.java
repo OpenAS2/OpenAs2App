@@ -24,5 +24,5 @@ public interface Processor extends Component {
 
     boolean checkActiveModules(List<String> failures);
 
-    public List<ProcessorModule> getModulesSupportingAction(String action);
+    List<ProcessorModule> getModulesSupportingAction(String action);
 }

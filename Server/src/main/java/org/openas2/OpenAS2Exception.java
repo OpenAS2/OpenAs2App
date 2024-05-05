@@ -14,8 +14,8 @@ public class OpenAS2Exception extends Exception {
      *
      */
     private static final long serialVersionUID = 1L;
-    private Map<String, Object> sources = new HashMap<String, Object>();
-    private Log logger = LogFactory.getLog(OpenAS2Exception.class.getSimpleName());
+    private final Map<String, Object> sources = new HashMap<String, Object>();
+    private final Log logger = LogFactory.getLog(OpenAS2Exception.class.getSimpleName());
 
     public OpenAS2Exception() {
         super();

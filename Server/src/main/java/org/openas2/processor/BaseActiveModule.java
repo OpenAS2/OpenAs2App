@@ -51,10 +51,8 @@ public abstract class BaseActiveModule extends BaseProcessorModule implements Ac
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
-        buf.append(getClass().getName() + ": " + getParameters());
 
-        return buf.toString();
+        return getClass().getName() + ": " + getParameters();
     }
 
     private void setRunning(boolean running) {

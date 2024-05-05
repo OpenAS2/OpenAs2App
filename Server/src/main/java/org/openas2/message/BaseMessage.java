@@ -74,7 +74,7 @@ public abstract class BaseMessage implements Message {
 
     public void setReceiverX509Alias(String alias) {
         receiverX509Alias = alias;
-        
+
     }
 
     @Override
@@ -339,7 +339,7 @@ public abstract class BaseMessage implements Message {
 
         if (mdn != null) {
             buf.append(System.getProperty("line.separator") + "MDN:");
-            buf.append(mdn.toString());
+            buf.append(mdn);
         }
 
         return buf.toString();
@@ -363,7 +363,7 @@ public abstract class BaseMessage implements Message {
             // read in message headers
             headers = new InternetHeaders(in);
 
-            // read in mime body 
+            // read in mime body
             if (in.read() == 1) {
                 data = new MimeBodyPart(in);
             }
@@ -501,12 +501,12 @@ public abstract class BaseMessage implements Message {
             return null;
         }
         try {
-          tmpFilename = IOUtil.getSafeFilename(tmpFilename);          
+          tmpFilename = IOUtil.getSafeFilename(tmpFilename);
         } catch (OpenAS2Exception oae) {
             LogFactory.getLog(BaseMessage.class.getSimpleName()).warn("Unable to extract a usable filename from: " + tmpFilename);
             return null;
         }
         return tmpFilename;
     }
-    
+
 }

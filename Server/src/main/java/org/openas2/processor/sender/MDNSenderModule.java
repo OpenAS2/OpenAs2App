@@ -34,7 +34,7 @@ public class MDNSenderModule extends HttpSenderModule {
     public static final String MDN_TYPE_VAL_SYNC = "Synchronous";
     public static final String MDN_TYPE_VAL_ASYNC = "Asynchronous";
 
-    private Log logger = LogFactory.getLog(MDNSenderModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(MDNSenderModule.class.getSimpleName());
 
     /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
     *
@@ -125,7 +125,7 @@ public class MDNSenderModule extends HttpSenderModule {
         // Save sent MDN for later examination
         getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
         if (logger.isInfoEnabled()) {
-            logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
+            logger.info("sent MDN [" + disposition + "]" + msg.getLogMsgID());
         }
     }
 

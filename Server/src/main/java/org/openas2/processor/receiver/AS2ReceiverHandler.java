@@ -57,7 +57,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AS2ReceiverHandler implements NetModuleHandler {
-    private AS2ReceiverModule module;
+    private final AS2ReceiverModule module;
 
     private static final Log LOG = LogFactory.getLog(AS2ReceiverHandler.class.getSimpleName());
 
@@ -116,7 +116,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Healthcheck ping detected" + " [" + getClientInfo(s) + "]" + msg.getLogMsgID());
                     }
-                    return;
                 } else {
                     try {
                         HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
@@ -127,7 +126,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
                         LOG.info(msg, oe);
                     }
-                    return;
                 }
             } else {
                 if (LOG.isInfoEnabled()) {
@@ -135,7 +133,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 }
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.trace("Received msg built from HTTP input stream: " + msg.toString() + msg.getLogMsgID());
+                    LOG.trace("Received msg built from HTTP input stream: " + msg + msg.getLogMsgID());
                 }
                 // TODO store HTTP request, headers, and data to file in Received folder -> use message-id for filename?
                 try {

@@ -41,7 +41,7 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     private String userid, password;
     private String responseFormat = "xml";
 
-    private Log logger = LogFactory.getLog(SocketCommandProcessor.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(SocketCommandProcessor.class.getSimpleName());
 
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         super.init(session, parameters);
@@ -122,7 +122,7 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
                 return;
             }
 
-            if (parser.getPassword().equals(password) == false) {
+            if (!parser.getPassword().equals(password)) {
                 wrtr.write("Bad userid/password");
                 wrtr.flush();
                 logger.error("Remote socket command processor accessed with invalid password ");

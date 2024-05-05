@@ -52,7 +52,7 @@ public class ImportCertInEncodedStreamCommand extends AliasedCertCommand {
 
             if (cert instanceof X509Certificate) {
                 certFx.addCertificate(alias, (X509Certificate) cert, true);
-                cmdRes.getResults().add("Imported certificate: " + cert.toString());
+                cmdRes.getResults().add("Imported certificate: " + cert);
 
                 return cmdRes;
             }

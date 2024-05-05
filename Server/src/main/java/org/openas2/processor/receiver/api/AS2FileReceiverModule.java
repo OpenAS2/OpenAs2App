@@ -12,11 +12,9 @@ public class AS2FileReceiverModule extends MessageBuilderModule {
     }
 
     public void doStart() {
-        return;
     }
 
     public void doStop() {
-        return;
     }
 
     @Override

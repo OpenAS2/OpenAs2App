@@ -20,7 +20,7 @@ public abstract class BaseFormatter implements Formatter {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         format(level, msg, baos);
 
-        String output = new String(baos.toByteArray());
+        String output = baos.toString();
 
         try {
             baos.close();
@@ -35,7 +35,7 @@ public abstract class BaseFormatter implements Formatter {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         format(exception, terminated, baos);
 
-        String output = new String(baos.toByteArray());
+        String output = baos.toString();
 
         try {
             baos.close();

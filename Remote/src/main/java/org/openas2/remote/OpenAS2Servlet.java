@@ -108,7 +108,6 @@
          writer.println("<h1>Not Ready</h1>");
 
          writer.flush();
-         return;
 
      }
 
@@ -151,7 +150,6 @@
          } catch (IOException ioe) {
              throw new ServletException("IOException " + ioe.getMessage());
          }
-         return;
 
      }
 
@@ -298,7 +296,7 @@
 
          public void interrupt() {
              super.interrupt();
-             if (threadSuspended == true) {
+             if (threadSuspended) {
                  sl.close();
              }
 
@@ -378,7 +376,7 @@
          return new String(sb);
      }
 
-     public String remoteCommandCall(String command) throws UnknownHostException, IOException {
+     public String remoteCommandCall(String command) throws IOException {
          final InetAddress hostAddress = InetAddress.getByName(commandHostID);
          SSLSocket s = (SSLSocket) SSLSocketFactory.getDefault()
                                                    .createSocket(hostAddress, commandPort);
@@ -394,14 +392,13 @@
                  "to use one supported by your version of java security."
              );
          }
-         String cmd = new StringBuilder().append("<command id=\"")
-                                         .append(commandUserID)
-                                         .append("\" password=\"")
-                                         .append(commandPWD)
-                                         .append("\">")
-                                         .append(command)
-                                         .append("</command>\n")
-                                         .toString();
+         String cmd = "<command id=\"" +
+             commandUserID +
+             "\" password=\"" +
+             commandPWD +
+             "\">" +
+             command +
+             "</command>\n";
          s.getOutputStream().write(cmd.getBytes());
          s.getOutputStream().flush();
          CharArrayWriter caw = new CharArrayWriter();

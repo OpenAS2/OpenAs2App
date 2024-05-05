@@ -71,7 +71,7 @@ public class ImportCertCommand extends AliasedCertCommand {
 
             if (cert instanceof X509Certificate) {
                 certFx.addCertificate(alias, (X509Certificate) cert, true);
-                cmdRes.getResults().add("Imported certificate: " + cert.toString());
+                cmdRes.getResults().add("Imported certificate: " + cert);
 
                 return cmdRes;
             }
@@ -96,7 +96,7 @@ public class ImportCertCommand extends AliasedCertCommand {
                 Key certKey = ks.getKey(certAlias, password.toCharArray());
                 certFx.addPrivateKey(alias, certKey, password);
 
-                return new CommandResult(CommandResult.TYPE_OK, "Imported certificate and key: " + cert.toString());
+                return new CommandResult(CommandResult.TYPE_OK, "Imported certificate and key: " + cert);
             }
         }
 

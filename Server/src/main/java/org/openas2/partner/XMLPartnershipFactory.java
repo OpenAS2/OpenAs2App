@@ -62,7 +62,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
     private Map<String, Object> partners;
 
-    private Log logger = LogFactory.getLog(XMLPartnershipFactory.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(XMLPartnershipFactory.class.getSimpleName());
 
 
     private int getRefreshInterval() throws InvalidParameterException {
@@ -220,13 +220,13 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         }
         // add the partnership to the list of available partnerships
         partnerships.add(partnership);
-        
+
         // Now check if we need to add a directory polling module
         Node pollerCfgNode = XMLUtil.findChildNode(node, Partnership.PCFG_POLLER);
         if (pollerCfgNode != null) {
             /* Load a poller configuration.
              * This will require fetching the base configuration for the pollers loaded from
-             * the config.xml and merging with the configured setup in the partnership 
+             * the config.xml and merging with the configured setup in the partnership
              * overriding the base attribute values with any found in the partnership
              * pollerConfig element then enhancing the attribute values to cater for embedded
              * dynamic variables before activating the poller.
@@ -257,7 +257,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 // Now update the XML with the attribute values
                 attributes.forEach((key, value) -> {
                     pollerConfigElem.setAttribute(key, value);
-                }); 
+                });
                 // replace the $partnertship.* placeholders
                 replacePartnershipPlaceHolders(pollerDoc, partnership);
                 // Now launch a directory poller module for this config
@@ -312,7 +312,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         File f = null;
         while (true) {
             f = new File(fn + '.' + df.format(l));
-            if (f.exists() == false) {
+            if (!f.exists()) {
                 break;
             }
             l++;
@@ -381,13 +381,11 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                     String value = null;
                     String[] keys = matcher.group(1).split("\\.");
                     if (keys.length == 1) {
-                        switch (keys[0]) {
-                        case "name":
+                        if ("name".equals(keys[0])) {
                             value = partnership.getName();
-                            break;
-                        default:
+                        } else {
                             throw new OpenAS2Exception(
-                                    "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
+                                "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
                         }
                     } else if (keys.length == 2) {
                         switch (keys[0]) {

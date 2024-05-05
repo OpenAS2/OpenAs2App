@@ -23,7 +23,7 @@ import java.util.Map;
 
 
 public abstract class BaseSession implements Session {
-    private Map<String, Component> components = new HashMap<String, Component>();
+    private final Map<String, Component> components = new HashMap<String, Component>();
     private String baseDirectory;
 
     protected static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
@@ -172,7 +172,7 @@ public abstract class BaseSession implements Session {
                 // something went wrong stopping it - report and keep going but make sure the key is still removed
                 LOGGER.error("Failed to stop a partnership poller for directory " + entry.getKey() + ": " + meta, e);
                 stoppedPollerKeys.add(entry.getKey());
-            } 
+            }
         }
         for (String pollerKey : stoppedPollerKeys) {
             // Remove the poller entry in the map now that we have killed the active poller

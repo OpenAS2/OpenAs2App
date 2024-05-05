@@ -8,7 +8,7 @@ import java.util.Map;
 
 
 public interface ProcessorModule extends Component {
-    static final String MODULE_ACTION_ATTRIB = "module_action"; 
+    String MODULE_ACTION_ATTRIB = "module_action";
 
     boolean canHandle(String action, Message msg, Map<String, Object> options);
 

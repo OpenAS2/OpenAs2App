@@ -11,7 +11,7 @@ import java.util.List;
 
 public class HealthCheck {
 
-    private Log logger = LogFactory.getLog(HealthCheckHandler.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(HealthCheckHandler.class.getSimpleName());
 
     /*
      * Runs a check of application status to try to determine if ther is any issue to be dealt with

@@ -80,7 +80,7 @@ public class MigratePollingModuleConfig {
         root.removeChild(partnershipNode);
         root.appendChild(partnershipNode);
     }
-    
+
     static String getPartnerName(String as2Id) throws Exception {
         String partnerXpath = "//partner[@as2_id='" + as2Id + "']/@name";
         //System.out.println("Using Xpath for partner lookup: " + partnerXpath);
@@ -162,7 +162,7 @@ public class MigratePollingModuleConfig {
         File f = null;
         while (true) {
             f = new File(tgtFileName + '.' + df.format(l));
-            if (f.exists() == false) {
+            if (!f.exists()) {
                 break;
             }
             l++;
@@ -214,7 +214,7 @@ public class MigratePollingModuleConfig {
             movePollerConfigToPartnershipsXml();
             System.out.println("Writing " + args[0] + " ...");
             storeXmlDoc(configInFile, cfgDoc);
-            System.out.println("Writing " + args[1] + " ..."); 
+            System.out.println("Writing " + args[1] + " ...");
             storeXmlDoc(partnershipInFile, partnershipDoc);
             System.out.println("Configuration has been ugraded.");
             if (hasHomeInConfig) {

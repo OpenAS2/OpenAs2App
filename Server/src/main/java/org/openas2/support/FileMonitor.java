@@ -11,12 +11,12 @@ import java.util.List;
  */
 public class FileMonitor implements Runnable {
 
-    private List<FileMonitorListener> listeners = new LinkedList<FileMonitorListener>();
+    private final List<FileMonitorListener> listeners = new LinkedList<FileMonitorListener>();
 
     @Nonnull
     private Date lastModified;
     @Nonnull
-    private File file;
+    private final File file;
 
     public FileMonitor(@Nonnull File file, FileMonitorListener listener) {
         if (!file.exists()) {

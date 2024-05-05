@@ -156,7 +156,7 @@ public abstract class ParameterParser {
             } else {
                 String newString = getParameter(format.substring(prev, next));
                 if ("".equals(newString) && getReturnEmptyStringForMissingParsers() && isReturnParamStringForMissingParsers()) {
-                    result.append(parameterDelimiterString).append(format.substring(prev, next)).append(parameterDelimiterString);
+                    result.append(parameterDelimiterString).append(format, prev, next).append(parameterDelimiterString);
                 } else {
                     result.append(newString);
                 }

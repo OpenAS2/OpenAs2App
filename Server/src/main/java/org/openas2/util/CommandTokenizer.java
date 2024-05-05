@@ -35,11 +35,7 @@ public class CommandTokenizer {
                 pos++;
             }
 
-            if (pos < len) {
-                return true;
-            }
-
-            return false;
+            return pos < len;
         } catch (Exception e) {
             throw new WrappedException(e);
         }

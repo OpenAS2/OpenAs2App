@@ -22,9 +22,9 @@ import java.net.HttpURLConnection;
 import java.net.Socket;
 
 public class AS2MDNReceiverHandler implements NetModuleHandler {
-    private AS2MDNReceiverModule module;
+    private final AS2MDNReceiverModule module;
 
-    private Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
 
 
     public AS2MDNReceiverHandler(AS2MDNReceiverModule module) {
@@ -78,7 +78,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                 logger.info("incoming connection for receiving AsyncMDN" + " [" + getClientInfo(s) + "]" + msg.getLogMsgID());
             }
             if (logger.isTraceEnabled()) {
-                logger.trace("Incoming ASYNC MDN message - Message struct: " + msg.toString());
+                logger.trace("Incoming ASYNC MDN message - Message struct: " + msg);
             }
             ContentType receivedContentType;
             MimeBodyPart receivedPart = new MimeBodyPart(msg.getHeaders(), data);
@@ -97,7 +97,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
             MessageMDN mdn = new AS2MessageMDN(msg, true);
 
             if (logger.isTraceEnabled()) {
-                logger.trace("Incoming ASYNC MDN message - MDN struct: " + mdn.toString());
+                logger.trace("Incoming ASYNC MDN message - MDN struct: " + mdn);
             }
             /*
             // Log significant msg state

@@ -135,14 +135,14 @@ public class XMLUtil {
                 tmpNode = nodeAttributes.getNamedItem(nodeKeyName);
 
                 if (tmpNode == null) {
-                    throw new OpenAS2Exception(attrNode.toString() + " does not have key attribute: " + nodeKeyName);
+                    throw new OpenAS2Exception(attrNode + " does not have key attribute: " + nodeKeyName);
                 }
 
                 attrName = tmpNode.getNodeValue();
                 tmpNode = nodeAttributes.getNamedItem(nodeValueName);
 
                 if (tmpNode == null) {
-                    throw new OpenAS2Exception(attrNode.toString() + " does not have value attribute: " + nodeValueName);
+                    throw new OpenAS2Exception(attrNode + " does not have value attribute: " + nodeValueName);
                 }
 
                 attrValue = tmpNode.getNodeValue();
@@ -201,7 +201,7 @@ public class XMLUtil {
     public static String domToString(DOMSource ds, boolean omitXmlDeclaration) throws TransformerException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer = tf.newTransformer();
-        if (omitXmlDeclaration == true) {
+        if (omitXmlDeclaration) {
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         }
         transformer.setOutputProperty(OutputKeys.INDENT, "no");

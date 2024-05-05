@@ -197,7 +197,7 @@ public class AS2Util {
                 // Something wrong detected so flag it for later use
                 dispositionHasWarning = true;
                 de.setText(msg.getMDN().getText());
-    
+
                 if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
                     // Do not throw error in this case ... just log it
                     de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
@@ -465,7 +465,7 @@ public class AS2Util {
 
         msg.setStatus(Message.MSG_STATUS_MDN_PARSE);
         if (logger.isTraceEnabled()) {
-            logger.trace("Parsing MDN: " + mdn.toString() + msg.getLogMsgID());
+            logger.trace("Parsing MDN: " + mdn + msg.getLogMsgID());
         }
         AS2Util.parseMDN(msg, senderCert);
 

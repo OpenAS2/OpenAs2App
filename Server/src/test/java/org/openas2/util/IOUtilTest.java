@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 public class IOUtilTest {
-    private AS2Message message = new AS2Message();
+    private final AS2Message message = new AS2Message();
 
     @TempDir
     public static File tmp;
@@ -48,7 +48,7 @@ public class IOUtilTest {
     }
 
     @SuppressWarnings("serial")
-    private List<Record> testParameterParsingData = new ArrayList<Record>() {
+    private final List<Record> testParameterParsingData = new ArrayList<Record>() {
         {
             add(new Record("MyCo-PartnerCo-MyFileNameWithExtension.edi", "sender.as2_id, receiver.as2_id," + " attributes.filename", "-.", false, "MyFileNameWithExtension", "MyCo", "PartnerCo"));
             add(new Record("MyCo-PartnerCo-MyFileNameWithExtension.edi", "sender.as2_id, receiver.as2_id," + " attributes.filename", "-.", true, "MyFileNameWithExtension.edi", "MyCo", "PartnerCo"));
@@ -58,7 +58,7 @@ public class IOUtilTest {
     /* Test records for polling filters
      * Format is <filename>, <allowed file extensions list>, "excluded extensions list>, <count of files to return (as a string)
      */
-    private String[][] testFilePollingFilters = {{"File1.txt", "txt", "", "1"}, {"File2.edi", "txt, edi", "", "1"}, {"File3.tmp", "", "temp", "1"},
+    private final String[][] testFilePollingFilters = {{"File1.txt", "txt", "", "1"}, {"File2.edi", "txt, edi", "", "1"}, {"File3.tmp", "", "temp", "1"},
         // Tests that should not return a file
         {"File4.txt", "edi", "", "0"}, {"File5.edi", "txt, edint", "", "0"}, {"File6.tmp", "", "tmp", "0"}, {"File7.tmp", "", "part , tmp", "0"}};
 

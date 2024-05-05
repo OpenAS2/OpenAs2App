@@ -15,7 +15,7 @@ public class SocketLogging {
 
     ServerSocket ss;
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         int port = Integer.parseInt(args[0]);
         SocketLogging sl = new SocketLogging(port);
         sl.logToPrintStream(System.out, "\n");

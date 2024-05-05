@@ -31,7 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class DynamicContentTypeTest extends BaserServerSetup {
     private DirectoryPollingModule poller;
-    
+
     public static File systemContentTypesMappingFile;
     public static File partnershipContentTypesMappingFile;
 
@@ -39,8 +39,8 @@ public class DynamicContentTypeTest extends BaserServerSetup {
     private final static String xmlFileExtension = "xml";
     private final static String ediFileExtension = "edi";
     java.util.Properties contentTypeMap = Properties.getContentTypeMap();
-    private Map<String, String> systemMappedContentTypes = new HashMap<String, String>();
-    private Map<String, String> partnershipMappedContentTypes = new HashMap<String, String>();
+    private final Map<String, String> systemMappedContentTypes = new HashMap<String, String>();
+    private final Map<String, String> partnershipMappedContentTypes = new HashMap<String, String>();
 
 
     @BeforeAll
@@ -54,7 +54,7 @@ public class DynamicContentTypeTest extends BaserServerSetup {
         BufferedWriter writer = new BufferedWriter(new FileWriter(systemContentTypesMappingFile));
         for (Map.Entry<String, String> entry : systemMappedContentTypes.entrySet()) {
             writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
-        }  
+        }
         writer.close();
         // Set up the partnership override mappings
         partnershipContentTypesMappingFile = new File(tmpDir, "override_content_type_map.properties");
@@ -62,7 +62,7 @@ public class DynamicContentTypeTest extends BaserServerSetup {
         BufferedWriter writer2 = new BufferedWriter(new FileWriter(partnershipContentTypesMappingFile));
         for (Map.Entry<String, String> entry : partnershipMappedContentTypes.entrySet()) {
             writer2.write(entry.getKey() + "=" + entry.getValue() + "\n");
-        }  
+        }
         writer2.close();
         super.setup();
         this.poller = session.getPartnershipPoller(msg.getPartnership().getName());

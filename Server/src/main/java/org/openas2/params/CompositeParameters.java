@@ -13,7 +13,7 @@ import java.util.StringTokenizer;
 public class CompositeParameters extends ParameterParser {
     private Map<String, ParameterParser> parameterParsers;
 
-    private Log logger = LogFactory.getLog(CompositeParameters.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(CompositeParameters.class.getSimpleName());
 
     public CompositeParameters(boolean returnEmptyStringForMissingParsers) {
         super();
@@ -52,7 +52,7 @@ public class CompositeParameters extends ParameterParser {
             parser.setParameter(keyBuf.toString(), value);
         } else if (!getReturnEmptyStringForMissingParsers()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Failed to find a parser for: " + key + "  ::: Parser list: " + getParameterParsers().keySet().toString());
+                logger.debug("Failed to find a parser for: " + key + "  ::: Parser list: " + getParameterParsers().keySet());
             }
             throw new InvalidParameterException("Invalid parser identifier", this, key, value);
         }
@@ -92,7 +92,7 @@ public class CompositeParameters extends ParameterParser {
             return parser.getParameter(keyBuf.toString());
         } else if (!getReturnEmptyStringForMissingParsers()) {
             if (logger.isInfoEnabled()) {
-                logger.info("Failed to find a parser for: " + key + "  ::: Available parser list: " + getParameterParsers().keySet().toString());
+                logger.info("Failed to find a parser for: " + key + "  ::: Available parser list: " + getParameterParsers().keySet());
             }
             throw new InvalidParameterException("Invalid parser identifier", this, key, null);
         } else {

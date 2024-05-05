@@ -40,7 +40,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     // TODO Resend set to 15 minutes. Implement a scaling resend time with eventual permanent failure of transmission
     public static final long DEFAULT_RESEND_DELAY = 15 * 60 * 1000; // 15 minutes
 
-    private Log logger = LogFactory.getLog(DirectoryResenderModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(DirectoryResenderModule.class.getSimpleName());
 
 
     /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
@@ -137,7 +137,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
         if (cfgResendDelay == null) {
             resendDelay = DEFAULT_RESEND_DELAY;
         } else {
-            resendDelay = Integer.parseInt(cfgResendDelay) * 1000;
+            resendDelay = Integer.parseInt(cfgResendDelay) * 1000L;
         }
         long resendTime = new Date().getTime() + resendDelay;
 

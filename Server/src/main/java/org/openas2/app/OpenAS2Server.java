@@ -106,10 +106,10 @@ public class OpenAS2Server {
                         Attributes attribs = manifest.getMainAttributes();
                         is.close();
                         String vendor = attribs.getValue(MANIFEST_VENDOR_ID_ATTRIB);
-                        if (vendor != null && VENDOR_ID.equals(vendor)) {
+                        if (VENDOR_ID.equals(vendor)) {
                             // We have an OpenAS2 jar at least - check the project name
                             String project = attribs.getValue(MANIFEST_TITLE_ATTRIB);
-                            if (project != null && PROJECT_NAME.equals(project)) {
+                            if (PROJECT_NAME.equals(project)) {
                                 if (openAS2Manifest != null) {
                                     // A duplicate detected
                                     throw new OpenAS2Exception("Duplicate manifests detected: " + openAS2Manifest.getPath() + " ::: " + url.getPath());
@@ -119,7 +119,7 @@ public class OpenAS2Server {
                             }
                         }
                     } else {
-                        LOGGER.warn("MANIFEST input stream not opened for: " + url.toString());
+                        LOGGER.warn("MANIFEST input stream not opened for: " + url);
                     }
 
                 } catch (Exception e) {

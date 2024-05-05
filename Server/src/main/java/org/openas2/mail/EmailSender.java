@@ -38,12 +38,12 @@ public class EmailSender extends BaseComponent {
     public static final String PARAM_BODY = "body";
     public static final String PARAM_BODYTEMPLATE = "bodytemplate";
 
-    private Properties props = new Properties();
-    private boolean isDebugOn = false;
+    private final Properties props = new Properties();
+    private final boolean isDebugOn = false;
 
 
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
-        // copy system properties then allow override by javax.mail.properties.file 
+        // copy system properties then allow override by javax.mail.properties.file
         props.putAll(System.getProperties());
         String filename = "Emailer.Parameters.getJavaxMailPropFile";
         if (filename != null) {

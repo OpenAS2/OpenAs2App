@@ -16,7 +16,7 @@ public class MessageParameters extends ParameterParser {
     public static final String KEY_CONTENT_FILENAME = "content-disposition";
     private Message target;
 
-    private Log logger = LogFactory.getLog(MessageParameters.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(MessageParameters.class.getSimpleName());
 
     public MessageParameters(Message target) {
         super();

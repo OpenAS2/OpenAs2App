@@ -45,13 +45,13 @@ public class DeletePartnerCommand extends AliasedPartnershipsCommand {
                 }
             }
 
-            if (found == false) {
+            if (!found) {
                 return new CommandResult(CommandResult.TYPE_ERROR, "Unknown partner name: " + name);
             }
 
             Iterator<Partnership> partnerships = partFx.getPartnerships().iterator();
             boolean partnershipFound = false;
-            while (partnerships.hasNext() && partnershipFound == false) {
+            while (partnerships.hasNext() && !partnershipFound) {
                 Partnership part = partnerships.next();
                 partnershipFound = part.getReceiverIDs().containsValue(name) || part.getSenderIDs().containsValue(name);
             }

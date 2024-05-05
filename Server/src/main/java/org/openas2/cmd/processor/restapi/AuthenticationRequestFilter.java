@@ -55,7 +55,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         adminUsername = userId;
         adminPassword = password;
     }
-    
+
     // Response including indication to remote server which scheme to authenticate with
     private void setUnauthorizedResponse(ContainerRequestContext requestContext) {
         requestContext.abortWith(Response.status(Status.UNAUTHORIZED)
@@ -74,7 +74,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                         return "OpenAS2";
                     }
                 };
-                
+
             }
 
             @Override
@@ -91,9 +91,9 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
             public String getAuthenticationScheme() {
                return AUTHENTICATION_SCHEME;
             }
-            
+
         });
-        
+
         //Get request headers
         final MultivaluedMap<String, String> headers = requestContext.getHeaders();
 
@@ -126,7 +126,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
             logger.info("password: <none>");
         }
         */
-         
+
         //Verify user access
         Set<String> rolesSet = new HashSet<>();
         rolesSet.add("ADMIN");
@@ -134,9 +134,8 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         //Is user valid?
         if (!isUserAllowed(username, password, rolesSet)) {
             setUnauthorizedResponse(requestContext);
-            return;           
         }
-         
+
     }
 
     private boolean isUserAllowed(final String username, final String password, final Set<String> rolesSet) {

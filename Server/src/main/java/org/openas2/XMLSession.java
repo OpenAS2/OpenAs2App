@@ -57,7 +57,7 @@ public class XMLSession extends BaseSession {
     // private static final String PARAM_BASE_DIRECTORY = "basedir";
 
     private CommandRegistry commandRegistry;
-    private CommandManager cmdManager = new CommandManager();
+    private final CommandManager cmdManager = new CommandManager();
 
     // Poller base config that will be used for partnership based pollers. Can be overridden in the partnership
     private Node basePollerConfigNode = null;
@@ -140,10 +140,10 @@ public class XMLSession extends BaseSession {
      * Then loads system properties into the OpenAS2 properties container.
      * Then adds the application title and version.
      * Finally checks if an additional property file was provided and loads those.
-     * 
+     *
      * @param propNode - the "properties" element of the configuration file containing property values
-     * @throws InvalidParameterException 
-     * @throws IOException 
+     * @throws InvalidParameterException
+     * @throws IOException
      */
     private void loadProperties(Node propNode) throws InvalidParameterException, IOException {
         LOGGER.info("Loading properties...");
@@ -202,7 +202,7 @@ public class XMLSession extends BaseSession {
                 Properties.setProperty(key, parsedVal);
             }
         }
-        /* Put system properties in afterwards to avoid parsing embedded properties that may have 
+        /* Put system properties in afterwards to avoid parsing embedded properties that may have
            a $ sign in the value but only if the key does not exist.
         */
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -346,7 +346,7 @@ public class XMLSession extends BaseSession {
                 // If there is a format node then this is a generic poller module
                 Node formatNode = moduleNode.getAttributes().getNamedItem("format");
                 if (formatNode == null) {
-                    throw new OpenAS2Exception("Invalid poller module coniguration: " + moduleNode.toString());
+                    throw new OpenAS2Exception("Invalid poller module coniguration: " + moduleNode);
                 }
                 partnershipName = "generic";
             } else {

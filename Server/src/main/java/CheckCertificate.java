@@ -98,7 +98,7 @@ public class CheckCertificate {
         char[] passphrase = keyStorePwd.toCharArray();
 
         File file = new File(targetKeyStore);
-        if (file.isFile() == false) {
+        if (!file.isFile()) {
             char SEP = File.separatorChar;
             File dir = new File(System.getProperty("java.home") + SEP + "lib" + SEP + "security");
             /* Check if this is a JDK home */
@@ -109,7 +109,7 @@ public class CheckCertificate {
                 throw new Exception("The JSSE folder could not be identified. Please check that JSSE is installed.");
             }
             file = new File(dir, "jssecacerts");
-            if (file.isFile() == false) {
+            if (!file.isFile()) {
                 file = new File(dir, "cacerts");
             }
         }
@@ -252,7 +252,7 @@ public class CheckCertificate {
         Iterator<TrustAnchor> it = params.getTrustAnchors().iterator();
         boolean found = false;
         while (it.hasNext()) {
-            TrustAnchor ta = (TrustAnchor) it.next();
+            TrustAnchor ta = it.next();
             // Get certificate
             X509Certificate cert = ta.getTrustedCert();
             String dn = cert.getIssuerX500Principal().getName();

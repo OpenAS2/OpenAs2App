@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class CommandManager {
 
-    private List<BaseCommandProcessor> processors = new ArrayList<BaseCommandProcessor>();
+    private final List<BaseCommandProcessor> processors = new ArrayList<BaseCommandProcessor>();
 
     public void addProcessor(BaseCommandProcessor processor) {
         processors.add(processor);

@@ -46,7 +46,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     private String tableName = null;
     IDBHandler dbHandler = null;
 
-    private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
@@ -73,7 +73,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
                 logger.error("Failed to load JDBC driver: " + jdbcDriver, e);
                 e.printStackTrace();
-                return;
 
             }
         }
@@ -132,7 +131,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                         continue;
                     }
                     String dbVal = rs.getString(colName);
-                    if (dbVal != null && mapVal.equals(dbVal)) {
+                    if (mapVal.equals(dbVal)) {
                         // Unchanged value so remove from map
                         continue;
                     }
@@ -149,11 +148,11 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             if (fieldStmt.length() > 0) {
                 String stmt = "";
                 if (isUpdate) {
-                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
+                    stmt = "UPDATE " + tableName + " SET " + fieldStmt + " WHERE " + FIELDS.MSG_ID + " = '"
                         + map.get(msgIdField) + "'";
                 } else {
-                    stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES ("
-                        + valuesStmt.toString() + ")";
+                    stmt = "INSERT INTO " + tableName + " (" + fieldStmt + ") VALUES ("
+                        + valuesStmt + ")";
                 }
                 if (s.executeUpdate(stmt) > 0) {
                     if (logger.isTraceEnabled()) {
@@ -290,8 +289,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             */
 
             String sStatement = "SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
-                + " WHERE CREATE_DT BETWEEN '" + map.get("startDate").toString()
-                + " 00:00:00' AND '" + map.get("endDate").toString() + " 23:59:59'";
+                + " WHERE CREATE_DT BETWEEN '" + map.get("startDate")
+                + " 00:00:00' AND '" + map.get("endDate") + " 23:59:59'";
             logger.debug("sStatment="+sStatement);
 
             ResultSet rs = s.executeQuery(sStatement);
@@ -401,15 +400,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         dbHandler.start(jdbcConnectString, dbUser, dbPwd, getParameters());
         isRunning = true;
     }
-
     public void stop() {
         if (!useEmbeddedDB) {
             return;
         }
-
         dbHandler.stop();
     }
-
     @Override
     public boolean healthcheck(List<String> failures) {
         Connection conn = null;

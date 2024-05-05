@@ -19,7 +19,7 @@ public class DefaultFormatter extends BaseFormatter {
         StringWriter strWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(strWriter);
         exception.printStackTrace(printWriter);
-        buf.append(strWriter.toString());
+        buf.append(strWriter);
 
         // Write sources
         Map<String, Object> sources = exception.getSources();
@@ -84,7 +84,7 @@ public class DefaultFormatter extends BaseFormatter {
                     sb.append("null key");
                 }
                 if (source.getValue() != null) {
-                    sb.append(source.getValue().toString());
+                    sb.append(source.getValue());
                 } else {
                     sb.append("null value");
                 }

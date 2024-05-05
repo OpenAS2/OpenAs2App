@@ -32,7 +32,7 @@ public class PGPEncryptionUtil {
     private final ArmoredOutputStream armoredOutputStream = null;
     private OutputStream encryptedOut = null;
     private OutputStream compressedOut = null;
-    private OutputStream literalOut;
+    private final OutputStream literalOut;
     private boolean supportPGP2_6 = false;
     private boolean isCompressData = true;
     private boolean isArmor = true;

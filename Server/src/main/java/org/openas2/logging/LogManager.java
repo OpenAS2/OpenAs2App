@@ -58,13 +58,13 @@ public class LogManager {
     public void log(Level level, String clazzName, @Nonnull Object msg, Throwable t) {
         if (loggers.isEmpty()) {
             //System.out.println("\n\t    WARNING!!!!\n\tNo loggers configured. Using default logger.");
-            DEFAULT_LOGGER.log(level, clazzName + ": " + msg.toString(), null, t);
+            DEFAULT_LOGGER.log(level, clazzName + ": " + msg, null, t);
         } else {
             for (Logger logger : loggers) {
                 if (msg instanceof Message) {
                     logger.log(level, clazzName + ": " + ((Message) msg).getLogMsg(), (Message) msg, t);
                 } else {
-                    logger.log(level, clazzName + ": " + msg.toString(), null, t);
+                    logger.log(level, clazzName + ": " + msg, null, t);
                 }
             }
         }

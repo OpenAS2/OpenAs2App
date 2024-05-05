@@ -136,9 +136,7 @@ public class HTTPUtil {
         // Get the stream and read in the HTTP request and headers
         BufferedInputStream in = new BufferedInputStream(inStream);
         String[] request = HTTPUtil.readRequest(in);
-        for (int i = 0; i < request.length; i++) {
-            httpRequest.add(request[i]);
-        }
+        Collections.addAll(httpRequest, request);
         headerCache.load(in);
         if (logger.isTraceEnabled()) {
             logger.trace("HTTP received request: " + request[0] + "  " + request[1] + "\n\tHeaders: " + printHeaders(headerCache.getAllHeaders(), "==", ";;"));
@@ -187,7 +185,6 @@ public class HTTPUtil {
                         length = newlen;
                         // And now the CRLF after the chunk;
                         while (dataIn.readByte() != '\n') {
-                            ;
                         }
                     }
                     headerCache.setHeader("Content-Length", Integer.toString(length));
@@ -293,7 +290,7 @@ public class HTTPUtil {
             requestParts[2] = tokens.nextToken();
             return requestParts;
         } else {
-            throw new IOException("Invalid HTTP Request: Token Count - " + tokenCount + "::: String length - " + strBuf.length() + " ::: String - " + strBuf.toString());
+            throw new IOException("Invalid HTTP Request: Token Count - " + tokenCount + "::: String length - " + strBuf.length() + " ::: String - " + strBuf);
         }
     }
 
@@ -376,7 +373,7 @@ public class HTTPUtil {
                 rb.setEntity(httpEntity);
             }
         }
-            
+
         final HttpUriRequest request = rb.build();
 
         BasicHttpContext localcontext = new BasicHttpContext();
@@ -503,9 +500,7 @@ public class HTTPUtil {
         httpResponse.append(responseCode).append(" ");
         httpResponse.append(HTTPUtil.getHTTPResponseMessage(responseCode));
         httpResponse.append("\r\n");
-        StringBuffer response = new StringBuffer("HTTP/1.1 ");
-        response.append(httpResponse);
-        out.write(response.toString().getBytes());
+        out.write(("HTTP/1.1 " + httpResponse).getBytes());
         String header;
 
         if (headers != null) {
@@ -583,7 +578,7 @@ public class HTTPUtil {
                 throw new OpenAS2Exception("The JSSE folder could not be identified. Please check that JSSE is installed.");
             }
             file = new File(dir, "jssecacerts");
-            if (file.isFile() == false) {
+            if (!file.isFile()) {
                 file = new File(dir, "cacerts");
             }
         }
@@ -641,7 +636,7 @@ public class HTTPUtil {
                 String selfSignedCN = System.getProperty("org.openas2.cert.TrustSelfSignedCN");
                 if (selfSignedCN != null) {
                     File file = new File("jssecacerts");
-                    if (file.isFile() == false) {
+                    if (!file.isFile()) {
                         char SEP = File.separatorChar;
                         File dir = new File(System.getProperty("java.home") + SEP + "lib" + SEP + "security");
                         /* Check if this is a JDK home */
@@ -652,7 +647,7 @@ public class HTTPUtil {
                             throw new OpenAS2Exception("The JSSE folder could not be identified. Please check that JSSE is installed.");
                         }
                         file = new File(dir, "jssecacerts");
-                        if (file.isFile() == false) {
+                        if (!file.isFile()) {
                             file = new File(dir, "cacerts");
                         }
                     }
@@ -795,6 +790,7 @@ public class HTTPUtil {
                         for (int i = 0; i < existingVals.length; i++) {
                             if (value.equals(existingVals[i])) {
                                 exists = true;
+                                break;
                             }
                         }
                         if (!exists) {

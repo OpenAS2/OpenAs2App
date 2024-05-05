@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 public abstract class BaseCommandProcessor implements CommandProcessor, Component, HasSchedule {
 
     private static final Void VOID = null;
-    private List<Command> commands = new ArrayList<Command>();
+    private final List<Command> commands = new ArrayList<Command>();
     private Session session;
     private Map<String, String> parameters;
     private boolean running = true;

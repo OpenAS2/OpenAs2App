@@ -211,6 +211,8 @@
                 <artifactId>sentry</artifactId>
                 <version>7.3.0</version>
             </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
@@ -255,15 +257,16 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.4.1</version>
                     <configuration>
                         <archive>
                             <index>true</index>
                             <manifest>
                                 <addClasspath>true</addClasspath>
-                                <mainClass>${mainClass}</mainClass>
+                              <!--  <mainClass>${mainClass}</mainClass>
                                 <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                -->
                             </manifest>
                         </archive>
                     </configuration>
@@ -415,7 +418,17 @@
 	        <plugin>
 	            <groupId>com.github.spotbugs</groupId>
 	            <artifactId>spotbugs-maven-plugin</artifactId>
-	            <version>4.6.0</version>
+	            <version>4.8.4.0</version>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>4.8.4</version>
+                    </dependency>
+                </dependencies>
+
+
 	            <configuration>
 	                <effort>Max</effort>
 	                <threshold>medium</threshold>

@@ -19,7 +19,7 @@ import java.net.InetAddress;
  *
  */
 public class CommandLine {
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             SSLSocket s = null;

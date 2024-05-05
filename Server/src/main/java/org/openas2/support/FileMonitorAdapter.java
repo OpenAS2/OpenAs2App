@@ -29,15 +29,12 @@ public abstract class FileMonitorAdapter implements FileMonitorListener {
 
     @Override
     public void onFileEvent(File file, int eventID) {
-        switch (eventID) {
-            case FileMonitorListener.EVENT_MODIFIED:
-
-                try {
-                    onConfigFileChanged();
-                } catch (OpenAS2Exception oae) {
-                    oae.log();
-                }
-                break;
+        if (eventID == FileMonitorListener.EVENT_MODIFIED) {
+            try {
+                onConfigFileChanged();
+            } catch (OpenAS2Exception oae) {
+                oae.log();
+            }
         }
     }
 

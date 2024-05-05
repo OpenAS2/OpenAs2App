@@ -23,7 +23,7 @@ public class SchedulerComponent extends BaseComponent {
     public static final String PARAMETER_THREADS = "threads";
     //
     private static final int MIN_AMOUNT_OF_THREADS = 6;
-    private Log logger = LogFactory.getLog(SchedulerComponent.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(SchedulerComponent.class.getSimpleName());
 
     private ScheduledExecutorService executorService;
 

@@ -57,7 +57,7 @@ public abstract class NetModule extends BaseReceiverModule {
     public static final String DEFAULT_ERRORS = "$date.yyyyMMddhhmmss$";
 
     private HTTPServerThread mainThread;
-    private Log logger = LogFactory.getLog(NetModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(NetModule.class.getSimpleName());
 
     public void doStart() throws OpenAS2Exception {
         try {

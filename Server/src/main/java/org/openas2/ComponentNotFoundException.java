@@ -3,7 +3,7 @@ package org.openas2;
 public class ComponentNotFoundException extends OpenAS2Exception {
 
     private static final long serialVersionUID = 1L;
-    private String componentName;
+    private final String componentName;
 
     ComponentNotFoundException(String componentName) {
         this.componentName = componentName;

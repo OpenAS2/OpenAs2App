@@ -18,15 +18,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
 public class FilenameParsingTest extends BaserServerSetup {
-    private static String testFileNamePart1 = "abc";
-    private static String testFileNamePart2 = "123";
-    private static String testFileName = testFileNamePart1 + "-" + testFileNamePart2 + ".txt";
-    private static String fileNameRegex = "([^-]*)-([^.]*).txt";
-    private static String attribNamesFromFileName1 = "X-attribute1";
-    private static String attribNamesFromFileName2 = "Y-attribute2";
-    private static String attribNamesFromFileName = attribNamesFromFileName1 + "," + attribNamesFromFileName2;
-    private static String subjectAttrib = "First part filename: $attributes." + attribNamesFromFileName1 + "$  Second part filename: $attributes." + attribNamesFromFileName2 + "$";
-    private static String expectedSubject = "First part filename: " + testFileNamePart1 + "  Second part filename: " + testFileNamePart2;
+    private static final String testFileNamePart1 = "abc";
+    private static final String testFileNamePart2 = "123";
+    private static final String testFileName = testFileNamePart1 + "-" + testFileNamePart2 + ".txt";
+    private static final String fileNameRegex = "([^-]*)-([^.]*).txt";
+    private static final String attribNamesFromFileName1 = "X-attribute1";
+    private static final String attribNamesFromFileName2 = "Y-attribute2";
+    private static final String attribNamesFromFileName = attribNamesFromFileName1 + "," + attribNamesFromFileName2;
+    private static final String subjectAttrib = "First part filename: $attributes." + attribNamesFromFileName1 + "$  Second part filename: $attributes." + attribNamesFromFileName2 + "$";
+    private static final String expectedSubject = "First part filename: " + testFileNamePart1 + "  Second part filename: " + testFileNamePart2;
 
 
     @BeforeAll
@@ -59,7 +59,7 @@ public class FilenameParsingTest extends BaserServerSetup {
 
     @AfterAll
     public void tearDown() throws Exception {
-        super.tearDown();;
+        super.tearDown();
     }
 
     @Test

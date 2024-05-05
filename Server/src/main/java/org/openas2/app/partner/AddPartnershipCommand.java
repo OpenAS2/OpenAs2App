@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * @author joseph mcverry
  */
 public class AddPartnershipCommand extends AliasedPartnershipsCommand {
-    private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
+    private final Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
 
     public String getDefaultDescription() {
         return "Add a new partnership definition to partnership store.";

@@ -58,7 +58,7 @@ public class ByteArrayDataSource implements DataSource {
     }
 
     private class WrappedOutputStream extends ByteArrayOutputStream {
-        private ByteArrayDataSource owner;
+        private final ByteArrayDataSource owner;
 
         public WrappedOutputStream(ByteArrayDataSource owner) {
             super();

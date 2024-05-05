@@ -25,8 +25,8 @@ public class ParameterParserTest {
     private static final String homeParam = "%home%";
     private static final String homeValue = "/My/Home/Dir";
     // Parameter string and regex test for various params
-    private String[][] positiveTests = {{prefix + "$msg.sender." + Partnership.PID_AS2 + "$_$msg.receiver." + Partnership.PID_AS2 + "$", prefix + senderId + "_" + receiverId}, {"$mdn.msg.sender." + Partnership.PID_AS2 + "$", senderId}, {"$mdn.sender." + Partnership.PID_AS2 + "$", senderId}, {"$date.yyyyMMddHHmmssZ$", "[0-9]{14}[-+][0-9]{4}"}, {"$rand.1234$-$rand.UUID$-$rand.shortUUID$", "[0-9]{4}-[a-fA-F0-9-]{36}-[a-zA-Z0-9]*"}, {prefix + "$$$rand.12345$", prefix + "\\$[0-9]{5}"}, {homeParam + "/$rand.12345$", homeValue + "/[0-9]{5}"}};
-    private String[][] negativeTests = {{prefix + "$sender$", prefix + senderId}, {"$dates.yyyyMMddHHmmssZ$", "[0-9]{14}[-+][0-9]{4}"}, {"$rand.12345$", "[0-9]{4}"}};
+    private final String[][] positiveTests = {{prefix + "$msg.sender." + Partnership.PID_AS2 + "$_$msg.receiver." + Partnership.PID_AS2 + "$", prefix + senderId + "_" + receiverId}, {"$mdn.msg.sender." + Partnership.PID_AS2 + "$", senderId}, {"$mdn.sender." + Partnership.PID_AS2 + "$", senderId}, {"$date.yyyyMMddHHmmssZ$", "[0-9]{14}[-+][0-9]{4}"}, {"$rand.1234$-$rand.UUID$-$rand.shortUUID$", "[0-9]{4}-[a-fA-F0-9-]{36}-[a-zA-Z0-9]*"}, {prefix + "$$$rand.12345$", prefix + "\\$[0-9]{5}"}, {homeParam + "/$rand.12345$", homeValue + "/[0-9]{5}"}};
+    private final String[][] negativeTests = {{prefix + "$sender$", prefix + senderId}, {"$dates.yyyyMMddHHmmssZ$", "[0-9]{14}[-+][0-9]{4}"}, {"$rand.12345$", "[0-9]{4}"}};
     @Mock
     private AS2Message message;
     @Mock

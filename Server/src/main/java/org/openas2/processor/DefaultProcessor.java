@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultProcessor extends BaseComponent implements Processor {
-    private List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
-    private Log logger = LogFactory.getLog(DefaultProcessor.class.getSimpleName());
+    private final List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
+    private final Log logger = LogFactory.getLog(DefaultProcessor.class.getSimpleName());
 
     public List<ActiveModule> getActiveModules() {
         List<ActiveModule> activeMods = new ArrayList<ActiveModule>();

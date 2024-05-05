@@ -9,7 +9,7 @@ public class ExceptionParameters extends ParameterParser {
     public static final String KEY_TRACE = "trace";
     public static final String KEY_TERMINATED = "terminated";
     private Throwable target;
-    private boolean terminated;
+    private final boolean terminated;
 
     public ExceptionParameters(Throwable target, boolean terminated) {
         super();
