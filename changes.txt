@@ -1,3 +1,11 @@
+Version 3.10.1 - 2024-05-06
+This is an minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+ 1. Fix sending the Content-Length header correctly on MDN response when chinked transfer is not supported by the receiving software.
+ 2. Fix log message to indicate SYNC or ASYNC mode when receiving an MDN.
+ 3. Change the default Java package to Eclipse Temurin for the docker creation.
+ 4. Upgrade the encryprion packages to fix a low severity security issue.
+
 Version 3.10.0 - 2024-03-17
 This is an enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading

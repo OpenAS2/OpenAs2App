@@ -57,7 +57,7 @@ public class MDNSenderModule extends HttpSenderModule {
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         if (logger.isDebugEnabled()) {
-            logger.debug("ASYNC MDN send started...");
+            logger.debug("MDN sending started. Partner requested " + (msg.isRequestingAsynchMDN()?"ASYNC":"SYNC") + " mode for MDN response.");
         }
         if (options == null) {
             options = new HashMap<String, Object>();

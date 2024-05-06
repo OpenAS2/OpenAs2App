@@ -1,19 +1,22 @@
 #              OpenAS2 Server
-#              Version 3.10.0
+#              Version 3.10.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.10.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.10.1
 
-The release download file is: OpenAS2Server-3.10.0.zip
+The release download file is: OpenAS2Server-3.10.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
 
-Version 3.10.0 - 2024-03-17
-This is an enhancement release:
+Version 3.10.1 - 2024-03-17
+This is a minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
- 1. Support Elliptic Curve algorithm.
+ 1. Fix sending the Content-Length header correctly on MDN response when chinked transfer is not supported by the receiving software.
+ 2. Fix log message to indicate SYNC or ASYNC mode when receiving an MDN.
+ 3. Change the default Java package to Eclipse Temurin for the docker creation.
+ 4. Upgrade the encryprion packages to fix a low severity security issue.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
