@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 
 public class AS2Util {
     private static ICryptoHelper ch;
-
+/*
     public static ICryptoHelper getCryptoHelper() throws Exception {
         if (ch == null) {
             ch = new BCCryptoHelper();
@@ -50,6 +50,16 @@ public class AS2Util {
 
         return ch;
     }
+*/
+private static ICryptoHelper cryptoHelperInstance;
+public static synchronized ICryptoHelper getCryptoHelper() throws Exception {
+    if (cryptoHelperInstance == null) {
+        cryptoHelperInstance = new BCCryptoHelper();
+        cryptoHelperInstance.initialize();
+    }
+
+    return cryptoHelperInstance;
+}
 
     public static String generateMessageID(Message msg, boolean isMDN) throws InvalidParameterException {
         String idFormat = null;
@@ -81,24 +91,26 @@ public class AS2Util {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
         MessageMDN mdn = msg.getMDN();
         MimeBodyPart mainPart = mdn.getData();
-        if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMdnMimeBodyParts", "false"))) {
+        boolean logRxdMdnMimeBodyParts = Boolean.parseBoolean(System.getProperty("logRxdMdnMimeBodyParts", "false"));
+
+        if (logger.isTraceEnabled() && logRxdMdnMimeBodyParts) {
             try {
                 logger.trace("Received MimeBodyPart for inbound MDN: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(mainPart, true));
             } catch (Exception e) {
                 logger.trace("Failed to log the MimeBodyPart as part of trace logging: " + e.getMessage());
             }
         }
+
         try {
             ICryptoHelper ch = getCryptoHelper();
 
             if (ch.isSigned(mainPart)) {
-                // the signature verifier will return the signed content as a MimeBodyPart
-                mainPart = getCryptoHelper().verifySignature(mainPart, receiver);
+                mainPart = ch.verifySignature(mainPart, receiver);
             }
         } catch (Exception e1) {
-            logger.error("Error parsing MDN: " + org.openas2.logging.Log.getExceptionMsg(e1), e1);
-            throw new OpenAS2Exception("Failed to verify signature of received MDN.");
-
+            String errorMsg = "Error parsing MDN: " + org.openas2.logging.Log.getExceptionMsg(e1);
+            logger.error(errorMsg, e1);
+            throw new OpenAS2Exception("Failed to verify signature of received MDN: " + errorMsg);
         }
 
         try {
@@ -110,11 +122,10 @@ public class AS2Util {
 
                 if (reportType.getBaseType().equalsIgnoreCase("multipart/report")) {
                     int reportCount = reportParts.getCount();
-                    MimeBodyPart reportPart;
 
                     for (int j = 0; j < reportCount; j++) {
-                        reportPart = (MimeBodyPart) reportParts.getBodyPart(j);
-                        if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMdnMimeBodyParts", "false"))) {
+                        MimeBodyPart reportPart = (MimeBodyPart) reportParts.getBodyPart(j);
+                        if (logger.isTraceEnabled() && logRxdMdnMimeBodyParts) {
                             logger.trace("Report MimeBodyPart from Multipart for inbound MDN: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(reportPart, true));
                         }
 
@@ -131,13 +142,16 @@ public class AS2Util {
                         }
                     }
                 } else {
-                    // No multipart/report so now what?
                     logger.warn("MDN received from partner but did not contain a multipart/report section. " + msg.getLogMsgID());
                 }
             }
-        } catch (Exception e) {
-            throw new OpenAS2Exception("Failed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+        } catch (RuntimeException e) {
+            throw e; //new OpenAS2Exception("Failed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+        } catch (Exception e){
+            // non-reuntime exception
+            logger.error(e);
         }
+
     }
 
     private static String getMimeBodyPartText(MimeBodyPart part, Charset charset) throws MessagingException, IOException {
@@ -197,7 +211,7 @@ public class AS2Util {
                 // Something wrong detected so flag it for later use
                 dispositionHasWarning = true;
                 de.setText(msg.getMDN().getText());
-    
+
                 if ((de.getDisposition() != null) && de.getDisposition().isWarning()) {
                     // Do not throw error in this case ... just log it
                     de.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
@@ -775,17 +789,18 @@ public class AS2Util {
     public static String printHeaders(Enumeration<Header> hdrs) {
         return printHeaders(hdrs, " == ", "\n\t\t");
     }
-
-    public static String printHeaders(Enumeration<Header> hdrs, String nameValueSeparator, String valuePairSeparator) {
-        String headers = "";
-        while (hdrs.hasMoreElements()) {
-            Header h = hdrs.nextElement();
-            headers = headers + valuePairSeparator + h.getName() + nameValueSeparator + h.getValue();
+    public static String printHeaders(Enumeration<Header> headersEnumeration, String nameValueSeparator, String valuePairSeparator) {
+        StringBuilder headers = new StringBuilder();
+        while (headersEnumeration.hasMoreElements()) {
+            Header header = headersEnumeration.nextElement();
+            headers.append(valuePairSeparator)
+                    .append(header.getName())
+                    .append(nameValueSeparator)
+                    .append(header.getValue());
         }
-
-        return (headers);
-
+        return headers.toString();
     }
+
 
     public static int getMaxResendCount(Session session, Message msg) throws ComponentNotFoundException {
         // Retry count - first try on partnership then on the processor
