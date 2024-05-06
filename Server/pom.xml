@@ -294,10 +294,7 @@
             <artifactId>jersey-hk2</artifactId>
         </dependency>
         <!-- Removed JavaEE APIs removed from Java 9+ -->
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
