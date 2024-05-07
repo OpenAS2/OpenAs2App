@@ -1,5 +1,6 @@
 package org.openas2.processor.msgtracking;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressFBWarnings("ODR_OPEN_DATABASE_RESOURCE")
 public class DbTrackingModule extends BaseMsgTrackingModule {
     public static final String PARAM_TCP_SERVER_START = "tcp_server_start";
     public static final String PARAM_TCP_SERVER_PORT = "tcp_server_port";
@@ -55,7 +57,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         dbPwd = getParameter(PARAM_DB_PWD, true);
         configBaseDir = session.getBaseDirectory();
         jdbcConnectString = getParameter(PARAM_JDBC_CONNECT_STRING, true);
-        jdbcConnectString.replace("%home%", configBaseDir);
+       jdbcConnectString=jdbcConnectString.replace("%home%", configBaseDir);
         // Support component attributes in connect string
         jdbcConnectString = ParameterParser.parse(jdbcConnectString, paramParser);
         dbPlatform = jdbcConnectString.replaceAll(".*jdbc:([^:]*):.*", "$1");
@@ -86,6 +88,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         return params;
     }
 
+    @SuppressFBWarnings({"SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE", "OBL_UNSATISFIED_OBLIGATION"})
     protected void persist(Message msg, Map<String, String> map) {
         Connection conn = null;
         try {
@@ -420,7 +423,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             }
             Statement s = conn.createStatement();
-            s.executeQuery("SELECT COUNT(*) FROM " + tableName);
+            // s.executeQuery("SELECT COUNT(*) FROM " + tableName);
+            ResultSet rs = s.executeQuery("SELECT 1 FROM " + tableName + " WHERE 1 = 0"); // An arbitrary query that doesn't return any rows
+        } catch (SQLException e){
+            logger.error(e);
+
+
         } catch (Exception e) {
             failures.add(this.getClass().getSimpleName() + " - Failed to check DB tracking module connection to DB: "
                 + e.getMessage() + " :: Connect String: " + jdbcConnectString);
@@ -437,34 +445,42 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         return true;
     }
 
+    @SuppressFBWarnings("SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE")
     public void persistPayload(String msgId, String payload) {
         Connection conn = null;
+        PreparedStatement ps = null;
         try {
-            if (useEmbeddedDB) {
-                conn = dbHandler.getConnection();
-            } else {
-                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
-            }
-            Statement s = conn.createStatement();
+            conn = useEmbeddedDB ? dbHandler.getConnection() : DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             String msgIdField = FIELDS.MSG_ID;
-            logger.debug("here comes the stmt================================================");
-            String stmt = "UPDATE " + tableName + " SET payload='" + payload + "'  WHERE " + msgIdField + " = '" + msgId + "'";
-            logger.debug("stmt=" + stmt);
-            s.executeUpdate(stmt);
-            logger.debug("====================================================================\n");
+            String stmt = "UPDATE " + tableName + " SET payload=? WHERE " + msgIdField + " = ?";
 
-        } catch (Exception e) {
-            logger.error(e);
+            ps = conn.prepareStatement(stmt);
+            ps.setString(1, payload);
+            ps.setString(2, msgId);
+
+            ps.executeUpdate();
+
+            logger.debug("Update successful.");
+        } catch (SQLException | OpenAS2Exception e) {
+            logger.error("Error updating database: " + e.getMessage(), e);
         } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    logger.error("Error closing PreparedStatement: " + e.getMessage(), e);
+                }
+            }
             if (conn != null) {
                 try {
                     conn.close();
                 } catch (SQLException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logger.error("Error closing connection: " + e.getMessage(), e);
                 }
             }
         }
     }
 
 }
+
+

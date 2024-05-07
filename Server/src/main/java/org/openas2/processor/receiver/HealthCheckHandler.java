@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class HealthCheckHandler implements NetModuleHandler {
@@ -42,7 +43,7 @@ public class HealthCheckHandler implements NetModuleHandler {
             List<String> request = new ArrayList<String>(2);
             data = HTTPUtil.readHTTP(s.getInputStream(), s.getOutputStream(), headers, request);
             if (logger.isDebugEnabled()) {
-                logger.debug("HealthCheck received request: " + request.toString() + "\n\tHeaders: " + HTTPUtil.printHeaders(headers.getAllHeaders(), "==", ";;") + "\n\tData: " + data);
+                logger.debug("HealthCheck received request: " + request.toString());
             }
             // Invoke the healthcheck
             List<String> failures = new HealthCheck().runCheck(module);

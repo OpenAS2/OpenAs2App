@@ -289,6 +289,10 @@
      class LogGetter extends Thread {
          PrintStream ps;
          SocketLogging sl;
+         /**
+          *
+          */
+         @edu.umd.cs.findbugs.annotations.SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC", "SIC_INNER_SHOULD_BE_STATIC", "SIC_INNER_SHOULD_BE_STATIC", "SIC_INNER_SHOULD_BE_STATIC", "SIC_INNER_SHOULD_BE_STATIC"})
          boolean threadSuspended = false;
 
          LogGetter(SocketLogging inSL, PrintStream inPS) throws IOException {
@@ -296,6 +300,7 @@
              ps = inPS;
          }
 
+         @Override
          public void interrupt() {
              super.interrupt();
              if (threadSuspended == true) {

@@ -1,3 +1,4 @@
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -5,6 +6,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openas2.processor.msgtracking.DbTrackingModule;
 import org.openas2.util.HTTPUtil;
 import org.openas2.util.ResponseWrapper;
 
@@ -38,7 +42,9 @@ import java.util.Map;
  * Class used to add the server's certificate to the KeyStore with your trusted
  * certificates.
  */
+@SuppressFBWarnings("DMI_INVOKING_TOSTRING_ON_ARRAY")
 public class CheckCertificate {
+    private static Log logger = LogFactory.getLog("CheckCertificate");
 
     public static final String HOST = "s";
     public static final String PORT = "p";
@@ -152,7 +158,7 @@ public class CheckCertificate {
                 lastExceptionMsg = e1.getMessage();
                 continue;
             }
-            System.out.println("Adding KeyManager for possible HTTP AUTH...");
+             logger.info(("Adding KeyManager for possible HTTP AUTH..."));
             KeyManagerFactory kmf;
             kmf = KeyManagerFactory.getInstance("SunX509");
             kmf.init(ks, passphrase);
@@ -188,7 +194,7 @@ public class CheckCertificate {
             return 0;
         } catch (SSLHandshakeException e) {
             e.printStackTrace(System.out);
-            System.out.println("\nException caught starting SSL handshake so trying to set up a local certificate store with trust chain....\n\n");
+            logger.error("\nException caught starting SSL handshake so trying to set up a local certificate store with trust chain....\n\n");
             checkUsingApacheHttp(host, port, uri, targetKeyStore, keyStorePwd);
         }
 
@@ -204,7 +210,7 @@ public class CheckCertificate {
         int startNdx = (chain.length == 1) ? 0 : 1;
         if (startNdx == 0) {
             findClosestMatchTrustedCert(ks, chain[0]);
-            System.out.println("\n\nThe root certificate is not trusted so storing it locally... ");
+            logger.info("\n\nThe root certificate is not trusted so storing it locally... ");
         }
         for (int k = 0; k < chain.length; k++) {
             X509Certificate cert = chain[k];
@@ -214,22 +220,23 @@ public class CheckCertificate {
             OutputStream out = new FileOutputStream(targetKeyStore);
             ks.store(out, passphrase);
             out.close();
-            System.out.println("Installed certificate as trusted: " + cert.getIssuerX500Principal() + "::" + cert.getSigAlgName());
+            logger.info("Installed certificate as trusted: " + cert.getIssuerX500Principal() + "::" + cert.getSigAlgName());
         }
         return 0;
     }
 
+    @SuppressFBWarnings("DM_DEFAULT_ENCODING")
     private void checkUsingApacheHttp(String host, int port, String uri, String targetKeyStore, String keyStorePwd) throws Exception {
-        System.out.println("Trying using Apache HTTP Client...");
+
         Map<String, String> httpOptions = new HashMap<String, String>();
         if (auth_user != null) {
-            httpOptions.put(HTTPUtil.PARAM_HTTP_USER, auth_user);
+             httpOptions.put(HTTPUtil.PARAM_HTTP_USER, auth_user);
             httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, auth_pwd);
         }
         ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, "https://" + host + ":" + port + "/" + uri, null, null, new ByteArrayInputStream("Testing".getBytes()), httpOptions, 1000000000, false);
-        System.out.println("Got a response using Apache HTTP Client: " + resp.getStatusCode());
-        System.out.println("\t\tHEADERS: " + resp.getHeaders());
-        System.out.println("\t\tBODY: " + resp.getBody());
+      logger.info("Got a response using Apache HTTP Client: " + resp.getStatusCode());
+        logger.info("\t\tHEADERS: " + resp.getHeaders());
+        logger.info("\t\tBODY: " + resp.getBody());
 
     }
 
@@ -247,7 +254,7 @@ public class CheckCertificate {
         String rootCertDN = rootCert.getIssuerX500Principal().getName();
         String org = getDNField("O", rootCertDN).toLowerCase();
         String org1StWord = org.replaceAll("(\\S*)[^$]*", "$1").toLowerCase();
-        System.out.println("Looking for matches to root certificate DN:\n\t" + rootCertDN + "\n\t\tReference certificate signing algorthim: " + rootCert.getSigAlgName() + "\n\n\tTrusted certificate(s) most closely matching \"O\" field of root certificate DN:");
+        logger.info("Looking for matches to root certificate DN:\n\t" + rootCertDN + "\n\t\tReference certificate signing algorthim: " + rootCert.getSigAlgName() + "\n\n\tTrusted certificate(s) most closely matching \"O\" field of root certificate DN:");
         // Get the set of trust anchors, which contain the most-trusted CA certificates
         Iterator<TrustAnchor> it = params.getTrustAnchors().iterator();
         boolean found = false;
@@ -263,7 +270,7 @@ public class CheckCertificate {
             }
         }
         if (!found) {
-            System.out.println("\n\t\t\tNo matching certificates found");
+            logger.info("\n\t\t\tNo matching certificates found");
         }
     }
 
@@ -314,7 +321,8 @@ public class CheckCertificate {
             CheckCertStore(host, port, uri, keyStoreFile, passphrase);
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            //  e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -323,7 +331,7 @@ public class CheckCertificate {
             CheckCertificate mgr = new CheckCertificate();
             mgr.process(args);
         } catch (Exception e) {
-            System.out.println("Processing error occurred: " + e.getMessage());
+            logger.error("Processing error occurred: " + e.getMessage());
         }
     }
 }

@@ -162,14 +162,18 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
             searchKey = searchEntry.getKey();
             searchValue = searchEntry.getValue();
             partnerValue = partnerIds.get(searchKey);
-
+/*
             if ((searchValue == null) && (partnerValue != null)) {
                 return false;
             } else if ((searchValue != null) && (partnerValue == null)) {
                 return false;
             } else if (!searchValue.equals(partnerValue)) {
                 return false;
-            }
+            }*/
+            return !(searchValue == null && partnerValue != null) &&
+                    !(searchValue != null && partnerValue == null) &&
+                    !(searchValue != null && !searchValue.equals(partnerValue));
+
         }
 
         return true;

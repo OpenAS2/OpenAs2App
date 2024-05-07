@@ -31,7 +31,7 @@ import java.util.Map;
  * @author christopher broderick
  */
 public class MimeBodyPartEncodingTest {
-    protected static OutputStream sysOut;
+    // protected static OutputStream sysOut;
     protected static BufferedWriter sysOutWriter;
 
 

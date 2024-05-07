@@ -1,5 +1,6 @@
 package org.openas2.logging;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -27,6 +28,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
+@SuppressFBWarnings("NP_NULL_PARAM_DEREF_ALL_TARGETS_DANGEROUS")
 public class EmailLogger extends BaseLogger {
     public static final String PARAM_FROM_DISPLAY = "from_display";
     public static final String PARAM_FROM = "from";

@@ -18,7 +18,7 @@ import java.util.List;
  *
  * @author cristiam henriquez
  */
-public class ListMessagesCommand extends AliasedMessagesCommand  {
+public class ListMessagesCommand extends AliasedMessagesCommand {
 
     public String getDefaultDescription() {
         return "List all messages";
@@ -36,23 +36,29 @@ public class ListMessagesCommand extends AliasedMessagesCommand  {
     public CommandResult execute(MessageFactory messageFactory, Object[] params) throws OpenAS2Exception {
 
         synchronized (messageFactory) {
-            
+
             List<ProcessorModule> mpl = getSession().getProcessor().getModulesSupportingAction(TrackingModule.DO_TRACK_MSG);
             if (mpl == null || mpl.isEmpty()) {
                 CommandResult cmdRes = new CommandResult(CommandResult.TYPE_ERROR);
                 cmdRes.getResults().add("No DB tracking module available.");
             }
             // Assume we only load one DB tracking module - not sure it makes sense if more than 1 was loaded
-            DbTrackingModule db = (DbTrackingModule) mpl.get(0);
-
-            ArrayList<HashMap<String,String>> messages = db.listMessages();
+            DbTrackingModule db = null;
+            if (mpl != null) {
+                db = (DbTrackingModule) mpl.get(0);
+            }
+            if (db == null) {
+                return null;
+            }
+            ArrayList<HashMap<String, String>> messages;
+            messages = db.listMessages();
 
             CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK);
 
-            if(messages.isEmpty()){
-                cmdRes.getResults().add("No messages definitions available");
-            } else {
+            if (!messages.isEmpty()) {
                 cmdRes.getResults().addAll(messages);
+            } else {
+                cmdRes.getResults().add("No messages definitions available");
             }
 
             return cmdRes;

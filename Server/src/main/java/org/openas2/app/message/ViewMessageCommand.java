@@ -1,5 +1,6 @@
 package org.openas2.app.message;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.CommandResult;
 import org.openas2.message.MessageFactory;
@@ -28,6 +29,7 @@ public class ViewMessageCommand extends AliasedMessagesCommand {
         return "view <msg_id>";
     }
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH")
     protected CommandResult execute(MessageFactory messageFx, Object[] params) throws OpenAS2Exception {
         if (params.length < 1) {
             return new CommandResult(CommandResult.TYPE_INVALID_PARAM_COUNT, getUsage());

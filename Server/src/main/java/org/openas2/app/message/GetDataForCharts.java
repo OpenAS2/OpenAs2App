@@ -51,7 +51,9 @@ public class GetDataForCharts extends AliasedMessagesCommand {
                 cmdRes.getResults().add("No DB tracking module available.");
             }
             // Assume we only load one DB tracking module - not sure it makes sense if more than 1 was loaded
-            DbTrackingModule db = (DbTrackingModule) mpl.get(0);
+            DbTrackingModule db;
+            assert mpl != null;
+            db = (DbTrackingModule) mpl.get(0);
 
             ArrayList<HashMap<String, String>> data = db.getDataCharts(map);
 

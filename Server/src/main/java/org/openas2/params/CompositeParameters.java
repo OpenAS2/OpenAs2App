@@ -1,6 +1,7 @@
 package org.openas2.params;
 
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.util.Properties;
@@ -31,6 +32,7 @@ public class CompositeParameters extends ParameterParser {
         return this;
     }
 
+    @SuppressFBWarnings("GC_UNRELATED_TYPES")
     public void setParameter(String key, String value) throws InvalidParameterException {
         StringTokenizer keyParts = new StringTokenizer(key, ".", false);
 

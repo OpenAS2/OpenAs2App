@@ -1,5 +1,6 @@
 package org.openas2.partner;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
@@ -220,13 +221,13 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         }
         // add the partnership to the list of available partnerships
         partnerships.add(partnership);
-        
+
         // Now check if we need to add a directory polling module
         Node pollerCfgNode = XMLUtil.findChildNode(node, Partnership.PCFG_POLLER);
         if (pollerCfgNode != null) {
             /* Load a poller configuration.
              * This will require fetching the base configuration for the pollers loaded from
-             * the config.xml and merging with the configured setup in the partnership 
+             * the config.xml and merging with the configured setup in the partnership
              * overriding the base attribute values with any found in the partnership
              * pollerConfig element then enhancing the attribute values to cater for embedded
              * dynamic variables before activating the poller.
@@ -257,7 +258,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 // Now update the XML with the attribute values
                 attributes.forEach((key, value) -> {
                     pollerConfigElem.setAttribute(key, value);
-                }); 
+                });
                 // replace the $partnertship.* placeholders
                 replacePartnershipPlaceHolders(pollerDoc, partnership);
                 // Now launch a directory poller module for this config
@@ -357,6 +358,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         this.partnershipsXml = partnershipsXml;
     }
 
+    @SuppressFBWarnings("DMI_INVOKING_TOSTRING_ON_ARRAY")
     public void replacePartnershipPlaceHolders(Document doc, Partnership partnership) throws OpenAS2Exception {
         String xpathExpression = "//*[@*[contains(.,'$partnership.')]]/@*";
         // Create XPathFactory object

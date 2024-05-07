@@ -8,6 +8,10 @@ package org.openas2.cmd.processor.restapi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import com.sun.org.apache.xerces.internal.impl.xs.identity.Field;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.ws.rs.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.ComponentNotFoundException;
@@ -21,31 +25,33 @@ import org.openas2.partner.PartnershipFactory;
 import org.openas2.util.Properties;
 
 import javax.annotation.security.RolesAllowed;
-import jakarta.ws.rs.Consumes;
 
-import jakarta.ws.rs.DefaultValue;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.HEAD;
-
-
-import jakarta.ws.rs.PathParam;
-
 import jakarta.ws.rs.core.Context;
-
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.ByteArrayInputStream;
+
+import java.io.File;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -58,42 +64,30 @@ import java.util.logging.Logger;
 @Path("api")
 public class ApiResource {
     private final Log logger = LogFactory.getLog(ApiResource.class.getSimpleName());
-
     /**
      * @return the processor
      */
     public static RestCommandProcessor getProcessor() {
         return processor;
     }
-
     /**
      * @param aProcessor the processor to set
      */
     public static void setProcessor(RestCommandProcessor aProcessor) {
         processor = aProcessor;
     }
-
     private static RestCommandProcessor processor;
     @Context
     UriInfo ui;
     @Context
     Request request;
     private final ObjectMapper mapper;
-
     public ApiResource() {
 
         mapper = new ObjectMapper();
         // enable pretty printing
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
-
-    @RolesAllowed({"ADMIN"})
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public CommandResult getVersion() {
-        return new CommandResult(CommandResult.TYPE_OK, getProcessor().getSession().getAppTitle());
-    }
-
     private CommandResult getCertificate(String itemId) throws Exception {
         try {
             List<String> params = new ArrayList<String>();
@@ -113,7 +107,6 @@ public class ApiResource {
         }
 
     }
-
     private CommandResult processRequest(String resource, String action, String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         List<String> params = new ArrayList<>();
         if (action != null) {
@@ -157,7 +150,6 @@ public class ApiResource {
         }
         return output;
     }
-
     @RolesAllowed({"ADMIN"})
     @GET
     @Path("/{resource}/{action}{id:(/[^/]+?)?}")
@@ -256,36 +248,6 @@ public class ApiResource {
         }
     }
     //--------------------------------------------
-    @POST
-    @RolesAllowed({"ADMIN"})
-    @Path("/v2/ClearConsole")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response ClearConsole() {
-        try {
-            // For Windows OS
-            logger.debug("clearconsole");
-            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            return Response.ok().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Response.serverError().entity("Error occured while clearing console").build();
-        }
-    }
-    @POST
-    @RolesAllowed({"ADMIN"})
-    @Path("/v2/WriteToConsole")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response WriteToConsole(String str) {
-        logger.debug("Received Post Request with parametr=str:" + str);
-        // You can perform additional processing or return a response as needed
-        // For now, let's just return a simple response
-        PrintWriter w = System.console().writer();
-        w.println(str);
-        w.flush();
-        return Response.ok("[" + str + "] written to console..").build();
-    }
     @GET
     @RolesAllowed({"ADMIN"})
     @Path("/v2/configuration/propertylist")
@@ -305,6 +267,7 @@ public class ApiResource {
                 .build();
         }
     }
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_EXCEPTION")
     private List<Partnership> getSessionPartnerships() {
         Session s = getProcessor().getSession();
         PartnershipFactory pfx = null;
@@ -335,4 +298,94 @@ public class ApiResource {
                 .build();
         }
     }
+    //-------------------------------------------------
+    @RolesAllowed({"ADMIN"})
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public CommandResult getVersion() {
+        return new CommandResult(CommandResult.TYPE_OK, getProcessor().getSession().getAppTitle());
+    }
+    //--------------------------------------------------
+    @POST
+    @RolesAllowed({"ADMIN"})
+    @Path("/v2/ClearConsole")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response ClearConsole() {
+        try {
+            // For Windows OS
+            logger.debug("clearconsole");
+            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            return Response.ok().build();
+        } catch (Exception e) {
+            logger.error((e.getMessage()));
+            return Response.serverError().entity("Error occured while clearing console").build();
+        }
+    }
+    //--------------------------------------------------
+    @POST
+    @RolesAllowed({"ADMIN"})
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/v2/WriteToConsole/{id}")
+    public Response WriteToConsole(@PathParam("id") String whatToWrite) {
+        System.out.println(whatToWrite);
+        return Response.ok("LOG SETLEVEL ERROR to prevent action responses from being written to the console").build();
+    }
+    //--------------------------------------------------
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/v2/getxml")
+    @Produces(MediaType.APPLICATION_XML)
+    public Response readXMLContent(@QueryParam("filename") String filename,
+                                   @QueryParam("xpath") String xpathExpression) {
+        logger.debug("@readXMLContent ");
+        Session session = getProcessor().getSession();
+        logger.debug("App Title:" + session.getAppTitle());
+        logger.debug("App Version:" + session.getAppVersion());
+        logger.debug("@pp[filename]:" + filename);
+
+
+        String filePath = session.getBaseDirectory() + '\\' + filename;
+        logger.debug("filePath:" + filePath);
+        logger.debug("xpath:" + xpathExpression);
+        try {
+            File file = new File(filePath); // Create a File object using the file path
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.parse(file); // Pass the File object to parse()
+
+            XPathFactory xpathFactory = XPathFactory.newInstance();
+
+            XPath xpath = xpathFactory.newXPath();
+
+            // Compile XPath expression
+            XPathExpression expr = xpath.compile(xpathExpression);
+
+            // Evaluate XPath expression against XML document
+            NodeList nodeList = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+
+            Document resultDocument = db.newDocument();
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node importedNode = resultDocument.importNode(nodeList.item(i), true);
+                resultDocument.appendChild(importedNode);
+            }
+
+            // Convert the XML document to a string
+            StringWriter stringWriter = new StringWriter();
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.transform(new DOMSource(resultDocument), new StreamResult(stringWriter));
+            String xmlContent = stringWriter.toString();
+            return Response.ok(xmlContent, MediaType.APPLICATION_XML).build();
+
+        } catch (Exception exception) {
+            // Handle any exceptions
+            return Response.serverError()
+                    .entity("error")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
 }

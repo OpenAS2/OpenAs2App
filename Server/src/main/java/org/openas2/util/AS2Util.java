@@ -741,10 +741,14 @@ public static synchronized ICryptoHelper getCryptoHelper() throws Exception {
                         logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
                     }
                 }
-            } catch (Exception e) {
-                msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
-                logger.error(msg, e);
+            } catch (RuntimeException e) {
+                throw e;
+
+            } catch(Exception e){
+                //non runtime
+                logger.error(e);
             }
+
         }
         msg.setFileCleanupCompleted(true);
     }

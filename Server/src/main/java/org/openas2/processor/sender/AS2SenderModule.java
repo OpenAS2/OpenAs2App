@@ -1,5 +1,6 @@
 package org.openas2.processor.sender;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", "DMI_INVOKING_TOSTRING_ON_ARRAY"})
 public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
     private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
@@ -270,6 +272,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
      * @return The secured mimebodypart
      * @throws Exception some unforseen issue has occurred
      */
+    @SuppressFBWarnings({"UC_USELESS_CONDITION", "UC_USELESS_CONDITION"})
     protected MimeBodyPart secure(Message msg) throws Exception {
         // Set up encrypt/sign variables
         MimeBodyPart dataBP = msg.getData();
@@ -337,9 +340,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
         // Sign the data if requested
         if (sign) {
+            // Add any additional headers since this will be the outermost Mime body part if
+            // configured
             if (!encrypt && !(isCompress && !isCompressBeforeSign)) {
-                // Add any additional headers since this will be the outermost Mime body part if
-                // configured
                 addCustomOuterMimeHeaders(msg, dataBP);
             }
             calcAndStoreMic(msg, dataBP, (sign || encrypt));
@@ -617,6 +620,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         }
     }
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     protected void detectFailedSentMessages() {
         String dir;
         try {
@@ -659,7 +663,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
                 AS2Util.cleanupFiles(msg, true);
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MDN_ASYNC_RECEIVE_FAIL);
-                msg.trackMsgState(getSession());                
+                msg.trackMsgState(getSession());
             }
         }
     }

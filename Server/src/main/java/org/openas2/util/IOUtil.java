@@ -1,5 +1,6 @@
 package org.openas2.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,22 +52,15 @@ public class IOUtil {
         }
         return new FileOutputStream(tgtFile);
     }
-    /**
-     * Takes a Path and expands it with the token information
-     * @param String directory
-     * @param Message msg
-     * @return String
-     * @throws org.openas2.params.InvalidParameterException
-     * @since 2007-06-01
-     */
+
     protected static String getExpandedPath(String directory) throws InvalidParameterException {
-        CompositeParameters compParams = new CompositeParameters(false)        
+        CompositeParameters compParams = new CompositeParameters(false)
                             .add("date", new DateParameters())
                             .add("rand", new RandomParameters());
 
         return ParameterParser.parse(directory, compParams);
     }
-    
+
     public static File getDirectoryFile(String directory) throws IOException, InvalidParameterException {
         File dir = new File(getExpandedPath(directory));
         if (!dir.exists()) {
@@ -137,26 +131,27 @@ public class IOUtil {
     }
 
     /**
-     * Method used to archive file on an specific directory with 
+     * Method used to archive file on an specific directory with
      * the option to suppress the InvalidMessageException event
-     * Note: Used by directory poller to move the file to an error directory    
+     * Note: Used by directory poller to move the file to an error directory
      * @param file
      * @param archiveDirectory
-     * @throws OpenAS2Exception 
+     * @throws OpenAS2Exception
      */
     public static void handleArchive(File file, String archiveDirectory) throws OpenAS2Exception {
         handleArchive(file, archiveDirectory, true);
     }
-    
+
     /**
-     * Method used to archive file on an specific directory with 
+     * Method used to archive file on an specific directory with
      * the option to suppress the InvalidMessageException event
      * @param file
      * @param archiveDirectory
      * @param throwException
-     * @throws OpenAS2Exception 
+     * @throws OpenAS2Exception
      */
-    public static void handleArchive(File file, String archiveDirectory,boolean throwException) throws OpenAS2Exception {
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_EXCEPTION")
+    public static void handleArchive(File file, String archiveDirectory, boolean throwException) throws OpenAS2Exception {
         File destFile = null;
 
         try {
@@ -166,7 +161,7 @@ public class IOUtil {
 
             // move the file
             destFile = IOUtil.moveFile(file, destFile, false);
-        } catch (IOException ioe) {            
+        } catch (IOException ioe) {
             InvalidMessageException im = new InvalidMessageException("Failed to move " + file.getAbsolutePath() + " to directory " + destFile.getAbsolutePath());
             im.initCause(ioe);
             throw im;
@@ -290,13 +285,14 @@ public class IOUtil {
         });
     }
 
-    
+
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static String getSafeFilename(String proposedName) throws OpenAS2Exception {
         String outName = org.openas2.util.IOUtil.cleanFilename(proposedName).trim();
         /* Rule out a few well-known edge-cases before proceeding with other checks */
         if (outName.equals(".") || outName.equals("..") || outName.equals("")) {
-            throw new InvalidMessageException("Unable to assign a valid filename for this system using message name <" 
-              + outName + "> (" + proposedName +")" 
+            throw new InvalidMessageException("Unable to assign a valid filename for this system using message name <"
+              + outName + "> (" + proposedName +")"
             );
         }
         /* Create path from proposed name */
@@ -309,22 +305,22 @@ public class IOUtil {
             if (ipe.getIndex() != -1) {
               probWhere = " Error in name at position " + ipe.getIndex();
             }
-            InvalidMessageException im = new InvalidMessageException("Unable to assign a valid filename for this system using message name <" 
+            InvalidMessageException im = new InvalidMessageException("Unable to assign a valid filename for this system using message name <"
               + outName + ">" + probWhere
             );
             im.initCause(ipe);
             throw im;
-        }          
-        /* Check for directory path (e.g. C:\ or ../) embeded in filename */        
+        }
+        /* Check for directory path (e.g. C:\ or ../) embeded in filename */
         String bareName = tmpPath.getFileName().toString();
         if (!bareName.equalsIgnoreCase(outName)) {
           /* Possible path-traversal attack detected, reject filename and abort */
-          InvalidMessageException im = new InvalidMessageException("Unable to use message filename containing directory path <" 
+          InvalidMessageException im = new InvalidMessageException("Unable to use message filename containing directory path <"
             + outName + "> "
           );
           throw im;
         }
         return outName;
     }
-    
+
 }

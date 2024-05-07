@@ -96,7 +96,8 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
             parser = new SocketCommandParser();
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            new OpenAS2Exception(e);
+           // new OpenAS2Exception(e);
+            throw new OpenAS2Exception(e);
         }
     }
 
