@@ -1,5 +1,6 @@
 package org.openas2.partner;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.util.FileUtil;
@@ -234,35 +235,36 @@ public class Partnership implements Serializable {
          this.overrideContentTypeFromFileExtensionMap = contentTypeFromFileExtension;
      }
 
-   public String getAlias(String partnershipType) throws OpenAS2Exception {
+    @SuppressFBWarnings({"ES_COMPARING_PARAMETER_STRING_WITH_EQ", "ES_COMPARING_PARAMETER_STRING_WITH_EQ"})
+    public String getAlias(String partnershipType) throws OpenAS2Exception {
         String alias = null;
 
-        if (partnershipType == PTYPE_RECEIVER) {
+        if (PTYPE_RECEIVER.equals(partnershipType)) {
             alias = getReceiverID(Partnership.PID_X509_ALIAS);
-        } else if (partnershipType == PTYPE_SENDER) {
+        } else if (PTYPE_SENDER.equals(partnershipType)) {
             alias = getSenderID(Partnership.PID_X509_ALIAS);
+        } else {
+            throw new IllegalArgumentException("Invalid partnership type: " + partnershipType);
         }
 
         if (alias == null) {
             throw new CertificateNotFoundException(
-                 "Lookup failed for X509 alias for AS2 ID: " + getReceiverID(Partnership.PID_AS2 + " :: Partnership type: " + partnershipType),
-                 null
+                    "Lookup failed for X509 alias for AS2 ID: " + getReceiverID(Partnership.PID_AS2) + " :: Partnership type: " + partnershipType,
+                    null
             );
         }
 
         return alias;
     }
 
-    public String getAliasFallback(String partnershipType) throws OpenAS2Exception {
-        String alias = null;
 
-        if (partnershipType == PTYPE_RECEIVER) {
-            alias = getReceiverID(Partnership.PID_X509_ALIAS_FALLBACK);
-        } else if (partnershipType == PTYPE_SENDER) {
-            alias = getSenderID(Partnership.PID_X509_ALIAS_FALLBACK);
-        }
+
+    @SuppressFBWarnings({"ES_COMPARING_PARAMETER_STRING_WITH_EQ", "ES_COMPARING_PARAMETER_STRING_WITH_EQ"})
+    public String getAliasFallback(String partnershipType) throws OpenAS2Exception {
+        return (partnershipType == PTYPE_RECEIVER) ? getReceiverID(Partnership.PID_X509_ALIAS_FALLBACK) :
+                ((partnershipType == PTYPE_SENDER) ? getSenderID(Partnership.PID_X509_ALIAS_FALLBACK) : null);
+
         // The fallback is not guaranteed to be there so return null if not set
-        return alias;
     }
 
     public boolean isRejectUnsignedMessages() throws OpenAS2Exception {
@@ -279,6 +281,7 @@ public class Partnership implements Serializable {
         return buf.toString();
     }
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_MIGHT_BE_INFEASIBLE")
     protected boolean compareIDs(Map<String, Object> ids, Map<String, Object> compareTo) {
         Set<Entry<String, Object>> idSet = ids.entrySet();
         Iterator<Entry<String, Object>> it = idSet.iterator();

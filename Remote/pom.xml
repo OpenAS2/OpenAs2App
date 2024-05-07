@@ -1,6 +1,6 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    
+
     <parent>
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
@@ -9,7 +9,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>openas2-remote</artifactId>
-    
+
     <name>OpenAS2 Remote</name>
     <description>
         Remote management module for OpenAS2 server
@@ -67,6 +67,12 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>4.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>4.8.5</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

@@ -1,5 +1,6 @@
 package org.openas2.params;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.util.encoders.Base64;
 
 import java.nio.ByteBuffer;
@@ -12,6 +13,7 @@ public class RandomParameters extends ParameterParser {
         throw new InvalidParameterException("Set not supported", this, key, value);
     }
 
+    @SuppressFBWarnings("DMI_RANDOM_USED_ONLY_ONCE")
     public String getParameter(String key) throws InvalidParameterException {
         if (key == null) {
             throw new InvalidParameterException("Invalid key", this, key, null);
