@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class MimeBodyPartEncodingTest {
     // protected static OutputStream sysOut;
-    protected static BufferedWriter sysOutWriter;
+     static BufferedWriter sysOutWriter;
 
 
     //todo move to tests
