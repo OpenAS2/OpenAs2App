@@ -96,20 +96,24 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
             parser = new SocketCommandParser();
         } catch (Exception e) {
             // TODO Auto-generated catch block
-           // new OpenAS2Exception(e);
+            // new OpenAS2Exception(e);
             throw new OpenAS2Exception(e);
         }
     }
 
     public void processCommand() throws OpenAS2Exception {
-
         try (SSLSocket socket = (SSLSocket) sslserversocket.accept()) {
             socket.setSoTimeout(2000);
             rdr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             wrtr = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-            String line;
-            line = rdr.readLine();
+            String line = rdr.readLine();
+            if (line == null) {
+                // Handle case where no more lines to read
+                // For example, you may want to log this or take appropriate action
+                return;
+            }
+
             if (logger.isTraceEnabled()) {
                 logger.trace("Socket command processor received command: " + line);
             }
@@ -123,7 +127,7 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
                 return;
             }
 
-            if (parser.getPassword().equals(password) == false) {
+            if (!parser.getPassword().equals(password)) {
                 wrtr.write("Bad userid/password");
                 wrtr.flush();
                 logger.error("Remote socket command processor accessed with invalid password ");
@@ -194,8 +198,8 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
         } catch (Exception e) {
             // nothing
         }
-
     }
+
 
     @Override
     public void destroy() throws Exception {

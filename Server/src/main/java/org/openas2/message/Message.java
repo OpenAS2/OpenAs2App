@@ -9,6 +9,7 @@ import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.ParseException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public interface Message extends Serializable {
     String MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED = "msg_rxd_mdn_not_requested_ok";
     String MSG_STATE_MIC_MISMATCH = "msg_sent_mdn_received_mic_mismatch";
 
-    Map<String, String> STATE_MSGS = new HashMap<String, String>() {
+    final static Map<String, String> STATE_MSGS = Collections.unmodifiableMap(new HashMap<String, String>() {
         private static final long serialVersionUID = 5L;
 
         {
@@ -69,7 +70,8 @@ public interface Message extends Serializable {
             put(MSG_STATE_MSG_RXD_MDN_SENDING_FAIL, "Message was received but failed to successfully send an MDN response to partner");
             put(MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED, "Message received successfully but no MDN requested.");
         }
-    };
+    });
+
 
     String SMIME_TYPE_COMPRESSED_DATA = "smime-type=compressed-data";
 

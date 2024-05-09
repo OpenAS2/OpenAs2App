@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import com.sun.org.apache.xerces.internal.impl.xs.identity.Field;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.ws.rs.*;
 import org.apache.commons.logging.Log;
