@@ -29,17 +29,19 @@ public abstract class FileMonitorAdapter implements FileMonitorListener {
 
     @Override
     public void onFileEvent(File file, int eventID) {
-        switch (eventID) {
-            case FileMonitorListener.EVENT_MODIFIED:
-
-                try {
-                    onConfigFileChanged();
-                } catch (OpenAS2Exception oae) {
-                    oae.log();
-                }
-                break;
+        // React to file modification events
+        if (eventID == FileMonitorListener.EVENT_MODIFIED) {
+            try {
+                // Handle the file modification event
+                onConfigFileChanged();
+            } catch (OpenAS2Exception oae) {
+                // Log any exceptions that occur during processing
+                oae.log();
+                // Consider rethrowing the exception depending on the context
+            }
         }
     }
+
 
     /**
      * A template method which is triggered once observing file is changed.

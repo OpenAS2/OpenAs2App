@@ -85,7 +85,6 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
         }
         return cp.getConnection();
     }
-
     public boolean shutdown(String connectString) throws SQLException, OpenAS2Exception {
         // Wait briefly if there are active connections
         int waitCount = 0;
@@ -95,14 +94,35 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
                 waitCount++;
             }
         } catch (InterruptedException e) {
-            // Do nothing
+            Thread.currentThread().interrupt(); // Preserve the interrupted status
+            // Log the interruption or handle it appropriately
+            throw new OpenAS2Exception("Shutdown interrupted", e);
         }
-        Connection c = getConnection();
-        Statement st = c.createStatement();
 
-        boolean result = st.execute("SHUTDOWN");
-        c.close();
-        return result;
+        Connection c = null;
+        Statement st = null;
+        try {
+            c = getConnection();
+            st = c.createStatement();
+            return st.execute("SHUTDOWN");
+        } finally {
+            // Close resources in a finally block to ensure they're closed even if an exception occurs
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    // Log or handle the SQLException
+                }
+            }
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                    // Log or handle the SQLException
+                }
+            }
+        }
     }
+
 
 }
