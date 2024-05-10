@@ -1,5 +1,6 @@
 package org.openas2.app;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -174,6 +175,7 @@ public class OpenAS2Server {
             return cfg;
         }
 
+        @SuppressFBWarnings("DM_EXIT")
         public OpenAS2Server run(String... args) throws Exception {
             // an error if the JCE is limited
             if (Cipher.getMaxAllowedKeyLength(ICryptoHelper.DIGEST_MD5) <= ICryptoHelper.JCE_LIMITED_MAX_LENGTH) {

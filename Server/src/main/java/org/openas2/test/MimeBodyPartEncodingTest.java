@@ -155,11 +155,17 @@ public class MimeBodyPartEncodingTest {
             System.exit(exitStatus);
         }
     }
-
     public static void write(OutputStream os, MimeBodyPart mbp) throws MessagingException, IOException {
-        os.write((System.getProperty("line.separator") + "========BEGIN MIMEBODYPART=========" + System.getProperty("line.separator")).getBytes());
+        String lineSeparator = System.getProperty("line.separator");
+
+        // Write the beginning delimiter
+        os.write(("========BEGIN MIMEBODYPART=========" + lineSeparator).getBytes());
+
+        // Write the contents of the MimeBodyPart
         mbp.writeTo(os);
-        os.write((System.getProperty("line.separator") + "========END MIMEBODYPART=========" + System.getProperty("line.separator")).getBytes());
+
+        // Write the ending delimiter
+        os.write(("========END MIMEBODYPART=========" + lineSeparator).getBytes());
     }
 
     public static void write(String msg) {
