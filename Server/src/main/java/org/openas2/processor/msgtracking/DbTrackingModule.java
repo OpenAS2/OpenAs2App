@@ -54,7 +54,9 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     IDBHandler dbHandler = null;
 
     private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
-
+    public String jdbcDriverName(){
+        return jdbcDriver;
+    }
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
         CompositeParameters paramParser = createParser();
@@ -71,6 +73,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         useEmbeddedDB = "true".equals(getParameter(PARAM_USE_EMBEDDED_DB, "true"));
         forceLoadJdbcDriver = "true".equals(getParameter(PARAM_FORCE_LOAD_JDBC_DRIVER, "false"));
         tableName = getParameter(PARAM_TABLE_NAME, "msg_metadata");
+
         if (!useEmbeddedDB && forceLoadJdbcDriver) {
             try {
 

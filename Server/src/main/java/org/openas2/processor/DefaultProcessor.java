@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
+import org.openas2.processor.msgtracking.DbTrackingModule;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -98,8 +99,13 @@ public class DefaultProcessor extends BaseComponent implements Processor {
         for (ActiveModule activeModule : activeModules) {
             try {
                 activeModule.start();
-                logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " started.");
-            } catch (OpenAS2Exception e) {
+                if(activeModule instanceof DbTrackingModule){
+                   DbTrackingModule dbm = (DbTrackingModule) activeModule;
+                   logger.info("DbTrackingModule started with the driver:"+dbm.jdbcDriverName());
+                } else {
+                    logger.info(ClassUtils.getSimpleName(activeModule.getClass()) + " started.");
+                }
+                } catch (OpenAS2Exception e) {
                 e.log();
                 throw e;
             }
