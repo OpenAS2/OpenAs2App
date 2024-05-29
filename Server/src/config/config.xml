@@ -126,13 +126,13 @@
                         userid="userID"
                         password="pWd"
                         response_format="xml"/>
-      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
+      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor"
                         enabled="$properties.restapi.command.processor.enabled$"
                         baseuri="$properties.restapi.command.processor.baseuri$"
                         ssl_protocol="TLS"
                         ssl_keystore="$properties.ssl_keystore$"
                         ssl_keystore_password="$properties.ssl_keystore_password$"
-                        userid="$properties.restapi.command.processor.userid$" 
+                        userid="$properties.restapi.command.processor.userid$"
                         password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
@@ -147,7 +147,7 @@
       <!-- This directory polling module will parse the filename to get a sender, receiver and name of file to send to partner.
 		     For instance, a file named MyComapny_OID-PartnerB_OID-OrderID-745634.edi would be sent from MyCompany to PartnerB.
 		     The name of the file sent to the partner will be "OrderID-745634.edi" -->
-      <!-- 
+      <!--
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toAny"
               errordir="$properties.storageBaseDir$/toAny/error"

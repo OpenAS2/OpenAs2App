@@ -16,7 +16,9 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
     @Nullable
     private JdbcConnectionPool cp = null;
 
+
     private Server server = null;
+
 
     private String connectString = "jdbc:h2:file:DB/openas2";
 
@@ -32,6 +34,7 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
 
     public void start(String connectString, String userName, String pwd, Map<String, String> params) throws OpenAS2Exception {
         createConnectionPool(connectString, userName, pwd);
+
         String isStartSrvr = params.get(PARAM_TCP_SERVER_START);
         if (isStartSrvr == null || "true".equalsIgnoreCase(isStartSrvr)) {
             String tcpPort = params.get(PARAM_TCP_SERVER_PORT);
@@ -95,7 +98,7 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
                 waitCount++;
             }
         } catch (InterruptedException e) {
-            // Do nothing
+            // Do nothingg
         }
         Connection c = getConnection();
         Statement st = c.createStatement();
