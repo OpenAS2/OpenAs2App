@@ -72,7 +72,7 @@
                                 </copy>
                                 <echo message="OS Name: ${os.name}"/>
 								<exec executable="sh" osfamily="unix">
-								    <arg value="-c"/> 
+								    <arg value="-c"/>
 								    <arg line="'chmod uga+x ${package.assembly.dir}/bin/*.sh'"/>
 								</exec>
 								<!--Copy config directory to assembly directory -->
@@ -298,5 +298,11 @@
 		    <groupId>javax.annotation</groupId>
 		    <artifactId>javax.annotation-api</artifactId>
 		</dependency>
+        <!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>12.6.2.jre11</version>
+        </dependency>
     </dependencies>
 </project>
