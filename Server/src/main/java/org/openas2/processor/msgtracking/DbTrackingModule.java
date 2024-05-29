@@ -10,14 +10,7 @@ import org.openas2.params.CompositeParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.util.DateUtil;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -281,23 +274,23 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
-
         Connection conn = null;
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
-
         try {
             if (useEmbeddedDB) {
                 conn = dbHandler.getConnection();
             } else {
                 conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
             }
+            CallableStatement cs = conn.prepareCall("{CALL ftGetMessagesByDateRange(?,?)}");
+            cs.setDate(1, Date.valueOf(map.get("startDate")));
+            cs.setDate(2,Date.valueOf(map.get("endDate")));
+            ResultSet rs = cs.executeQuery();
 
-            Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
-                    + " WHERE CREATE_DT BETWEEN TIMESTAMP '" + map.get("startDate").toString()
-                    + " 00:00:00' AND TIMESTAMP '" + map.get("endDate").toString() + " 23:59:59'");
             ResultSetMetaData meta = rs.getMetaData();
-            while (rs.next()) {
+            logger.debug("CALL ftGetMessagesByDateRange(?,?) executed.. meta.getColumnCount()="+meta.getColumnCount());
+
+            while(rs.next()){
                 HashMap<String, String> row = new HashMap<String, String>();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
                     String key = meta.getColumnName(i);
@@ -306,21 +299,18 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
                 rows.add(row);
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } finally {
             if (conn != null) {
                 try {
                     conn.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
             }
         }
-
         return rows;
-
     }
 
     private String formatField(String value, int dataType) {
