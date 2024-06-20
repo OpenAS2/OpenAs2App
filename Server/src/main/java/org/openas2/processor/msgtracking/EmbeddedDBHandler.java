@@ -1,5 +1,7 @@
 package org.openas2.processor.msgtracking;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.Server;
 import org.openas2.OpenAS2Exception;
@@ -8,6 +10,9 @@ import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +51,10 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
             if (dbDirectory == null || dbDirectory.length() < 1) {
                 throw new OpenAS2Exception("TCP server requireds parameter: " + PARAM_DB_DIRECTORY);
             }
-
+            Enumeration<Driver> drivers = DriverManager.getDrivers();
+            Driver driver = drivers.nextElement();// home into first and the only
+            Log logger = LogFactory.getLog(getName());
+            logger.info("Using JDBC driver: " + driver.getClass().getName());
             try {
                 server = Server.createTcpServer("-tcpPort", tcpPort, "-tcpPassword", tcpPwd, "-baseDir", dbDirectory, "-tcpAllowOthers").start();
             } catch (SQLException e) {
@@ -83,6 +91,8 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
         if (cp == null) {
             throw new OpenAS2Exception("Connection pool not initialized.");
         }
+
+
         return cp.getConnection();
     }
 
