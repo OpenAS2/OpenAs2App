@@ -80,7 +80,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         if (logger.isInfoEnabled()) {
             logger.info("Message sender invoked for log ID: " + msg.getLogMsgID());
         }
-        boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
+        boolean isResend = msg.isResend();
         options.put(FIELDS.DIRECTION, "SEND");
         options.put(FIELDS.IS_RESEND, isResend ? "Y" : "N");
         if (!(msg instanceof AS2Message)) {
@@ -227,32 +227,37 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
                 logger.trace("Synchronous MDN received. Start processing..." + msg.getLogMsgID());
             }
             msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
+            boolean hasProcessingError = false;
             try {
-                AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
+                hasProcessingError = AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
                 msg.trackMsgState(getSession());
             } catch (Exception e) {
-                if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus()) || Message.MSG_STATUS_MDN_PARSE.equals(msg.getStatus()) || !(e instanceof OpenAS2Exception)) {
-                    /*
-                     * Cannot identify the target if in init or parse state so not sure what the
-                     * best course of action is apart from do nothing
-                     */
-                    msg.setLogMsg("Unhandled error condition processing synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
-                    logger.error(msg, e);
-                } else {
+                /* Processing of the MDN would have done extensive error handling so if the error is an OpenAS2 custom error then
+                 * assume the appropriate steps to correctly handle the error has been done.
+                 */
+                //if ((e instanceof OpenAS2DoRetryException)) {
+                //    
+                //} else 
+                if ((e instanceof OpenAS2Exception)){
                     /*
                      * Most likely a resend abort of max resend reached if OpenAS2Exception so do
                      * not log as should have been logged upstream ... just clean up the mess
+                     */ 
+                    hasProcessingError = true;
+                } else {
+                    /*
+                     * Something unexpected
                      */
-                    // Must have received MDN successfully
-                    msg.setLogMsg("Exception receiving synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
+                    msg.setLogMsg("Unhandled error condition processing synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
                     logger.error(msg, e);
-
                 }
                 // Log significant msg state
-                msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+                msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_PROCESSING_ERROR);
                 msg.trackMsgState(getSession());
+            }
+            if (!hasProcessingError) {
                 AS2Util.cleanupFiles(msg, true);
             }
         }
