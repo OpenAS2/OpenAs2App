@@ -206,7 +206,7 @@ public class AS2Util {
                     throw de;
                 }
             } catch (OpenAS2Exception e) {
-                msg.setLogMsg("Processing error occurred: " + org.openas2.logging.Log.getExceptionMsg(e));
+                msg.setLogMsg("Error occurred processing MDN disposition: " + org.openas2.logging.Log.getExceptionMsg(e));
                 logger.error(msg, e);
                 throw new OpenAS2Exception(e);
             }
@@ -422,7 +422,9 @@ public class AS2Util {
     }
 
     /**
-     * Processing MDN sent from receiver.
+     * Processing MDN sent from receiver. Unless the MDN cannot be extracted from the received HTTP packet, the
+     * method will ensure all appropriate action is taken to handle any errors cleanly and return a boolean
+     * indicating whether the MDN was successfully extracted and processed.
      *
      * @param msg         The context object
      * @param data        Received data
@@ -430,11 +432,16 @@ public class AS2Util {
      * @param isAsyncMDN  boolean indicating if this is an ASYNC MDN
      * @param session     - Session object
      * @param sourceClass - who invoked this method
+
+     * @return mdnProcessedOk - boolean indicating that MDN was extracted successfully and appropriate action taken 
+
      * @throws OpenAS2Exception - an internally handled error has occurred
      * @throws IOException      - the IO system has a problem
      */
-    public static void processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
+    public static boolean processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        boolean hasExtractedMDN = false;
+        boolean hasProcessingError = false;
 
         // Create a MessageMDN and copy HTTP headers
         MessageMDN mdn = msg.getMDN();
@@ -444,21 +451,34 @@ public class AS2Util {
         // get the MDN partnership info
         mdn.getPartnership().setSenderID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-From")));
         mdn.getPartnership().setReceiverID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-To")));
-        session.getPartnershipFactory().updatePartnership(mdn, false);
+        try {
+            session.getPartnershipFactory().updatePartnership(mdn, false);
+        } catch (OpenAS2Exception e) {
+            // Partnership not found
+            hasProcessingError = true;
+            try {
+                HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, null);
+            } catch (IOException e1) {
+            }
+            if (logger.isInfoEnabled()) {
+                logger.info("Partnership lookup failed for MDN received from: " + msg.getHeader("AS2-To")
+                    + "  MDN is targeting partner: " + msg.getHeader("AS2-From"));
+            }
+            // since we cannot identify the partnership there is nothing to do here except tell the caller we did not process it
+            return false;
+        }
 
         MimeBodyPart part;
         try {
             part = new MimeBodyPart(mdn.getHeaders(), data);
             msg.getMDN().setData(part);
         } catch (MessagingException e1) {
-            msg.setLogMsg("Failed to create mimebodypart from received MDN data: " + org.openas2.logging.Log.getExceptionMsg(e1));
+            msg.setLogMsg("Failed to create mimebodypart from received MDN data for partnership " + mdn.getPartnership().getName() + ": " + org.openas2.logging.Log.getExceptionMsg(e1));
             logger.error(msg, e1);
-            if (isAsyncMDN) {
-                HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, null);
-            }
-            throw new OpenAS2Exception("Error receiving MDN. Processing stopped.");
+            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
+            return false;
         }
-
+        hasExtractedMDN = true;
         CertificateFactory cFx = session.getCertificateFactory();
         String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
         X509Certificate senderCert = cFx.getCertificate(x509_alias);
@@ -505,7 +525,7 @@ public class AS2Util {
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
-            return;
+            return false;
         } catch (OpenAS2Exception oae) {
             // Possibly MIC mismatch so resend
             if (isAsyncMDN) {
@@ -517,7 +537,7 @@ public class AS2Util {
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
-            return;
+            return false;
         }
 
         msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
@@ -533,6 +553,7 @@ public class AS2Util {
         logger.info(msg);
 
         cleanupFiles(msg, false);
+        return hasProcessingError;
 
     }
 
@@ -686,6 +707,7 @@ public class AS2Util {
                 logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " from pending folder : " + fPendingFile.getParent() + msg.getLogMsgID());
             }
             try {
+                // Move file to error or sent directory if the error or sent saving functionality is enabled
                 boolean isMoved = false;
                 String tgtDir = null;
                 String targetFilenameUnparsed = "";
@@ -712,7 +734,7 @@ public class AS2Util {
                         isMoved = true;
 
                         if (logger.isInfoEnabled()) {
-                            logger.info("moved " + fPendingFile.getAbsolutePath() + " to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
+                            logger.info("Pending file " + fPendingFile.getAbsolutePath() + " moved to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
                         }
 
                     } catch (IOException iose) {
@@ -722,6 +744,7 @@ public class AS2Util {
                 }
 
                 if (!isMoved) {
+                    // Could not find somewhere to move it to so delete it
                     IOUtil.deleteFile(fPendingFile);
                     if (logger.isInfoEnabled()) {
                         logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
