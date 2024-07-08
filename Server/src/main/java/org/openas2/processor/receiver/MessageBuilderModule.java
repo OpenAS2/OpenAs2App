@@ -231,7 +231,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             msg.setStatus(Message.MSG_STATUS_MSG_SEND);
             // Transmit the message
             getSession().getProcessor().handle(SenderModule.DO_SEND, msg, options);
-            if (!msg.isConfiguredForAsynchMDN()) {
+            // Cleanup files only if sending was successful and an MDN was already received
+            if (!msg.isResend() && !msg.isConfiguredForAsynchMDN()) {
                 AS2Util.cleanupFiles(msg, false);
             }
         } catch (Exception e) {
