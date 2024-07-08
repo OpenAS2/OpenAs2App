@@ -178,7 +178,11 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 }
                 if (logger.isTraceEnabled()) {
                     try {
-                        logger.trace("Reconstituted Message object in resender. Content-Disposition: " + msg.getContentDisposition() + "\n      Content-Type : " + msg.getContentType() + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders()) + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType() + "\n      ATTRIBUTES : " + msg.getAttributes() + msg.getLogMsgID());
+                        logger.trace("Reconstituted Message object in resender. Content-Disposition: " + msg.getContentDisposition()
+                            + "\n      Content-Type : " + msg.getContentType()
+                            + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
+                            + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType()
+                            + "\n      ATTRIBUTES : " + msg.getAttributes() + msg.getLogMsgID());
                     } catch (Exception e) {
                     }
                 }
