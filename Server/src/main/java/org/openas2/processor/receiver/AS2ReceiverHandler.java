@@ -436,6 +436,9 @@ public class AS2ReceiverHandler implements NetModuleHandler {
          * RFC4130 section 7.3.1 for details)
          */
         DispositionOptions dispOptions = new DispositionOptions(msg.getHeader("Disposition-Notification-Options"));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Received Disposition-Notification-Options header value: " + dispOptions);
+        }
         if (dispOptions.getMicalg() != null) {
             try {
                 mic = ch.calculateMIC(msg.getData(), dispOptions.getMicalg(), (msg.isRxdMsgWasSigned() || msg.isRxdMsgWasEncrypted()), msg.getPartnership().isPreventCanonicalization());
