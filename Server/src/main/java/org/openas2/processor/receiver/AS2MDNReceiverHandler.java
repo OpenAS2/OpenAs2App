@@ -3,7 +3,6 @@ package org.openas2.processor.receiver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openas2.OpenAS2Exception;
-import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
 import org.openas2.message.Message;
@@ -11,11 +10,8 @@ import org.openas2.message.MessageMDN;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.util.AS2Util;
-import org.openas2.util.ByteArrayDataSource;
 import org.openas2.util.HTTPUtil;
 
-import javax.activation.DataHandler;
-import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -72,26 +68,38 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                     return;
                 }
             }
-            // check if the requested URL is defined in attribute "as2_receipt_option"
-            // in one of partnerships, if yes, then process incoming AsyncMDN
             if (logger.isInfoEnabled()) {
                 logger.info("incoming connection for receiving AsyncMDN" + " [" + getClientInfo(s) + "]" + msg.getLogMsgID());
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Incoming ASYNC MDN message - Message struct: " + msg.toString());
             }
-            ContentType receivedContentType;
             MimeBodyPart receivedPart = new MimeBodyPart(msg.getHeaders(), data);
-            receivedContentType = new ContentType(receivedPart.getContentType());
+            // ContentType receivedContentType = new ContentType(receivedPart.getContentType());
             msg.setData(receivedPart);
 
-            // Switch the msg headers since the original message went in the opposite direction
+            /* Switch the msg headers for To and From to standardise processing for SYNC and ASYNC MDN
+             * since the original message this MDN is responding to went in the opposite direction
+             */
             String to = msg.getHeader("AS2-To");
             msg.setHeader("AS2-To", msg.getHeader("AS2-From"));
             msg.setHeader("AS2-From", to);
             msg.getPartnership().setSenderID(Partnership.PID_AS2, msg.getHeader("AS2-From"));
             msg.getPartnership().setReceiverID(Partnership.PID_AS2, msg.getHeader("AS2-To"));
-            getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
+            try {
+                getModule().getSession().getPartnershipFactory().updatePartnership(msg, true);
+            } catch (OpenAS2Exception e) {
+                // Partnership not found so log and exit
+                try {
+                    HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
+                } catch (IOException e1) {
+                }
+                if (logger.isInfoEnabled()) {
+                    logger.info("Partnership lookup failed for MDN received from: " + msg.getHeader("AS2-To")
+                        + "  MDN is targeting partner: " + msg.getHeader("AS2-From"));
+                }
+                return;
+            }
 
             // Create a MessageMDN
             MessageMDN mdn = new AS2MessageMDN(msg, true);
@@ -99,48 +107,38 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
             if (logger.isTraceEnabled()) {
                 logger.trace("Incoming ASYNC MDN message - MDN struct: " + mdn.toString());
             }
-            /*
-            // Log significant msg state
-            options.put("STATE", Message.MSG_STATE_MDN_RECEIVE_START);
-            options.put("STATE_MSG", "MDN response received. Message processing started.");
-            msg.trackMsgState(getModule().getSession(), options);
-            */
-            AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this.getClass());
-            // Log significant msg state
-            msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
-            msg.trackMsgState(getModule().getSession());
+            try {
+                boolean partnerIdentificationProblem = AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this.getClass());
+                // Assume that appropriate logging and state handling was done upstream if an error occurred so only log state change for success
+                if (!partnerIdentificationProblem) {
+                    // Log  state
+                    msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
+                    msg.trackMsgState(getModule().getSession());
+                }
+            } catch (Exception e) {
+                /* Processing of the MDN would have done extensive error handling so only log an error if the error
+                 * is an not OpenAS2 custom error.
+                 */
+                if (!(e instanceof OpenAS2Exception)){
+                    /*
+                     * Something unexpected (assumes a resend was not successfully initiated)
+                     */
+                    msg.setLogMsg("Unhandled error condition processing synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
+                    logger.error(msg, e);
+                }
+                // Log significant msg state
+                msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_PROCESSING_ERROR);
+                msg.trackMsgState(getModule().getSession());
+                AS2Util.cleanupFiles(msg, true);
+            }
 
         } catch (Exception e) {
-            if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus()) || Message.MSG_STATUS_MDN_PARSE.equals(msg.getStatus()) || !(e instanceof OpenAS2Exception)) {
-                /*
-                 * Cannot identify the target if in init or parse state so not sure what the
-                 * best course of action is apart from do nothing
-                 */
-                msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
+                msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Processing will be aborted.");
                 logger.error(msg.getLogMsg(), e);
                 try {
                     HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
                 } catch (IOException e1) {
                 }
-            } else {
-                /*
-                 * Most likely a resend abort of max resend reached if
-                 * OpenAS2Exception so do not log as should have been logged
-                 * upstream ... just clean up the mess
-                 */
-                // Must have received MDN successfully so must respond with OK
-                try {
-                    HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_OK, null);
-                } catch (IOException e1) { // What to do ....
-                }
-                msg.setLogMsg("Exception receiving asynchronous MDN. Message and asociated files cleanup will be attempted but may be in an unknown state.");
-                logger.error(msg, e);
-
-            }
-            // Log significant msg state
-            msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
-            msg.trackMsgState(getModule().getSession());
-            AS2Util.cleanupFiles(msg, true);
         }
 
     }
