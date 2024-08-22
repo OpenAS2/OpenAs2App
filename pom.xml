@@ -165,7 +165,7 @@
            <dependency>
                <groupId>org.glassfish.jersey.containers</groupId>
                <artifactId>jersey-container-grizzly2-http</artifactId>
-               <version>4.0.0-M1</version>
+               <version>3.1.8</version>
                <type>jar</type>
            </dependency>
            <dependency>
@@ -182,13 +182,13 @@
            <dependency>
                <groupId>org.glassfish.jersey.media</groupId>
                <artifactId>jersey-media-json-jackson</artifactId>
-               <version>4.0.0-M1</version>
+               <version>3.1.8</version>
                <type>jar</type>
            </dependency>
    		   <dependency>
    		    <groupId>org.glassfish.jersey.inject</groupId>
    		    <artifactId>jersey-hk2</artifactId>
-   		    <version>4.0.0-M1</version>
+   		    <version>3.1.8</version>
            </dependency>
            <!-- Removed JavaEE APIs removed from Java 9+ -->
            <dependency>
