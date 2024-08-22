@@ -80,7 +80,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         if (logger.isInfoEnabled()) {
             logger.info("Message sender invoked for log ID: " + msg.getLogMsgID());
         }
-        boolean isResend = Message.MSG_STATUS_MSG_RESEND.equals(msg.getStatus());
+        boolean isResend = msg.isResend();
         options.put(FIELDS.DIRECTION, "SEND");
         options.put(FIELDS.IS_RESEND, isResend ? "Y" : "N");
         if (!(msg instanceof AS2Message)) {
@@ -134,10 +134,10 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             sendMessage(url, msg, securedData);
         } catch (HttpResponseException hre) {
             // Will have been logged so just resend
-            resend(msg, hre, false);
             // Log significant msg state
             msg.setOption("STATE", Message.MSG_STATE_SEND_EXCEPTION);
             msg.trackMsgState(getSession());
+            resend(msg, hre, false);
             return;
         } catch (SSLHandshakeException e) {
             msg.setLogMsg("Failed to connect to partner using SSL certificate. Please run the SSL certificate checker utility to identify the issue: " + url);
@@ -215,6 +215,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         if (msg.getPartnership().isAsyncMDN()) {
             // Async MDN
             msg.setStatus(Message.MSG_STATUS_MDN_WAIT);
+            // Log significant msg state
+            msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_AWAIT_ASYNC_MDN_RESPONSE);
+            msg.trackMsgState(getSession());
         } else {
             // Create a MessageMDN and copy HTTP headers
             MessageMDN mdn = new AS2MessageMDN((AS2Message) msg, false);
@@ -228,38 +231,33 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
             try {
-                AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
-                // Log significant msg state
-                msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
-                msg.trackMsgState(getSession());
+                @SuppressWarnings("unused")
+                boolean partnerIdentificationProblem = AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
+                // Possibly a place for adding suspicious activity tracking here?
+                //  if (partnerIdentificationProblem) {
+                //       trackSuspiciousActivity(msg);
+                //  }
             } catch (Exception e) {
-                if (Message.MSG_STATUS_MDN_PROCESS_INIT.equals(msg.getStatus()) || Message.MSG_STATUS_MDN_PARSE.equals(msg.getStatus()) || !(e instanceof OpenAS2Exception)) {
+                /* Processing of the MDN would have done extensive error handling so only log an error if the error
+                 * is an not OpenAS2 custom error.
+                 */
+                if (!(e instanceof OpenAS2Exception)){
                     /*
-                     * Cannot identify the target if in init or parse state so not sure what the
-                     * best course of action is apart from do nothing
+                     * Something unexpected (assumes a resend was not successfully initiated)
                      */
                     msg.setLogMsg("Unhandled error condition processing synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
                     logger.error(msg, e);
-                } else {
-                    /*
-                     * Most likely a resend abort of max resend reached if OpenAS2Exception so do
-                     * not log as should have been logged upstream ... just clean up the mess
-                     */
-                    // Must have received MDN successfully
-                    msg.setLogMsg("Exception receiving synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
-                    logger.error(msg, e);
-
                 }
                 // Log significant msg state
-                msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
+                msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_PROCESSING_ERROR);
                 msg.trackMsgState(getSession());
                 AS2Util.cleanupFiles(msg, true);
             }
         }
     }
 
-    private void resend(Message msg, OpenAS2Exception cause, boolean keepRestoredData) throws OpenAS2Exception {
-        AS2Util.resend(getSession(), this.getClass(), SenderModule.DO_SEND, msg, cause, false, keepRestoredData);
+    private boolean resend(Message msg, OpenAS2Exception cause, boolean keepRestoredData) throws OpenAS2Exception {
+        return AS2Util.resend(getSession(), this.getClass(), SenderModule.DO_SEND, msg, cause, false, keepRestoredData);
     }
 
     /**
@@ -607,8 +605,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         DispositionOptions dispOptions = new DispositionOptions(mdnOptions);
         msg.setCalculatedMIC(AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg(), includeHeaders, msg.getPartnership().isPreventCanonicalization()));
         if (logger.isTraceEnabled()) {
-            // Generate some alternative MIC's to see if the partner is somehow using a
-            // different default
+            // Generate some alternative MIC's to see if the partner is somehow using a different default
             String tmic = AS2Util.getCryptoHelper().calculateMIC(mbp, dispOptions.getMicalg(), includeHeaders, !msg.getPartnership().isPreventCanonicalization());
             logger.trace("MIC outbound with forced reversed prevent canocalization: " + tmic + msg.getLogMsgID());
             tmic = AS2Util.getCryptoHelper().calculateMIC(msg.getData(), dispOptions.getMicalg(), false, msg.getPartnership().isPreventCanonicalization());

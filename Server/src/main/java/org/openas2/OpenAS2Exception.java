@@ -8,12 +8,9 @@ import java.util.Map;
 
 
 public class OpenAS2Exception extends Exception {
+    private static final long serialVersionUID = -2266872772193560354L;
     public static final String SOURCE_MESSAGE = "message";
     public static final String SOURCE_FILE = "file";
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
     private Map<String, Object> sources = new HashMap<String, Object>();
     private Log logger = LogFactory.getLog(OpenAS2Exception.class.getSimpleName());
 

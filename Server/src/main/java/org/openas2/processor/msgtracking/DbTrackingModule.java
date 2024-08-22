@@ -291,8 +291,9 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
-                    + " WHERE CREATE_DT BETWEEN TIMESTAMP '" + map.get("startDate").toString()
-                    + " 00:00:00' AND TIMESTAMP '" + map.get("endDate").toString() + " 23:59:59'");
+                    + " WHERE CREATE_DT BETWEEN CAST('" + map.get("startDate").toString()
+                    + " 00:00:00' as TIMESTAMP) AND CAST('" + map.get("endDate").toString()
+                    + " 23:59:59' as TIMESTAMP)");
             ResultSetMetaData meta = rs.getMetaData();
             while (rs.next()) {
                 HashMap<String, String> row = new HashMap<String, String>();

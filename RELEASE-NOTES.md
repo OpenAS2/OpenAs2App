@@ -1,22 +1,22 @@
 #              OpenAS2 Server
-#              Version 3.10.1
+#              Version 3.11.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.10.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.11.0
 
-The release download file is: OpenAS2Server-3.10.1.zip
+The release download file is: OpenAS2Server-3.11.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
-## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
+## NOTE: Testing covers Java 8 to 17. See Java Compatibility section of the OpenAS2 documentation for using Java 8.
 
-Version 3.10.1 - 2024-03-17
+Version 3.11.0 - 2024-08-22
 This is a minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
- 1. Fix sending the Content-Length header correctly on MDN response when chinked transfer is not supported by the receiving software.
- 2. Fix log message to indicate SYNC or ASYNC mode when receiving an MDN.
- 3. Change the default Java package to Eclipse Temurin for the docker creation.
- 4. Upgrade the encryprion packages to fix a low severity security issue.
+1. Enhance the handling of MDN processing and asociated resend handling to provide moer reliable error handling.
+2. Enhance the Disposition-Notification-Options handler to properly support the standard.
+3. Use the LTS releases of Java for testing
+4. Use a SQL-92 compliant SQL format for accessing the database.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

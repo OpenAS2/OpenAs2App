@@ -102,6 +102,11 @@ public abstract class BaseMessage implements Message {
         this.status = status;
     }
 
+    public boolean isResend() {
+        // Determines if message is currently in resend phase
+        return Message.MSG_STATUS_MSG_RESEND.equals(getStatus());
+    }
+
     public Map<String, String> getCustomOuterMimeHeaders() {
         return customOuterMimeHeaders;
     }
