@@ -52,6 +52,14 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
         }
     }
 
+    public boolean hasPrivateKey(String alias) throws OpenAS2Exception {
+        try{
+            return getKeyStore().isKeyEntry(alias);
+        } catch (GeneralSecurityException gse) {
+            throw new WrappedException(gse);
+        }
+    }
+
     public Map<String, X509Certificate> getCertificates() throws OpenAS2Exception {
         KeyStore ks = getKeyStore();
 

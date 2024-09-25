@@ -1,0 +1,576 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OpenAS2 rest api",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8443/api/v2/",
+      "description": "The default rest api v2 url"
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "partner",
+      "description": "operations with partners"
+    },
+    {
+      "name": "partnership",
+      "description": "operations with partnerships"
+    },
+    {
+      "name": "certificates",
+      "description": "operations with certificates"
+    }
+  ],
+  "paths": {
+    "/partners": {
+      "get": {
+        "tags": [
+          "partner"
+        ],
+        "summary": "Gets a list of all partners",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArrayOfPartner"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/partners/{name}/": {
+      "get": {
+        "tags": [
+          "partner"
+        ],
+        "summary": "Get a partner",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "Name of partner to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partner found",
+            "content": {
+              "applicaton/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Partner"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "Partner not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/certificates/": {
+      "get": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Gets a list of all partners",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArrayOfCertificate"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Adds a new certificate. Only set alias and publicKey or alias, pkcs12Container and password.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CertificateImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Certificate imported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The import request is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "No certificate or private key was found in the CertificateImport request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "There is already a certificate with the requested alias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/certificates/{alias}/": {
+      "get": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Get a certificate with the public key",
+        "parameters": [
+          {
+            "name": "alias",
+            "in": "path",
+            "description": "The alias of the certificate to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "Certificate not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Replaces an existing certificate. Only set alias and publicKey or alias, pkcs12Container and password.",
+        "parameters": [
+          {
+            "name": "alias",
+            "in": "path",
+            "description": "The alias of the certificate to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CertificateImport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Certificate replaced",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The import request is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "No certificate or private key was found in the CertificateImport request or there was no certificate with the alias found in OpenAS2",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Delete a certificate",
+        "parameters": [
+          {
+            "name": "alias",
+            "in": "path",
+            "description": "The alias of the certificate to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "There is no certificate with the alias in OpenAS2",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/certificates/{alias}/privatekey/": {
+      "post": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Gets a certificate with the private key",
+        "description": "This could be solved with a simple get request. But then the export password would be in the URL and appear in logs.",
+        "parameters": [
+          {
+            "name": "alias",
+            "in": "path",
+            "description": "The alias of the certificate to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exportpassword",
+            "in": "body",
+            "description": "The password that is used to encrypt the pkcs12 container",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pkcs12Export"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "Certificate not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/certificates/{alias}/usedby/": {
+      "get": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Gets a list of partners using this certificate",
+        "parameters": [
+          {
+            "name": "alias",
+            "in": "path",
+            "description": "The alias of the certificate",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArrayOfPartner"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "Certificate not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    },
+    "schemas": {
+      "ArrayOfPartner": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Partner"
+        }
+      },
+      "Partner": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "MyCompany"
+          },
+          "as2_id": {
+            "type": "string",
+            "example": "MyCompany_OID"
+          },
+          "x509_alias": {
+            "type": "string",
+            "example": "mycompany"
+          },
+          "email": {
+            "type": "string",
+            "example": "as2msgs@partnera.com"
+          },
+          "x509_alias_fallback": {
+            "type": "string",
+            "example": "fallback_certificate"
+          }
+        }
+      },
+      "ArrayOfCertificate": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Certificate"
+        }
+      },
+      "Certificate": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string",
+            "example": "mycompany"
+          },
+          "version": {
+            "type": "integer",
+            "example": 3,
+            "description": "The X509 version of the certificate"
+          },
+          "serialNumber": {
+            "type": "string",
+            "example": "a43fbe7b13af62f6",
+            "description": "The hex serial number of the certificate"
+          },
+          "issuer": {
+            "type": "string",
+            "example": "CN=as2.mycompany.com,OU=Test Lab,O=My Company,L=New York,ST=New York,C=US"
+          },
+          "subject": {
+            "type": "string",
+            "example": "CN=as2.mycompany.com,OU=Test Lab,O=My Company,L=New York,ST=New York,C=US"
+          },
+          "notBefore": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2021-10-21T13:09:04+02:00",
+            "description": "The date and time of the start valid time"
+          },
+          "notAfter": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2031-10-19T13:09:04+02:00",
+            "description": "The expiration date and time"
+          },
+          "hasPrivateKey": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether OpenAS2 has the private key of this certificate"
+          },
+          "publicKey": {
+            "type": "string",
+            "format": "byte",
+            "example": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwHfWL/WOpz3deXgsdaf93wr3SZMTza6Npvw4XtTf7bw+iaor77r8pObK4HZWY6ZkfNgXwmPexfwWf12g/nbmkxEsJQ23WIXOBuZJcqZk1SP7zJCSri3rX4hFeVKI7f0ftS22NJWPQ+ykPfBRVbon4Iy1impCUHBsc5IIzDO9ei4l5Y9LBDwI74jCnjnCwZZDYs5d92yQeZ57N0my2cegAqLiGbBkZz2XM9pD3YfHNVHermQFr6XYuPqtf0tSsCFAvAh7UBbeEboaoIwj+4DWUFTWRezgDhX4IHtZMZrl+4y42a3ADMtrtfngkflh4nOUnGjHONB3gDs4dm7AtTQmoQIDAQAB",
+            "description": "The base64-encoded public key. Only set when requesting this certificate, not for a list of certificates"
+          },
+          "pkcs12Container": {
+            "type": "string",
+            "format": "byte",
+            "example": null,
+            "description": "The base64-encoded pkcs12 container with the certificate and private key. Only set when explicitly requesting the private key."
+          }
+        }
+      },
+      "CertificateImport": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string",
+            "example": "mycompany"
+          },
+          "publicKey": {
+            "type": "string",
+            "format": "byte",
+            "example": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwHfWL/WOpz3deXgsdaf93wr3SZMTza6Npvw4XtTf7bw+iaor77r8pObK4HZWY6ZkfNgXwmPexfwWf12g/nbmkxEsJQ23WIXOBuZJcqZk1SP7zJCSri3rX4hFeVKI7f0ftS22NJWPQ+ykPfBRVbon4Iy1impCUHBsc5IIzDO9ei4l5Y9LBDwI74jCnjnCwZZDYs5d92yQeZ57N0my2cegAqLiGbBkZz2XM9pD3YfHNVHermQFr6XYuPqtf0tSsCFAvAh7UBbeEboaoIwj+4DWUFTWRezgDhX4IHtZMZrl+4y42a3ADMtrtfngkflh4nOUnGjHONB3gDs4dm7AtTQmoQIDAQAB",
+            "description": "The base64-encoded public key. Only set when importing only a public key"
+          },
+          "pkcs12Container": {
+            "type": "string",
+            "format": "byte",
+            "example": "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",
+            "description": "The base64-encoded pkcs12 container. Only set when importing a certificate with private key."
+          },
+          "password": {
+            "type": "string",
+            "example": "mypassword",
+            "description": "The password for the pkcs12Container. Only set when importing a certificate with private key."
+          }
+        }
+      },
+      "Pkcs12Export": {
+        "type": "object",
+        "properties": {
+          "exportPassword": {
+            "type": "string",
+            "description": "The password that is used to encrypt the pkcs12 container"
+          }
+        }
+      },
+      "ErrorObject": {
+        "type": "object",
+        "properties": {
+          "errorMessage": {
+            "type": "string",
+            "example": "Partner not found",
+            "description": "The error message"
+          }
+        }
+      }
+    }
+  }
+}

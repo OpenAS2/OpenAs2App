@@ -20,8 +20,10 @@ import org.openas2.Session;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.restapi.ApiResource;
+import org.openas2.cmd.processor.restapi.ApiV2Resource;
 import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
 import org.openas2.cmd.processor.restapi.LoggerRequestFilter;
+import org.openas2.partner.XMLPartnershipFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -96,12 +98,13 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             final String userId = parameters.getOrDefault("userid", "admin");
             final String password = parameters.getOrDefault("password", "admin"); 
             ApiResource.setProcessor(this);
+            ApiV2Resource.setSession(session);
             LoggerRequestFilter.setLogger(logger);
             AuthenticationRequestFilter.setCredentials(userId, password);
             // Now needed to define packages in Jersey 3.0
             final ResourceConfig rc = new ResourceConfig();
             rc.packages("org.openas2.cmd.processor.restapi");
-            rc.packages("org.glassfish.jersey.jackson");
+            // rc.packages("org.glassfish.jersey.jackson");
             rc.register(SecurityEntityFilteringFeature.class);
             rc.register(EntityFilteringFeature.class);
             rc.register(RolesAllowedDynamicFeature.class);
