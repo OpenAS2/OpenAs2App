@@ -29,6 +29,11 @@ The OpenAS2 public REST api Endpoint needs to be configured with the VUE_APP_RES
 ```
 VUE_APP_RESTAPI_URL=https://openas2/rest/api
 ```
+### OpenAS2 Configuration
+  1. Enable the REST command processor config/config.xml:
+		restapi.command.processor.enabled="true"
+  1. Set the listening port for the command procesor to something usable on your server if the feault is not usable in config/config.xml:
+		restapi.command.processor.baseuri="http://0.0.0.0:8080"
 
 ### Compiles and hot-reloads for development
 ```

@@ -1,25 +1,28 @@
 #              OpenAS2 Server
-#              Version 3.11.0
+#              Version 3.12.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.11.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.12.0
 
-The release download file is: OpenAS2Server-3.11.0.zip
+The release download file is: OpenAS2Server-3.12.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 8 to 17. See Java Compatibility section of the OpenAS2 documentation for using Java 8.
 
-Version 3.11.0 - 2024-08-22
-This is a minor bugfix release:
+Version 3.12.0 - 2024-10-15
+This is a minor enhancement and bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-1. Enhance the handling of MDN processing and asociated resend handling to provide moer reliable error handling.
-2. Enhance the Disposition-Notification-Options handler to properly support the standard.
-3. Use the LTS releases of Java for testing
-4. Use a SQL-92 compliant SQL format for accessing the database.
+1. Change the property name in config.xml from javax.mail.properties to jakarta.mail.properties
+2. 
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
+
+### Upgrading to 3.12 or newer any older version:
+      1. The property in the config.xml changed:
+          Change ALL occurrences of javax.mail.properties to jakarta.mail.properties in config.xml and the .properties file if you implemented it.
+      2. Completely replace all library files in the existing "lib" folder wit hthe ones supplied in the new install package (per recommended standard procedure in the user guide).
 
 ### Upgrading to 3.6 or newer from 3.5 (or older) version:
       1. Run the following command after the upgrade of the code base is complete and BEFORE you start the OpenAS2 server:

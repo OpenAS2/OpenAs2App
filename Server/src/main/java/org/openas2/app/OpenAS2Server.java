@@ -7,7 +7,7 @@ import org.openas2.Session;
 import org.openas2.XMLSession;
 import org.openas2.lib.helper.ICryptoHelper;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import javax.crypto.Cipher;
 import java.io.File;
 import java.io.IOException;
