@@ -8,7 +8,7 @@ import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandRegistry;
 import org.openas2.schedule.HasSchedule;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

@@ -11,7 +11,7 @@ import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 
 import jakarta.ws.rs.DefaultValue;

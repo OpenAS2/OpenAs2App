@@ -1,6 +1,6 @@
 package org.openas2.support;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.io.File;
 import java.util.Date;
 import java.util.LinkedList;

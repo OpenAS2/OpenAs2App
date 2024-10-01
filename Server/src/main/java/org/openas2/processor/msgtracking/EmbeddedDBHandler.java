@@ -6,7 +6,7 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.Server;
 import org.openas2.OpenAS2Exception;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
