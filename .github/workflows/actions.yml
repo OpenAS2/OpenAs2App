@@ -10,9 +10,9 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up JDK ${{ matrix.java_version }}
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java_version }}
           distribution: 'adopt'
@@ -48,7 +48,7 @@ jobs:
              ./mvnw clean -e --debug --file pom.xml --log-file maven.log
              ./mvnw test -e --debug --file pom.xml --log-file maven.log
       - name: Archive logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: execution-logs-${{ matrix.java_version }}-${{ matrix.os }}
