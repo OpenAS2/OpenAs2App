@@ -12,7 +12,9 @@ import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.util.AS2Util;
 import org.openas2.util.HTTPUtil;
 
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.MimeBodyPart;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;

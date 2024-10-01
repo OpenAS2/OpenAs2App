@@ -24,11 +24,11 @@ import org.openas2.util.FileUtil;
 import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -116,7 +116,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     }
 
     /**
-     * Take the file input stream and write it to a file system file in the processing folder. 
+     * Take the file input stream and write it to a file system file in the processing folder.
      * Use this method if the file is produced in real time through a stream.
      * @param ip
      * @param filename
@@ -313,9 +313,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
      */
     public void buildMessageData(Message msg, InputStream ip, String filename) throws OpenAS2Exception {
             String contentType = getMessageContentType(msg);
-            javax.mail.util.ByteArrayDataSource byteSource;
+            jakarta.mail.util.ByteArrayDataSource byteSource;
             try {
-                byteSource = new javax.mail.util.ByteArrayDataSource(ip, contentType);
+                byteSource = new jakarta.mail.util.ByteArrayDataSource(ip, contentType);
             } catch (IOException e) {
                 throw new OpenAS2Exception("Failed to set up datasource from input stream: " + e.getMessage(), e);
             }

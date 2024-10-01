@@ -17,8 +17,8 @@ import org.openas2.util.DispositionType;
 import org.openas2.util.HTTPUtil;
 import org.openas2.util.ResponseWrapper;
 
-import javax.mail.Header;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.Header;
+import jakarta.mail.internet.MimeBodyPart;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

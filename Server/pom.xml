@@ -72,7 +72,7 @@
                                 </copy>
                                 <echo message="OS Name: ${os.name}"/>
 								<exec executable="sh" osfamily="unix">
-								    <arg value="-c"/> 
+								    <arg value="-c"/>
 								    <arg line="'chmod uga+x ${package.assembly.dir}/bin/*.sh'"/>
 								</exec>
 								<!--Copy config directory to assembly directory -->
@@ -162,7 +162,7 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcmail-jdk18on</artifactId>
+            <artifactId>bcjmail-jdk18on</artifactId>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -186,7 +186,7 @@
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
+            <artifactId>jakarta.mail</artifactId>
         </dependency>
        <dependency>
             <groupId>com.h2database</groupId>
@@ -271,8 +271,8 @@
         </dependency>
         <!-- Removed JavaEE APIs removed from Java 9+ -->
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
@@ -284,7 +284,7 @@
         </dependency>
         <!--
         <dependency>
-            <groupId>javax.activation</groupId>
+            <groupId>jakarta.activation</groupId>
             <artifactId>activation</artifactId>
         </dependency>
         -->

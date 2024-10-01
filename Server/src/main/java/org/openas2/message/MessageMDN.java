@@ -3,8 +3,8 @@ package org.openas2.message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
 import java.io.Serializable;
 import java.util.Map;
 

@@ -33,7 +33,7 @@
       <!-- Remove this comment to enable emailing of exceptions
         <logger classname="org.openas2.logging.EmailLogger"
             show="terminated"
-            javax.mail.properties.file="%home%/java.mail.properties"
+            jakarta.mail.properties.file="%home%/java.mail.properties"
             from="openas2"
             to="your email address"
             smtpserver="your smtp server"
@@ -46,7 +46,7 @@
         <logger classname="org.openas2.logging.FileLogger"
                 filename="%home%/../logs/log-$date.MMddyyyy$.txt"/>
         -->
-      <!-- Remove this comment to enable socket logging			
+      <!-- Remove this comment to enable socket logging
 <logger classname="org.openas2.logging.SocketLogger"
     ipaddr="127.0.0.1"
     portid="19999"/>
@@ -120,7 +120,7 @@
               errordir="$properties.storageBaseDir$/inbox/error"
               errorformat="sender.as2_id, receiver.as2_id, headers.message-id"/>
       <!--
-        <module classname="org.openas2.processor.receiver.AS2ReceiverModule"			
+        <module classname="org.openas2.processor.receiver.AS2ReceiverModule"
             port="10443"
             protocol="https"
             ssl_protocol="TLS"
@@ -133,7 +133,7 @@
               classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
               port="$properties.async_mdn_receiver_port$"/>
       <!--
-		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"			
+		<module classname="org.openas2.processor.receiver.AS2MDNReceiverModule"
 			port="10444"
 			protocol="https"
 			ssl_protocol="TLS"

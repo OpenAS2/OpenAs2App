@@ -48,7 +48,7 @@
               enabled="$properties.email.logger.enabled$"
               only_active_msg_transfer_errors="false"
               log_exception_trace="false"
-              javax.mail.properties.file="%home%/java.mail.properties"
+              jakarta.mail.properties.file="%home%/java.mail.properties"
               from="openas2"
               to="your email address"
               smtpserver="your smtp server"
@@ -77,7 +77,7 @@
                         userid="userID"
                         password="pWd"
                         response_format="xml"/>
-      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor" 
+      <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor"
                         enabled="$properties.restapi.command.processor.enabled$"
                         baseuri="$properties.restapi.command.processor.baseuri$"
                         userid="$properties.restapi.command.processor.userid$" 

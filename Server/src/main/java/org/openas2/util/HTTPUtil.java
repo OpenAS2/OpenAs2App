@@ -34,9 +34,9 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.message.Message;
 
-import javax.mail.Header;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetHeaders;
+import jakarta.mail.Header;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetHeaders;
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.*;
@@ -376,7 +376,7 @@ public class HTTPUtil {
                 rb.setEntity(httpEntity);
             }
         }
-            
+
         final HttpUriRequest request = rb.build();
 
         BasicHttpContext localcontext = new BasicHttpContext();

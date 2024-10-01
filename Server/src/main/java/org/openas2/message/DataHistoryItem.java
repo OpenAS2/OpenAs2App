@@ -1,7 +1,7 @@
 package org.openas2.message;
 
-import javax.mail.internet.ContentType;
-import javax.mail.internet.ParseException;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.ParseException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
