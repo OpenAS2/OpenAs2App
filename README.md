@@ -88,6 +88,7 @@ $ docker build -t openas2:latest .
 ```
 
 Run the OpenAS2 server, with its network set to "host", so that the WebUI can access the server.
+NOTE: Some users have reported that using --net=host does not work for them and removing it solves the problem..
 
 ```console
 $ docker run -it --rm --net=host -p 4080:10080 -p 4081:10081 -p 8443:8080 -v ${PWD}/config:/opt/openas2/config -v ${PWD}/data:/opt/openas2/data openas2:latest
