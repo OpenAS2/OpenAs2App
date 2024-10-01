@@ -1,26 +1,37 @@
 #              OpenAS2 Server
-#              Version 3.4.0
+#              Version 3.11.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.4.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 3.11.0
 
-The release download file is: OpenAS2Server-3.4.0.zip
+The release download file is: OpenAS2Server-3.11.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
-## NOTE: Testing covers Java 8 to 17. The application should work for older versions down to Java 7 but they are not tested as part of the CI/CD pipeline.
+## NOTE: Testing covers Java 8 to 17. See Java Compatibility section of the OpenAS2 documentation for using Java 8.
 
-Version 3.4.0 - 2022-10-04
-This is an enhancement and minor bugfix release:
+Version 3.11.0 - 2024-08-22
+This is a minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-  1. Support for splitting line based files into multiple file. This is useful for very large files where encryption consumes too much memory.
-  2. Support other databases than H2 for the WebUI commands.
-  3. Catch exceptions in the strm command processor to avoid crashing the command processor.
-  4. Pre-enhance AS2 properties before adding system properties to cater for $ in system properties
-
+1. Enhance the handling of MDN processing and asociated resend handling to provide moer reliable error handling.
+2. Enhance the Disposition-Notification-Options handler to properly support the standard.
+3. Use the LTS releases of Java for testing
+4. Use a SQL-92 compliant SQL format for accessing the database.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
+
+### Upgrading to 3.6 or newer from 3.5 (or older) version:
+      1. Run the following command after the upgrade of the code base is complete and BEFORE you start the OpenAS2 server:
+          - Open a shell (Command prompt or Powershell in Windows or a Terminal window in NIX systems)
+          - Run this command (NOTE the backslash escape to prevent command line expansion of asterisk):
+              > java -cp /path/to/openas2/lib/\* <version of DB before upgrade> <DB user> <DB password> <path to DB file excluding the .mv.db extension>
+            The version of the DB before upgrade will be the same last 3 digits of the h2 jar file in your install BEFORE the upgrade.
+            If upgrading from 3.5.0 then the number is 214.
+            The user ID, password and location of the DB file will be in your config file or if overridden then in the custom properties file.
+            As an example assuming a vanilla install of OpenAS2 in /opt/OpenAS2 folder (replace / with \ for Windows):
+              > cd /opt/OpenAS2
+              > java -cp lib/\* UpgradeH2Database 214 sa OpenAS2 config/DB/openas2
  
 ### Upgrading to 3.xx from 2.x (or older) version:
 ## NOTE: The old config will work without change but it is strongly recommended that you follow these steps to convert your existing configuration to the new format as it provides a cleaner and less complicated setup and the old config will eventually be discontinued

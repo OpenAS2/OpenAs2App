@@ -1,30 +1,23 @@
 package org.openas2.app;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.openas2.TestResource;
-import org.openas2.XMLSession;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.message.AS2Message;
 import org.openas2.message.FileAttribute;
-import org.openas2.message.Message;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
-
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
-
-public class FilenameParsingTest {
-    private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
-    private static String myCompanyOid = "MyCompany_OID";
-    private static String myPartnerOid = "PartnerA_OID";
+@ExtendWith(MockitoExtension.class)
+@TestInstance(Lifecycle.PER_CLASS)
+public class FilenameParsingTest extends BaserServerSetup {
     private static String testFileNamePart1 = "abc";
     private static String testFileNamePart2 = "123";
     private static String testFileName = testFileNamePart1 + "-" + testFileNamePart2 + ".txt";
@@ -35,26 +28,19 @@ public class FilenameParsingTest {
     private static String subjectAttrib = "First part filename: $attributes." + attribNamesFromFileName1 + "$  Second part filename: $attributes." + attribNamesFromFileName2 + "$";
     private static String expectedSubject = "First part filename: " + testFileNamePart1 + "  Second part filename: " + testFileNamePart2;
 
-    // private static File openAS2AHome;
-    private static XMLSession session;
-    private static Message msg;
 
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
-
-    @BeforeClass
-    public static void setup() throws Exception {
+    @BeforeAll
+    public void setup() throws Exception {
+    	super.createFileSystemResources();
+    	super.setup();
         try {
-            System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
-            //System.setProperty("org.openas2.logging.defaultlog", "TRACE");
-            FilenameParsingTest.session = new XMLSession(RESOURCE.get("MyCompany", "config", "config.xml").getAbsolutePath());
             msg = new AS2Message();
             msg.setAttribute(FileAttribute.MA_FILENAME, testFileName);
             PartnershipFactory pf = session.getPartnershipFactory();
             Partnership myPartnership = msg.getPartnership();
-            myPartnership.setSenderID(Partnership.PID_AS2, myCompanyOid);
-            myPartnership.setReceiverID(Partnership.PID_AS2, myPartnerOid);
-            myPartnership.setSenderID(Partnership.PID_AS2, myCompanyOid);
+            myPartnership.setSenderID(Partnership.PID_AS2, BaserServerSetup.myCompanyOid);
+            myPartnership.setReceiverID(Partnership.PID_AS2, BaserServerSetup.myPartnerOid);
+            myPartnership.setSenderID(Partnership.PID_AS2, BaserServerSetup.myCompanyOid);
 
 
             Partnership configuredPartnership = pf.getPartnership(myPartnership, false);
@@ -71,9 +57,9 @@ public class FilenameParsingTest {
         }
     }
 
-    @AfterClass
-    public static void tearDown() throws Exception {
-        session = null;
+    @AfterAll
+    public void tearDown() throws Exception {
+        super.tearDown();;
     }
 
     @Test

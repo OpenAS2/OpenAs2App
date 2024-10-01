@@ -8,6 +8,7 @@ public class Properties {
     public static final String APP_TITLE_PROP = "app.title";
     public static final String APP_BASE_DIR_PROP = "app.base.dir";
     public static final String HTTP_USER_AGENT_PROP = "http.user.agent";
+    public static final String OPENAS2_PROPERTIES_FILE_PROP = "openas2.properties.file";
 
     public static final String AS2_MESSAGE_ID_FORMAT = "as2_message_id_format";
     public static final String AS2_MDN_MESSAGE_ID_FORMAT = "as2_mdn_message_id_format";
@@ -19,6 +20,19 @@ public class Properties {
     public static final String LOG_INVALID_HTTP_REQUEST = "log_invalid_http_request";
 
     private static final Map<String, String> _properties = new HashMap<String, String>();
+
+    private static final java.util.Properties contentTypeMap = new java.util.Properties();
+
+    public static java.util.Properties getContentTypeMap() {
+        if (contentTypeMap.isEmpty()) {
+            return null;
+        }
+        return contentTypeMap;
+    }
+
+    public static void setContentTypeMap(java.util.Properties contentTypeMappings) {
+        contentTypeMap.putAll(contentTypeMappings);
+    }
 
     public static void setProperties(Map<String, String> map) {
         _properties.putAll(map);

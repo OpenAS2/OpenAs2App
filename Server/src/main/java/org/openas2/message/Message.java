@@ -41,7 +41,9 @@ public interface Message extends Serializable {
     String MSG_STATE_MDN_RECEIVE_START = "mdn_receive_start";
     String MSG_STATE_MDN_ASYNC_RECEIVE_FAIL = "mdn_asyn_receive_fail";
     String MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR = "msg_sent_mdn_received_error";
+    String MSG_STATE_MSG_SENT_MDN_PROCESSING_ERROR = "msg_sent_mdn_processing_error";
     String MSG_STATE_MSG_SENT_MDN_RECEIVED_OK = "msg_sent_mdn_received_ok";
+    String MSG_STATE_MSG_SENT_AWAIT_ASYNC_MDN_RESPONSE = "msg_sent_await_async_mdn_response";
     String MSG_STATE_MSG_RXD_MDN_SENDING_FAIL = "msg_rxd_mdn_sending_fail";
     String MSG_STATE_MSG_RXD_MDN_SENT_OK = "msg_rxd_mdn_sent_ok";
     String MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED = "msg_rxd_mdn_not_requested_ok";
@@ -65,9 +67,13 @@ public interface Message extends Serializable {
             put(MSG_STATE_MDN_SEND_START, "Message received. MDN sending started");
             put(MSG_STATE_MDN_RECEIVE_START, "Message sent. MDN receiving started");
             put(MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR, "Message sent. Message MDN received indicates an error. Resend queued");
+            put(MSG_STATE_MSG_SENT_MDN_PROCESSING_ERROR, "Message sent and MDN received but error occurred processing MDN.");
             put(MSG_STATE_MSG_SENT_MDN_RECEIVED_OK, "Message sent. Message MDN success response received.");
+            put(MSG_STATE_MSG_SENT_AWAIT_ASYNC_MDN_RESPONSE, "Message sent. await async MDN response.");
             put(MSG_STATE_MSG_RXD_MDN_SENDING_FAIL, "Message was received but failed to successfully send an MDN response to partner");
+            put(MSG_STATE_MIC_MISMATCH, "Message sent successfully but MDN from partner indicates MIC mismatch.");
             put(MSG_STATE_MSG_RXD_MDN_NOT_REQUESTED, "Message received successfully but no MDN requested.");
+            put(MSG_STATE_MSG_RXD_MDN_SENT_OK, "Message received successfully and MDN succesfully sent to partner.");
         }
     };
 
@@ -160,6 +166,8 @@ public interface Message extends Serializable {
     boolean isFileCleanupCompleted();
 
     void setFileCleanupCompleted(boolean cleanupDone);
+
+    boolean isResend();
 
     String getSubject();
 

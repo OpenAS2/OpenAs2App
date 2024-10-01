@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java_version: [8, 11, 13, 17]
+        java_version: [8, 11, 17, 21]
         os: [windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
@@ -16,6 +16,18 @@ jobs:
         with:
           java-version: ${{ matrix.java_version }}
           distribution: 'adopt'
+      - name: Remove Rest API for Java 8 because of library incompatibility
+        if: contains(matrix.java_version, '8') == true && contains(matrix.os, 'win') == true
+        run: |
+             rmdir -Recurse -Force Server/src/main/java/org/openas2/cmd/processor/restapi
+             del -Force  Server/src/main/java/org/openas2/cmd/processor/RestCommandProcessor.java
+             del -Force  Server/src/test/java/org/openas2/app/RestApiTest.java
+      - name: Remove Rest API for Java 8 because of library incompatibility
+        if: contains(matrix.java_version, '8') == true && contains(matrix.os, 'win') == false
+        run: |
+             rm -rf Server/src/main/java/org/openas2/cmd/processor/restapi
+             rm -rf Server/src/main/java/org/openas2/cmd/processor/RestCommandProcessor.java
+             rm -rf Server/src/test/java/org/openas2/app/RestApiTest.java
       - name: Make Maven Wrapper and Java finder executable. Copy cacerts
         if: contains(matrix.os, 'win') == false
         run: |
@@ -37,6 +49,7 @@ jobs:
              ./mvnw test -e --debug --file pom.xml --log-file maven.log
       - name: Archive logs
         uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: execution-logs-${{ matrix.java_version }}-${{ matrix.os }}
           path: maven.log

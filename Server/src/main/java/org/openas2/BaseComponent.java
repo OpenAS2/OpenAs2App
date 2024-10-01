@@ -53,13 +53,17 @@ public class BaseComponent implements Component {
     }
 
     public int getParameterInt(String key, boolean required) throws InvalidParameterException {
+        return getParameterInt(key, required, 0);
+    }
+
+    public int getParameterInt(String key, boolean required, int defaultValue) throws InvalidParameterException {
         String value = getParameter(key, required);
 
         if (value != null) {
             return Integer.parseInt(value);
         }
 
-        return 0;
+        return defaultValue;
     }
 
     public Map<String, String> getParameters() {

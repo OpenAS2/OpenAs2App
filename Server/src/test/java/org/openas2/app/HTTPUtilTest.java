@@ -1,8 +1,8 @@
 package org.openas2.app;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 import org.openas2.partner.Partnership;
@@ -13,7 +13,7 @@ import jakarta.mail.internet.InternetHeaders;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 
 public class HTTPUtilTest {
 

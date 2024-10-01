@@ -51,4 +51,13 @@ public class TestUtils {
         FileUtils.waitFor(file, Long.valueOf(unit.toSeconds(timeout)).intValue());
     }
 
+    public static boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
 }

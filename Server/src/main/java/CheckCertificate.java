@@ -85,7 +85,7 @@ public class CheckCertificate {
         try {
             line = parser.parse(options, args);
         } catch (ParseException e) {
-            System.out.println("Unexpected exception:" + e.getMessage());
+            System.out.println("Command line parsing error: " + e.getMessage());
             usage(options);
         }
         return line;
@@ -323,7 +323,7 @@ public class CheckCertificate {
             CheckCertificate mgr = new CheckCertificate();
             mgr.process(args);
         } catch (Exception e) {
-            System.out.println("Unexpected exception:" + e.getMessage());
+            System.out.println("Processing error occurred: " + e.getMessage());
         }
     }
 }

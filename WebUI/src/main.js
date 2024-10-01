@@ -28,6 +28,5 @@ new Vue({
   el:'#app',
   router,
   store,
-  vuetify,
   render: h => h(App)
 });

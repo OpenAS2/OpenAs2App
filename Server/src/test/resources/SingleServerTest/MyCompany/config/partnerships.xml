@@ -17,6 +17,7 @@
     <partnership name="MyCompany-to-PartnerA">
         <sender name="MyCompany"/>
         <receiver name="PartnerA"/>
+        <pollerConfig enabled="true"/>
         <attribute name="protocol" value="as2"/>
         <attribute name="content_transfer_encoding" value="binary"/>
         <attribute name="compression_type" value="ZLIB"/>
@@ -26,7 +27,7 @@
         <attribute name="as2_mdn_options"
                    value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, $attribute.sign$"/>
         <attribute name="encrypt" value="3DES"/>
-        <attribute name="sign" value="SHA256"/>
+        <attribute name="sign" value="SHA-256"/>
         <attribute name="resend_max_retries" value="3"/>
         <attribute name="prevent_canonicalization_for_mic" value="false"/>
         <attribute name="rename_digest_to_old_name" value="false"/>

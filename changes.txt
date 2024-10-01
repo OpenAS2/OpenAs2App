@@ -1,3 +1,79 @@
+Version 3.11.0 - 2024-08-22
+This is an minor enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+1. Enhance the handling of MDN processing and asociated resend handling to provide moer reliable error handling.
+2. Enhance the Disposition-Notification-Options handler to properly support the standard.
+3. Use the LTS releases of Java for testing
+4. Use a SQL-92 compliant SQL format for accessing the database.
+
+
+Version 3.10.1 - 2024-05-06
+This is an minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+ 1. Fix sending the Content-Length header correctly on MDN response when chinked transfer is not supported by the receiving software.
+ 2. Fix log message to indicate SYNC or ASYNC mode when receiving an MDN.
+ 3. Change the default Java package to Eclipse Temurin for the docker creation.
+ 4. Upgrade the encryprion packages to fix a low severity security issue.
+
+Version 3.10.0 - 2024-03-17
+This is an enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+ 1. Support Elliptic Curve algorithm.
+
+Version 3.9.1 - 2024-02-06
+This is a minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+ 1. Fix persistence to errordir after all resend attempts fail.
+
+Version 3.9.0 - 2023-12-20
+This is an enhancement release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+ 1. Support for non-standard algorithm strings for partners that do not conform to the RFC standard. See documentation section 7.2.1 "Signing"
+
+Version 3.8.0 - 2023-11-07
+This is an enhancement and minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+ 1. Support for configurable dynamic Content-Type based on the file extension. See documentation section 7.5 "Setting Content Type"
+ 
+Version 3.7.0 - 2023-09-12
+This is an enhancement and minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Support parallel mode processing for the directory polling configuration to achieve high volume throughput.
+  2. Enhance error handling when chacking for files that never received an DMN response.
+  3. Added logging to indicate reading a fixed byte count message from HTTP stream to aid debugging.
+
+Version 3.6.0 - 2023-07-27
+This is an enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Enhance shell scripts to better support certificate management and creation.
+  2. Extract all confog.xml values to properties allowing complete server config thru custom properties.
+  3. Deploy fixes for reported CVE on H2 database (see release notes for upgrade of this item).
+  3. Upgrade to Junit 5 for enhanced unit test features.
+  4. Various WebUI bug fixes including persisting changes to the parnerships configurations.
+
+Version 3.5.0 - 2022-12-27
+This is an enhancement and bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Enhance the file splitter to be more flexible supporting execution as a java app or as a new thread when done inline.
+  2. Prevent the config.xml based pollers from being stopped when the partnerships are refreshed.
+
+Version 3.4.1 - 2022-12-04
+This is an enhancement and minor bugfix release:
+       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+  1. Fix message attributes not being available to partnership config (eg attributes.filename)
+  2. Add defensie coding for highly questionnable file names sent by partner containing an asterisk such as ".*"
+  3. Further enhancements to the config.xml extracting key values to properties to facilitate auto upgrades.
+  4. Enhance helper scripts to support non-prompting execution allowing invocation from other scripts.
+  5. Disable the WebUI module by default as it only runs with Java 11 and above.
+
 Version 3.4.0 - 2022-10-04
 This is an enhancement and minor bugfix release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading

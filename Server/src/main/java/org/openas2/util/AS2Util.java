@@ -189,13 +189,21 @@ public class AS2Util {
         boolean dispositionHasWarning = false;
         if (disposition != null) {
             if (logger.isInfoEnabled()) {
-                logger.info("received MDN [" + disposition + "]" + msg.getLogMsgID());
+                logger.info("Partner " + msg.getPartnership().getReceiverID(Partnership.PID_AS2) + " responded with MDN [" + disposition + "]" + msg.getLogMsgID());
+            }
+            DispositionType dt = null;
+            try {
+                dt = new DispositionType(disposition);
+            } catch (OpenAS2Exception e) {
+                msg.setLogMsg("Error occurred instantating a Disposition object from received disposition: " + org.openas2.logging.Log.getExceptionMsg(e));
+                logger.error(msg, e);
+                throw new OpenAS2Exception(e);
             }
             try {
-                new DispositionType(disposition).validate();
+                dt.validate();
             } catch (DispositionException de) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("Disposition exception on MDN. Disposition: " + disposition + msg.getLogMsgID(), de);
+                    logger.warn("Disposition error detected in MDN. Received disposition: " + disposition + msg.getLogMsgID());
                 }
                 // Something wrong detected so flag it for later use
                 dispositionHasWarning = true;
@@ -208,10 +216,6 @@ public class AS2Util {
                 } else {
                     throw de;
                 }
-            } catch (OpenAS2Exception e) {
-                msg.setLogMsg("Processing error occurred: " + org.openas2.logging.Log.getExceptionMsg(e));
-                logger.error(msg, e);
-                throw new OpenAS2Exception(e);
             }
         }
 
@@ -220,13 +224,13 @@ public class AS2Util {
             return true;
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("MIC processing start... ");
+            logger.trace("MIC processing start... "  + msg.getLogMsgID());
         }
         // get the returned mic from mdn object
         String returnMIC = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
         if (returnMIC == null || returnMIC.length() < 1) {
             if (dispositionHasWarning) {
-                // TODO: Think this should pribably throw error if MIC should have been returned
+                // TODO: Think this should probably throw error if MIC should have been returned
                 // but for now...
                 msg.setLogMsg("Returned MIC not found but disposition has warning so might be normal.");
                 logger.warn(msg);
@@ -297,11 +301,20 @@ public class AS2Util {
         return true;
     }
 
-    /*
+    /**
      * @description Attempts to check if a resend should go ahead and if so
      * decrements the resend count and stores the decremented retry count in the
      * options map. If the passed in retry count is null or invalid it will fall
      * back to a system default
+     * @param session
+     * @param sourceClass
+     * @param how
+     * @param msg
+     * @param cause
+     * @param useOriginalMsgObject - some systems require the identifier to stay the same so do not repackage the message
+     * @param keepOriginalData
+     * @return
+     * @throws OpenAS2Exception
      */
     public static boolean resend(Session session, Class<?> sourceClass, String how, Message msg, OpenAS2Exception cause, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
@@ -313,12 +326,16 @@ public class AS2Util {
         if (maxRetryCount > -1) {
             // Have to resend some fixed number of times so check if we are done
             if (retries >= maxRetryCount) {
-                msg.setLogMsg("Message abandoned after retry limit reached.");
+                // Retry limit reached so cleanup the message files
+                msg.setLogMsg("Message abandoned after retry limit reached." + msg.getLogMsgID());
                 logger.error(msg);
                 // Log significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
                 msg.trackMsgState(session);
-                throw new OpenAS2Exception("Message abandoned after retry limit reached." + msg.getLogMsgID());
+                // Cleanup the files associated with this failed message
+                AS2Util.cleanupFiles(msg, true);
+                // Signal sending retry has been abandoned
+                return false;
             }
             // Going to try again so increment the try count
             retries++;
@@ -351,8 +368,6 @@ public class AS2Util {
                         pifois.close();
                     }
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
                 }
             }
             // Update original with latest message-id and pendinginfo file so it
@@ -425,7 +440,9 @@ public class AS2Util {
     }
 
     /**
-     * Processing MDN sent from receiver.
+     * Processing MDN sent from receiver. Unless the MDN cannot be extracted from the received HTTP packet, the
+     * method will ensure all appropriate action is taken to handle any errors cleanly  and return a boolean
+     * indicating whether the MDN was successfully extracted and processed.
      *
      * @param msg         The context object
      * @param data        Received data
@@ -433,10 +450,15 @@ public class AS2Util {
      * @param isAsyncMDN  boolean indicating if this is an ASYNC MDN
      * @param session     - Session object
      * @param sourceClass - who invoked this method
+
+     * @return partnerIdentificationProblem - boolean indicating that the partnership for this MDN not identified
+
      * @throws OpenAS2Exception - an internally handled error has occurred
      * @throws IOException      - the IO system has a problem
+     * 
+     * TODO:: Possibly do away with returning a boolean as it does not add value ATM
      */
-    public static void processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
+    public static boolean processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
         Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
 
         // Create a MessageMDN and copy HTTP headers
@@ -447,21 +469,32 @@ public class AS2Util {
         // get the MDN partnership info
         mdn.getPartnership().setSenderID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-From")));
         mdn.getPartnership().setReceiverID(Partnership.PID_AS2, StringUtil.removeDoubleQuotes(mdn.getHeader("AS2-To")));
-        session.getPartnershipFactory().updatePartnership(mdn, false);
+        try {
+            session.getPartnershipFactory().updatePartnership(mdn, false);
+        } catch (OpenAS2Exception e) {
+            // Partnership not found
+           try {
+                HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, null);
+            } catch (IOException e1) {
+            }
+            if (logger.isInfoEnabled()) {
+                logger.info("Partnership lookup failed for MDN received from: " + msg.getHeader("AS2-To")
+                    + "  MDN is targeting partner: " + msg.getHeader("AS2-From"));
+            }
+            cleanupFiles(msg, true);
+            // since we cannot identify the partnership there is nothing to do here except tell the caller we did not process it
+            return false;
+        }
 
         MimeBodyPart part;
         try {
             part = new MimeBodyPart(mdn.getHeaders(), data);
             msg.getMDN().setData(part);
         } catch (MessagingException e1) {
-            msg.setLogMsg("Failed to create mimebodypart from received MDN data: " + org.openas2.logging.Log.getExceptionMsg(e1));
+            msg.setLogMsg("Failed to create mimebodypart from received MDN data for partnership " + mdn.getPartnership().getName() + ": " + org.openas2.logging.Log.getExceptionMsg(e1));
             logger.error(msg, e1);
-            if (isAsyncMDN) {
-                HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, null);
-            }
-            throw new OpenAS2Exception("Error receiving MDN. Processing stopped.");
+            return AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
         }
-
         CertificateFactory cFx = session.getCertificateFactory();
         String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
         X509Certificate senderCert = cFx.getCertificate(x509_alias);
@@ -501,14 +534,14 @@ public class AS2Util {
             // If a disposition exception occurs then there must have been an
             // error response in the disposition
             if (logger.isErrorEnabled()) {
-                logger.error("Disposition exception processing MDN ..." + msg.getLogMsgID(), de);
+                logger.error("Disposition exception processing MDN: " + de.getText() + msg.getLogMsgID());
             }
             // Hmmmm... Error may require manual intervention but keep
             // trying.... possibly change retry count to 1 or just fail????
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
-            return;
+            return true;
         } catch (OpenAS2Exception oae) {
             // Possibly MIC mismatch so resend
             if (isAsyncMDN) {
@@ -520,7 +553,7 @@ public class AS2Util {
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, true, false);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
-            return;
+            return true;
         }
 
         msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
@@ -529,6 +562,7 @@ public class AS2Util {
             logger.trace("MDN processed. \n    Payload file name: " + msg.getPayloadFilename() + "\n    Persisting MDN report..." + msg.getLogMsgID());
         }
 
+        // This next state log should perhaps come before the final state of the message but is a valid state so...
         session.getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
         msg.setStatus(Message.MSG_STATUS_MSG_CLEANUP);
         // To support extended reporting via logging log info passing Message object
@@ -536,6 +570,7 @@ public class AS2Util {
         logger.info(msg);
 
         cleanupFiles(msg, false);
+        return true;
 
     }
 
@@ -628,9 +663,9 @@ public class AS2Util {
                 logger.trace("Data retrieved from Pending info file:" + "\n        Original MIC: " + msg.getCalculatedMIC() + "\n        Retry Count: " + retries + "\n        Original file name : " + msg.getPayloadFilename() + "\n        Sent file name : " + msg.getAttribute(FileAttribute.MA_FILENAME) + "\n        Pending message file : " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Error directory: " + msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n        Sent directory: " + msg.getAttribute(FileAttribute.MA_SENT_DIR) + "\n        Attributes: " + msg.getAttributes() + msg.getLogMsgID());
             }
         } catch (IOException e) {
-            throw new OpenAS2Exception("Failed to retrieve the pending MDN information from file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Exception retrieving the pending MDN information: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         } catch (ClassNotFoundException e) {
-            throw new OpenAS2Exception("Failed to rebuild an object from the pending MDN information from file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Failed to rebuild an object from the pending MDN information: " + org.openas2.logging.Log.getExceptionMsg(e), e);
         } finally {
             if (pifois != null) {
                 try {
@@ -689,6 +724,7 @@ public class AS2Util {
                 logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " from pending folder : " + fPendingFile.getParent() + msg.getLogMsgID());
             }
             try {
+                // Move file to error or sent directory if the error or sent saving functionality is enabled
                 boolean isMoved = false;
                 String tgtDir = null;
                 String targetFilenameUnparsed = "";
@@ -715,7 +751,7 @@ public class AS2Util {
                         isMoved = true;
 
                         if (logger.isInfoEnabled()) {
-                            logger.info("moved " + fPendingFile.getAbsolutePath() + " to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
+                            logger.info("Pending file " + fPendingFile.getAbsolutePath() + " moved to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
                         }
 
                     } catch (IOException iose) {
@@ -725,6 +761,7 @@ public class AS2Util {
                 }
 
                 if (!isMoved) {
+                    // Could not find somewhere to move it to so delete it
                     IOUtil.deleteFile(fPendingFile);
                     if (logger.isInfoEnabled()) {
                         logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
@@ -742,8 +779,9 @@ public class AS2Util {
         return (srcString == null ? null : srcString.replaceAll("^<([^>]+)>$", "$1"));
     }
 
-    public static void attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {
+    public static boolean attributeEnhancer(Map<String, String> attribs) throws OpenAS2Exception {
         Pattern PATTERN = Pattern.compile("\\$attribute\\.([^\\$]++)\\$|\\$properties\\.([^\\$]++)\\$");
+        boolean valuesWereEnhanced = false;
         for (Map.Entry<String, String> entry : attribs.entrySet()) {
             String input = entry.getValue();
             StringBuffer strBuf = new StringBuffer();
@@ -768,8 +806,10 @@ public class AS2Util {
             if (hasChanged) {
                 matcher.appendTail(strBuf);
                 attribs.put(entry.getKey(), strBuf.toString());
+                valuesWereEnhanced = true;
             }
         }
+        return valuesWereEnhanced;
     }
 
     public static String printHeaders(Enumeration<Header> hdrs) {

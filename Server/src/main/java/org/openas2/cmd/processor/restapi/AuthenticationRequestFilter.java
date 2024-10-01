@@ -9,6 +9,7 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpHeaders;
 import org.bouncycastle.util.encoders.Base64;
 import org.openas2.cmd.CommandResult;
 
@@ -20,6 +21,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.Provider;
 import java.security.Principal;
 import java.util.HashSet;
@@ -41,7 +43,8 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
     private static final String AUTHORIZATION_PROPERTY = "Authorization";
     private static final String AUTHENTICATION_SCHEME = "Basic";
-    private static final CommandResult ERROR_ACCESS_DENIED = new CommandResult(CommandResult.TYPE_ERROR, "You cannot access this resource");
+    public static final String ACCESS_DENIED_ERROR_MSG = "You cannot access this resource";
+    private static final CommandResult ERROR_ACCESS_DENIED = new CommandResult(CommandResult.TYPE_ERROR, ACCESS_DENIED_ERROR_MSG);
     //private static final CommandResult ERROR_ACCESS_FORBIDDEN = new CommandResult(CommandResult.TYPE_ERROR, "Access blocked for all users !!");
     private static String adminUsername;
     private static String adminPassword;
@@ -53,9 +56,15 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         adminPassword = password;
     }
     
+    // Response including indication to remote server which scheme to authenticate with
+    private void setUnauthorizedResponse(ContainerRequestContext requestContext) {
+        requestContext.abortWith(Response.status(Status.UNAUTHORIZED)
+                   .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"realm\"")
+                   .entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
+    }
+
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
-        
         requestContext.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
@@ -93,14 +102,12 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
         //If no authorization information present; block access
         if (authorization == null || authorization.isEmpty()) {
-
-            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
+            setUnauthorizedResponse(requestContext);
             return;
         }
 
         //Get encoded username and password
         final String encodedUserPassword = authorization.get(0).replaceFirst(AUTHENTICATION_SCHEME + " ", "");
-
         //Decode username and password
         String usernameAndPassword = new String(Base64.decode(encodedUserPassword.getBytes()));
 
@@ -111,19 +118,23 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
         //Log Username and password for verification
         logger.info("Username: " + username);
+        /*
+         * NEVER LOG PASSWORDS
         if (password.length() > 0) {
             logger.info("password: " + new String(new char[password.length()]).replace("\0", "*"));
         } else {
             logger.info("password: <none>");
         }
-
+        */
+         
         //Verify user access
         Set<String> rolesSet = new HashSet<>();
         rolesSet.add("ADMIN");
 
         //Is user valid?
         if (!isUserAllowed(username, password, rolesSet)) {
-            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());            
+            setUnauthorizedResponse(requestContext);
+            return;           
         }
          
     }

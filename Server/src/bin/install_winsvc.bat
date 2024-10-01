@@ -31,7 +31,7 @@ REM set JAVA_HOME=C:\Program Files\Java\jre1.8.0_171
 REM JVM configuration
 REM MX and MS options are in MB SS in KB
 set PR_JVMMS=32
-set PR_JVMMX=1024
+set PR_JVMMX=4000
 set PR_JVMSS=4000
 
 REM Service log configuration

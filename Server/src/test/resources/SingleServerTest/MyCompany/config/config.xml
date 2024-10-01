@@ -13,6 +13,9 @@
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
                restapi.command.processor.enabled="false"
+               restapi.command.processor.baseuri="http://127.0.0.1:8080"
+               restapi.command.processor.userid="userID"
+               restapi.command.processor.password="pWd"
                module.AS2SenderModule.enabled="true"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
@@ -24,7 +27,16 @@
                module.AS2ReceiverModule.https.enabled="false"
                module.AS2MDNReceiverModule.https.enabled="false"
                module.HealthCheckModule.enabled="false"
-               />
+               partnership_file="%home%/partnerships.xml"
+               pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.sender.as2_id$/$partnership.receiver.as2_id$"
+               pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/$partnership.sender.as2_id$/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
+               pollerConfigBase.interval="5"
+               pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
+               pollerConfigBase.sendfilename="true"
+               pollerConfigBase.mimetype="application/EDI-X12"
+               partnerships.polling.interval="120"
+               messages.polling.interval="120"
+              />
    <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
                  filename="%home%/as2_certs.p12"
                  password="testas2"
@@ -67,9 +79,9 @@
                         response_format="xml"/>
       <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor"
                         enabled="$properties.restapi.command.processor.enabled$"
-                        baseuri="http://127.0.0.1:8080"
-                        userid="userID"
-                        password="pWd" />
+                        baseuri="$properties.restapi.command.processor.baseuri$"
+                        userid="$properties.restapi.command.processor.userid$" 
+                        password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
               pendingMDN="$properties.storageBaseDir$/pendingMDN3"
@@ -92,18 +104,7 @@
               sendfilename="true"
               format="sender.as2_id, receiver.as2_id, attributes.filename"
               mimetype="application/EDI-X12"/>
-      <!-- This directory polling module will is dedicated to sending to partner PartnerA_OID -->
-      <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-              outboxdir="$properties.storageBaseDir$/toPartnerA/"
-              errordir="$properties.storageBaseDir$/toPartnerA/error/$date.YYYY$/$date.MM$"
-              stored_error_filename="$msg.attributes.filename$-$date.YYYY$-$date.MM$-$msg.headers.message-id$"
-              sentdir="$properties.storageBaseDir$/sent/$date.YYYY$/$date.MM$"
-              stored_sent_filename="$msg.attributes.filename$-$msg.headers.message-id$"
-              interval="5"
-              defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerA_OID"
-              sendfilename="true"
-              mimetype="application/EDI-X12"/>
-      <!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
+       <!-- This directory polling module will is dedicated to sending to partner PartnerB_OID -->
       <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
               outboxdir="$properties.storageBaseDir$/toPartnerB"
               errordir="$properties.storageBaseDir$/toPartnerB/error"
@@ -172,13 +173,13 @@
    </processor>
    <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->
    <pollerConfigBase classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-           outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
-           errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
-           interval="5"
-           defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
-           sendfilename="true"
-           mimetype="application/EDI-X12"/>
+           outboxdir="$properties.pollerConfigBase.outboxdir$"
+           errordir="$properties.pollerConfigBase.errordir$"
+           interval="$properties.pollerConfigBase.interval$"
+           defaults="$properties.pollerConfigBase.defaults$"
+           sendfilename="$properties.pollerConfigBase.sendfilename$"
+           mimetype="$properties.pollerConfigBase.mimetype$"/>
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
-                 filename="%home%/partnerships.xml"
-                 interval="120"/>
+                 filename="$properties.partnership_file$"
+                 interval="$properties.partnerships.polling.interval$"/>
 </openas2>

@@ -11,4 +11,5 @@ public interface FileAttribute {
     String MA_ERROR_FILENAME = "errorfilename";
     String MA_SENT_DIR = "sentdir";
     String MA_SENT_FILENAME = "sentfilename";
+    String MA_FILENAME_EXTENSION = "filename_extension";
 }

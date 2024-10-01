@@ -18,11 +18,11 @@ public interface ICryptoHelper {
 
     String DIGEST_MD2 = "md2";
     String DIGEST_MD5 = "md5";
-    String DIGEST_SHA1 = "sha1";
-    String DIGEST_SHA224 = "sha224";
-    String DIGEST_SHA256 = "sha256";
-    String DIGEST_SHA384 = "sha384";
-    String DIGEST_SHA512 = "sha512";
+    String DIGEST_SHA1 = "sha-1";
+    String DIGEST_SHA224 = "sha-224";
+    String DIGEST_SHA256 = "sha-256";
+    String DIGEST_SHA384 = "sha-384";
+    String DIGEST_SHA512 = "sha-512";
     String CRYPT_CAST5 = "cast5";
     String CRYPT_3DES = "3des";
     String CRYPT_IDEA = "idea";

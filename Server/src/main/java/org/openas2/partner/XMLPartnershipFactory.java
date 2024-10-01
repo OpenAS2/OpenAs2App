@@ -110,7 +110,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
     void refreshConfig() throws OpenAS2Exception {
-        getSession().destroyPartnershipPollers();
+        getSession().destroyPartnershipPollers(Session.PARTNERSHIP_POLLER);
         try {
             Element root = getPartnershipsXml().getDocumentElement();
             NodeList rootNodes = root.getChildNodes();
@@ -209,14 +209,28 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
         // read in the partnership attributes
         loadAttributes(node, partnership);
-
+        // Now check if we need to enable Content-Type mappings for this partnership
+        if ("true".equalsIgnoreCase(partnership.getAttributeOrProperty(Partnership.PA_USE_DYNAMIC_CONTENT_TYPE_MAPPING, "false"))) {
+            try {
+                partnership.setUseDynamicContentTypeLookup(true);
+            } catch (IOException e) {
+                logger.error("Error setting up dynamic Content-Type lookup: " + e.getMessage(), e);
+                throw new OpenAS2Exception("Partnership failed to be set up correctly for dynamic Content-Type lookup: " + getName());
+            }
+        }
         // add the partnership to the list of available partnerships
         partnerships.add(partnership);
         
         // Now check if we need to add a directory polling module
         Node pollerCfgNode = XMLUtil.findChildNode(node, Partnership.PCFG_POLLER);
         if (pollerCfgNode != null) {
-            // Load a poller configuration
+            /* Load a poller configuration.
+             * This will require fetching the base configuration for the pollers loaded from
+             * the config.xml and merging with the configured setup in the partnership 
+             * overriding the base attribute values with any found in the partnership
+             * pollerConfig element then enhancing the attribute values to cater for embedded
+             * dynamic variables before activating the poller.
+             */
             String[] requiredPollerAttributes = {"enabled"};
             Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
             if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
@@ -236,13 +250,18 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 }
                 Element pollerConfigElem = pollerDoc.getDocumentElement();
                 // Merge the attributes from the base config with the partnership specific ones
-                partnershipPollerCfgAttributes.forEach((key, value) -> {
+                Map<String, String> attributes = XMLUtil.mapAttributes(pollerConfigElem);
+                attributes.putAll(partnershipPollerCfgAttributes);
+                // Enhance the attribute values in case they are using dynamic variables
+                AS2Util.attributeEnhancer(attributes);
+                // Now update the XML with the attribute values
+                attributes.forEach((key, value) -> {
                     pollerConfigElem.setAttribute(key, value);
-                });
-                // replace the $parnertship.* placeholders
+                }); 
+                // replace the $partnertship.* placeholders
                 replacePartnershipPlaceHolders(pollerDoc, partnership);
                 // Now launch a directory poller module for this config
-                getSession().loadPartnershipPoller(pollerConfigElem, name, "partnership");
+                getSession().loadPartnershipPoller(pollerConfigElem, name, Session.PARTNERSHIP_POLLER);
             }
         }
     }
@@ -256,6 +275,33 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         Document doc = getPartnershipsXml();
         Node importedNode = doc.importNode(newElement, true);
         doc.getDocumentElement().appendChild(importedNode);
+    }
+
+    /**
+     * Appends the passed element as a child of the root in the partnership document.
+     * It does NOT check if the passed element is a valid element.
+     * @param newElement - the element to be added.
+     */
+    public boolean deleteElement(String xpath) {
+        Document doc = getPartnershipsXml();
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        NodeList nodes;
+        try {
+            nodes = (NodeList)xPath.evaluate(xpath, doc, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            logger.error("Error trying to find any nodes in the XPATH expression: " + xpath, e);
+            return false;
+        }
+        int nodeCount = nodes.getLength();
+        if (nodeCount == 0) {
+            logger.error(" Failed to find a node using XPATH expression: " + xpath);
+            return false;
+        } else if (nodeCount > 1) {
+            logger.error(" Delete aborted. More than 1 node found using XPATH expression: " + xpath);
+            return false;
+        }
+        nodes.item(0).getParentNode().removeChild(nodes.item(0));
+        return true;
     }
 
     public void storePartnership() throws OpenAS2Exception {
@@ -327,6 +373,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             for (int i = 0; i < nodes.getLength(); i++) {
                 Node node = nodes.item(i);
                 String val = node.getNodeValue();
+                //logger.debug("Partnership place holder NODE processing: " + val);
                 StringBuffer strBuf = new StringBuffer();
                 Matcher matcher = PATTERN.matcher(val);
                 boolean hasChanged = false;
@@ -365,6 +412,9 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                     } else {
                         hasChanged = true;
                         matcher.appendReplacement(strBuf, Matcher.quoteReplacement(value));
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("Partnership place holder replaced: " + keys + " :: Replaced with: " + value);
+                        }
                     }
                 }
                 if (hasChanged) {

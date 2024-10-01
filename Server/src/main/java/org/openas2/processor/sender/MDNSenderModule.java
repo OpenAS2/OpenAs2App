@@ -57,7 +57,7 @@ public class MDNSenderModule extends HttpSenderModule {
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         if (logger.isDebugEnabled()) {
-            logger.debug("ASYNC MDN send started...");
+            logger.debug("MDN sending started. Partner requested " + (msg.isRequestingAsynchMDN()?"ASYNC":"SYNC") + " mode for MDN response.");
         }
         if (options == null) {
             options = new HashMap<String, Object>();
@@ -105,7 +105,7 @@ public class MDNSenderModule extends HttpSenderModule {
                 throw new WrappedException(we);
             }
             // make sure to set the content-length header
-            //mdn.setHeader("Content-Length", Integer.toString(data.size()));
+            mdn.setHeader("Content-Length", Integer.toString(dataStream.size()));
             try {
                 HTTPUtil.sendHTTPResponse(httpOutputStream, HttpURLConnection.HTTP_OK, dataStream, mdn.getHeaders().getAllHeaderLines());
                 msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);

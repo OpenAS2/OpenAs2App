@@ -37,7 +37,7 @@ export default {
     data: function() {return {
         username: '',
         password: '',
-        server: 'https://127.0.0.1:8443/api',
+        server: process.env.VUE_APP_RESTAPI_URL || 'http://127.0.0.1:8443/api',
         rememberme: false,
         loading: false,
         errormsg: '',

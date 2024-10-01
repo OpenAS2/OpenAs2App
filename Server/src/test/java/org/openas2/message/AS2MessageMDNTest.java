@@ -1,12 +1,9 @@
 package org.openas2.message;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.exceptions.misusing.InvalidUseOfMatchersException;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.openas2.partner.Partnership;
 import org.openas2.util.Properties;
@@ -18,7 +15,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+@ExtendWith(MockitoExtension.class)
 public class AS2MessageMDNTest {
 
     @Mock
@@ -33,7 +34,7 @@ public class AS2MessageMDNTest {
 
     private boolean returnMdnFmt = false;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         when(message.getPartnership()).thenReturn(partnership);
         when(partnership.getReceiverID(matches(Partnership.PID_AS2))).thenReturn("receiverId");
