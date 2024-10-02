@@ -10,6 +10,9 @@ import java.util.Map;
 public interface Processor extends Component {
     String COMPID_PROCESSOR = "processor";
 
+    String PENDING_MDN_INFO_DIRECTORY_IDENTIFIER = "pendingmdninfo";
+    String PENDING_MDN_MSG_DIRECTORY_IDENTIFIER = "pendingmdn";
+
     void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception;
 
     List<ProcessorModule> getModules();
