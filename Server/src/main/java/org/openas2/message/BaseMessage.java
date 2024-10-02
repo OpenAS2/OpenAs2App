@@ -41,6 +41,7 @@ public abstract class BaseMessage implements Message {
     private String compressionType = ICryptoHelper.COMPRESSION_NONE;
     private boolean rxdMsgWasSigned = false;
     private boolean rxdMsgWasEncrypted = false;
+    private boolean isResending = false;
     private boolean fileCleanupCompleted = false;
     private Map<String, Object> options = new HashMap<String, Object>();
     private String calculatedMIC = null;
@@ -104,7 +105,12 @@ public abstract class BaseMessage implements Message {
 
     public boolean isResend() {
         // Determines if message is currently in resend phase
-        return Message.MSG_STATUS_MSG_RESEND.equals(getStatus());
+        return isResending;
+    }
+
+    public void setIsResend(boolean resending) {
+        // Sets resend phase
+        this.isResending = resending;
     }
 
     public Map<String, String> getCustomOuterMimeHeaders() {
