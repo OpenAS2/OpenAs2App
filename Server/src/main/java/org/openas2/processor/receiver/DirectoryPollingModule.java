@@ -6,6 +6,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
+import org.openas2.processor.Processor;
 import org.openas2.util.IOUtil;
 
 import java.io.File;
@@ -63,9 +64,9 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 executorService = Executors.newFixedThreadPool(maxProcessingThreads);
             }
             
-            String pendingInfoFolder = getSession().getProcessor().getParameters().get("pendingmdninfo");
+            String pendingInfoFolder = getSession().getProcessor().getParameters().get(Processor.PENDING_MDN_INFO_DIRECTORY_IDENTIFIER);
             IOUtil.getDirectoryFile(pendingInfoFolder);
-            String pendingFolder = getSession().getProcessor().getParameters().get("pendingmdn");
+            String pendingFolder = getSession().getProcessor().getParameters().get(Processor.PENDING_MDN_MSG_DIRECTORY_IDENTIFIER);
             IOUtil.getDirectoryFile(pendingFolder);
             
             

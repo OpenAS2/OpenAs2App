@@ -22,10 +22,8 @@ import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
 
-import jakarta.mail.BodyPart;
 import jakarta.mail.Header;
 import jakarta.mail.MessagingException;
-import jakarta.mail.Multipart;
 import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.InternetHeaders;
 import jakarta.mail.internet.MimeBodyPart;
@@ -321,7 +319,7 @@ public class AS2Util {
         int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
         int maxRetryCount = getMaxResendCount(session, msg);
         if (logger.isDebugEnabled()) {
-            logger.debug("RESEND requested. Retries: " + retries + "Max retries: " + maxRetryCount + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
+            logger.debug("RESEND requested. Retries: " + retries + " Max retries: " + maxRetryCount + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
         }
         if (maxRetryCount > -1) {
             // Have to resend some fixed number of times so check if we are done
@@ -333,6 +331,9 @@ public class AS2Util {
                 msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
                 msg.trackMsgState(session);
                 // Cleanup the files associated with this failed message
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Calling AS2Util.cleanupFiles from resend abort on max retries.");
+                }
                 AS2Util.cleanupFiles(msg, true);
                 // Signal sending retry has been abandoned
                 return false;
@@ -392,9 +393,10 @@ public class AS2Util {
         if (requiresNewMessageId) {
             /**
              * Per https://tools.ietf.org/html/rfc4130#section-9.3 resend should have same
-             * Message-Id ... BUT Because it was implemented in the beginning to vreate a
+             * Message-Id ... BUT Because it was implemented in the beginning to create a
              * new one for each resend, for backwards compatibility the default is the
-             * reverse Systems like Mendelson require a new Message-Id
+             * reverse.
+             * Systems like Mendelson require a new Message-Id
              */
             // Resend requires a new Message-Id and we need to update the pendinginfo file
             // name to match....
@@ -407,7 +409,7 @@ public class AS2Util {
             // Set new Id in Message object so we can generate new file name
             msg.setMessageID(newMsgId);
             // msg.setHeader("Original-Message-Id", oldMsgId); // Not sure about this so leave out for now
-            String newPendingInfoFileName = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
+            String newPendingInfoFileName = buildPendingFileName(msg, session.getProcessor(), Processor.PENDING_MDN_INFO_DIRECTORY_IDENTIFIER);
             if (logger.isDebugEnabled()) {
                 logger.debug("" + "\n        Old Msg Id: " + oldMsgId + "\n        Old Info File: " + oldPendingInfoFileName + "\n        New Info File: " + newPendingInfoFileName + msg.getLogMsgID());
             }
@@ -605,7 +607,7 @@ public class AS2Util {
         String originalMsgId = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID);
 
         msg.setMessageID(originalMsgId);
-        String pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
+        String pendinginfofile = buildPendingFileName(msg, session.getProcessor(), Processor.PENDING_MDN_INFO_DIRECTORY_IDENTIFIER);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Pending info file to retrieve data from in MDN receiver: " + pendinginfofile);
@@ -620,7 +622,7 @@ public class AS2Util {
                 throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
             }
             msg.setMessageID(oMsgIdStripped);
-            pendinginfofile = buildPendingFileName(msg, session.getProcessor(), "pendingmdninfo");
+            pendinginfofile = buildPendingFileName(msg, session.getProcessor(), Processor.PENDING_MDN_INFO_DIRECTORY_IDENTIFIER);
             iFile = new File(pendinginfofile);
             if (!iFile.exists()) {
                 throw new OpenAS2Exception("Pending info file missing: " + pendinginfofile);
@@ -685,9 +687,9 @@ public class AS2Util {
             }
             return;
         }
-        String pendingInfoFileName = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
-        if (pendingInfoFileName != null) {
-            File fPendingInfoFile = new File(pendingInfoFileName);
+        String pendingMessageMetadata = msg.getAttribute(FileAttribute.MA_PENDINGINFO);
+        if (pendingMessageMetadata != null) {
+            File fPendingInfoFile = new File(pendingMessageMetadata);
             if (fPendingInfoFile.exists()) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Deleting pendinginfo file : " + fPendingInfoFile.getAbsolutePath() + msg.getLogMsgID());
@@ -696,14 +698,14 @@ public class AS2Util {
                 try {
                     IOUtil.deleteFile(fPendingInfoFile);
                     if (logger.isTraceEnabled()) {
-                        logger.trace("deleted " + pendingInfoFileName + msg.getLogMsgID());
+                        logger.trace("Pending MDN INFO file deleted: " + pendingMessageMetadata + msg.getLogMsgID());
                     }
                 } catch (Exception e) {
-                    msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingInfoFileName);
+                    msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingMessageMetadata);
                     logger.warn(msg, e);
                 }
             } else {
-                msg.setLogMsg("Cleanup could not find pendinginfo file: " + pendingInfoFileName);
+                msg.setLogMsg("Cleanup could not find pendinginfo file: " + pendingMessageMetadata);
                 logger.warn(msg);
             }
         }
@@ -714,14 +716,14 @@ public class AS2Util {
             try {
                 IOUtil.deleteFile(new File(pendingFileName + ".object"));
                 if (logger.isTraceEnabled()) {
-                    logger.trace("deleted " + pendingFileName + ".object" + msg.getLogMsgID());
+                    logger.trace("The RETRY message object file deleted: " + pendingFileName + ".object" + msg.getLogMsgID());
                 }
             } catch (Exception e) {
-                msg.setLogMsg("File was successfully sent but message object file not deleted: " + org.openas2.logging.Log.getExceptionMsg(e));
+                msg.setLogMsg("The RETRY message object file NOT deleted: " + org.openas2.logging.Log.getExceptionMsg(e));
                 logger.warn(msg, e);
             }
             if (logger.isTraceEnabled()) {
-                logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " from pending folder : " + fPendingFile.getParent() + msg.getLogMsgID());
+                logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " ::: From pending folder : " + fPendingFile.getParent() + msg.getLogMsgID());
             }
             try {
                 // Move file to error or sent directory if the error or sent saving functionality is enabled
@@ -750,8 +752,8 @@ public class AS2Util {
                         tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false);
                         isMoved = true;
 
-                        if (logger.isInfoEnabled()) {
-                            logger.info("Pending file " + fPendingFile.getAbsolutePath() + " moved to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Pending MDN MSG FILE file " + fPendingFile.getAbsolutePath() + " moved to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
                         }
 
                     } catch (IOException iose) {
@@ -761,14 +763,16 @@ public class AS2Util {
                 }
 
                 if (!isMoved) {
-                    // Could not find somewhere to move it to so delete it
-                    IOUtil.deleteFile(fPendingFile);
-                    if (logger.isInfoEnabled()) {
-                        logger.info("deleted " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
+                    // Could not find somewhere to move it to so delete it if it still exists
+                    if (fPendingFile.exists()) {
+                        IOUtil.deleteFile(fPendingFile);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Pending MDN MSG FILE deleted: " + fPendingFile.getAbsolutePath() + msg.getLogMsgID());
+                        }
                     }
                 }
             } catch (Exception e) {
-                msg.setLogMsg("File was successfully sent but not deleted: " + fPendingFile.getAbsolutePath());
+                msg.setLogMsg("File cleanup unable to delete the locally stored version of the pending MSG file: " + fPendingFile.getAbsolutePath());
                 logger.error(msg, e);
             }
         }

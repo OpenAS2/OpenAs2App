@@ -21,6 +21,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.Processor;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.schedule.HasSchedule;
@@ -538,7 +539,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         ObjectOutputStream oos = null;
 
         try {
-            String pendingInfoFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdninfo");
+            String pendingInfoFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), Processor.PENDING_MDN_INFO_DIRECTORY_IDENTIFIER);
             String pendingFile = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
             msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
             msg.setAttribute(FileAttribute.MA_PENDINGINFO, pendingInfoFile);
@@ -617,7 +618,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
     protected void detectFailedSentMessages() {
         String dir;
         try {
-            dir = getSession().getProcessor().getParameters().get("pendingmdninfo");
+            dir = getSession().getProcessor().getParameters().get(Processor.PENDING_MDN_INFO_DIRECTORY_IDENTIFIER);
         } catch (ComponentNotFoundException e) {
             logger.warn("Failed to retrieve the name of the pending info folder for sent messages in trying to run the failed message detection method.", e);
             return;

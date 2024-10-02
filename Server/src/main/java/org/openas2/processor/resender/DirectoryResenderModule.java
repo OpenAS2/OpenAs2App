@@ -46,13 +46,13 @@ public class DirectoryResenderModule extends BaseResenderModule {
     /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
     *
     */
-   public String getModuleAction() {
-       String action = super.getModuleAction();
-       if (action == null) {
-           return ResenderModule.DO_RESEND;
-       }
-       return action;
-   }
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return ResenderModule.DO_RESEND;
+        }
+        return action;
+    }
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         ObjectOutputStream oos = null;
@@ -67,12 +67,21 @@ public class DirectoryResenderModule extends BaseResenderModule {
             int retries = Integer.parseInt((String)options.get(ResenderModule.OPTION_RETRIES));
             oos.writeObject(method);
             oos.writeObject("" + retries);
+            // Set the resend flag to avoid unwanted processing of the message by the builder module
+            msg.setIsResend(true);
             oos.writeObject(msg);
 
             logger.info("Message put in resend queue" + msg.getLogMsgID());
             if (logger.isTraceEnabled()) {
                 try {
-                    logger.trace("Message object in resender module for storage. Content-Disposition: " + msg.getContentDisposition() + "\n      Content-Type : " + msg.getContentType() + "\n      Retries : " + retries + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders()) + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType() + "\n        Attributes: " + msg.getAttributes() + msg.getLogMsgID());
+                    logger.trace("Message object in resender module for storage. Content-Disposition: " +
+                        msg.getContentDisposition() +
+                        "\n      Content-Type : " + msg.getContentType() +
+                        "\n      Retries : " + retries +
+                        "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders()) +
+                        "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType() +
+                        "\n      Attributes: " + msg.getAttributes() + msg.getLogMsgID()
+                    );
                 } catch (Exception e) {
                 }
             }
@@ -174,7 +183,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
 
                 // Transmit the message
                 if (logger.isInfoEnabled()) {
-                    logger.info("loaded message for resend." + msg.getLogMsgID());
+                    logger.info("Loaded message for resend: " + file.getAbsolutePath() + msg.getLogMsgID());
                 }
                 if (logger.isTraceEnabled()) {
                     try {

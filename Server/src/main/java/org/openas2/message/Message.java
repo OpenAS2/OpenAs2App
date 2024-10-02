@@ -167,6 +167,7 @@ public interface Message extends Serializable {
 
     void setFileCleanupCompleted(boolean cleanupDone);
 
+    void setIsResend(boolean resending);
     boolean isResend();
 
     String getSubject();
