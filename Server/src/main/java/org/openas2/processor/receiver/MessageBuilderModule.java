@@ -17,6 +17,7 @@ import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
 import org.openas2.partner.Partnership;
+import org.openas2.processor.Processor;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
@@ -233,6 +234,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             getSession().getProcessor().handle(SenderModule.DO_SEND, msg, options);
             // Cleanup files only if sending was successful and an MDN was already received
             if (!msg.isResend() && !msg.isConfiguredForAsynchMDN()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Calling AS2Util.cleanupFiles from processDocument method.");
+                }
                 AS2Util.cleanupFiles(msg, false);
             }
         } catch (Exception e) {
@@ -291,7 +295,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         msg.setHeader("AS2-From", msg.getPartnership().getSenderID(Partnership.PID_AS2));
         // Now build the filename since it is by default dependent on having sender and
         // receiver ID
-        String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), "pendingmdn");
+        String pendingFile = AS2Util.buildPendingFileName(msg, getSession().getProcessor(), Processor.PENDING_MDN_MSG_DIRECTORY_IDENTIFIER);
         msg.setAttribute(FileAttribute.MA_PENDINGFILE, pendingFile);
         CompositeParameters parser = new CompositeParameters(false).add("date", new DateParameters()).add("msg", new MessageParameters(msg)).add("rand", new RandomParameters());
         msg.setAttribute(FileAttribute.MA_ERROR_DIR, ParameterParser.parse(getParameter(PARAM_ERROR_DIRECTORY, true), parser));
