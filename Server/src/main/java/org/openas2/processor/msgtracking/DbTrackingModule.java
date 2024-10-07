@@ -54,7 +54,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     private String tableName = null;
     IDBHandler dbHandler = null;
 
-    private Logger logger = LoggerFactory.getLogger(DbTrackingModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(DbTrackingModule.class);
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
@@ -175,9 +175,9 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         } catch (Exception e) {
-            msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.logging.Log.getExceptionMsg(e)
+            msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.util.Logging.getExceptionMsg(e)
                     + " ::: Data map: " + map);
-            logger.error(msg, e);
+            logger.error(msg.getLogMsg(), e);
         } finally {
             if (conn != null) {
                 try {

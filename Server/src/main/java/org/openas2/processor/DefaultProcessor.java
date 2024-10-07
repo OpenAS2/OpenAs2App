@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class DefaultProcessor extends BaseComponent implements Processor {
     private List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
-    private Logger logger = LoggerFactory.getLogger(DefaultProcessor.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(DefaultProcessor.class.getName());
 
     public List<ActiveModule> getActiveModules() {
         List<ActiveModule> activeMods = new ArrayList<ActiveModule>();
@@ -69,7 +69,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                 return;
             }
             msg.setLogMsg("No handler found for action: " + action);
-            logger.error(msg);
+            logger.error(msg.getLogMsg());
             throw new NoModuleException(action, msg, options);
         }
     }
