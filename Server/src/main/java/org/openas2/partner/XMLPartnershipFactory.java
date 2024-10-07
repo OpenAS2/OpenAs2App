@@ -1,7 +1,7 @@
 package org.openas2.partner;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -62,7 +62,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
     private Map<String, Object> partners;
 
-    private Log logger = LogFactory.getLog(XMLPartnershipFactory.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(XMLPartnershipFactory.class);
 
 
     private int getRefreshInterval() throws InvalidParameterException {

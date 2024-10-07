@@ -1,7 +1,7 @@
 package org.openas2.params;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.message.Message;
 import org.openas2.util.Properties;
 
@@ -16,7 +16,7 @@ public class MessageParameters extends ParameterParser {
     public static final String KEY_CONTENT_FILENAME = "content-disposition";
     private Message target;
 
-    private Log logger = LogFactory.getLog(MessageParameters.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(MessageParameters.class);
 
     public MessageParameters(Message target) {
         super();
@@ -69,7 +69,7 @@ public class MessageParameters extends ParameterParser {
             try {
                 s = getTarget().extractPayloadFilename();
             } catch (ParseException e) {
-                logger.warn("Failed to extract filename from content-disposition: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                logger.warn("Failed to extract filename from content-disposition: " + org.openas2.util.Logging.getExceptionMsg(e), e);
             }
             if (s == null || s.length() < 1) {
                 s = getTarget().getPayloadFilename();

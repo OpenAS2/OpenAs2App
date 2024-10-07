@@ -1,7 +1,7 @@
 package org.openas2.processor.msgtracking;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
@@ -54,7 +54,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     private String tableName = null;
     IDBHandler dbHandler = null;
 
-    private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(DbTrackingModule.class.getSimpleName());
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);

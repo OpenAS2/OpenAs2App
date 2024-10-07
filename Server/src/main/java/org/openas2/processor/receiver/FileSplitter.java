@@ -3,8 +3,8 @@ package org.openas2.processor.receiver;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.util.FileUtil;
 import org.openas2.util.IOUtil;
@@ -17,7 +17,7 @@ public class FileSplitter implements Runnable {
     private String newFileBaseName;
     private String filenamePrefix;
 
-    private static final Log logger = LogFactory.getLog(FileUtil.class.getSimpleName());
+    private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     public FileSplitter(File sourceFile, String outputDir, long maxFileSize, boolean containsHeaderRow, String newFileBaseName, String filenamePrefix) {
        this.sourceFile = sourceFile;

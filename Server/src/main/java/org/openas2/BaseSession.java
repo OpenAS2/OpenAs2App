@@ -1,7 +1,7 @@
 package org.openas2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.message.MessageFactory;
@@ -26,7 +26,7 @@ public abstract class BaseSession implements Session {
     private Map<String, Component> components = new HashMap<String, Component>();
     private String baseDirectory;
 
-    protected static final Log LOGGER = LogFactory.getLog(XMLSession.class.getSimpleName());
+    protected static final Logger LOGGER = LoggerFactory.getLogger(XMLSession.class);
 
     private Map<String, Map<String, Object>> polledDirectories = new HashMap<String, Map<String, Object>>();
 

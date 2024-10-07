@@ -7,8 +7,8 @@ package org.openas2.cmd.processor.restapi;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.http.HttpHeaders;
 import org.bouncycastle.util.encoders.Base64;
 import org.openas2.cmd.CommandResult;
@@ -48,7 +48,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
     //private static final CommandResult ERROR_ACCESS_FORBIDDEN = new CommandResult(CommandResult.TYPE_ERROR, "Access blocked for all users !!");
     private static String adminUsername;
     private static String adminPassword;
-    private final Log logger = LogFactory.getLog(AuthenticationRequestFilter.class.getSimpleName());
+    private final Logger logger = LoggerFactory.getLogger(AuthenticationRequestFilter.class);
 
 
     public static void setCredentials(String userId,String password) {

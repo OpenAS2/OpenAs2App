@@ -1,7 +1,7 @@
 package org.openas2.processor.resender;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -26,8 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class DirectoryResenderModule extends BaseResenderModule {
@@ -40,7 +40,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
     // TODO Resend set to 15 minutes. Implement a scaling resend time with eventual permanent failure of transmission
     public static final long DEFAULT_RESEND_DELAY = 15 * 60 * 1000; // 15 minutes
 
-    private Log logger = LogFactory.getLog(DirectoryResenderModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(DirectoryResenderModule.class);
 
 
     /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
@@ -134,7 +134,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
             failures.add(this.getClass().getSimpleName() + " - Polling directory is not accessible: " + resendDirPath);
             return false;
         } catch (InvalidParameterException ex) {
-            Logger.getLogger(DirectoryResenderModule.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(DirectoryResenderModule.class.getName()).error(null, ex);
             return false;
         }
         return true;

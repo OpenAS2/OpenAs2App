@@ -1,7 +1,7 @@
 package org.openas2.processor.msgtracking;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.util.Properties;
 
@@ -60,7 +60,7 @@ class ExternalDBHandler extends DbTrackingModule implements IDBHandler {
         createConnectionPool(connectString, userName, pwd);
             Enumeration<Driver> drivers = DriverManager.getDrivers();
             Driver driver = drivers.nextElement();// home into first and the only
-            Log logger = LogFactory.getLog(getName());
+            Logger logger = LoggerFactory.getLogger(getName());
             logger.info("Using JDBC driver: " + driver.getClass().getName());
     }
 

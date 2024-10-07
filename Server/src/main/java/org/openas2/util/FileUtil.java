@@ -15,7 +15,7 @@ import java.util.Properties;
 
 public class FileUtil {
 
-    //private static final Log logger = LogFactory.getLog(FileUtil.class.getSimpleName());
+    //private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     public static Properties loadProperties(String filename) throws IOException {
         Properties fileProps = new java.util.Properties();

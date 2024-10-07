@@ -1,7 +1,7 @@
 package org.openas2.cmd.processor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -41,7 +41,7 @@ public class SocketCommandProcessor extends BaseCommandProcessor {
     private String userid, password;
     private String responseFormat = "xml";
 
-    private Log logger = LogFactory.getLog(SocketCommandProcessor.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(SocketCommandProcessor.class.getSimpleName());
 
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         super.init(session, parameters);

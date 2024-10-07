@@ -1,7 +1,7 @@
 package org.openas2.message;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -42,7 +42,7 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
 
     private Map<String, Object> messages;
 
-    private Log logger = LogFactory.getLog(XMLMessageFactory.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(XMLMessageFactory.class);
 
 
     private int getRefreshInterval() throws InvalidParameterException {

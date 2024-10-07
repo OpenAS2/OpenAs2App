@@ -1,7 +1,7 @@
 package org.openas2.processor.sender;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.http.protocol.HTTP;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -34,7 +34,7 @@ public class MDNSenderModule extends HttpSenderModule {
     public static final String MDN_TYPE_VAL_SYNC = "Synchronous";
     public static final String MDN_TYPE_VAL_ASYNC = "Asynchronous";
 
-    private Log logger = LogFactory.getLog(MDNSenderModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(MDNSenderModule.class);
 
     /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
     *
@@ -167,11 +167,11 @@ public class MDNSenderModule extends HttpSenderModule {
             if ((respCode != HttpURLConnection.HTTP_OK) && (respCode != HttpURLConnection.HTTP_CREATED) && (respCode != HttpURLConnection.HTTP_ACCEPTED) && (respCode != HttpURLConnection.HTTP_PARTIAL) && (respCode != HttpURLConnection.HTTP_NO_CONTENT)) {
                 if (logger.isErrorEnabled()) {
                     msg.setLogMsg("Error sending AsyncMDN [" + disposition.toString() + "] HTTP response code: " + respCode);
-                    logger.error(msg);
+                    logger.error(msg.getLogMsg());
                 }
                 throw new HttpResponseException(url, respCode, resp.getStatusPhrase());
             }
-            // Log significant msg state
+            // Logger significant msg state
             msg.setStatus(Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
             msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENT_OK);
             msg.trackMsgState(getSession());
@@ -185,30 +185,30 @@ public class MDNSenderModule extends HttpSenderModule {
 
         } catch (HttpResponseException hre) {
             // Resend if the HTTP Response has an error code
-            logger.warn("HTTP exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(hre) + msg.getLogMsgID(), hre);
+            logger.warn("HTTP exception sending ASYNC MDN: " + org.openas2.util.Logging.getExceptionMsg(hre) + msg.getLogMsgID(), hre);
             hre.log();
-            // Log significant msg state
+            // Logger significant msg state
             msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
             msg.trackMsgState(getSession());
             resend(msg, hre, options);
             return false;
         } catch (IOException ioe) {
-            logger.warn("IO exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(ioe) + msg.getLogMsgID(), ioe);
+            logger.warn("IO exception sending ASYNC MDN: " + org.openas2.util.Logging.getExceptionMsg(ioe) + msg.getLogMsgID(), ioe);
             // Resend if a network error occurs during transmission
             WrappedException wioe = new WrappedException(ioe);
             wioe.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             wioe.log();
-            // Log significant msg state
+            // Logger significant msg state
             msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
             msg.trackMsgState(getSession());
             resend(msg, wioe, options);
             return false;
         } catch (Exception e) {
-            logger.warn("Unexpected exception sending ASYNC MDN: " + org.openas2.logging.Log.getExceptionMsg(e) + msg.getLogMsgID(), e);
+            logger.warn("Unexpected exception sending ASYNC MDN: " + org.openas2.util.Logging.getExceptionMsg(e) + msg.getLogMsgID(), e);
             // Propagate error if it can't be handled by a resend
             // log & store mdn into backup folder.
             getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
-            // Log significant msg state
+            // Logger significant msg state
             msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
             msg.trackMsgState(getSession());
             throw new WrappedException(e);
@@ -228,8 +228,8 @@ public class MDNSenderModule extends HttpSenderModule {
             // Have to resend some fixed number of times so check if we are done
             if (tries >= maxRetryCount) {
                 msg.setLogMsg("MDN response abandoned after retry limit reached.");
-                logger.error(msg);
-                // Log significant msg state
+                logger.error(msg.getLogMsg());
+                // Logger significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MSG_RXD_MDN_SENDING_FAIL);
                 msg.trackMsgState(getSession());
                 AS2Util.cleanupFiles(msg, false);

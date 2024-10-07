@@ -172,7 +172,7 @@ public class EmailSender extends BaseComponent {
                 }
                 password = getParameter("smtppwd", true);
             } catch (InvalidParameterException e) {
-                throw new OpenAS2Exception("Failed to find email logger parameter: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                throw new OpenAS2Exception("Failed to find email logger parameter: " + org.openas2.util.Logging.getExceptionMsg(e), e);
             }
         }
         final String uid = userName;

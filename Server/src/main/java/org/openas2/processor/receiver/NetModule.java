@@ -1,8 +1,8 @@
 package org.openas2.processor.receiver;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -57,7 +57,7 @@ public abstract class NetModule extends BaseReceiverModule {
     public static final String DEFAULT_ERRORS = "$date.yyyyMMddhhmmss$";
 
     private HTTPServerThread mainThread;
-    private Log logger = LogFactory.getLog(NetModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(NetModule.class);
 
     public void doStart() throws OpenAS2Exception {
         try {

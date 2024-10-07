@@ -1,7 +1,7 @@
 package org.openas2.processor.receiver;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.app.HealthCheck;
 import org.openas2.util.HTTPUtil;
 
@@ -15,7 +15,7 @@ import java.util.List;
 public class HealthCheckHandler implements NetModuleHandler {
     private HealthCheckModule module;
 
-    private Log logger = LogFactory.getLog(HealthCheckHandler.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(HealthCheckHandler.class);
 
     public HealthCheckHandler(HealthCheckModule module) {
         super();
@@ -63,7 +63,7 @@ public class HealthCheckHandler implements NetModuleHandler {
                 }
                 HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_INTERNAL_ERROR, sb.toString());
                 if (logger.isTraceEnabled()) {
-                    logger.trace(sb);
+                    logger.trace(sb.toString());
                 }
 
             }

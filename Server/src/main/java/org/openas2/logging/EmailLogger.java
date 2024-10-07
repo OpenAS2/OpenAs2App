@@ -152,7 +152,7 @@ public class EmailLogger extends BaseLogger {
         } else {
             subj = msg;
         }
-        StringBuffer subject = new StringBuffer("OpenAS2 Log (" + level.getName() + "): " + subj);
+        StringBuffer subject = new StringBuffer("OpenAS2 Logger (" + level.getName() + "): " + subj);
 
         return subject.toString();
     }

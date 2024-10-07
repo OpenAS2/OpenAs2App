@@ -1,8 +1,8 @@
 package org.openas2.schedule;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.BaseComponent;
 import org.openas2.Component;
 import org.openas2.OpenAS2Exception;
@@ -23,7 +23,7 @@ public class SchedulerComponent extends BaseComponent {
     public static final String PARAMETER_THREADS = "threads";
     //
     private static final int MIN_AMOUNT_OF_THREADS = 6;
-    private Log logger = LogFactory.getLog(SchedulerComponent.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(SchedulerComponent.class);
 
     private ScheduledExecutorService executorService;
 

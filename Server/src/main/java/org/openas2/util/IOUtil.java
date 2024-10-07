@@ -1,8 +1,8 @@
 package org.openas2.util;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.InvalidMessageException;
 
@@ -31,7 +31,7 @@ import org.openas2.params.RandomParameters;
 public class IOUtil {
     //private static final String VALID_FILENAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.@-";
 
-    private static final Log logger = LogFactory.getLog(IOUtil.class.getSimpleName());
+    private static final Logger logger = LoggerFactory.getLogger(IOUtil.class);
 
     public static OutputStreamWriter getOutPutStreamWriter(String target, boolean createDirectories, String charsetName) throws IOException {
         if (charsetName == null) {

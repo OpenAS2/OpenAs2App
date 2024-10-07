@@ -1,8 +1,8 @@
 package org.openas2.util;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
@@ -79,7 +79,7 @@ public class AS2Util {
     }
 
     public static void parseMDN(Message msg, X509Certificate receiver) throws OpenAS2Exception {
-        Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
         MessageMDN mdn = msg.getMDN();
         MimeBodyPart mainPart = mdn.getData();
         if (logger.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMdnMimeBodyParts", "false"))) {
@@ -97,7 +97,7 @@ public class AS2Util {
                 mainPart = getCryptoHelper().verifySignature(mainPart, receiver);
             }
         } catch (Exception e1) {
-            logger.error("Error parsing MDN: " + org.openas2.logging.Log.getExceptionMsg(e1), e1);
+            logger.error("Error parsing MDN: " + org.openas2.util.Logging.getExceptionMsg(e1), e1);
             throw new OpenAS2Exception("Failed to verify signature of received MDN.");
 
         }
@@ -137,7 +137,7 @@ public class AS2Util {
                 }
             }
         } catch (Exception e) {
-            throw new OpenAS2Exception("Failed to parse MDN: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Failed to parse MDN: " + org.openas2.util.Logging.getExceptionMsg(e), e);
         }
     }
 
@@ -151,7 +151,7 @@ public class AS2Util {
         return content.toString();
     }
 
-    private static Charset getCharset(ContentType contentType, Message msg, Log logger) {
+    private static Charset getCharset(ContentType contentType, Message msg, Logger logger) {
         Charset charset = StandardCharsets.UTF_8;
         String charsetFromContentType = contentType.getParameter("charset");
 
@@ -178,7 +178,7 @@ public class AS2Util {
      * @throws OpenAS2Exception     - an internally handled error has occurred
      */
     public static boolean checkMDN(AS2Message msg) throws DispositionException, OpenAS2Exception {
-        Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
         /*
          * The sender may return an error in the disposition and not set the MIC so
          * check disposition first
@@ -193,8 +193,8 @@ public class AS2Util {
             try {
                 dt = new DispositionType(disposition);
             } catch (OpenAS2Exception e) {
-                msg.setLogMsg("Error occurred instantating a Disposition object from received disposition: " + org.openas2.logging.Log.getExceptionMsg(e));
-                logger.error(msg, e);
+                msg.setLogMsg("Error occurred instantating a Disposition object from received disposition: " + org.openas2.util.Logging.getExceptionMsg(e));
+                logger.error(msg.getLogMsg(), e);
                 throw new OpenAS2Exception(e);
             }
             try {
@@ -231,10 +231,10 @@ public class AS2Util {
                 // TODO: Think this should probably throw error if MIC should have been returned
                 // but for now...
                 msg.setLogMsg("Returned MIC not found but disposition has warning so might be normal.");
-                logger.warn(msg);
+                logger.warn(msg.getLogMsg());
             } else {
                 msg.setLogMsg("Returned MIC not found so cannot validate returned message.");
-                logger.error(msg);
+                logger.error(msg.getLogMsg());
             }
             return false;
         }
@@ -258,7 +258,7 @@ public class AS2Util {
         Matcher m = p.matcher(returnMIC);
         if (!m.find()) {
             msg.setLogMsg("Invalid MIC format in returned MIC: " + returnMIC);
-            logger.error(msg);
+            logger.error(msg.getLogMsg());
             throw new OpenAS2Exception("Invalid MIC string received. Forcing Resend");
         }
         String rMic = m.group(1);
@@ -266,7 +266,7 @@ public class AS2Util {
         m = p.matcher(calcMIC);
         if (!m.find()) {
             msg.setLogMsg("Invalid MIC format in calculated MIC: " + calcMIC);
-            logger.error(msg);
+            logger.error(msg.getLogMsg());
             throw new OpenAS2Exception("Invalid MIC string retrieved from calculated MIC. Forcing Resend");
         }
         String cMic = m.group(1);
@@ -290,7 +290,7 @@ public class AS2Util {
              * retransmitted
              */
             msg.setLogMsg("MIC not matched, original MIC: " + calcMIC + " return MIC: " + returnMIC);
-            logger.error(msg);
+            logger.error(msg.getLogMsg());
             throw new OpenAS2Exception("MIC not matched. Forcing Resend");
         }
         if (logger.isTraceEnabled()) {
@@ -315,7 +315,7 @@ public class AS2Util {
      * @throws OpenAS2Exception
      */
     public static boolean resend(Session session, Class<?> sourceClass, String how, Message msg, OpenAS2Exception cause, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
-        Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
         int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
         int maxRetryCount = getMaxResendCount(session, msg);
         if (logger.isDebugEnabled()) {
@@ -326,8 +326,8 @@ public class AS2Util {
             if (retries >= maxRetryCount) {
                 // Retry limit reached so cleanup the message files
                 msg.setLogMsg("Message abandoned after retry limit reached." + msg.getLogMsgID());
-                logger.error(msg);
-                // Log significant msg state
+                logger.error(msg.getLogMsg());
+                // Logger significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
                 msg.trackMsgState(session);
                 // Cleanup the files associated with this failed message
@@ -354,14 +354,14 @@ public class AS2Util {
                 try {
                     pifois = new ObjectInputStream(new FileInputStream(new File(pendingMsgObjFileName)));
                 } catch (FileNotFoundException e) {
-                    throw new OpenAS2Exception("Could not retrieve pending info file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                    throw new OpenAS2Exception("Could not retrieve pending info file: " + org.openas2.util.Logging.getExceptionMsg(e), e);
                 } catch (IOException e) {
-                    throw new OpenAS2Exception("Could not open pending info file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                    throw new OpenAS2Exception("Could not open pending info file: " + org.openas2.util.Logging.getExceptionMsg(e), e);
                 }
                 try {
                     originalMsg = (Message) pifois.readObject();
                 } catch (Exception e) {
-                    throw new OpenAS2Exception("Cannot retrieve original message object for resend: " + org.openas2.logging.Log.getExceptionMsg(e));
+                    throw new OpenAS2Exception("Cannot retrieve original message object for resend: " + org.openas2.util.Logging.getExceptionMsg(e));
                 }
             } finally {
                 try {
@@ -428,8 +428,8 @@ public class AS2Util {
                 }
 
             } catch (IOException iose) {
-                msg.setLogMsg("Error renaming file: " + org.openas2.logging.Log.getExceptionMsg(iose));
-                logger.error(msg, iose);
+                msg.setLogMsg("Error renaming file: " + org.openas2.util.Logging.getExceptionMsg(iose));
+                logger.error(msg.getLogMsg(), iose);
             }
         }
         Map<String, Object> options = new HashMap<String, Object>();
@@ -461,7 +461,7 @@ public class AS2Util {
      * TODO:: Possibly do away with returning a boolean as it does not add value ATM
      */
     public static boolean processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
-        Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
 
         // Create a MessageMDN and copy HTTP headers
         MessageMDN mdn = msg.getMDN();
@@ -493,8 +493,8 @@ public class AS2Util {
             part = new MimeBodyPart(mdn.getHeaders(), data);
             msg.getMDN().setData(part);
         } catch (MessagingException e1) {
-            msg.setLogMsg("Failed to create mimebodypart from received MDN data for partnership " + mdn.getPartnership().getName() + ": " + org.openas2.logging.Log.getExceptionMsg(e1));
-            logger.error(msg, e1);
+            msg.setLogMsg("Failed to create mimebodypart from received MDN data for partnership " + mdn.getPartnership().getName() + ": " + org.openas2.util.Logging.getExceptionMsg(e1));
+            logger.error(msg.getLogMsg(), e1);
             return AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
         }
         CertificateFactory cFx = session.getCertificateFactory();
@@ -549,7 +549,7 @@ public class AS2Util {
             if (isAsyncMDN) {
                 HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_OK, null);
             }
-            OpenAS2Exception oae2 = new OpenAS2Exception("Message was sent but an error occured while receiving the MDN: " + org.openas2.logging.Log.getExceptionMsg(oae), oae);
+            OpenAS2Exception oae2 = new OpenAS2Exception("Message was sent but an error occured while receiving the MDN: " + org.openas2.util.Logging.getExceptionMsg(oae), oae);
             oae2.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
             oae2.log();
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, oae2, true, false);
@@ -569,7 +569,7 @@ public class AS2Util {
         msg.setStatus(Message.MSG_STATUS_MSG_CLEANUP);
         // To support extended reporting via logging log info passing Message object
         msg.setLogMsg("Message sent and MDN received successfully.");
-        logger.info(msg);
+        logger.info(msg.getLogMsg());
 
         cleanupFiles(msg, false);
         return true;
@@ -601,7 +601,7 @@ public class AS2Util {
      */
 
     public static void getMetaData(AS2Message msg, Session session) throws OpenAS2Exception {
-        Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
         // use original message ID to open the pending information file from pendinginfo
         // folder.
         String originalMsgId = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_ORIG_MESSAGEID);
@@ -633,12 +633,12 @@ public class AS2Util {
     }
 
     public static void getMetaData(AS2Message msg, File inFile) throws OpenAS2Exception {
-        Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
         ObjectInputStream pifois;
         try {
             pifois = new ObjectInputStream(new FileInputStream(inFile));
         } catch (IOException e) {
-            throw new OpenAS2Exception("Could not open pending info file: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Could not open pending info file: " + org.openas2.util.Logging.getExceptionMsg(e), e);
         }
 
         try {
@@ -665,9 +665,9 @@ public class AS2Util {
                 logger.trace("Data retrieved from Pending info file:" + "\n        Original MIC: " + msg.getCalculatedMIC() + "\n        Retry Count: " + retries + "\n        Original file name : " + msg.getPayloadFilename() + "\n        Sent file name : " + msg.getAttribute(FileAttribute.MA_FILENAME) + "\n        Pending message file : " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Error directory: " + msg.getAttribute(FileAttribute.MA_ERROR_DIR) + "\n        Sent directory: " + msg.getAttribute(FileAttribute.MA_SENT_DIR) + "\n        Attributes: " + msg.getAttributes() + msg.getLogMsgID());
             }
         } catch (IOException e) {
-            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Exception retrieving the pending MDN information: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Exception retrieving the pending MDN information: " + org.openas2.util.Logging.getExceptionMsg(e), e);
         } catch (ClassNotFoundException e) {
-            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Failed to rebuild an object from the pending MDN information: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+            throw new OpenAS2Exception("Processing file failed: " + inFile.getAbsolutePath() + "Failed to rebuild an object from the pending MDN information: " + org.openas2.util.Logging.getExceptionMsg(e), e);
         } finally {
             if (pifois != null) {
                 try {
@@ -680,7 +680,7 @@ public class AS2Util {
     }
 
     public static void cleanupFiles(Message msg, boolean isError) {
-        Log logger = LogFactory.getLog(AS2Util.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
         if (msg.isFileCleanupCompleted()) {
             if (logger.isTraceEnabled()) {
                 logger.trace("File cleanup already called for " + msg.getMessageID());
@@ -702,11 +702,11 @@ public class AS2Util {
                     }
                 } catch (Exception e) {
                     msg.setLogMsg("File was successfully sent but info file not deleted: " + pendingMessageMetadata);
-                    logger.warn(msg, e);
+                    logger.warn(msg.getLogMsg(), e);
                 }
             } else {
                 msg.setLogMsg("Cleanup could not find pendinginfo file: " + pendingMessageMetadata);
-                logger.warn(msg);
+                logger.warn(msg.getLogMsg());
             }
         }
 
@@ -719,8 +719,8 @@ public class AS2Util {
                     logger.trace("The RETRY message object file deleted: " + pendingFileName + ".object" + msg.getLogMsgID());
                 }
             } catch (Exception e) {
-                msg.setLogMsg("The RETRY message object file NOT deleted: " + org.openas2.logging.Log.getExceptionMsg(e));
-                logger.warn(msg, e);
+                msg.setLogMsg("The RETRY message object file NOT deleted: " + org.openas2.util.Logging.getExceptionMsg(e));
+                logger.warn(msg.getLogMsg(), e);
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " ::: From pending folder : " + fPendingFile.getParent() + msg.getLogMsgID());
@@ -757,8 +757,8 @@ public class AS2Util {
                         }
 
                     } catch (IOException iose) {
-                        msg.setLogMsg("Error moving file to " + tgtDir + " : " + org.openas2.logging.Log.getExceptionMsg(iose));
-                        logger.error(msg, iose);
+                        msg.setLogMsg("Error moving file to " + tgtDir + " : " + org.openas2.util.Logging.getExceptionMsg(iose));
+                        logger.error(msg.getLogMsg(), iose);
                     }
                 }
 
@@ -773,7 +773,7 @@ public class AS2Util {
                 }
             } catch (Exception e) {
                 msg.setLogMsg("File cleanup unable to delete the locally stored version of the pending MSG file: " + fPendingFile.getAbsolutePath());
-                logger.error(msg, e);
+                logger.error(msg.getLogMsg(), e);
             }
         }
         msg.setFileCleanupCompleted(true);

@@ -12,7 +12,7 @@ public abstract class HttpSenderModule extends BaseSenderModule {
     public static final String PARAM_CONNECT_TIMEOUT = "connecttimeout";
     public static final String PARAM_SOCKET_TIMEOUT = "sockettimeout";
 
-    // private Log logger = LogFactory.getLog(HttpSenderModule.class.getSimpleName());
+    // private Logger logger = LoggerFactory.getLogger(HttpSenderModule.class);
 
     public Map<String, String> getHttpOptions() throws OpenAS2Exception {
         Map<String, String> options = new HashMap<String, String>();

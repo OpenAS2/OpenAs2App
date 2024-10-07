@@ -1,6 +1,6 @@
 package org.openas2.app.logging;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cmd.CommandResult;

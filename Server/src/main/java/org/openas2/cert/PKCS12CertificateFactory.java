@@ -1,7 +1,7 @@
 package org.openas2.cert;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -35,7 +35,7 @@ public class PKCS12CertificateFactory extends BaseCertificateFactory implements 
     public static final String PARAM_INTERVAL = "interval";
     private KeyStore keyStore;
 
-    private Log logger = LogFactory.getLog(PKCS12CertificateFactory.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(PKCS12CertificateFactory.class);
 
     public X509Certificate getCertificate(String alias) throws OpenAS2Exception {
         try {

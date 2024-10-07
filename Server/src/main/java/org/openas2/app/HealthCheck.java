@@ -1,7 +1,7 @@
 package org.openas2.app;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.receiver.HealthCheckHandler;
@@ -11,7 +11,7 @@ import java.util.List;
 
 public class HealthCheck {
 
-    private Log logger = LogFactory.getLog(HealthCheckHandler.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(HealthCheckHandler.class);
 
     /*
      * Runs a check of application status to try to determine if ther is any issue to be dealt with

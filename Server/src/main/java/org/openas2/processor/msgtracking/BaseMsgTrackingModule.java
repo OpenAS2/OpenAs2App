@@ -18,7 +18,9 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         Map<String, String> fields = buildMap(msg, options);
+        new Thread(() -> {
         persist(msg, fields);
+        }).start();
 
     }
 

@@ -1,7 +1,7 @@
 package org.openas2.processor.receiver;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
@@ -12,7 +12,6 @@ import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.util.AS2Util;
 import org.openas2.util.HTTPUtil;
 
-import jakarta.mail.internet.ContentType;
 import jakarta.mail.internet.MimeBodyPart;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ import java.net.Socket;
 public class AS2MDNReceiverHandler implements NetModuleHandler {
     private AS2MDNReceiverModule module;
 
-    private Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(AS2MDNReceiverHandler.class);
 
 
     public AS2MDNReceiverHandler(AS2MDNReceiverModule module) {
@@ -66,7 +65,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                     } catch (IOException e1) {
                     }
                     msg.setLogMsg("Error receiving asynchronous MDN. There is no data in the receivd MDN: " +  getClientInfo(s) + ":: " + msg.getLogMsgID());
-                    logger.error(msg);
+                    logger.error(msg.getLogMsg());
                     return;
                 }
             }
@@ -113,7 +112,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                 boolean partnerIdentificationProblem = AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this.getClass());
                 // Assume that appropriate logging and state handling was done upstream if an error occurred so only log state change for success
                 if (!partnerIdentificationProblem) {
-                    // Log  state
+                    // Logger  state
                     msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
                     msg.trackMsgState(getModule().getSession());
                 }
@@ -126,9 +125,9 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                      * Something unexpected (assumes a resend was not successfully initiated)
                      */
                     msg.setLogMsg("Unhandled error condition processing synchronous MDN. Message and associated files cleanup will be attempted but may be in an unknown state.");
-                    logger.error(msg, e);
+                    logger.error(msg.getLogMsg(), e);
                 }
-                // Log significant msg state
+                // Logger significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_PROCESSING_ERROR);
                 msg.trackMsgState(getModule().getSession());
                 AS2Util.cleanupFiles(msg, true);

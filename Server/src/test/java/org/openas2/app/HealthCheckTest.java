@@ -46,8 +46,7 @@ public class HealthCheckTest {
         fos.close();
 
         try {
-            System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
-            // System.setProperty("org.openas2.logging.defaultlog", "TRACE");
+            // System.setProperty("OPENAS@_LOG_LEVEL", "TRACE");
             executorService = Executors.newFixedThreadPool(20);
 
             HealthCheckTest.serverInstance = new OpenAS2Server.Builder().run(RESOURCE.get("MyCompany", "config", "config.xml").getAbsolutePath());

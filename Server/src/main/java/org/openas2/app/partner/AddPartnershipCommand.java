@@ -1,7 +1,7 @@
 package org.openas2.app.partner;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.CommandResult;
 import org.openas2.partner.Partnership;
@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * @author joseph mcverry
  */
 public class AddPartnershipCommand extends AliasedPartnershipsCommand {
-    private Log logger = LogFactory.getLog(AS2SenderModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(AS2SenderModule.class);
 
     public String getDefaultDescription() {
         return "Add a new partnership definition to partnership store.";
