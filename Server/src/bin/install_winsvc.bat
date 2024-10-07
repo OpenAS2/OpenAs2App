@@ -24,7 +24,7 @@ set APACHE_COMMONS_DAEMON=%OPENAS2_BASE_DIR%\bin\commons-daemon
 set PR_INSTALL=%APACHE_COMMONS_DAEMON%\amd64\prunsrv.exe
 set STARTUP_ARGS=%OPENAS2_BASE_DIR%\config\config.xml
 set CUSTOM_SERVICE_PARAMS=
-set PR_CLASSPATH=%OPENAS2_BASE_DIR%\lib\*
+set PR_CLASSPATH=%OPENAS2_BASE_DIR%\config;%OPENAS2_BASE_DIR%\lib\*
 REM If using a specific JVM then uncomment & set JAVA_HOME below
 REM set JAVA_HOME=C:\Program Files\Java\jre1.8.0_171
  
@@ -50,7 +50,7 @@ set CUSTOM_JAVA_HOME=%CUSTOM_JAVA_HOME:"=%
 set PR_JVM=%CUSTOM_JAVA_HOME%\bin\server\jvm.dll
 :SkipCustomJava
 
-SET PR_JVM_OPTS="-Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
+SET PR_JVM_OPTS="-DOPENAS2_LOG_LEVEL=info"
 if /I "!OPENAS2_PROPERTIES_FILE!" == "" goto SkipArgsAdd
 rem Add the property arg to JVM options
 echo Setting custom properties file for service startup: !OPENAS2_PROPERTIES_FILE!
