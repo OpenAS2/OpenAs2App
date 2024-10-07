@@ -5,16 +5,7 @@
                sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
                as2_message_id_format="$date.yyyyMMddHHmmssZ$-$rand.123$-$msg.sender.as2_id$_$msg.receiver.as2_id$_$msg.attributes.filename$"
                as2_receive_message_filename_fallback="$rand.shortUUID$"
-               console.logger.enabled="true"
-               file.logger.enabled="true"
-               socket.logger.enabled="false"
-               socket.logger.ipaddr="127.0.0.1"
-               socket.logger.portid="19999"
-               email.logger.enabled="false"
-               email.logger.only_active_msg_transfer_errors="false"
-               email.logger.properties.log_exception_trace="false"
                console.command.processor.enabled="false"
-               socket.command.processor.enabled="false"
                restapi.command.processor.enabled="false"
                restapi.command.processor.baseuri="http://localhost:8080"
                restapi.command.processor.userid="userID"
@@ -60,7 +51,6 @@
                email.smtppwd="mySmtpPwd"
                email.subject="$exception.name$: $exception.message$"
                email.bodytemplate="%home%/emailtemplate.txt"
-               file.logger.filename="%home%/../logs/log-$date.yyyyMMdd$.txt"
                msg_tracking.use_embedded_db="true"
                msg_tracking.force_load_jdbc_driver="false"
                msg_tracking.db_user="sa"
@@ -90,42 +80,11 @@
                  filename="$properties.as2_keystore$"
                  password="$properties.as2_keystore_password$"
                  interval="300"/>
-   <loggers>
-      <logger classname="org.openas2.logging.ConsoleLogger"
-              enabled="$properties.console.logger.enabled$"/>
-      <logger classname="org.openas2.logging.EmailLogger"
-              enabled="$properties.email.logger.enabled$"
-              only_active_msg_transfer_errors="$properties.email.logger.only_active_msg_transfer_errors$"
-              log_exception_trace="properties.email.logger.log_exception_trace$"
-              jakarta.mail.properties.file="$properties.jakarta.mail.properties.file$"
-              from="$properties.email.from$"
-              to="$properties.email.to$"
-              smtpserver="$properties.email.smtpserver$"
-              smtpport="$properties.email.smtpport$"
-              smtpauth="$properties.email.smtpauth$"
-              smtpuser="$properties.email.smtpuser$"
-              smtppwd="$properties.email.smtppwd$"
-              subject="$properties.email.subject$"
-              bodytemplate="$properties.email.bodytemplate$"/>
-      <logger classname="org.openas2.logging.FileLogger"
-              enabled="$properties.file.logger.enabled$"
-              filename="$properties.file.logger.filename$"/>
-      <logger classname="org.openas2.logging.SocketLogger"
-              enabled="$properties.socket.logger.enabled$"
-              ipaddr="$properties.socket.logger.ipaddr$"
-              portid="$properties.socket.logger.portid$"/>
-   </loggers>
    <commands classname="org.openas2.cmd.XMLCommandRegistry"
              filename="%home%/commands.xml"/>
    <commandProcessors>
       <commandProcessor classname="org.openas2.cmd.processor.StreamCommandProcessor"
                         enabled="$properties.console.command.processor.enabled$"/>
-      <commandProcessor classname="org.openas2.cmd.processor.SocketCommandProcessor"
-                        enabled="$properties.socket.command.processor.enabled$"
-                        portId="14321"
-                        userid="userID"
-                        password="pWd"
-                        response_format="xml"/>
       <commandProcessor classname="org.openas2.cmd.processor.RestCommandProcessor"
                         enabled="$properties.restapi.command.processor.enabled$"
                         baseuri="$properties.restapi.command.processor.baseuri$"
