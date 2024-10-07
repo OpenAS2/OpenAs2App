@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>3.11.0</version>
+        <version>4.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -23,8 +23,6 @@
         <mainClass>org.openas2.app.OpenAS2Server</mainClass>
         <project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <remote.connect.jar>${project.basedir}/../Remote/target/openas2-remote-${project.version}.jar
-        </remote.connect.jar>
         <help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
         <release.notes>${project.basedir}/../RELEASE-NOTES.md</release.notes>
         <release.history>${project.basedir}/../changes.txt</release.history>
@@ -50,7 +48,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemProperties>
-                        <org.apache.commons.logging.Log>org.openas2.logging.Log</org.apache.commons.logging.Log>
+                        <OPENAS2_LOG_BASE>logs</OPENAS2_LOG_BASE>
                     </systemProperties>
                 </configuration>
             </plugin>
@@ -97,9 +95,6 @@
                                       todir="${package.assembly.dir}" verbose="true"/>
                                 <copy file="${release.history}"
                                       todir="${package.assembly.dir}" verbose="true"/>
-                                <!-- Add the remote jar for connecting to the server command interface -->
-                                <copy file="${remote.connect.jar}"
-                                      todir="${package.assembly.dir}/bin/remote" verbose="true"/>
                                 <!-- create distribution package
                                     basedir="${package.assembly.dir}"
                                 -->
@@ -180,10 +175,14 @@
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
         </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-        </dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>ch.qos.logback</groupId>
+		    <artifactId>logback-classic</artifactId>
+		</dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
@@ -192,6 +191,10 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
+		<dependency>
+		   <groupId>com.zaxxer</groupId>
+		   <artifactId>HikariCP</artifactId>
+		</dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpg-jdk18on</artifactId>
@@ -207,10 +210,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.sentry</groupId>
-            <artifactId>sentry</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
