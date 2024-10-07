@@ -1,14 +1,19 @@
-Version 3.12.0 - 2024-10-15
-This is an minor enhancement release:
+Version 4.0.0 - 2024-10-15
+This is an major change and enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
-1. Switch to Jakarta package for mail and REST implementations
-2. Remove r3edundant packages from maven build
-3. 
+1. Java 8 is NO LONGER supported. Support is for Java 11 and newer releases only.
+2. The logging facade was switched from Jakarta Commons Logging to SLF4J and the default implementation uses the Logback framework.
+3. The DB state logging for external databases now uses an Hikari connection pool and persists to the database using a separate thread to improve performance.
+4. Switch to Jakarta package for mail and REST API implementations
+5. Remove the insecure "remote" socket command processor and associated support class in the OpenAS2 server.
+6. Remove redundant packages from maven build.
+7. Fix MDN cleanup occurring when resend mode is entered.
+ 
 
 Version 3.11.0 - 2024-08-22
 This is an minor enhancement release:
        **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
-1. Enhance the handling of MDN processing and asociated resend handling to provide more reliable error handling.
+1. Enhance the handling of MDN processing and associated resend handling to provide more reliable error handling.
 2. Enhance the Disposition-Notification-Options handler to properly support the standard.
 3. Use the LTS releases of Java for testing
 4. Use a SQL-92 compliant SQL format for accessing the database.

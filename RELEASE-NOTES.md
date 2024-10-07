@@ -1,28 +1,37 @@
 #              OpenAS2 Server
-#              Version 3.12.0
+#              Version 4.0.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 3.12.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.0.0
 
-The release download file is: OpenAS2Server-3.12.0.zip
+The release download file is: OpenAS2Server-4.0.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
-## NOTE: Testing covers Java 8 to 17. See Java Compatibility section of the OpenAS2 documentation for using Java 8.
+## NOTE: Testing covers Java 11 to 21.
+##       Java 8 is NO LONGER SUPPORTED.
 
-Version 3.12.0 - 2024-10-15
-This is a minor enhancement and bugfix release:
+Version 4.0.0 - 2024-10-15
+
+This is an major change and enhancement release.
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-1. Change the property name in config.xml from javax.mail.properties to jakarta.mail.properties
-2. 
+1. Java 8 is NO LONGER supported. Support is for Java 11 and newer releases only.
+2. The logging facade was switched from Jakarta Commons Logging to SLF4J and the default implementation uses the Logback framework.
+3. The DB state logging for external databases now uses an Hikari connection pool and persists to the database using a separate thread to improve performance.
+4. Switch to Jakarta package for mail and REST API implementations
+5. Remove the insecure "remote" socket command processor and associated support class in the OpenAS2 server.
+6. Remove redundant packages from maven build.
+7. Fix MDN cleanup occurring when resend mode is entered.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
 
-### Upgrading to 3.12 or newer any older version:
-      1. The property in the config.xml changed:
+### Upgrading to 4.0 or newer any older version:
+      1. Ensure you implement all logging that you had configured for ealrier versions using the logback configuration or replace with another framework that works with SLF4J facade. See the OpenAS2HowTo.pdf logging section for more details.
+      2. The property for email configuration in the config.xml changed:
           Change ALL occurrences of javax.mail.properties to jakarta.mail.properties in config.xml and the .properties file if you implemented it.
-      2. Completely replace all library files in the existing "lib" folder wit hthe ones supplied in the new install package (per recommended standard procedure in the user guide).
+      3. If using an external database for message state tracking, make sure that your configuration will work with the new Hikari JDBC pool that improves performance. See the OpenAS2HowTo.pdf message state tracking section for more details.
+      4. Completely replace all library files in the existing "lib" folder wit hthe ones supplied in the new install package (per recommended standard procedure in the user guide).
 
 ### Upgrading to 3.6 or newer from 3.5 (or older) version:
       1. Run the following command after the upgrade of the code base is complete and BEFORE you start the OpenAS2 server:
