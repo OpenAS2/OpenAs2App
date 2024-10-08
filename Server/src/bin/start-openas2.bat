@@ -20,7 +20,7 @@ rem When using old (unsecure) certificates (please replace them!) that fail to l
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dorg.bouncycastle.asn1.allow_unsafe_integer=true
 
 if DEFINED OPENAS2_CONFIG_FILE goto skip_config_file_set
-set OPENAS@_CONFIG_FILE=%OPENAS2_BASE_DIR%/config/config.xml
+set OPENAS2_CONFIG_FILE=%OPENAS2_BASE_DIR%/config/config.xml
 :skip_config_file_set
 for %%F in ("%OPENAS2_CONFIG_FILE%") do set OPENAS2_CONFIG_DIR=%%~dpF
 
@@ -57,7 +57,7 @@ setLocal disableDelayedExpansion
 rem  Include the config dir so that logging configuration files are found
 set CLASSPATH=.;%LIB_JARS%;%OPENAS2_CONFIG_DIR%
 rem echo Running: "%JAVA%" %EXTRA_PARMS%  -cp .;%LIB_JARS% org.openas2.app.OpenAS2Server "%OPENAS2_CONFIG_FILE%"
-"%JAVA%" %EXTRA_PARMS%  -cp %CLASSPATH% org.openas2.app.OpenAS2Server "%OPENAS2_CONFIG_FILE"
+"%JAVA%" %EXTRA_PARMS%  -cp %CLASSPATH% org.openas2.app.OpenAS2Server "%OPENAS2_CONFIG_FILE%"
 
 :warn
 :END
