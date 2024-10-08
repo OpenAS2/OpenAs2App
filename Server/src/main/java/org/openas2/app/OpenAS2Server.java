@@ -1,7 +1,7 @@
 package org.openas2.app;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.XMLSession;
@@ -31,7 +31,7 @@ public class OpenAS2Server {
     public static final String VENDOR_ID = "net.sf.openas2";
     public static final String PROJECT_NAME = "OpenAS2 Server";
 
-    private static final Log LOGGER = LogFactory.getLog(OpenAS2Server.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAS2Server.class);
 
     @Nonnull
     private final Session session;
@@ -175,10 +175,9 @@ public class OpenAS2Server {
         public OpenAS2Server run(String... args) throws Exception {
             // an error if the JCE is limited
             if (Cipher.getMaxAllowedKeyLength(ICryptoHelper.DIGEST_MD5) <= ICryptoHelper.JCE_LIMITED_MAX_LENGTH) {
-                LOGGER.fatal(ICryptoHelper.JCE_LIMITATION_ERROR);
+                LOGGER.error(ICryptoHelper.JCE_LIMITATION_ERROR);
                 System.exit(1);
             }
-
             XMLSession session = new XMLSession(findConfig(args).getAbsolutePath());
             final OpenAS2Server server = new OpenAS2Server(session);
 

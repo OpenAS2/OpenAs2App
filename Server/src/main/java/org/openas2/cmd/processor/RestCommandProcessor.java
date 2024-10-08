@@ -5,8 +5,8 @@
  */
 package org.openas2.cmd.processor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -28,8 +28,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
 import org.glassfish.jersey.message.filtering.SecurityEntityFilteringFeature;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -38,7 +36,7 @@ import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
  */
 public class RestCommandProcessor extends BaseCommandProcessor {
 
-    private final Log logger = LogFactory.getLog(RestCommandProcessor.class.getSimpleName());
+    private final Logger logger = LoggerFactory.getLogger(RestCommandProcessor.class);
     public static final String BASE_URI = "http://localhost:8080/";
     private HttpServer server;
 
@@ -131,10 +129,10 @@ public class RestCommandProcessor extends BaseCommandProcessor {
             }
             server.start();
         } catch (IOException ex) {
-            Logger.getLogger(RestCommandProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(RestCommandProcessor.class.getName()).error(null, ex);
             throw new OpenAS2Exception(ex);
         } catch (RuntimeException ex) {
-            Logger.getLogger(RestCommandProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(RestCommandProcessor.class.getName()).error(null, ex);
             throw new OpenAS2Exception(ex);
         }
     }

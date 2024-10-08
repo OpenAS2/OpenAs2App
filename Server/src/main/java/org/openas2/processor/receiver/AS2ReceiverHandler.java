@@ -1,7 +1,7 @@
 package org.openas2.processor.receiver;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
@@ -59,7 +59,7 @@ import java.util.Map;
 public class AS2ReceiverHandler implements NetModuleHandler {
     private AS2ReceiverModule module;
 
-    private static final Log LOG = LogFactory.getLog(AS2ReceiverHandler.class.getSimpleName());
+    private static final Logger LOG = LoggerFactory.getLogger(AS2ReceiverHandler.class);
 
     public AS2ReceiverHandler(AS2ReceiverModule module) {
         super();
@@ -91,7 +91,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             out = new BufferedOutputStream(s.getOutputStream());
         } catch (IOException e1) {
             msg.setLogMsg("Failed to get outputstream on received socket. Response cannot be sent.");
-            LOG.error(msg, e1);
+            LOG.error(msg.getLogMsg(), e1);
             return;
         }
 
@@ -104,7 +104,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
 
             } catch (Throwable e) {
                 msg.setLogMsg("HTTP connection error on inbound message. Error is: " + e.getMessage());
-                LOG.error(msg, e);
+                LOG.error(msg.getLogMsg(), e);
                 NetException ne = new NetException(s.getInetAddress(), s.getPort(), e);
                 ne.log();
             }
@@ -125,7 +125,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     OpenAS2Exception oe = new OpenAS2Exception("Missing data in AS2 request.");
                     msg.setLogMsg("Error receiving message for inbound AS2 request. There is no data.");
                     if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
-                        LOG.info(msg, oe);
+                        LOG.info(msg.getLogMsg(), oe);
                     }
                     return;
                 }
@@ -179,7 +179,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                         msg.setData(receivedPart);
                     } catch (Exception e) {
                         msg.setLogMsg("Error extracting received message.");
-                        LOG.error(msg, e);
+                        LOG.error(msg.getLogMsg(), e);
                         throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_PARSING_MIME_FAILED, e);
                     }
 
@@ -203,7 +203,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     } catch (OpenAS2Exception oae) {
                         throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "authentication-failed"), AS2ReceiverModule.DISP_PARTNERSHIP_NOT_FOUND, oae);
                     }
-                    // Log significant msg state
+                    // Logger significant msg state
                     msg.setOption("STATE", Message.MSG_STATE_RECEIVE_START);
                     msg.trackMsgState(getModule().getSession());
                     // Decrypt and verify signature of the data, and attach data to the message
@@ -233,8 +233,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                         getModule().getSession().getProcessor().handle(StorageModule.DO_STORE, msg, options);
                     } catch (OpenAS2Exception oae) {
                         msg.setLogMsg("Error handling received message: " + oae.getCause());
-                        LOG.error(msg, oae);
-                        // Log significant msg state
+                        LOG.error(msg.getLogMsg(), oae);
+                        // Logger significant msg state
                         msg.setOption("STATE", Message.MSG_STATE_RECEIVE_EXCEPTION);
                         msg.trackMsgState(getModule().getSession());
 
@@ -244,7 +244,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     // Transmit a success MDN if requested
                     try {
                         if (msg.isRequestingMDN()) {
-                            // Log significant msg state
+                            // Logger significant msg state
                             msg.setOption("STATE", Message.MSG_STATE_MDN_SEND_START);
                             msg.trackMsgState(getModule().getSession());
                             boolean sentMDN = sendResponse(msg, out, new DispositionType("automatic-action", "MDN-sent-automatically", "processed"), mic, AS2ReceiverModule.DISP_SUCCESS);
@@ -269,8 +269,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                         }
                     } catch (Exception e) {
                         msg.setLogMsg("Error processing MDN for received message: " + e.getCause());
-                        LOG.error(msg, e);
-                        // Log significant msg state
+                        LOG.error(msg.getLogMsg(), e);
+                        // Logger significant msg state
                         msg.setOption("STATE", Message.MSG_STATE_MDN_SENDING_EXCEPTION);
                         msg.trackMsgState(getModule().getSession());
                         throw new WrappedException("Error creating and returning MDN, message was still processed", e);
@@ -280,7 +280,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     sendResponse(msg, out, de.getDisposition(), mic, de.getText());
                     getModule().handleError(msg, de);
                 } catch (OpenAS2Exception oae) {
-                    // Log significant msg state
+                    // Logger significant msg state
                     msg.setOption("STATE", Message.MSG_STATE_RECEIVE_FAIL);
                     msg.trackMsgState(getModule().getSession());
                     getModule().handleError(msg, oae);
@@ -292,7 +292,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     out.close();
                 } catch (IOException e) {
                     msg.setLogMsg("Failed to close output connection.");
-                    LOG.error(msg, e);
+                    LOG.error(msg.getLogMsg(), e);
                 }
             }
         }
@@ -359,7 +359,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             }
         } catch (Exception e) {
             msg.setLogMsg("Error extracting received message: " + e.getCause());
-            LOG.error(msg, e);
+            LOG.error(msg.getLogMsg(), e);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "decryption-failed"), AS2ReceiverModule.DISP_DECRYPTION_ERROR, e);
         }
 
@@ -376,7 +376,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             }
         } catch (Exception e1) {
             msg.setLogMsg("Error decompressing received message: " + e1.getCause());
-            LOG.error(msg, e1);
+            LOG.error(msg.getLogMsg(), e1);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "decompresion-failed"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR, e1);
         }
 
@@ -410,8 +410,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 }
             }
         } catch (Exception e) {
-            msg.setLogMsg("Error decrypting received message: " + org.openas2.logging.Log.getExceptionMsg(e));
-            LOG.error(msg, e);
+            msg.setLogMsg("Error decrypting received message: " + org.openas2.util.Logging.getExceptionMsg(e));
+            LOG.error(msg.getLogMsg(), e);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "integrity-check-failed"), AS2ReceiverModule.DISP_VERIFY_SIGNATURE_FAILED, e);
         }
         if (!msg.isRxdMsgWasSigned() && msg.getPartnership().isRejectUnsignedMessages()) {
@@ -456,7 +456,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 }
             } catch (Exception e) {
                 msg.setLogMsg("Error calculating MIC on received message: " + e.getCause());
-                LOG.error(msg, e);
+                LOG.error(msg.getLogMsg(), e);
                 throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_CALC_MIC_FAILED, e);
             }
         }
@@ -475,7 +475,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             }
         } catch (Exception e) {
             msg.setLogMsg("Unexepcted error checking for compressed message after signing");
-            LOG.error(msg, e);
+            LOG.error(msg.getLogMsg(), e);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "decompression-failed"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR, new Exception("Unexpected error occurred checking for compressed message: " + e.getMessage()));
         }
         return mic;
@@ -517,8 +517,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 WrappedException we = new WrappedException("Error creating MDN", e1);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
                 we.log();
-                msg.setLogMsg("Unexpected error occurred creating MDN: " + org.openas2.logging.Log.getExceptionMsg(e1));
-                LOG.error(msg, e1);
+                msg.setLogMsg("Unexpected error occurred creating MDN: " + org.openas2.util.Logging.getExceptionMsg(e1));
+                LOG.error(msg.getLogMsg(), e1);
                 return false;
             }
             try {
@@ -533,8 +533,8 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                 WrappedException we = new WrappedException("Error sending MDN", e);
                 we.addSource(OpenAS2Exception.SOURCE_MESSAGE, msg);
                 we.log();
-                msg.setLogMsg("Unexpected error occurred sending MDN: " + org.openas2.logging.Log.getExceptionMsg(e));
-                LOG.error(msg, e);
+                msg.setLogMsg("Unexpected error occurred sending MDN: " + org.openas2.util.Logging.getExceptionMsg(e));
+                LOG.error(msg.getLogMsg(), e);
                 return false;
             }
         } else {

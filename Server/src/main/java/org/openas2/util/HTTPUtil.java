@@ -1,8 +1,8 @@
 package org.openas2.util;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
@@ -131,7 +131,7 @@ public class HTTPUtil {
 
     public static byte[] readHTTP(InputStream inStream, OutputStream outStream, InternetHeaders headerCache, List<String> httpRequest) throws IOException, MessagingException {
         byte[] data = null;
-        Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(HTTPUtil.class);
 
         // Get the stream and read in the HTTP request and headers
         BufferedInputStream in = new BufferedInputStream(inStream);
@@ -233,7 +233,7 @@ public class HTTPUtil {
             } else {
                 HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, null);
                 if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
-                  Log logger = LogFactory.getLog(HTTPUtil.class.getSimpleName());
+                  Logger logger = LoggerFactory.getLogger(HTTPUtil.class);
                   logger.warn("The request either contained no data or has issues with the Transfer-Encoding or Content-Length: : " + request.get(0) + " " + request.get(1) + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;"));
                 }
                 return null;

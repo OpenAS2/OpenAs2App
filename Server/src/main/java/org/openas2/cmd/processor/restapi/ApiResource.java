@@ -44,8 +44,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author javier
@@ -101,7 +100,7 @@ public class ApiResource {
             output.getResults().set(0, map);
             return output;
         } catch (Exception ex) {
-            Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
             throw ex;
             // return Response.status(506).entity( ex.getMessage()).build();
         }
@@ -163,7 +162,7 @@ public class ApiResource {
             String jsonResult = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
             return Response.status(200).entity(jsonResult).type(MediaType.APPLICATION_JSON).build();
         } catch (Exception ex) {
-            Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
             throw ex;
             // return Response.status(506).entity( ex.getMessage()).build();
         }
@@ -189,7 +188,7 @@ public class ApiResource {
             String jsonResult = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
             return Response.status(200).entity(jsonResult).type(MediaType.APPLICATION_JSON).build();
         } catch (Exception ex) {
-            Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
             throw ex;
             // return Response.status(506).entity( ex.getMessage()).build();
         }
@@ -243,7 +242,7 @@ public class ApiResource {
             }
             return new CommandResult(CommandResult.TYPE_ERROR, "No valid X509 certificates found");
         } catch (Exception ex) {
-            Logger.getLogger(ApiResource.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
             throw ex;
             // return Response.status(506).entity( ex.getMessage()).build();
         }

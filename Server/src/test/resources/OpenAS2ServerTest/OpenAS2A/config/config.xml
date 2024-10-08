@@ -2,10 +2,6 @@
 <openas2>
    <properties storageBaseDir="%home%/../data"
                configDir="%home%"
-               console.logger.enabled="true"
-               file.logger.enabled="true"
-               socket.logger.enabled="false"
-               email.logger.enabled="false"
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
                module.AS2SenderModule.enabled="true"
@@ -24,31 +20,6 @@
                  filename="%home%/as2_certs.p12"
                  password="testas2"
                  interval="300"/>
-   <loggers>
-      <logger enabled="$properties.console.logger.enabled$"
-              classname="org.openas2.logging.ConsoleLogger"/>
-      <!-- Remove this comment to enable emailing of exceptions
-        <logger classname="org.openas2.logging.EmailLogger"
-            show="terminated"
-            jakarta.mail.properties.file="%home%/java.mail.properties"
-            from="openas2"
-            to="your email address"
-            smtpserver="your smtp server"
-            smtpauth="true"
-            smtpuser="mySmtpUserId"
-            smtppwd="mySmtpPwd"
-            subject="$exception.name$: $exception.message$"
-            bodytemplate="%home%/emailtemplate.txt"/>
-
-        <logger classname="org.openas2.logging.FileLogger"
-                filename="%home%/../logs/log-$date.MMddyyyy$.txt"/>
-        -->
-      <!-- Remove this comment to enable socket logging
-<logger classname="org.openas2.logging.SocketLogger"
-    ipaddr="127.0.0.1"
-    portid="19999"/>
--->
-   </loggers>
    <commands classname="org.openas2.cmd.XMLCommandRegistry"
              filename="%home%/commands.xml"/>
    <commandProcessors>

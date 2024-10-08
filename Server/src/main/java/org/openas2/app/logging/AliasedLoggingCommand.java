@@ -1,7 +1,7 @@
 package org.openas2.app.logging;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.BaseCommand;
 import org.openas2.cmd.CommandResult;
@@ -11,8 +11,8 @@ public abstract class AliasedLoggingCommand extends BaseCommand {
     public CommandResult execute(Object[] params) {
 
         try {
-            Log logger = LogFactory.getLog(this.getClass().getName());
-            if (logger instanceof org.openas2.logging.Log) {
+            Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+            if (logger instanceof org.openas2.util.Logging) {
                 return execute(logger, params);
             }
             // Add support for other logging packages here as necessary
@@ -24,6 +24,6 @@ public abstract class AliasedLoggingCommand extends BaseCommand {
         }
     }
 
-    protected abstract CommandResult execute(Log logger, Object[] params) throws OpenAS2Exception;
+    protected abstract CommandResult execute(Logger logger, Object[] params) throws OpenAS2Exception;
 
 }

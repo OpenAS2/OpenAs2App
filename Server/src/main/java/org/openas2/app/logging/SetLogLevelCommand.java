@@ -1,6 +1,6 @@
 package org.openas2.app.logging;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cmd.CommandResult;
@@ -23,7 +23,7 @@ public class SetLogLevelCommand extends AliasedLoggingCommand {
         return "setlevel <LEVEL> [target class name]\n\t eg. setlevel TRACE\n\t     setlevel INFO AS2SenderModule";
     }
 
-    public CommandResult execute(Log logger, Object[] params) throws OpenAS2Exception {
+    public CommandResult execute(Logger logger, Object[] params) throws OpenAS2Exception {
         if (params == null) {
             return new CommandResult(CommandResult.TYPE_ERROR, "no parameters found");
         }

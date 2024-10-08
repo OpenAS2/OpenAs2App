@@ -39,8 +39,7 @@ public class BaserServerSetup {
 
     public void setup() throws Exception {
         try {
-            System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
-            //System.setProperty("org.openas2.logging.defaultlog", "TRACE");
+            System.setProperty("OPENAS2_LOG_LEVEL", "trace");
             if (openAS2PropertiesFile.exists()) {
                 System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, openAS2PropertiesFile.getAbsolutePath());
             }

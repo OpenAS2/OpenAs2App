@@ -6,8 +6,6 @@ import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
 import org.openas2.cmd.processor.BaseCommandProcessor;
 import org.openas2.lib.xml.PropertyReplacementFilter;
-import org.openas2.logging.LogManager;
-import org.openas2.logging.Logger;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.ParameterParser;
@@ -52,7 +50,6 @@ public class XMLSession extends BaseSession {
     public static final String EL_PARTNERSHIPS = "partnerships";
     public static final String EL_MESSAGES = "messages";
     public static final String EL_COMMANDS = "commands";
-    public static final String EL_LOGGERS = "loggers";
     public static final String EL_POLLER_CONFIG = "pollerConfigBase";
     // private static final String PARAM_BASE_DIRECTORY = "basedir";
 
@@ -117,8 +114,6 @@ public class XMLSession extends BaseSession {
                 loadPartnerships(rootNode);
             } else if (nodeName.equals(EL_COMMANDS)) {
                 loadCommands(rootNode);
-            } else if (nodeName.equals(EL_LOGGERS)) {
-                loadLoggers(rootNode);
             } else if (nodeName.equals(EL_POLLER_CONFIG)) {
                 loadBasePartnershipPollerConfig(rootNode);
             } else if (nodeName.equals(EL_MESSAGES)) {
@@ -236,39 +231,6 @@ public class XMLSession extends BaseSession {
    private void loadCommands(Node rootNode) throws OpenAS2Exception {
         Component component = XMLUtil.getComponent(rootNode, this);
         commandRegistry = (CommandRegistry) component;
-    }
-
-    private void loadLoggers(Node rootNode) throws OpenAS2Exception {
-        LOGGER.info("Loading log manager(s)...");
-
-        LogManager manager = LogManager.getLogManager();
-        if (LogManager.isRegisteredWithApache()) {
-            // continue
-        } else {
-            // if using the OpenAS2 loggers the log manager must registered with the jvm
-            // argument
-            // -Dorg.apache.commons.logging.Log=org.openas2.logging.Log
-            throw new OpenAS2Exception("the OpenAS2 loggers' log manager must be registered with the jvm argument -Dorg.apache.commons.logging.Log=org.openas2.logging.Log");
-        }
-        NodeList loggers = rootNode.getChildNodes();
-        Node logger;
-
-        for (int i = 0; i < loggers.getLength(); i++) {
-            logger = loggers.item(i);
-
-            if (logger.getNodeName().equals("logger")) {
-                if ("true".equalsIgnoreCase(XMLUtil.getNodeAttributeValue(logger, "enabled", true))) {
-                    loadLogger(manager, logger);
-                } else {
-                    LOGGER.info("Logger is disabled ... ignoring: " + XMLUtil.getNodeAttributeValue(logger, "classname", false));
-                }
-            }
-        }
-    }
-
-    private void loadLogger(LogManager manager, Node loggerNode) throws OpenAS2Exception {
-        Logger logger = (Logger) XMLUtil.getComponent(loggerNode, this);
-        manager.addLogger(logger);
     }
 
     private void loadCommandProcessors(Node rootNode) throws OpenAS2Exception {

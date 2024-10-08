@@ -1,8 +1,8 @@
 package org.openas2.lib.helper;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -85,7 +85,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BCCryptoHelper implements ICryptoHelper {
-    private Log logger = LogFactory.getLog(BCCryptoHelper.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(BCCryptoHelper.class);
 
     public boolean isEncrypted(MimeBodyPart part) throws MessagingException {
         ContentType contentType = new ContentType(part.getContentType());
@@ -363,7 +363,7 @@ public class BCCryptoHelper implements ICryptoHelper {
                 headers = AS2Util.printHeaders(ssp.getContent().getAllHeaders());
                 logger.trace("Checking signature on SIGNED MIME part extracted from multipart contains headers: " + headers);
             } catch (Throwable e) {
-                logger.trace("Error logging mime part for signer: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                logger.trace("Error logging mime part for signer: " + org.openas2.util.Logging.getExceptionMsg(e), e);
             }
         }
 
@@ -455,7 +455,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         } catch (Exception ex) {
 
             msg.setLogMsg("Error decompressing received message: " + ex.getCause());
-            logger.error(msg, ex);
+            logger.error(msg.getLogMsg(), ex);
             throw new DispositionException(new DispositionType("automatic-action", "MDN-sent-automatically", "processed", "Error", "unexpected-processing-error"), AS2ReceiverModule.DISP_DECOMPRESSION_ERROR, ex);
         }
     }
@@ -698,7 +698,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             try {
                 logger.debug(msgPrefix + ": \n    Digest Alg OID: " + signer.getDigestAlgOID() + "\n    Encrypt Alg OID: " + signer.getEncryptionAlgOID() + "\n    Signer Version: " + signer.getVersion() + "\n    Content Digest: " + Arrays.toString(signer.getContentDigest()) + "\n    Content Type: " + signer.getContentType() + "\n    SID: " + signer.getSID().getIssuer() + "\n    Signature: " + Arrays.toString(signer.getSignature()) + "\n    Unsigned attribs: " + signer.getUnsignedAttributes() + "\n    Content-transfer-encoding: " + part.getEncoding() + "\n    Certificate: " + cert);
             } catch (Throwable e) {
-                logger.debug("Error logging signer info: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                logger.debug("Error logging signer info: " + org.openas2.util.Logging.getExceptionMsg(e), e);
             }
         }
     }
@@ -709,7 +709,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             try {
                 logger.warn(msgPrefix + ": \n    Digest Alg OID: " + signer.getDigestAlgOID() + "\n    Encrypt Alg OID: " + signer.getEncryptionAlgOID() + "\n    Signer Version: " + signer.getVersion() + "\n    Content Digest: " + Arrays.toString(signer.getContentDigest()) + "\n    Content Type: " + signer.getContentType() + "\n    SID: " + signer.getSID().getIssuer() + "\n    Signature: " + Arrays.toString(signer.getSignature()) + "\n    Unsigned attribs: " + signer.getUnsignedAttributes() + "\n    Content-transfer-encoding: " + part.getEncoding() + "\n    Certificate: " + cert);
             } catch (Throwable e) {
-                logger.warn("Error logging signer info: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                logger.warn("Error logging signer info: " + org.openas2.util.Logging.getExceptionMsg(e), e);
             }
         }
     }

@@ -1,8 +1,8 @@
 package org.openas2.processor;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class DefaultProcessor extends BaseComponent implements Processor {
     private List<ProcessorModule> modules = new ArrayList<ProcessorModule>();
-    private Log logger = LogFactory.getLog(DefaultProcessor.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(DefaultProcessor.class.getName());
 
     public List<ActiveModule> getActiveModules() {
         List<ActiveModule> activeMods = new ArrayList<ActiveModule>();
@@ -69,7 +69,7 @@ public class DefaultProcessor extends BaseComponent implements Processor {
                 return;
             }
             msg.setLogMsg("No handler found for action: " + action);
-            logger.error(msg);
+            logger.error(msg.getLogMsg());
             throw new NoModuleException(action, msg, options);
         }
     }

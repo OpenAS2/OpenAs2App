@@ -55,8 +55,7 @@ public class OpenAS2ServerTest {
     @BeforeAll
     public static void startServers() throws Exception {
         tmp = Files.createTempDirectory("testResources").toFile();
-        //System.setProperty("org.openas2.logging.defaultlog", "TRACE");
-        System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
+        //System.setProperty("OPENAS2_LOG_LEVEL", "TRACE");
         try {
             serverA = new OpenAS2Server.Builder().run(RESOURCE.get("OpenAS2A", "config", "config.xml").getAbsolutePath());
             // Get the data folder from Properties before starting the other server as it overwrites the Properties

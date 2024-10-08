@@ -1,7 +1,10 @@
+/* Copyright Uhuru Technology 2016 https://www.uhurutechnology.com
+ * Distributed under the GPLv3 license or a commercial license must be acquired.
+ */
 package org.openas2.processor.msgtracking;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.Server;
 import org.openas2.OpenAS2Exception;
@@ -53,7 +56,7 @@ class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
             }
             Enumeration<Driver> drivers = DriverManager.getDrivers();
             Driver driver = drivers.nextElement();// home into first and the only
-            Log logger = LogFactory.getLog(getName());
+            Logger logger = LoggerFactory.getLogger(getName());
             logger.info("Using JDBC driver: " + driver.getClass().getName());
             try {
                 server = Server.createTcpServer("-tcpPort", tcpPort, "-tcpPassword", tcpPwd, "-baseDir", dbDirectory, "-tcpAllowOthers").start();

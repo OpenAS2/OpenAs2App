@@ -1,3 +1,6 @@
+/* Copyright Uhuru Technology 2016 https://www.uhurutechnology.com
+ * Distributed under the GPLv3 license or a commercial license must be acquired.
+ */
 package org.openas2.processor.msgtracking;
 
 import org.openas2.OpenAS2Exception;
@@ -18,7 +21,9 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         Map<String, String> fields = buildMap(msg, options);
+        new Thread(() -> {
         persist(msg, fields);
+        }).start();
 
     }
 

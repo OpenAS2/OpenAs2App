@@ -19,16 +19,25 @@ if [ -z "$OPENAS2_PID" ]; then
   export OPENAS2_PID=$binDir/OpenAS2.pid
 fi
 
-# Set some of the base system properties for the Java environment and logging
-# remove -Dorg.apache.commons.logging.Log=org.openas2.logging.Log if using another logging package
-#
-EXTRA_PARMS="$EXTRA_PARMS -Xms32m -Xmx384m -Dorg.apache.commons.logging.Log=org.openas2.logging.Log"
+# Set some Java memory pool settings to something reasonable
+EXTRA_PARMS="$EXTRA_PARMS -Xms32m -Xmx384m"
 
 # Set the config file location
 if [ -z $OPENAS2_CONFIG_FILE ]; then
   OPENAS2_CONFIG_FILE=${binDir}/../config/config.xml
 fi
 EXTRA_PARMS="$EXTRA_PARMS -Dopenas2.config.file=${OPENAS2_CONFIG_FILE}"
+
+# Set the config dir location
+if [ -z $OPENAS2_CONFIG_DIR ]; then
+  OPENAS2_CONFIG_DIR=$(dirname $OPENAS2_CONFIG_FILE)
+fi
+
+# Set the logging base location
+if [ -z $OPENAS2_LOG_DIR ]; then
+  OPENAS2_LOG_DIR=${binDir}/../logs
+fi
+EXTRA_PARMS="$EXTRA_PARMS -DOPENAS2_LOG_DIR=${OPENAS2_LOG_DIR}"
 
 # Set the properties file if set to a valid file
 if [ ! -z "$OPENAS2_PROPERTIES_FILE" ] && [ -f $OPENAS2_PROPERTIES_FILE ]; then
@@ -71,7 +80,7 @@ fi
 # Expand the classpath instead of using file globbing expansion in the java command as it seems to mess with Mailcap loading
 CLASSPATH=$(echo "${binDir}/../lib/"*".jar" | tr ' ' ':')
 # Include the bin dir so that commons-logging.properties is always found
-CLASSPATH=${CLASSPATH}:${binDir}
+CLASSPATH=${CLASSPATH}:${OPENAS2_CONFIG_DIR}
 CMD=$(echo "${JAVA_HOME}/bin/java ${PWD_OVERRIDE} ${EXTRA_PARMS} -cp .:${CLASSPATH} org.openas2.app.OpenAS2Server")
 echo
 echo Running ${CMD}

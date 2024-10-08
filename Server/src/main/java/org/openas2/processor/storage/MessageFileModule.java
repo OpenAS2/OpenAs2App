@@ -1,7 +1,7 @@
 package org.openas2.processor.storage;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class MessageFileModule extends BaseStorageModule {
     public static final String PARAM_HEADER = "header";
 
-    private Log logger = LogFactory.getLog(MessageFileModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(MessageFileModule.class);
 
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {

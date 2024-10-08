@@ -1,8 +1,8 @@
 package org.openas2.processor.receiver;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -56,7 +56,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     public static final String PARAM_MIMETYPE = "mimetype";
     public static final String PARAM_RESEND_MAX_RETRIES = "resend_max_retries";
 
-    private Log logger = LogFactory.getLog(MessageBuilderModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(MessageBuilderModule.class);
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
@@ -174,7 +174,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                 StringTokenizer valueTokens = new StringTokenizer(filename, delimiters, false);
                 if (valueTokens != null && valueTokens.countTokens() != headerNames.length) {
                     msg.setLogMsg("Filename does not match headers list: Headers=" + customHeaderList + " ::: Filename=" + filename + " ::: String delimiters=" + delimiters);
-                    logger.error(msg);
+                    logger.error(msg.getLogMsg());
                     throw new OpenAS2Exception("Invalid filename for extracting custom headers: " + filename);
                 }
                 for (int i = 0; i < headerNames.length; i++) {
@@ -197,7 +197,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                     Matcher m = p.matcher(filename);
                     if (!m.find() || m.groupCount() != headerNames.length) {
                         msg.setLogMsg("Could not match filename to headers required using the regex provided: " + (m.find() ? ("Mismatch in header count to extracted group count: " + headerNames.length + "::" + m.groupCount()) : "No match found in filename"));
-                        logger.error(msg);
+                        logger.error(msg.getLogMsg());
                         throw new OpenAS2Exception("Invalid filename for extracting custom headers: " + filename);
                     }
                     for (int i = 0; i < headerNames.length; i++) {
@@ -240,8 +240,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                 AS2Util.cleanupFiles(msg, false);
             }
         } catch (Exception e) {
-            msg.setLogMsg("Fatal error sending message: " + org.openas2.logging.Log.getExceptionMsg(e));
-            logger.error(msg, e);
+            msg.setLogMsg("Fatal error sending message: " + org.openas2.util.Logging.getExceptionMsg(e));
+            logger.error(msg.getLogMsg(), e);
             AS2Util.cleanupFiles(msg, true);
         }
         return msg;
@@ -414,7 +414,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                 try {
                     mimeBodyPart.setHeader("Content-Transfer-Encoding", contentTxfrEncoding);
                 } catch (MessagingException e) {
-                    throw new OpenAS2Exception("Failed to set content transfer encoding in created MimeBodyPart: " + org.openas2.logging.Log.getExceptionMsg(e), e);
+                    throw new OpenAS2Exception("Failed to set content transfer encoding in created MimeBodyPart: " + org.openas2.util.Logging.getExceptionMsg(e), e);
                 }
             }
 

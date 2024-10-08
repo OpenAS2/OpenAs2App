@@ -5,7 +5,7 @@
  */
 package org.openas2.cmd.processor.restapi;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -20,7 +20,7 @@ import java.io.IOException;
 @Provider
 
 public class LoggerRequestFilter implements ContainerRequestFilter, ContainerResponseFilter {
-    private static Log logger;
+    private static Logger logger;
 
     public LoggerRequestFilter() {
         
@@ -39,14 +39,14 @@ public class LoggerRequestFilter implements ContainerRequestFilter, ContainerRes
     /**
      * @return the logger
      */
-    public static Log getLogger() {
+     public static Logger getLogger() {
         return logger;
     }
 
     /**
      * @param aLogger the logger to set
      */
-    public static void setLogger(Log aLogger) {
+    public static void setLogger(Logger aLogger) {
         logger = aLogger;
     }
 

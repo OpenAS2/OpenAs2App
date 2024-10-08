@@ -1,7 +1,10 @@
+/* Copyright Uhuru Technology 2016 https://www.uhurutechnology.com
+ * Distributed under the GPLv3 license or a commercial license must be acquired.
+ */
 package org.openas2.processor.msgtracking;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
@@ -11,7 +14,6 @@ import org.openas2.params.ParameterParser;
 import org.openas2.util.DateUtil;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -35,7 +37,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     public static final String PARAM_JDBC_CONNECT_STRING = "jdbc_connect_string";
     public static final String PARAM_JDBC_DRIVER = "jdbc_driver";
     public static final String PARAM_JDBC_SERVER_URL = "jdbc_server_url";
-    public static final String PARAM_JDBC_PARAMS = "jdbc_extra_paramters";
+    public static final String PARAM_JDBC_PARAMS = "jdbc_extra_parameters";
+    public static final String PARAM_JDBC_POOL_PROPS_FILE = "jdbc_pool_properties_file";
     public static final String PARAM_SQL_ESCAPE_CHARACTER = "sql_escape_character";
     public static final String PARAM_USE_EMBEDDED_DB = "use_embedded_db";
     public static final String PARAM_FORCE_LOAD_JDBC_DRIVER = "force_load_jdbc_driver";
@@ -53,7 +56,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     private String tableName = null;
     IDBHandler dbHandler = null;
 
-    private Log logger = LogFactory.getLog(DbTrackingModule.class.getSimpleName());
+    private Logger logger = LoggerFactory.getLogger(DbTrackingModule.class);
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
@@ -96,11 +99,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     protected void persist(Message msg, Map<String, String> map) {
         Connection conn = null;
         try {
-            if (useEmbeddedDB) {
-                conn = dbHandler.getConnection();
-            } else {
-                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
-            }
+            conn = dbHandler.getConnection();
             Statement s = conn.createStatement();
             String msgIdField = FIELDS.MSG_ID;
             ResultSet rs = s.executeQuery(
@@ -178,9 +177,9 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         } catch (Exception e) {
-            msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.logging.Log.getExceptionMsg(e)
+            msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.util.Logging.getExceptionMsg(e)
                     + " ::: Data map: " + map);
-            logger.error(msg, e);
+            logger.error(msg.getLogMsg(), e);
         } finally {
             if (conn != null) {
                 try {
@@ -200,18 +199,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
 
         try {
-            if (useEmbeddedDB) {
-                conn = dbHandler.getConnection();
-            } else {
-                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
-            }
-
+            conn = dbHandler.getConnection();
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID
                     + ",CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM "
                     + tableName);
             ResultSetMetaData meta = rs.getMetaData();
-
             while (rs.next()) {
                 HashMap<String, String> row = new HashMap<String, String>();
                 for (int i = 1; i <= meta.getColumnCount(); i++) {
@@ -221,7 +214,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
                 rows.add(row);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -233,22 +225,15 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         }
-
         return rows;
-
     }
 
     public HashMap<String, String> showMessage(String msg_id) {
 
         Connection conn = null;
         HashMap<String, String> row = new HashMap<String, String>();
-
         try {
-            if (useEmbeddedDB) {
-                conn = dbHandler.getConnection();
-            } else {
-                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
-            }
+            conn = dbHandler.getConnection();
             PreparedStatement s = conn
                     .prepareStatement("SELECT * FROM " + tableName + " WHERE " + FIELDS.MSG_ID + " = ?");
             s.setString(1, msg_id);
@@ -272,23 +257,14 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         }
-
         return row;
-
     }
 
     public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
-
         Connection conn = null;
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
-
         try {
-            if (useEmbeddedDB) {
-                conn = dbHandler.getConnection();
-            } else {
-                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
-            }
-
+            conn = dbHandler.getConnection();
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
                     + " WHERE CREATE_DT BETWEEN CAST('" + map.get("startDate").toString()
@@ -304,7 +280,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
                 rows.add(row);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -316,9 +291,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         }
-
         return rows;
-
     }
 
     private String formatField(String value, int dataType) {
@@ -354,20 +327,16 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             } else {
                 return "'" + value + "'";
             }
-
         }
         // Must be some kind of string value if it gets here
         return "'" + value.replaceAll("'", sqlEscapeChar + "'") + "'";
-
     }
 
     private void appendFieldForUpdate(String name, String value, StringBuffer sb, int dataType) {
         if (sb.length() > 0) {
             sb.append(",");
         }
-
         sb.append(name).append("=").append(formatField(value, dataType));
-
     }
 
     private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values,
@@ -376,35 +345,26 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             names.append(",");
             values.append(",");
         }
-
         names.append(name);
         values.append(formatField(value, dataType));
-
     }
 
     public boolean isRunning() {
-        if (useEmbeddedDB) {
-            return isRunning;
-        } else {
-            return true;
-        }
+        return isRunning;
     }
 
     public void start() throws OpenAS2Exception {
-        if (!useEmbeddedDB) {
-            return;
+        if (useEmbeddedDB) {
+            dbHandler = new EmbeddedDBHandler();
+        } else {
+            dbHandler = new ExternalDBHandler();
         }
-
-        dbHandler = new EmbeddedDBHandler();
         dbHandler.start(jdbcConnectString, dbUser, dbPwd, getParameters());
         isRunning = true;
+
     }
 
     public void stop() {
-        if (!useEmbeddedDB) {
-            return;
-        }
-
         dbHandler.stop();
     }
 
@@ -412,11 +372,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     public boolean healthcheck(List<String> failures) {
         Connection conn = null;
         try {
-            if (useEmbeddedDB) {
-                conn = dbHandler.getConnection();
-            } else {
-                conn = DriverManager.getConnection(jdbcConnectString, dbUser, dbPwd);
-            }
             Statement s = conn.createStatement();
             s.executeQuery("SELECT COUNT(*) FROM " + tableName);
         } catch (Exception e) {
@@ -431,7 +386,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 }
             }
         }
-
         return true;
     }
 

@@ -1,7 +1,7 @@
 package org.openas2.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.processor.receiver.AS2MDNReceiverHandler;
 
@@ -83,7 +83,7 @@ public class DispositionOptions {
         options.append("; signed-receipt-micalg=").append(getMicalgImportance());
         options.append(", ").append(getMicalg());
 
-        Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
+        Logger logger = LoggerFactory.getLogger(AS2MDNReceiverHandler.class);
         logger.info("DISPOSITION MAKE: " + options.toString());
         return options.toString();
     }
@@ -130,7 +130,7 @@ public class DispositionOptions {
                         setMicalgImportance(importance.trim());
                         // Store the remaining values for MIC algorithm
                         setMicalgs(micAlgValues);
-                        Log logger = LogFactory.getLog(AS2MDNReceiverHandler.class.getSimpleName());
+                        Logger logger = LoggerFactory.getLogger(AS2MDNReceiverHandler.class);
                         logger.info("DISPOSITION MIC ALG: " + getMicalg() + "   IMPORTANCE: " + getMicalgImportance());
                         break;
                     default:

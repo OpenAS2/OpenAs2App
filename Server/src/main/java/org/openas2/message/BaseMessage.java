@@ -1,6 +1,6 @@
 package org.openas2.message;
 
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -461,13 +461,13 @@ public abstract class BaseMessage implements Message {
     }
 
     public void trackMsgState(Session session) {
-        // Log a start sending fail state but do not allow exceptions to stop the process
+        // Logger a start sending fail state but do not allow exceptions to stop the process
         try {
             options.put("OPTIONAL_MODULE", "true");
             session.getProcessor().handle(TrackingModule.DO_TRACK_MSG, this, options);
         } catch (Exception et) {
-            setLogMsg("Unable to persist message tracking state: " + org.openas2.logging.Log.getExceptionMsg(et));
-            LogFactory.getLog(BaseMessage.class.getSimpleName()).error(this, et);
+            setLogMsg("Unable to persist message tracking state: " + org.openas2.util.Logging.getExceptionMsg(et));
+            LoggerFactory.getLogger(BaseMessage.class).error(this.getLogMsg(), et);
         }
 
     }
@@ -508,13 +508,13 @@ public abstract class BaseMessage implements Message {
             return null;
         }
         if (tmpFilename.indexOf("*") >= 0) {
-            LogFactory.getLog(BaseMessage.class.getSimpleName()).warn("The 'filename' in disposition contains an asterisk. Setting to null.");
+            LoggerFactory.getLogger(BaseMessage.class).warn("The 'filename' in disposition contains an asterisk. Setting to null.");
             return null;
         }
         try {
           tmpFilename = IOUtil.getSafeFilename(tmpFilename);
         } catch (OpenAS2Exception oae) {
-            LogFactory.getLog(BaseMessage.class.getSimpleName()).warn("Unable to extract a usable filename from: " + tmpFilename);
+            LoggerFactory.getLogger(BaseMessage.class).warn("Unable to extract a usable filename from: " + tmpFilename);
             return null;
         }
         return tmpFilename;

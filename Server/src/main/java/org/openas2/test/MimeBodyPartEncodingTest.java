@@ -1,6 +1,5 @@
 package org.openas2.test;
 
-import org.apache.commons.logging.LogFactory;
 import org.openas2.Session;
 import org.openas2.XMLSession;
 import org.openas2.cert.CertificateFactory;
@@ -39,9 +38,6 @@ public class MimeBodyPartEncodingTest {
     public static void main(String[] args) {
         XMLSession session = null;
         int exitStatus = 0;
-        System.setProperty("org.apache.commons.logging.Log", "org.openas2.logging.Log");
-        //System.setProperty("openas2log.properties", "Server/bin/openas2log.properties");
-        LogFactory.getFactory().setAttribute("level", "TRACE");
         System.out.println("Current working directory: " + System.getProperty("user.dir") + System.getProperty("line.separator"));
         System.out.println("Logging prop: " + System.getProperty("org.apache.commons.logging.Log") + System.getProperty("line.separator"));
         File f = new File(TestConfig.TEST_OUTPUT_FOLDER);

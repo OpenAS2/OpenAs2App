@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+
+<configuration scan="true" scanPeriod="30 seconds">
+    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+
+    <import class="ch.qos.logback.core.FileAppender"/>
+    <timestamp key="byDay" datePattern="yyyyMMdd"/>
+    
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+	    <!-- use the previously created timestamp to create a uniquely named log file -->
+	    <file>${OPENAS2_LOG_DIR}/log-${byDay}.txt</file>
+	    <encoder>
+	      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{60} -%kvp- %msg%n</pattern>
+	    </encoder>
+	</appender>
+
+    <!--
+    Uncomment other loggers below if they are needed and verify the settings are as required for your implementation
+    Refer to the logback website for detailed configuration options.
+    -->
+    
+    <import class="ch.qos.logback.core.ConsoleAppender"/>
+    <appender name="CONSOLE" class="ConsoleAppender">
+        <encoder class="PatternLayoutEncoder">
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{60} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!-- An SMTP email logger that will only email ERROR level messages -->
+    <!--
+    <import class="ch.qos.logback.classic.net.SMTPAppender"/>
+    <import class="ch.qos.logback.classic.filter.LevelFilter"/>
+    <appender name="EMAIL" class="SMTPAppender">
+	    <filter class="LevelFilter">
+	      <level>ERROR</level>
+	      <onMatch>ACCEPT</onMatch>
+	      <onMismatch>DENY</onMismatch>
+	    </filter>
+        <smtpHost>ADDRESS-OF-YOUR-SMTP-HOST</smtpHost>
+        <to>EMAIL-DESTINATION</to>
+        <to>ANOTHER_EMAIL_DESTINATION</to>
+        <from>SENDER-EMAIL</from>
+        <subject>TESTING: %logger{20} - %m</subject>
+        <layout class="PatternLayout">
+            <pattern>%date %-5level %logger{60} - %message%n</pattern>
+        </layout>
+    </appender>
+    -->
+
+    <root level="${OPENAS2_LOG_LEVEL:-INFO}">
+        <appender-ref ref="FILE" />
+        <!-- IMPORTANT: Remove the CONSOLE logger for production deployment -->
+        <appender-ref ref="CONSOLE" />
+        <!-- Uncomment this this along with the EMAIL appender to use email logging of errors
+        <appender-ref ref="EMAIL" />
+        -->
+    </root>
+</configuration>
