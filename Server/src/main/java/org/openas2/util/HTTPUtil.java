@@ -48,6 +48,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -73,7 +74,9 @@ public class HTTPUtil {
 
     public static final String SSL_KEYSTORE_PATH_ENV = "SSL_KEYSTORE_PATH";
     public static final String SSL_KEYSTORE_PASSWORD_ENV = "SSL_KEYSTORE_PASSWORD";
-    private static final ThreadLocal<Set<String>> trustedFingerprints = ThreadLocal.withInitial(HashSet::new);
+    private static Set<String> cachedFingerprints = ConcurrentHashMap.newKeySet();
+    private static KeyStore cachedCustomKeyStore = null;
+
     private static final Logger LOG = LoggerFactory.getLogger(AS2ReceiverHandler.class);
 
     public abstract static class Method {
@@ -447,7 +450,7 @@ public class HTTPUtil {
         // "TLSv1").split("\\s*,\\s*");
         HostnameVerifier hnv = SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         SelfSignedTrustManager tm = new SelfSignedTrustManager(defaultTrustManager);
-        
+
         if (overrideSslChecks) {
             hnv = new HostnameVerifier() {
                 @Override
@@ -464,7 +467,7 @@ public class HTTPUtil {
                         X509Certificate[] certs = (X509Certificate[]) session.getPeerCertificates();
                         String fingerprint = tm.getCertificateFingerprint(certs[0]);
         
-                        if (trustedFingerprints.get().contains(fingerprint) || tm.isCertificateInCustomKeystore(certs[0], fingerprint)) {
+                        if (cachedFingerprints.contains(fingerprint) || tm.isCertificateInCustomKeystore(certs[0], fingerprint)) {
                             LOG.info("Hostname verification skipped for trusted certificate: " + certs[0].getSubjectX500Principal().getName());
                             return true;
                         }
@@ -472,6 +475,7 @@ public class HTTPUtil {
                         LOG.error("Hostname verification failed: " + e.getMessage(), e);
                     }
 
+                    // fallback to default hostname verifier
                     return SSLConnectionSocketFactory.getDefaultHostnameVerifier().verify(hostname, session);
                 }
             };
@@ -875,8 +879,12 @@ public class HTTPUtil {
 
     public static KeyStore getCustomKeyStore() throws OpenAS2Exception {
 
-        String keystorePath = System.getenv("SSL_KEYSTORE_PATH");
-        String keystorePassword = System.getenv("SSL_KEYSTORE_PASSWORD");
+        if (cachedCustomKeyStore != null) {
+            return cachedCustomKeyStore;
+        }
+
+        String keystorePath = System.getenv(SSL_KEYSTORE_PATH_ENV);
+        String keystorePassword = System.getenv(SSL_KEYSTORE_PASSWORD_ENV);
     
         LOG.info("Using environment variable for trust store path: " + keystorePath);
     
@@ -888,6 +896,8 @@ public class HTTPUtil {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(in, keystorePassword.toCharArray());
             LOG.info("Trust store loaded successfully from: " + keystorePath);
+
+            cachedCustomKeyStore = ks;
             return ks;
         } catch (Exception e) {
             throw new OpenAS2Exception("Failed to load trust store from path: " + keystorePath, e);
@@ -920,7 +930,7 @@ public class HTTPUtil {
                     String fingerprint = getCertificateFingerprint(chain[0]);
 
                     // Check if fingerprint is already cached to avoid re-opening keystore
-                    if (trustedFingerprints.get().contains(fingerprint)) {
+                    if (cachedFingerprints.contains(fingerprint)) {
                         LOG.info("Certificate validation passed (cached) for " + chain[0].getSubjectX500Principal().getName());
                         return;
                     }
@@ -962,7 +972,7 @@ public class HTTPUtil {
                 KeyStore keyStore = getCustomKeyStore();
                 String alias = keyStore.getCertificateAlias(cert);
                 if (alias != null) {
-                    trustedFingerprints.get().add(fingerprint); // Cache the fingerprint
+                    cachedFingerprints.add(fingerprint); // Cache the fingerprint
                     return true;
                 }
             } catch (Exception e) {
