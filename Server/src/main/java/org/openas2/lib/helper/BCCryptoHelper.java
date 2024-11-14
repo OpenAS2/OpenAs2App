@@ -19,7 +19,9 @@ import org.bouncycastle.cms.bc.BcRSAKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
@@ -198,61 +200,66 @@ public class BCCryptoHelper implements ICryptoHelper {
         return micResult.toString();
     }
 
-    public MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
-        // Make sure the data is encrypted
+    public MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) 
+    throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
+
         if (!isEncrypted(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't encrypted");
         }
 
-        // Cast parameters to what BC needs
         X509Certificate x509Cert = castCertificate(cert);
-
-        // Parse the MIME body into an SMIME envelope object
         SMIMEEnveloped envelope = new SMIMEEnveloped(part);
-
-        // Get the recipient object for decryption
-        if (logger.isDebugEnabled()) {
-            logger.debug("Extracted X500 info::  PRINCIPAL : " + x509Cert.getIssuerX500Principal() + " ::  NAME : " + x509Cert.getIssuerX500Principal().getName());
-        }
-
         X500Name x500Name = new X500Name(x509Cert.getIssuerX500Principal().getName());
-        KeyTransRecipientId certRecId = new KeyTransRecipientId(x500Name, x509Cert.getSerialNumber());
         RecipientInformationStore recipientInfoStore = envelope.getRecipientInfos();
-
         Collection<RecipientInformation> recipients = recipientInfoStore.getRecipients();
 
         if (recipients == null) {
             throw new GeneralSecurityException("Certificate recipients could not be extracted from the inbound message envelope.");
         }
-        //RecipientInformation recipientInfo  = recipientInfoStore.get(recId);
-        //Object recipient = null;
 
         boolean foundRecipient = false;
-        for (Iterator<RecipientInformation> iterator = recipients.iterator(); iterator.hasNext(); ) {
-            RecipientInformation recipientInfo = iterator.next();
-            //recipient = iterator.next();
-            if (recipientInfo instanceof KeyTransRecipientInformation) {
-                // X509CertificateHolder x509CertHolder = new X509CertificateHolder(x509Cert.getEncoded());
+        for (RecipientInformation recipientInfo : recipients) {
 
-                //RecipientId rid = recipientInfo.getRID();
+            if (recipientInfo instanceof KeyTransRecipientInformation && key.getAlgorithm().equalsIgnoreCase("RSA")) {
+                KeyTransRecipientId certRecId = new KeyTransRecipientId(x500Name, x509Cert.getSerialNumber());
                 if (certRecId.match(recipientInfo) && !foundRecipient) {
                     foundRecipient = true;
-                    // byte[] decryptedData = recipientInfo.getContent(new JceKeyTransEnvelopedRecipient((PrivateKey)key).setProvider("BC"));
-                    byte[] decryptedData = recipientInfo.getContent(new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(PrivateKeyInfo.getInstance(key.getEncoded()))));
-
+                    byte[] decryptedData = recipientInfo.getContent(
+                        new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(
+                            PrivateKeyInfo.getInstance(key.getEncoded())))
+                    );
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
-                } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Failed match on recipient ID's:: RID type from msg:" + recipientInfo.getRID().getType() + "  RID type from priv cert: " + certRecId.getType());
-                    }
+                }
+
+            } else if (recipientInfo instanceof KeyAgreeRecipientInformation && key.getAlgorithm().equalsIgnoreCase("EC")) {
+                KeyAgreeRecipientId certRecId = new KeyAgreeRecipientId(x500Name, x509Cert.getSerialNumber());
+                if (certRecId.match(recipientInfo) && !foundRecipient) {
+                    foundRecipient = true;
+                    byte[] decryptedData = recipientInfo.getContent(
+                        new JceKeyAgreeEnvelopedRecipient((PrivateKey) key).setProvider("BC")
+                    );
+                    return SMIMEUtil.toMimeBodyPart(decryptedData);
+                }
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Failed match on recipient ID's:: RID type from msg: " 
+                                + recipientInfo.getRID().getType() 
+                                + "  RID type from priv cert: " 
+                                + (recipientInfo instanceof KeyTransRecipientInformation ? "0" : "2"));
                 }
             }
         }
-        throw new GeneralSecurityException(
-            "Matching certificate recipient could not be found trying to decrypt the message."
-            + " Either the sender has encrypted the message with a public key that does not match"
-            + " a private key in your keystore or the there is a problem in your keystore where the private key has not been imported or is corrupt.");
+
+        if (!foundRecipient) {
+            throw new GeneralSecurityException(
+                "Matching certificate recipient could not be found trying to decrypt the message."
+                + " Either the sender has encrypted the message with a public key that does not match"
+                + " a private key in your keystore or there is a problem in your keystore where the private key has not been imported or is corrupt.");
+        }
+
+        return null;
     }
+
 
     public void deinitialize() {
     }
