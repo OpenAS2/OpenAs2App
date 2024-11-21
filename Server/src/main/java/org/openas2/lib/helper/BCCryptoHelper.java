@@ -20,6 +20,7 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
@@ -69,16 +70,21 @@ import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECParameterSpec;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -200,14 +206,14 @@ public class BCCryptoHelper implements ICryptoHelper {
         return micResult.toString();
     }
 
-    public MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) 
+    public MimeBodyPart decrypt(MimeBodyPart part, Certificate receiverCert, Key receiverKey) 
     throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
 
         if (!isEncrypted(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't encrypted");
         }
 
-        X509Certificate x509Cert = castCertificate(cert);
+        X509Certificate x509Cert = castCertificate(receiverCert);
         SMIMEEnveloped envelope = new SMIMEEnveloped(part);
         X500Name x500Name = new X500Name(x509Cert.getIssuerX500Principal().getName());
         RecipientInformationStore recipientInfoStore = envelope.getRecipientInfos();
@@ -220,23 +226,29 @@ public class BCCryptoHelper implements ICryptoHelper {
         boolean foundRecipient = false;
         for (RecipientInformation recipientInfo : recipients) {
 
-            if (recipientInfo instanceof KeyTransRecipientInformation && key.getAlgorithm().equalsIgnoreCase("RSA")) {
+            if(logger.isDebugEnabled()) {
+                logger.debug("Recipient RID: " + recipientInfo.getRID());
+                logger.debug("Recipient Info Type: " + recipientInfo.getClass().getName());
+                logger.debug("Using private key algorithm: " + receiverKey.getAlgorithm());
+            }
+
+            if (recipientInfo instanceof KeyTransRecipientInformation) {
                 KeyTransRecipientId certRecId = new KeyTransRecipientId(x500Name, x509Cert.getSerialNumber());
                 if (certRecId.match(recipientInfo) && !foundRecipient) {
                     foundRecipient = true;
                     byte[] decryptedData = recipientInfo.getContent(
                         new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(
-                            PrivateKeyInfo.getInstance(key.getEncoded())))
+                            PrivateKeyInfo.getInstance(receiverKey.getEncoded())))
                     );
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
                 }
 
-            } else if (recipientInfo instanceof KeyAgreeRecipientInformation && key.getAlgorithm().equalsIgnoreCase("EC")) {
+            } else if (recipientInfo instanceof KeyAgreeRecipientInformation) {
                 KeyAgreeRecipientId certRecId = new KeyAgreeRecipientId(x500Name, x509Cert.getSerialNumber());
                 if (certRecId.match(recipientInfo) && !foundRecipient) {
                     foundRecipient = true;
                     byte[] decryptedData = recipientInfo.getContent(
-                        new JceKeyAgreeEnvelopedRecipient((PrivateKey) key).setProvider("BC")
+                        new JceKeyAgreeEnvelopedRecipient((PrivateKey) receiverKey).setProvider("BC")
                     );
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
                 }
@@ -264,20 +276,68 @@ public class BCCryptoHelper implements ICryptoHelper {
     public void deinitialize() {
     }
 
-    public MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm, String contentTxfrEncoding) throws GeneralSecurityException, SMIMEException, MessagingException {
-        X509Certificate x509Cert = castCertificate(cert);
-
+    public MimeBodyPart encrypt(MimeBodyPart part, Certificate receiverCert, String algorithm, String contentTxfrEncoding) throws Exception {
+        X509Certificate x509Cert = castCertificate(receiverCert);
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
         gen.setContentTransferEncoding(getEncoding(contentTxfrEncoding));
 
+        String receiverCertAlgorithm = receiverCert.getPublicKey().getAlgorithm();
+
+        OutputEncryptor encryptor = null;
+
         if (logger.isDebugEnabled()) {
             logger.debug("Encrypting on MIME part containing the following headers: " + AS2Util.printHeaders(part.getAllHeaders()));
+            logger.debug("Receiver Cert Algorithm: " + receiverCertAlgorithm);
         }
 
-        gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
+        if ("RSA".equalsIgnoreCase(receiverCertAlgorithm)) {
+            logger.debug("Using RSA based encryption...");
+            gen.addRecipientInfoGenerator(
+                new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC")
+            );
+            encryptor = getOutputEncryptor(algorithm);
 
-        return gen.generate(part, getOutputEncryptor(algorithm));
+        } else if ("EC".equalsIgnoreCase(receiverCertAlgorithm)) {
+            logger.debug("Using EC based encryption...");
+        
+            KeyPair keypair = this.generateECKeypair(receiverCert);
+
+            JceKeyAgreeRecipientInfoGenerator recipientGenerator
+                    = new JceKeyAgreeRecipientInfoGenerator(
+                        CMSAlgorithm.ECMQV_SHA256KDF, 
+                        keypair.getPrivate(), 
+                        keypair.getPublic(),
+                        CMSAlgorithm.AES128_WRAP
+                        ).setProvider("BC");
+
+            recipientGenerator.addRecipient((X509Certificate) receiverCert);
+
+            encryptor = new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_CBC)
+            .setProvider("BC").build();
+
+            gen.addRecipientInfoGenerator(recipientGenerator);
+        
+        } else {
+            throw new GeneralSecurityException("Unsupported certificate algorithm: " + receiverCertAlgorithm);
+        }
+
+        return gen.generate(part, encryptor);
+    }
+
+    /**
+     * Generates a key pair on a special EC
+     */
+    private KeyPair generateECKeypair(Certificate cert) throws Exception {
+        if (!cert.getPublicKey().getAlgorithm().equals("EC")) {
+            throw new IllegalArgumentException("BCCryptoHelper.generateECKeypair requires a certificate where the public keys algorithm is \"EC\"");
+        }
+        ECPublicKey ecPublicKey = (ECPublicKey) cert.getPublicKey();
+        ECParameterSpec ecSpec = ecPublicKey.getParams();
+        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
+        keyGenerator.initialize(ecSpec, new SecureRandom());
+        KeyPair keyPair = keyGenerator.generateKeyPair();
+        return (keyPair);
     }
 
     public void initialize() {
