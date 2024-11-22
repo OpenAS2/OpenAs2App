@@ -19,7 +19,10 @@ import org.bouncycastle.cms.bc.BcRSAKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
@@ -67,16 +70,21 @@ import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECParameterSpec;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -198,79 +206,138 @@ public class BCCryptoHelper implements ICryptoHelper {
         return micResult.toString();
     }
 
-    public MimeBodyPart decrypt(MimeBodyPart part, Certificate cert, Key key) throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
-        // Make sure the data is encrypted
+    public MimeBodyPart decrypt(MimeBodyPart part, Certificate receiverCert, Key receiverKey) 
+    throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
+
         if (!isEncrypted(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't encrypted");
         }
 
-        // Cast parameters to what BC needs
-        X509Certificate x509Cert = castCertificate(cert);
-
-        // Parse the MIME body into an SMIME envelope object
+        X509Certificate x509Cert = castCertificate(receiverCert);
         SMIMEEnveloped envelope = new SMIMEEnveloped(part);
-
-        // Get the recipient object for decryption
-        if (logger.isDebugEnabled()) {
-            logger.debug("Extracted X500 info::  PRINCIPAL : " + x509Cert.getIssuerX500Principal() + " ::  NAME : " + x509Cert.getIssuerX500Principal().getName());
-        }
-
         X500Name x500Name = new X500Name(x509Cert.getIssuerX500Principal().getName());
-        KeyTransRecipientId certRecId = new KeyTransRecipientId(x500Name, x509Cert.getSerialNumber());
         RecipientInformationStore recipientInfoStore = envelope.getRecipientInfos();
-
         Collection<RecipientInformation> recipients = recipientInfoStore.getRecipients();
 
         if (recipients == null) {
             throw new GeneralSecurityException("Certificate recipients could not be extracted from the inbound message envelope.");
         }
-        //RecipientInformation recipientInfo  = recipientInfoStore.get(recId);
-        //Object recipient = null;
 
         boolean foundRecipient = false;
-        for (Iterator<RecipientInformation> iterator = recipients.iterator(); iterator.hasNext(); ) {
-            RecipientInformation recipientInfo = iterator.next();
-            //recipient = iterator.next();
-            if (recipientInfo instanceof KeyTransRecipientInformation) {
-                // X509CertificateHolder x509CertHolder = new X509CertificateHolder(x509Cert.getEncoded());
+        for (RecipientInformation recipientInfo : recipients) {
 
-                //RecipientId rid = recipientInfo.getRID();
+            if(logger.isDebugEnabled()) {
+                logger.debug("Recipient RID: " + recipientInfo.getRID());
+                logger.debug("Recipient Info Type: " + recipientInfo.getClass().getName());
+                logger.debug("Using private key algorithm: " + receiverKey.getAlgorithm());
+            }
+
+            if (recipientInfo instanceof KeyTransRecipientInformation) {
+                KeyTransRecipientId certRecId = new KeyTransRecipientId(x500Name, x509Cert.getSerialNumber());
                 if (certRecId.match(recipientInfo) && !foundRecipient) {
                     foundRecipient = true;
-                    // byte[] decryptedData = recipientInfo.getContent(new JceKeyTransEnvelopedRecipient((PrivateKey)key).setProvider("BC"));
-                    byte[] decryptedData = recipientInfo.getContent(new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(PrivateKeyInfo.getInstance(key.getEncoded()))));
-
+                    byte[] decryptedData = recipientInfo.getContent(
+                        new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(
+                            PrivateKeyInfo.getInstance(receiverKey.getEncoded())))
+                    );
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
-                } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Failed match on recipient ID's:: RID type from msg:" + recipientInfo.getRID().getType() + "  RID type from priv cert: " + certRecId.getType());
-                    }
+                }
+
+            } else if (recipientInfo instanceof KeyAgreeRecipientInformation) {
+                KeyAgreeRecipientId certRecId = new KeyAgreeRecipientId(x500Name, x509Cert.getSerialNumber());
+                if (certRecId.match(recipientInfo) && !foundRecipient) {
+                    foundRecipient = true;
+                    byte[] decryptedData = recipientInfo.getContent(
+                        new JceKeyAgreeEnvelopedRecipient((PrivateKey) receiverKey).setProvider("BC")
+                    );
+                    return SMIMEUtil.toMimeBodyPart(decryptedData);
+                }
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Failed match on recipient ID's:: RID type from msg: " 
+                                + recipientInfo.getRID().getType() 
+                                + "  RID type from priv cert: " 
+                                + (recipientInfo instanceof KeyTransRecipientInformation ? "0" : "2"));
                 }
             }
         }
-        throw new GeneralSecurityException(
-            "Matching certificate recipient could not be found trying to decrypt the message."
-            + " Either the sender has encrypted the message with a public key that does not match"
-            + " a private key in your keystore or the there is a problem in your keystore where the private key has not been imported or is corrupt.");
+
+        if (!foundRecipient) {
+            throw new GeneralSecurityException(
+                "Matching certificate recipient could not be found trying to decrypt the message."
+                + " Either the sender has encrypted the message with a public key that does not match"
+                + " a private key in your keystore or there is a problem in your keystore where the private key has not been imported or is corrupt.");
+        }
+
+        return null;
     }
+
 
     public void deinitialize() {
     }
 
-    public MimeBodyPart encrypt(MimeBodyPart part, Certificate cert, String algorithm, String contentTxfrEncoding) throws GeneralSecurityException, SMIMEException, MessagingException {
-        X509Certificate x509Cert = castCertificate(cert);
-
+    public MimeBodyPart encrypt(MimeBodyPart part, Certificate receiverCert, String encryptionAlgorithm, String contentTxfrEncoding) throws Exception {
+        X509Certificate x509Cert = castCertificate(receiverCert);
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
         gen.setContentTransferEncoding(getEncoding(contentTxfrEncoding));
 
+        String receiverCertAlgorithm = receiverCert.getPublicKey().getAlgorithm();
+        boolean isECKey = "EC".equalsIgnoreCase(receiverCertAlgorithm);
+        OutputEncryptor encryptor = null;
+
         if (logger.isDebugEnabled()) {
             logger.debug("Encrypting on MIME part containing the following headers: " + AS2Util.printHeaders(part.getAllHeaders()));
+            logger.debug("Receiver Cert Algorithm: " + receiverCertAlgorithm);
+            logger.debug("Encryption Algorithm from Partnership: " + encryptionAlgorithm);
         }
 
-        gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC"));
+        if ("RSA".equalsIgnoreCase(receiverCertAlgorithm)) {
+            logger.debug("Using RSA based encryption...");
+            gen.addRecipientInfoGenerator(
+                new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC")
+            );
+            encryptor = getOutputEncryptor(encryptionAlgorithm, isECKey, false);
 
-        return gen.generate(part, getOutputEncryptor(algorithm));
+        } else if ("EC".equalsIgnoreCase(receiverCertAlgorithm)) {
+            logger.debug("Using EC based encryption...");
+        
+            KeyPair keypair = this.generateECKeypair(receiverCert);
+
+                JceKeyAgreeRecipientInfoGenerator recipientGenerator
+                    = new JceKeyAgreeRecipientInfoGenerator(
+                        CMSAlgorithm.ECMQV_SHA256KDF, 
+                        keypair.getPrivate(), 
+                        keypair.getPublic(),
+                        getEncryptionOID(encryptionAlgorithm, isECKey, true)
+                        ).setProvider("BC");
+
+            recipientGenerator.addRecipient((X509Certificate) receiverCert);
+
+            encryptor = getOutputEncryptor(encryptionAlgorithm, isECKey, false);
+
+            gen.addRecipientInfoGenerator(recipientGenerator);
+        
+        } else {
+            throw new GeneralSecurityException("Unsupported certificate algorithm: " + receiverCertAlgorithm);
+        }
+
+        return gen.generate(part, encryptor);
+    }
+
+    /**
+     * Generates a key pair on a special EC
+     */
+    private KeyPair generateECKeypair(Certificate cert) throws Exception {
+        if (!cert.getPublicKey().getAlgorithm().equals("EC")) {
+            throw new IllegalArgumentException("BCCryptoHelper.generateECKeypair requires a certificate where the public keys algorithm is \"EC\"");
+        }
+        ECPublicKey ecPublicKey = (ECPublicKey) cert.getPublicKey();
+        ECParameterSpec ecSpec = ecPublicKey.getParams();
+        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
+        keyGenerator.initialize(ecSpec, new SecureRandom());
+        KeyPair keyPair = keyGenerator.generateKeyPair();
+        return (keyPair);
     }
 
     public void initialize() {
@@ -577,6 +644,95 @@ public class BCCryptoHelper implements ICryptoHelper {
 
     }
 
+    /**
+     * Resolves the appropriate ASN1 OID for the given encryption algorithm.
+     * This method determines the correct object identifier to use for encryption
+     * based on the algorithm name, whether the encryption is being used with 
+     * EC keys, and whether the algorithm should support wrapping.
+     *
+     * @param algorithm The name of the encryption algorithm (e.g., "AES128_CBC").
+     * @param isECKey Indicates if the encryption involves EC (Elliptic Curve) keys.
+     * @param isWrap Indicates if the algorithm is being used for key wrapping.
+     * @return The ASN1ObjectIdentifier representing the OID for the encryption algorithm.
+     * @throws NoSuchAlgorithmException If the algorithm is null, unsupported, 
+     *                                  or incompatible with the given parameters.
+     *
+     * <p><b>Behavior:</b></p>
+     * <ul>
+     *   <li>Throws an exception for unsupported or invalid algorithm names.</li>
+     *   <li>Handles special cases for EC keys, ensuring compatibility with 
+     *       wrapping and non-wrapping modes.</li>
+     *   <li>Supports a variety of algorithms, including AES, 3DES, RC2, CAST5, 
+     *       and IDEA, with appropriate restrictions for EC key usage.</li>
+     * </ul> 
+    */
+    protected ASN1ObjectIdentifier getEncryptionOID(String algorithm, boolean isECKey, boolean isWrap) throws NoSuchAlgorithmException {
+        if (algorithm == null) {
+            throw new NoSuchAlgorithmException("Algorithm is null");
+        }
+    
+        if (algorithm.equalsIgnoreCase(DIGEST_MD2)) {
+            return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md2.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
+            return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md5.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
+            return new ASN1ObjectIdentifier(OIWObjectIdentifiers.idSHA1.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA224)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha224.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA256)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha256.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA384)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha384.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA512)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha512.getId());
+        } else if (algorithm.equalsIgnoreCase(CRYPT_3DES)) {
+            if (isECKey) {
+                if (isWrap) {
+                    return CMSAlgorithm.DES_EDE3_WRAP;
+                } else {
+                    return CMSAlgorithm.DES_EDE3_CBC;
+                }
+            } else {
+                return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.des_EDE3_CBC.getId());
+            }
+        } else if (algorithm.equalsIgnoreCase(CRYPT_RC2) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC)) {
+            if (isECKey) {
+                if (isWrap) {
+                    throw new NoSuchAlgorithmException("RC2 Wrap is not supported for EC keys");
+                }
+            }
+            return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.RC2_CBC.getId());
+        } else if (algorithm.equalsIgnoreCase(AES128_CBC)) {
+            if (isECKey && isWrap) {
+                return CMSAlgorithm.AES128_WRAP;
+            }
+            return CMSAlgorithm.AES128_CBC;
+        } else if (algorithm.equalsIgnoreCase(AES192_CBC)) {
+            if (isECKey && isWrap) {
+                return CMSAlgorithm.AES192_WRAP;
+            }
+            return CMSAlgorithm.AES192_CBC;
+        } else if (algorithm.equalsIgnoreCase(AES256_CBC)) {
+            if (isECKey && isWrap) {
+                return CMSAlgorithm.AES256_WRAP;
+            }
+            return CMSAlgorithm.AES256_CBC;
+        } else if (algorithm.equalsIgnoreCase(AES256_WRAP)) {
+            return CMSAlgorithm.AES256_WRAP;
+        } else if (algorithm.equalsIgnoreCase(CRYPT_CAST5)) {
+            if (isECKey) {
+                throw new NoSuchAlgorithmException("CAST5 is not supported for EC keys");
+            }
+            return CMSAlgorithm.CAST5_CBC;
+        } else if (algorithm.equalsIgnoreCase(CRYPT_IDEA)) {
+            if (isECKey) {
+                throw new NoSuchAlgorithmException("IDEA is not supported for EC keys");
+            }
+            return CMSAlgorithm.IDEA_CBC;
+        } else {
+            throw new NoSuchAlgorithmException("Unsupported or invalid algorithm: " + algorithm);
+        }
+    }
 
     /**
      * Looks up the correct ASN1 OID of the passed in algorithm string and returns the encryptor.
@@ -589,46 +745,17 @@ public class BCCryptoHelper implements ICryptoHelper {
      *                                  TODO: Possibly just use new ASN1ObjectIdentifier(algorithm) instead of explicit lookup to support random configured algorithms
      *                                  but will require determining if this has any side effects from a security point of view.
      */
-    protected OutputEncryptor getOutputEncryptor(String algorithm) throws NoSuchAlgorithmException {
+    protected OutputEncryptor getOutputEncryptor(String algorithm, boolean isECKey, boolean isWrap) throws NoSuchAlgorithmException {
         if (algorithm == null) {
             throw new NoSuchAlgorithmException("Algorithm is null");
         }
-        ASN1ObjectIdentifier asn1ObjId = null;
+        ASN1ObjectIdentifier asn1ObjId = getEncryptionOID(algorithm, isECKey, isWrap);
         int keyLen = -1;
-        if (algorithm.equalsIgnoreCase(DIGEST_MD2)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md2.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md5.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
-            asn1ObjId = new ASN1ObjectIdentifier(OIWObjectIdentifiers.idSHA1.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA224)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha224.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA256)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha256.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA384)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha384.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA512)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha512.getId());
-        } else if (algorithm.equalsIgnoreCase(CRYPT_3DES)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.des_EDE3_CBC.getId());
-        } else if (algorithm.equalsIgnoreCase(CRYPT_RC2) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.RC2_CBC.getId());
+
+        if (algorithm.equalsIgnoreCase(CRYPT_RC2) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC)) {
             keyLen = 40;
-        } else if (algorithm.equalsIgnoreCase(AES128_CBC)) {
-            asn1ObjId = CMSAlgorithm.AES128_CBC;
-        } else if (algorithm.equalsIgnoreCase(AES192_CBC)) {
-            asn1ObjId = CMSAlgorithm.AES192_CBC;
-        } else if (algorithm.equalsIgnoreCase(AES256_CBC)) {
-            asn1ObjId = CMSAlgorithm.AES256_CBC;
-        } else if (algorithm.equalsIgnoreCase(AES256_WRAP)) {
-            asn1ObjId = CMSAlgorithm.AES256_WRAP;
-        } else if (algorithm.equalsIgnoreCase(CRYPT_CAST5)) {
-            asn1ObjId = CMSAlgorithm.CAST5_CBC;
-        } else if (algorithm.equalsIgnoreCase(CRYPT_IDEA)) {
-            asn1ObjId = CMSAlgorithm.IDEA_CBC;
-        } else {
-            throw new NoSuchAlgorithmException("Unsupported or invalid algorithm: " + algorithm);
         }
+
         OutputEncryptor oe = null;
         try {
             if (keyLen < 0) {
