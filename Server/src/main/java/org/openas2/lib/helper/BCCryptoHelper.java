@@ -276,19 +276,20 @@ public class BCCryptoHelper implements ICryptoHelper {
     public void deinitialize() {
     }
 
-    public MimeBodyPart encrypt(MimeBodyPart part, Certificate receiverCert, String algorithm, String contentTxfrEncoding) throws Exception {
+    public MimeBodyPart encrypt(MimeBodyPart part, Certificate receiverCert, String encryptionAlgorithm, String contentTxfrEncoding) throws Exception {
         X509Certificate x509Cert = castCertificate(receiverCert);
 
         SMIMEEnvelopedGenerator gen = new SMIMEEnvelopedGenerator();
         gen.setContentTransferEncoding(getEncoding(contentTxfrEncoding));
 
         String receiverCertAlgorithm = receiverCert.getPublicKey().getAlgorithm();
-
+        boolean isECKey = "EC".equalsIgnoreCase(receiverCertAlgorithm);
         OutputEncryptor encryptor = null;
 
         if (logger.isDebugEnabled()) {
             logger.debug("Encrypting on MIME part containing the following headers: " + AS2Util.printHeaders(part.getAllHeaders()));
             logger.debug("Receiver Cert Algorithm: " + receiverCertAlgorithm);
+            logger.debug("Encryption Algorithm from Partnership: " + encryptionAlgorithm);
         }
 
         if ("RSA".equalsIgnoreCase(receiverCertAlgorithm)) {
@@ -296,25 +297,24 @@ public class BCCryptoHelper implements ICryptoHelper {
             gen.addRecipientInfoGenerator(
                 new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC")
             );
-            encryptor = getOutputEncryptor(algorithm);
+            encryptor = getOutputEncryptor(encryptionAlgorithm, isECKey, false);
 
         } else if ("EC".equalsIgnoreCase(receiverCertAlgorithm)) {
             logger.debug("Using EC based encryption...");
         
             KeyPair keypair = this.generateECKeypair(receiverCert);
 
-            JceKeyAgreeRecipientInfoGenerator recipientGenerator
+                JceKeyAgreeRecipientInfoGenerator recipientGenerator
                     = new JceKeyAgreeRecipientInfoGenerator(
                         CMSAlgorithm.ECMQV_SHA256KDF, 
                         keypair.getPrivate(), 
                         keypair.getPublic(),
-                        CMSAlgorithm.AES128_WRAP
+                        getEncryptionOID(encryptionAlgorithm, isECKey, true)
                         ).setProvider("BC");
 
             recipientGenerator.addRecipient((X509Certificate) receiverCert);
 
-            encryptor = new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_CBC)
-            .setProvider("BC").build();
+            encryptor = getOutputEncryptor(encryptionAlgorithm, isECKey, false);
 
             gen.addRecipientInfoGenerator(recipientGenerator);
         
@@ -644,6 +644,95 @@ public class BCCryptoHelper implements ICryptoHelper {
 
     }
 
+    /**
+     * Resolves the appropriate ASN1 OID for the given encryption algorithm.
+     * This method determines the correct object identifier to use for encryption
+     * based on the algorithm name, whether the encryption is being used with 
+     * EC keys, and whether the algorithm should support wrapping.
+     *
+     * @param algorithm The name of the encryption algorithm (e.g., "AES128_CBC").
+     * @param isECKey Indicates if the encryption involves EC (Elliptic Curve) keys.
+     * @param isWrap Indicates if the algorithm is being used for key wrapping.
+     * @return The ASN1ObjectIdentifier representing the OID for the encryption algorithm.
+     * @throws NoSuchAlgorithmException If the algorithm is null, unsupported, 
+     *                                  or incompatible with the given parameters.
+     *
+     * <p><b>Behavior:</b></p>
+     * <ul>
+     *   <li>Throws an exception for unsupported or invalid algorithm names.</li>
+     *   <li>Handles special cases for EC keys, ensuring compatibility with 
+     *       wrapping and non-wrapping modes.</li>
+     *   <li>Supports a variety of algorithms, including AES, 3DES, RC2, CAST5, 
+     *       and IDEA, with appropriate restrictions for EC key usage.</li>
+     * </ul> 
+    */
+    protected ASN1ObjectIdentifier getEncryptionOID(String algorithm, boolean isECKey, boolean isWrap) throws NoSuchAlgorithmException {
+        if (algorithm == null) {
+            throw new NoSuchAlgorithmException("Algorithm is null");
+        }
+    
+        if (algorithm.equalsIgnoreCase(DIGEST_MD2)) {
+            return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md2.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
+            return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md5.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
+            return new ASN1ObjectIdentifier(OIWObjectIdentifiers.idSHA1.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA224)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha224.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA256)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha256.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA384)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha384.getId());
+        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA512)) {
+            return new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha512.getId());
+        } else if (algorithm.equalsIgnoreCase(CRYPT_3DES)) {
+            if (isECKey) {
+                if (isWrap) {
+                    return CMSAlgorithm.DES_EDE3_WRAP;
+                } else {
+                    return CMSAlgorithm.DES_EDE3_CBC;
+                }
+            } else {
+                return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.des_EDE3_CBC.getId());
+            }
+        } else if (algorithm.equalsIgnoreCase(CRYPT_RC2) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC)) {
+            if (isECKey) {
+                if (isWrap) {
+                    throw new NoSuchAlgorithmException("RC2 Wrap is not supported for EC keys");
+                }
+            }
+            return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.RC2_CBC.getId());
+        } else if (algorithm.equalsIgnoreCase(AES128_CBC)) {
+            if (isECKey && isWrap) {
+                return CMSAlgorithm.AES128_WRAP;
+            }
+            return CMSAlgorithm.AES128_CBC;
+        } else if (algorithm.equalsIgnoreCase(AES192_CBC)) {
+            if (isECKey && isWrap) {
+                return CMSAlgorithm.AES192_WRAP;
+            }
+            return CMSAlgorithm.AES192_CBC;
+        } else if (algorithm.equalsIgnoreCase(AES256_CBC)) {
+            if (isECKey && isWrap) {
+                return CMSAlgorithm.AES256_WRAP;
+            }
+            return CMSAlgorithm.AES256_CBC;
+        } else if (algorithm.equalsIgnoreCase(AES256_WRAP)) {
+            return CMSAlgorithm.AES256_WRAP;
+        } else if (algorithm.equalsIgnoreCase(CRYPT_CAST5)) {
+            if (isECKey) {
+                throw new NoSuchAlgorithmException("CAST5 is not supported for EC keys");
+            }
+            return CMSAlgorithm.CAST5_CBC;
+        } else if (algorithm.equalsIgnoreCase(CRYPT_IDEA)) {
+            if (isECKey) {
+                throw new NoSuchAlgorithmException("IDEA is not supported for EC keys");
+            }
+            return CMSAlgorithm.IDEA_CBC;
+        } else {
+            throw new NoSuchAlgorithmException("Unsupported or invalid algorithm: " + algorithm);
+        }
+    }
 
     /**
      * Looks up the correct ASN1 OID of the passed in algorithm string and returns the encryptor.
@@ -656,46 +745,17 @@ public class BCCryptoHelper implements ICryptoHelper {
      *                                  TODO: Possibly just use new ASN1ObjectIdentifier(algorithm) instead of explicit lookup to support random configured algorithms
      *                                  but will require determining if this has any side effects from a security point of view.
      */
-    protected OutputEncryptor getOutputEncryptor(String algorithm) throws NoSuchAlgorithmException {
+    protected OutputEncryptor getOutputEncryptor(String algorithm, boolean isECKey, boolean isWrap) throws NoSuchAlgorithmException {
         if (algorithm == null) {
             throw new NoSuchAlgorithmException("Algorithm is null");
         }
-        ASN1ObjectIdentifier asn1ObjId = null;
+        ASN1ObjectIdentifier asn1ObjId = getEncryptionOID(algorithm, isECKey, isWrap);
         int keyLen = -1;
-        if (algorithm.equalsIgnoreCase(DIGEST_MD2)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md2.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md5.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA1)) {
-            asn1ObjId = new ASN1ObjectIdentifier(OIWObjectIdentifiers.idSHA1.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA224)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha224.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA256)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha256.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA384)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha384.getId());
-        } else if (algorithm.equalsIgnoreCase(DIGEST_SHA512)) {
-            asn1ObjId = new ASN1ObjectIdentifier(NISTObjectIdentifiers.id_sha512.getId());
-        } else if (algorithm.equalsIgnoreCase(CRYPT_3DES)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.des_EDE3_CBC.getId());
-        } else if (algorithm.equalsIgnoreCase(CRYPT_RC2) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC)) {
-            asn1ObjId = new ASN1ObjectIdentifier(PKCSObjectIdentifiers.RC2_CBC.getId());
+
+        if (algorithm.equalsIgnoreCase(CRYPT_RC2) || algorithm.equalsIgnoreCase(CRYPT_RC2_CBC)) {
             keyLen = 40;
-        } else if (algorithm.equalsIgnoreCase(AES128_CBC)) {
-            asn1ObjId = CMSAlgorithm.AES128_CBC;
-        } else if (algorithm.equalsIgnoreCase(AES192_CBC)) {
-            asn1ObjId = CMSAlgorithm.AES192_CBC;
-        } else if (algorithm.equalsIgnoreCase(AES256_CBC)) {
-            asn1ObjId = CMSAlgorithm.AES256_CBC;
-        } else if (algorithm.equalsIgnoreCase(AES256_WRAP)) {
-            asn1ObjId = CMSAlgorithm.AES256_WRAP;
-        } else if (algorithm.equalsIgnoreCase(CRYPT_CAST5)) {
-            asn1ObjId = CMSAlgorithm.CAST5_CBC;
-        } else if (algorithm.equalsIgnoreCase(CRYPT_IDEA)) {
-            asn1ObjId = CMSAlgorithm.IDEA_CBC;
-        } else {
-            throw new NoSuchAlgorithmException("Unsupported or invalid algorithm: " + algorithm);
         }
+
         OutputEncryptor oe = null;
         try {
             if (keyLen < 0) {
