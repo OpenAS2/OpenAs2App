@@ -151,6 +151,7 @@ public class XMLSession extends BaseSession {
         Properties.setProperties(properties);
         String appPropsFile = System.getProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP);
         if (appPropsFile != null && appPropsFile.length() > 1) {
+            LOGGER.debug("Processing OpenAS2 configuration properties file: {}", appPropsFile);
             java.util.Properties appProps = new java.util.Properties();
             FileInputStream fis = null;
             try {
@@ -159,7 +160,9 @@ public class XMLSession extends BaseSession {
                 Enumeration<Object> enuKeys = appProps.keys();
                 while (enuKeys.hasMoreElements()) {
                     String key = (String) enuKeys.nextElement();
-                    Properties.setProperty(key, appProps.getProperty(key));
+                    String val = appProps.getProperty(key);
+                    Properties.setProperty(key, val);
+                    LOGGER.debug("Adding OpenAS2 properties file property: {} : {}", key, val);
                 }
 
             } catch (FileNotFoundException e) {
@@ -172,7 +175,7 @@ public class XMLSession extends BaseSession {
                         fis.close();
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
-                        LOGGER.warn("Failed to close properties fiel input stream.", e);
+                        LOGGER.warn("Failed to close properties file input stream.", e);
                     }
                 }
             }
@@ -184,15 +187,14 @@ public class XMLSession extends BaseSession {
         // Pass "true" to ignore unmatched parse ID's in case the properties contain dynamic parameters needed for JIT evaluation
         CompositeParameters parser = new CompositeParameters(true);
         parser.setReturnParamStringForMissingParsers(true);
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
+        for (Map.Entry<String, String> entry : Properties.getProperties().entrySet()) {
+            String key = entry.getKey();
             String val = entry.getValue();
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Parsing property: " + entry.getKey() + " : " + val);
-            }
+            LOGGER.debug("Parsing property: {} : {}", key, val);
             String parsedVal = ParameterParser.parse(val, parser);
             // Parser will return empty string if there is an unmatched parser ID in the string
             if (parsedVal.length() > 0 && !val.equals(parsedVal)) {
-                String key = entry.getKey();
+                LOGGER.debug("Overriding property with new parsed value: {} : {}", key, parsedVal);
                 // Put the changed value into the Properties set
                 Properties.setProperty(key, parsedVal);
             }
@@ -217,7 +219,8 @@ public class XMLSession extends BaseSession {
 
     private void loadCertificates(Node rootNode) throws OpenAS2Exception {
         CertificateFactory certFx = (CertificateFactory) XMLUtil.getComponent(rootNode, this);
-        setComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY, certFx);
+        String identifier = certFx.getIdentifier();
+        setComponent(identifier, certFx);
     }
 
     private void loadBasePartnershipPollerConfig(Node node) throws OpenAS2Exception {
@@ -308,7 +311,7 @@ public class XMLSession extends BaseSession {
                 // If there is a format node then this is a generic poller module
                 Node formatNode = moduleNode.getAttributes().getNamedItem("format");
                 if (formatNode == null) {
-                    throw new OpenAS2Exception("Invalid poller module coniguration: " + moduleNode.toString());
+                    throw new OpenAS2Exception("Invalid poller module coniguration. Missing the \"format\" attribute in the module: " + moduleNode.getNodeName());
                 }
                 partnershipName = "generic";
             } else {
