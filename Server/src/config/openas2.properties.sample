@@ -2,6 +2,7 @@ storageBaseDir=/opt/MyCompanyAS2/data
 as2_keystore=$properties.storageBaseDir$/as2_certs.p12
 partnership_file=$properties.storageBaseDir$/partnerships.xml
 as2_keystore_password=032scali
+as2_keystore.refesh_interval=300
 log_date_format=yyyy-MM-dd HH:mm:ss.SSS
 sql_timestamp_format=yyyy-MM-dd HH:mm:ss.SSS
 as2_message_id_format=$date.ddMMyyyyHHmmssZ$-$rand.UUID$
@@ -53,7 +54,15 @@ module.HealthCheckModule.port="10099"
 # The keystore for SSL certificates if SSL is enabled
 ssl_keystore=$properties.storageBaseDir$/ssl_certs.jks
 # The SSL certificates keystore password
-ssl_keystore_password=Fantini0101
+ssl_keystore_password=testas2
+# The SSL certificates keystore interval in seconds checking for changed file
+ssl_trust_keystore.refresh_interval=300
+# The trusted Self Signed SSL certificates keystore
+ssl_trust_keystore=%home%/ssl_trust_certs.p12
+# The trusted Self Signed SSL certificates keystore password
+ssl_trust_keystore_password=testas2
+# The trusted Self Signed SSL certificates keystore interval in seconds checking for changed file
+ssl_trust_keystore.refresh_interval=300
 # The location of the DB tracking database if using the H@ database which is the default in OpenAS2
 msg_tracking.db_directory=$properties.storageBaseDir$/DB
 msg_tracking.use_embedded_db=true
