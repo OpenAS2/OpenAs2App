@@ -221,7 +221,7 @@ public class CheckCertificate {
 
     private void checkUsingApacheHttp(String host, int port, String uri, String targetKeyStore, String keyStorePwd) throws Exception {
         System.out.println("Trying using Apache HTTP Client...");
-        Map<String, String> httpOptions = new HashMap<String, String>();
+        Map<String, Object> httpOptions = new HashMap<String, Object>();
         if (auth_user != null) {
             httpOptions.put(HTTPUtil.PARAM_HTTP_USER, auth_user);
             httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, auth_pwd);

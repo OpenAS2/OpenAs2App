@@ -14,7 +14,7 @@ import org.openas2.partner.Partnership;
 import org.openas2.util.Properties;
 
 
-public class BaserServerSetup {
+public class BaseServerSetup {
     private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
     static String myCompanyOid = "MyCompany_OID";
     static String myPartnerOid = "PartnerA_OID";

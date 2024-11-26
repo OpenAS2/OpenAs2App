@@ -54,13 +54,20 @@ public class AS2Util {
 
     public static String generateMessageID(Message msg, boolean isMDN) throws InvalidParameterException {
         String idFormat = null;
-        CompositeParameters params = new CompositeParameters(false).add("date", new DateParameters()).add("msg", new MessageParameters(msg)).add("rand", new RandomParameters());
+        CompositeParameters params = new CompositeParameters(
+                false).add("date",
+                new DateParameters()).add("msg",
+                new MessageParameters(msg)).add("rand",new RandomParameters()
+        );
         if (isMDN) {
             params.add("mdn", new MessageMDNParameters(msg.getMDN()));
             idFormat = msg.getPartnership().getAttributeOrProperty(Properties.AS2_MDN_MESSAGE_ID_FORMAT, null);
         }
         if (idFormat == null) {
-            idFormat = msg.getPartnership().getAttributeOrProperty(Properties.AS2_MESSAGE_ID_FORMAT, "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>");
+            idFormat = msg.getPartnership().getAttributeOrProperty(
+                Properties.AS2_MESSAGE_ID_FORMAT,
+                "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>"
+            );
         }
         String id = ParameterParser.parse(idFormat, params);
         // RFC822 requires enclosing message in <> but AS2 spec provides for this to be
@@ -497,7 +504,7 @@ public class AS2Util {
             logger.error(msg.getLogMsg(), e1);
             return AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
         }
-        CertificateFactory cFx = session.getCertificateFactory();
+        CertificateFactory cFx = session.getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
         String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
         X509Certificate senderCert = cFx.getCertificate(x509_alias);
 

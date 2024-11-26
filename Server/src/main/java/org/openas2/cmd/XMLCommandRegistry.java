@@ -63,7 +63,10 @@ public class XMLCommandRegistry extends BaseCommandRegistry {
 
     protected void loadCommand(Node node, MultiCommand parent) throws OpenAS2Exception {
         Command cmd = (Command) XMLUtil.getComponent(node, getSession());
-
+        if (cmd == null) {
+            // Must be disabled so do nothing
+            return;
+        }
         if (parent != null) {
             parent.getCommands().add(cmd);
         } else {

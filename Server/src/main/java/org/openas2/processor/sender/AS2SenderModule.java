@@ -183,7 +183,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             logger.info("Connecting to: " + url + msg.getLogMsgID());
         }
 
-        Map<String, String> httpOptions = getHttpOptions();
+        Map<String, Object> httpOptions = getHttpOptions();
         httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
         httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
         long maxSize = msg.getPartnership().getNoChunkedMaxSize();
@@ -331,7 +331,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             dataBP = AS2Util.getCryptoHelper().compress(msg, dataBP, compressionType, contentTxfrEncoding);
         }
         // Encrypt and/or sign the data if requested
-        CertificateFactory certFx = getSession().getCertificateFactory();
+        CertificateFactory certFx = getSession().getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
 
         // Sign the data if requested
         if (sign) {

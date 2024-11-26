@@ -51,7 +51,7 @@ public interface Session {
      * @see CertificateFactory
      * @see Component
      */
-    CertificateFactory getCertificateFactory() throws ComponentNotFoundException;
+    CertificateFactory getCertificateFactory(String componentID) throws ComponentNotFoundException;
 
     /**
      * Gets the <code>Component</code> currently registered with an ID
