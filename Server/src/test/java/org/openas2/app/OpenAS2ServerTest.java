@@ -143,8 +143,8 @@ public class OpenAS2ServerTest {
     }
 
     private TestMessage sendMessage(TestPartner fromPartner, TestPartner toPartner) throws IOException {
-        String outgoingMsgFileName = RandomStringUtils.randomAlphanumeric(10) + ".txt";
-        String outgoingMsgBody = RandomStringUtils.randomAlphanumeric(1024);
+        String outgoingMsgFileName = RandomStringUtils.secure().nextAlphanumeric(10) + ".txt";
+        String outgoingMsgBody = RandomStringUtils.secure().nextAlphanumeric(1024);
         File outgoingMsg = Files.createFile(Paths.get(tmp.toString(), outgoingMsgFileName)).toFile();
         FileUtils.write(outgoingMsg, outgoingMsgBody, "UTF-8");
         System.out.println("Copying a file to send to:" + fromPartner.getOutbox());
