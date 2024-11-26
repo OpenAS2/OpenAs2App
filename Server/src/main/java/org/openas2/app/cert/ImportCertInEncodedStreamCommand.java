@@ -42,20 +42,10 @@ public class ImportCertInEncodedStreamCommand extends AliasedCertCommand {
     protected CommandResult importCert(AliasedCertificateFactory certFx, String alias, String encodedCert) throws IOException, CertificateException, OpenAS2Exception {
 
         ByteArrayInputStream bais = new ByteArrayInputStream(ByteCoder.decode(encodedCert).getBytes());
-
-        java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");
-
-        CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK, "Certificate(s) imported successfully");
-
-        while (bais.available() > 0) {
-            Certificate cert = cf.generateCertificate(bais);
-
-            if (cert instanceof X509Certificate) {
-                certFx.addCertificate(alias, (X509Certificate) cert, true);
-                cmdRes.getResults().add("Imported certificate: " + cert.toString());
-
-                return cmdRes;
-            }
+        if (certFx.importCert(alias, bais)) {
+            CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK, "Certificate(s) imported successfully");
+            cmdRes.getResults().add("Imported certificate: " + certFx.getCertificate(alias).toString());
+            return cmdRes;
         }
 
         return new CommandResult(CommandResult.TYPE_ERROR, "No valid X509 certificates found");

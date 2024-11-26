@@ -9,12 +9,8 @@ import org.openas2.util.AS2Util;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.Key;
 import java.security.KeyStore;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
 
 public class ImportCertCommand extends AliasedCertCommand {
     public String getDefaultDescription() {
@@ -61,22 +57,11 @@ public class ImportCertCommand extends AliasedCertCommand {
     protected CommandResult importCert(AliasedCertificateFactory certFx, String alias, String filename) throws IOException, CertificateException, OpenAS2Exception {
         FileInputStream fis = new FileInputStream(filename);
         BufferedInputStream bis = new BufferedInputStream(fis);
-
-        java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");
-
-        CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK, "Certificate(s) imported successfully");
-
-        while (bis.available() > 0) {
-            Certificate cert = cf.generateCertificate(bis);
-
-            if (cert instanceof X509Certificate) {
-                certFx.addCertificate(alias, (X509Certificate) cert, true);
-                cmdRes.getResults().add("Imported certificate: " + cert.toString());
-
-                return cmdRes;
-            }
+        if (certFx.importCert(alias, bis)) {
+            CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK, "Certificate(s) imported successfully");
+            cmdRes.getResults().add("Imported certificate: " + certFx.getCertificate(alias).toString());
+            return cmdRes;
         }
-
         return new CommandResult(CommandResult.TYPE_ERROR, "No valid X509 certificates found");
     }
 
@@ -84,23 +69,9 @@ public class ImportCertCommand extends AliasedCertCommand {
         KeyStore ks = AS2Util.getCryptoHelper().getKeyStore();
         ks.load(new FileInputStream(filename), password.toCharArray());
 
-        Enumeration<String> aliases = ks.aliases();
-
-        while (aliases.hasMoreElements()) {
-            String certAlias = aliases.nextElement();
-            Certificate cert = ks.getCertificate(certAlias);
-
-            if (cert instanceof X509Certificate) {
-                certFx.addCertificate(alias, (X509Certificate) cert, true);
-
-                Key certKey = ks.getKey(certAlias, password.toCharArray());
-                certFx.addPrivateKey(alias, certKey, password);
-
-                return new CommandResult(CommandResult.TYPE_OK, "Imported certificate and key: " + cert.toString());
-            }
+        if (certFx.importPrivateKey(alias, ks, password)) {
+            return new CommandResult(CommandResult.TYPE_OK, "Imported certificate and key: " + certFx.getPrivateKey(alias).toString());
         }
-
         return new CommandResult(CommandResult.TYPE_ERROR, "No valid X509 certificates found");
-
     }
 }
