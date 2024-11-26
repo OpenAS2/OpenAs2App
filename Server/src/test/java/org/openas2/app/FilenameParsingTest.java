@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
-public class FilenameParsingTest extends BaserServerSetup {
+public class FilenameParsingTest extends BaseServerSetup {
     private static String testFileNamePart1 = "abc";
     private static String testFileNamePart2 = "123";
     private static String testFileName = testFileNamePart1 + "-" + testFileNamePart2 + ".txt";
@@ -38,9 +38,9 @@ public class FilenameParsingTest extends BaserServerSetup {
             msg.setAttribute(FileAttribute.MA_FILENAME, testFileName);
             PartnershipFactory pf = session.getPartnershipFactory();
             Partnership myPartnership = msg.getPartnership();
-            myPartnership.setSenderID(Partnership.PID_AS2, BaserServerSetup.myCompanyOid);
-            myPartnership.setReceiverID(Partnership.PID_AS2, BaserServerSetup.myPartnerOid);
-            myPartnership.setSenderID(Partnership.PID_AS2, BaserServerSetup.myCompanyOid);
+            myPartnership.setSenderID(Partnership.PID_AS2, BaseServerSetup.myCompanyOid);
+            myPartnership.setReceiverID(Partnership.PID_AS2, BaseServerSetup.myPartnerOid);
+            myPartnership.setSenderID(Partnership.PID_AS2, BaseServerSetup.myCompanyOid);
 
 
             Partnership configuredPartnership = pf.getPartnership(myPartnership, false);

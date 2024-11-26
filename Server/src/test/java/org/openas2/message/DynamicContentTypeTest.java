@@ -1,7 +1,7 @@
 package org.openas2.message;
 
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.openas2.app.BaserServerSetup;
+import org.openas2.app.BaseServerSetup;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.util.Properties;
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class DynamicContentTypeTest extends BaserServerSetup {
+public class DynamicContentTypeTest extends BaseServerSetup {
     private DirectoryPollingModule poller;
     
     public static File systemContentTypesMappingFile;
