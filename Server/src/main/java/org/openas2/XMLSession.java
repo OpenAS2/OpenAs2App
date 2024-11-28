@@ -5,9 +5,9 @@ import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandManager;
 import org.openas2.cmd.CommandRegistry;
 import org.openas2.cmd.processor.BaseCommandProcessor;
+import org.openas2.lib.util.StringEnvVarReplacer;
 import org.openas2.lib.xml.PropertyReplacementFilter;
 import org.openas2.params.CompositeParameters;
-import org.openas2.params.InvalidParameterException;
 import org.openas2.params.ParameterParser;
 import org.openas2.message.MessageFactory;
 import org.openas2.partner.Partnership;
@@ -137,10 +137,10 @@ public class XMLSession extends BaseSession {
      * Finally checks if an additional property file was provided and loads those.
      * 
      * @param propNode - the "properties" element of the configuration file containing property values
-     * @throws InvalidParameterException 
      * @throws IOException 
+     * @throws OpenAS2Exception 
      */
-    private void loadProperties(Node propNode) throws InvalidParameterException, IOException {
+    private void loadProperties(Node propNode) throws IOException, OpenAS2Exception {
         LOGGER.info("Loading properties...");
 
         Map<String, String> properties = XMLUtil.mapAttributes(propNode, false);
@@ -151,8 +151,11 @@ public class XMLSession extends BaseSession {
         Properties.setProperties(properties);
         String appPropsFile = System.getProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP);
         if (appPropsFile != null && appPropsFile.length() > 1) {
-            LOGGER.debug("Processing OpenAS2 configuration properties file: {}", appPropsFile);
+            LOGGER.info("Processing OpenAS2 configuration properties file: {}", appPropsFile);
             java.util.Properties appProps = new java.util.Properties();
+            // Support $ENV{some_env_var} reploacement in properties
+            StringEnvVarReplacer envVarReplacer = new StringEnvVarReplacer();
+            envVarReplacer.setAppHomeDir(getBaseDirectory());
             FileInputStream fis = null;
             try {
                 fis = new FileInputStream(appPropsFile);
@@ -160,13 +163,13 @@ public class XMLSession extends BaseSession {
                 Enumeration<Object> enuKeys = appProps.keys();
                 while (enuKeys.hasMoreElements()) {
                     String key = (String) enuKeys.nextElement();
-                    String val = appProps.getProperty(key);
+                    String val = envVarReplacer.replace(appProps.getProperty(key));
                     Properties.setProperty(key, val);
                     LOGGER.debug("Adding OpenAS2 properties file property: {} : {}", key, val);
                 }
 
             } catch (FileNotFoundException e) {
-                LOGGER.warn("Custom properties file specified but cannot be located:" + appPropsFile);
+                throw new OpenAS2Exception("Custom properties file specified but cannot be located:" + appPropsFile, e);
             } catch (IOException e) {
                 LOGGER.warn("Custom properties file load failed:" + appPropsFile, e);
             } finally {
@@ -174,7 +177,6 @@ public class XMLSession extends BaseSession {
                     try {
                         fis.close();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
                         LOGGER.warn("Failed to close properties file input stream.", e);
                     }
                 }
@@ -219,6 +221,10 @@ public class XMLSession extends BaseSession {
 
     private void loadCertificates(Node rootNode) throws OpenAS2Exception {
         CertificateFactory certFx = (CertificateFactory) XMLUtil.getComponent(rootNode, this);
+        if (certFx == null) {
+            // Must be disable so do nothing
+            return;
+        }
         String identifier = certFx.getIdentifier();
         setComponent(identifier, certFx);
     }
@@ -233,6 +239,10 @@ public class XMLSession extends BaseSession {
 
    private void loadCommands(Node rootNode) throws OpenAS2Exception {
         Component component = XMLUtil.getComponent(rootNode, this);
+        if (component == null) {
+            // Must be disable so do nothing
+            return;
+        }
         commandRegistry = (CommandRegistry) component;
     }
 
@@ -259,6 +269,10 @@ public class XMLSession extends BaseSession {
 
     private void loadCommandProcessor(CommandManager manager, Node cmdPrcessorNode) throws OpenAS2Exception {
         BaseCommandProcessor cmdProcesor = (BaseCommandProcessor) XMLUtil.getComponent(cmdPrcessorNode, this);
+        if (cmdProcesor == null) {
+            // Must be disable so do nothing
+            return;
+        }
         manager.addProcessor(cmdProcesor);
 
         setComponent(cmdProcesor.getName(), cmdProcesor);
@@ -268,11 +282,19 @@ public class XMLSession extends BaseSession {
         LOGGER.info("Loading partnerships...");
 
         PartnershipFactory partnerFx = (PartnershipFactory) XMLUtil.getComponent(rootNode, this);
+        if (partnerFx == null) {
+            // Must be disable so do nothing
+            return;
+        }
         setComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY, partnerFx);
     }
 
     private void loadProcessor(Node rootNode) throws OpenAS2Exception {
         Processor proc = (Processor) XMLUtil.getComponent(rootNode, this);
+        if (proc == null) {
+            // Must be disable so do nothing
+            return;
+        }
         setComponent(Processor.COMPID_PROCESSOR, proc);
 
         LOGGER.info("Loading processor nodes...");
@@ -322,6 +344,10 @@ public class XMLSession extends BaseSession {
             return;
         }
         ProcessorModule procmod = (ProcessorModule) XMLUtil.getComponent(moduleNode, this);
+        if (procmod == null) {
+            // Must be disable so do nothing
+            return;
+        }
         proc.getModules().add(procmod);
     }
 
@@ -372,6 +398,10 @@ public class XMLSession extends BaseSession {
     private void loadMessages(Node rootNode) throws OpenAS2Exception {
         LOGGER.info("Loading messages...");
         MessageFactory messageFx = (MessageFactory) XMLUtil.getComponent(rootNode, this);
+        if (messageFx == null) {
+            // Must be disable so do nothing
+            return;
+        }
         setComponent(MessageFactory.COMPID_MESSAGE_FACTORY, messageFx);
     }
 }

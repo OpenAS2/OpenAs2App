@@ -4,6 +4,8 @@ import org.openas2.Component;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -32,6 +34,8 @@ import java.util.Map;
 
 
 public class XMLUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(XMLUtil.class);
+
     public static Document parseXML(InputStream in, XMLFilterImpl handler) throws Exception {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser parser = factory.newSAXParser();
@@ -47,28 +51,27 @@ public class XMLUtil {
     }
 
     public static Component getComponent(Node node, Session session) throws OpenAS2Exception {
-        Node classNameNode = node.getAttributes().getNamedItem("classname");
+        Map<String, String> parameters = XMLUtil.mapAttributes(node);
+        AS2Util.attributeEnhancer(parameters);
+        String enabledNodeVal = parameters.getOrDefault("enabled", "true");
+        if (!"true".equalsIgnoreCase(enabledNodeVal)) {
+            LOG.info("Component node ignored as it is not enabled: {}", parameters);
+            return null;
+        }
 
+        Node classNameNode = node.getAttributes().getNamedItem("classname");
         if (classNameNode == null) {
             throw new OpenAS2Exception("Missing classname");
         }
-
         String className = classNameNode.getNodeValue();
-
         try {
             Class<?> objClass = Class.forName(className);
 
             if (!Component.class.isAssignableFrom(objClass)) {
                 throw new OpenAS2Exception("Class " + className + " must implement " + Component.class.getName());
             }
-
             Component obj = (Component) objClass.getDeclaredConstructor().newInstance();
-
-            Map<String, String> parameters = XMLUtil.mapAttributes(node);
-            AS2Util.attributeEnhancer(parameters);
-
             obj.init(session, parameters);
-
             return obj;
         } catch (Exception e) {
             throw new WrappedException("Error creating component: " + className, e);
