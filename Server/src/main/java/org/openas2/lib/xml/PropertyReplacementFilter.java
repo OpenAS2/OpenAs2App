@@ -1,5 +1,7 @@
 package org.openas2.lib.xml;
 
+import org.openas2.OpenAS2Exception;
+import org.openas2.lib.util.StringEnvVarReplacer;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -7,12 +9,9 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 /**
- * Supports replacing XML element properties with system environment variables.
+ * An XML handler to support replacing XML element properties with system environment variables.
  * Support for system properties is provided in the AS2Util.attributeEnhancer method
  *
  */
@@ -23,32 +22,32 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
         super.endElement(uri, localName, qName);
     }
 
-    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$ENV\\{([^\\}]++)\\}");
-    private final Map<String, String> env_vars;
-    private final String HOME_DIR_PLACEHOLDER = "%home%";
+    @SuppressWarnings("unused")
     private String appHomeDir = null;
+    private final StringEnvVarReplacer envVarReplacer = new StringEnvVarReplacer();
 
     public PropertyReplacementFilter() {
         super();
-        this.env_vars = System.getenv();
+        envVarReplacer.setEnvVarMap(System.getenv());
     }
 
-    public PropertyReplacementFilter(Map<String, String> env_vars) {
+    public PropertyReplacementFilter(Map<String, String> envVars) {
         super();
-        this.env_vars = env_vars;
+        envVarReplacer.setEnvVarMap(envVars);
     }
 
     public PropertyReplacementFilter(XMLReader parent) {
         this(parent, System.getenv());
     }
 
-    public PropertyReplacementFilter(XMLReader parent, Map<String, String> env_vars) {
+    public PropertyReplacementFilter(XMLReader parent, Map<String, String> envVars) {
         super(parent);
-        this.env_vars = env_vars;
+        envVarReplacer.setEnvVarMap(envVars);
     }
 
     public void setAppHomeDir(String appHomeDir) {
         this.appHomeDir = appHomeDir;
+        envVarReplacer.setAppHomeDir(appHomeDir);
     }
 
     /**
@@ -58,7 +57,12 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
      */
     @Override
     public void characters(char[] data, int start, int length) throws SAXException {
-        char[] value = this.replace(String.copyValueOf(data, start, length)).toCharArray();
+        char[] value;
+        try {
+            value = envVarReplacer.replace(String.copyValueOf(data, start, length)).toCharArray();
+        } catch (OpenAS2Exception e) {
+            throw new SAXException(e);
+        }
         super.characters(value, 0, value.length);
     }
 
@@ -74,31 +78,13 @@ public class PropertyReplacementFilter extends XMLFilterImpl {
 
         int length = attributes.getLength();
         for (int i = 0; i < length; ++i) {
-            attributes.setValue(i, this.replace(attributes.getValue(i)));
+            try {
+                attributes.setValue(i, envVarReplacer.replace(attributes.getValue(i)));
+            } catch (OpenAS2Exception e) {
+                throw new SAXException(e);
+            }
         }
 
         super.startElement(uri, localName, qName, attributes);
     }
-
-    private String replace(String input) throws SAXException {
-        if (this.appHomeDir != null) {
-            input = input.replace(this.HOME_DIR_PLACEHOLDER, this.appHomeDir);
-        }
-        StringBuffer strBuf = new StringBuffer();
-        Matcher matcher = ENV_VAR_PATTERN.matcher(input);
-        while (matcher.find()) {
-            String key = matcher.group(1);
-            String value = env_vars.get(key);
-
-            if (value == null) {
-                throw new SAXException("Missing environment variable for replacement: " + matcher.group() + " Using key: " + key);
-            } else {
-                matcher.appendReplacement(strBuf, Matcher.quoteReplacement(value));
-            }
-        }
-        matcher.appendTail(strBuf);
-
-        return strBuf.toString();
-    }
-
 }
