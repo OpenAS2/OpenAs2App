@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.sf.openas2</groupId>
     <artifactId>OpenAS2</artifactId>
-    <version>4.0.0</version>
+    <version>4.1.0</version>
     <name>OpenAS2</name>
     <packaging>pom</packaging>
 
@@ -151,7 +151,7 @@
 			<dependency>
 			    <groupId>jakarta.ws.rs</groupId>
 			    <artifactId>jakarta.ws.rs-api</artifactId>
-			    <version>[3]</version>
+			    <version>3.1.0</version>
 			</dependency>
 			<dependency>
 			    <groupId>jakarta.annotation</groupId>
@@ -161,7 +161,7 @@
            <dependency>
                <groupId>org.glassfish.jersey.containers</groupId>
                <artifactId>jersey-container-grizzly2-http</artifactId>
-               <version>[3]</version>
+               <version>3.1.9</version>
                <type>jar</type>
            </dependency>
            <dependency>
@@ -178,15 +178,14 @@
            <dependency>
                <groupId>org.glassfish.jersey.media</groupId>
                <artifactId>jersey-media-json-jackson</artifactId>
-               <version>[3]</version>
+               <version>3.1.9</version>
                <type>jar</type>
            </dependency>
    		   <dependency>
    		    <groupId>org.glassfish.jersey.inject</groupId>
    		    <artifactId>jersey-hk2</artifactId>
-   		    <version>[3]</version>
+   		    <version>3.1.9</version>
            </dependency>
-            <!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
@@ -232,7 +231,7 @@
         <developer>
             <id>uhurusurfa</id>
             <name>Christopher Broderick</name>
-            <email>uhurusurfa@users.sf.net</email>
+            <email>uhurusurfa@gmail.com</email>
         </developer>
     </developers>
 
