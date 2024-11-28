@@ -31,10 +31,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContexts;
 import org.openas2.OpenAS2Exception;
-import org.openas2.WrappedException;
-import org.openas2.cert.CertificateFactory;
 import org.openas2.message.Message;
-import org.openas2.processor.receiver.AS2ReceiverHandler;
 import org.openas2.processor.sender.HttpSenderModule;
 
 import jakarta.mail.Header;
