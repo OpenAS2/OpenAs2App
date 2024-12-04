@@ -7,19 +7,26 @@ import org.openas2.Session;
 import org.openas2.WrappedException;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.util.AS2Util;
-
+import org.apache.commons.io.FileUtils;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,6 +48,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class X509CertificateFactory extends BaseCertificateFactory implements AliasedCertificateFactory, KeyStoreCertificateFactory, StorableCertificateFactory {
     public static final String PARAM_IDENTIFIER = "identifier";
@@ -264,32 +272,54 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
     }   
     
     /**
+     * @param alias
      * @param distinguishedName - provide in this format:  "CN=test.openas2.org,O=OpenAS2 Foundation,L=London,C=UK"
-     * @param signatureAlg - signature algorithm for the certificate;; eg "SHA256WithRSA"
-     * @param validDays - number of days the certificate will be valid for
-     * @return
-     * @throws OpenAS2Exception 
-     * @throws NoSuchAlgorithmException
-     * @throws OperatorCreationException
-     * @throws CertificateException
+     * @param hashAlg -  hashing algorithm for the certificate;; eg "SHA256"
+     * @param keyAlg - key algorithm for the certificate. eg. RSA, EC
+     * @param keySizec - typically at least 2048 for security
+     * @param validDays - how many days from current time will the certificate be valid for
+     * @throws OpenAS2Exception
      */
-    public X509Certificate genSelfSignedCertificate(
-            KeyPair kp, String distinguishedName,
-            String signatureAlg,
+    public void genSelfSignedCertificate(
+            String alias,
+            String distinguishedName,
+            String hashAlg,
+            String keyAlg,
+            int keySize,
             int validDays) throws OpenAS2Exception {
-        SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(kp.getPublic().getEncoded());
+
+        KeyPair kp = generateKeyPair(keyAlg, keySize);
+        ASN1Sequence seq = null;
+        try (ASN1InputStream asn1InputStream = new ASN1InputStream(kp.getPublic().getEncoded())) {
+            seq= (ASN1Sequence) asn1InputStream.readObject();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        //SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(kp.getPublic().getEncoded());
+        SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(seq);
+        String signatureAlg = hashAlg + "With" + keyAlg;
+        if (keyAlg=="EC") {
+            signatureAlg += "DSA";
+        }
         X500Name x500Name = new X500Name(distinguishedName);
         long currentTime = System.currentTimeMillis();
         Date notBefore = new Date(currentTime);
         Date notAfter = new Date(currentTime + (1000L * 3600L * 24 * validDays));
         X509v3CertificateBuilder certBuilder = new X509v3CertificateBuilder(
                     x500Name,
-                    BigInteger.ONE,
+                    new BigInteger(64, new Random()),
                     notBefore,
                     notAfter,
                     x500Name,
                     subPubKeyInfo
                 );
+        try {
+            SubjectKeyIdentifier ski = new SubjectKeyIdentifier(subPubKeyInfo.getEncoded());
+            certBuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+        } catch (IOException e) {
+            throw new OpenAS2Exception("Failed to add SubjectKeyIdentifier extension when generating certificate.", e);
+        }
         ContentSigner signer;
         try {
             signer = new JcaContentSignerBuilder(signatureAlg)
@@ -300,7 +330,9 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
         }
         X509CertificateHolder certificateHolder = certBuilder.build(signer);
         try {
-            return new JcaX509CertificateConverter().getCertificate(certificateHolder);
+            X509Certificate cert = new JcaX509CertificateConverter().getCertificate(certificateHolder);
+            addCertificate(alias, cert, false);
+            addPrivateKey(alias, kp.getPrivate(), new String(getPassword()));
         } catch (CertificateException e) {
             throw new OpenAS2Exception("Failed to generate new certificate.", e);
         }
@@ -406,6 +438,48 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
             throw new WrappedException(ioe);
         } catch (GeneralSecurityException gse) {
             throw new WrappedException(gse);
+        }
+    }
+
+    /**
+     * Exports the public key to a PKCS12 keystore file.
+     * 
+     * @param filename - name of the Keystore file to export the certificate to
+     * @param password - password for the keystore
+     * @throws Exception
+     */
+    public void exportPublicKey(String filename, String srcAlias, String tgtAlias, char[] password) throws Exception {
+        KeyStore ks = AS2Util.getCryptoHelper().getKeyStore();
+        ks.load(null, null); // Inialises keystore
+        // Get the certificate entry containing public key and insert to keystore
+        ks.setCertificateEntry(tgtAlias, getCertificate(srcAlias));
+        try (FileOutputStream fOut = new FileOutputStream(filename, false)) {
+            ks.store(fOut, password);
+        } catch (IOException ioe) {
+            throw new WrappedException(ioe);
+        }
+    }
+
+    /**
+     * Exports public key in PEM or DER encoding to a file.
+     * @param filename - name of the file to store the encoded certificate to
+     * @param srcAlias - the alis of the public key in the factory object
+     * @param outputFormat - supports "DER" or "PEM
+     * @throws Exception
+     */
+    public void exportPublicKey(String filename, String srcAlias, String outputFormat) throws Exception {
+        File certFile = new File(filename);
+        if ("DER".equalsIgnoreCase(outputFormat)) {
+            byte[] derEncodedCert = getCertificate(srcAlias).getEncoded();
+            FileUtils.writeByteArrayToFile(certFile, derEncodedCert);
+        } else if ("PEM".equalsIgnoreCase(outputFormat)) {
+            try (FileWriter fw = new FileWriter(certFile); JcaPEMWriter pemWriter = new JcaPEMWriter(fw)) {
+                //String pemStr = Base64.getEncoder().encodeToString(derEncodedCert);
+                pemWriter.writeObject(getCertificate(srcAlias));
+                pemWriter.flush();
+            }
+        } else {
+            throw new OpenAS2Exception("Unsupported certificate encoding format: " + outputFormat);
         }
     }
 }
