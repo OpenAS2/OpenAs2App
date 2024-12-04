@@ -268,7 +268,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
      * @return The secured mimebodypart
      * @throws Exception some unforseen issue has occurred
      */
-    protected MimeBodyPart secure(Message msg) throws Exception {
+    public MimeBodyPart secure(Message msg) throws Exception {
         // Set up encrypt/sign variables
         MimeBodyPart dataBP = msg.getData();
         /*
@@ -437,7 +437,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         }
     }
 
-    protected InternetHeaders getHttpHeaders(Message msg, MimeBodyPart securedData) throws MessagingException {
+    public InternetHeaders getHttpHeaders(Message msg, MimeBodyPart securedData) throws MessagingException {
         Partnership partnership = msg.getPartnership();
         InternetHeaders ih = new InternetHeaders();
 
