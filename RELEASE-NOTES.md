@@ -10,14 +10,15 @@ The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.1.0 - 2024-11-30
+Version 4.1.0 - 2024-12-04
 
 This is an enhancement release.
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
 1. Support for Elliptic curve certificates.
 2. Enhanced support for using SSL with self signed certificates
-3. Significantly updated the OpenAS2HowTo documentation.
+3. Support PKCS12 certificate keystore for SSL certificates.
+4. Significantly updated the OpenAS2HowTo documentation.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
