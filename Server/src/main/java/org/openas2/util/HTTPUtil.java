@@ -495,8 +495,11 @@ public class HTTPUtil {
                     }
                 };
             }
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+                    .getDefaultAlgorithm());
+            kmf.init(selfsignedCertsKeystore, null);
             // Now add the custom trust manager to the SSL context
-            sslcontext.init(null, new TrustManager[]{tm}, null);
+            sslcontext.init(kmf.getKeyManagers(), new TrustManager[]{tm}, null);
         }
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, null, null, hnv);
         return sslsf;
