@@ -9,14 +9,15 @@ services:
       - 4081:10081
       - ${HOST_RESTAPI_PORT:-8443}:8080
     environment:
-      - OPENAS2PROP_RESTAPI__COMMAND__PROCESOR__BASEURI="http://0.0.0.0:8080"
-      - OPENAS2PROP_RESTAPI__COMMAND__PROCESOR__USERID="userID"
-      - OPENAS2PROP_RESTAPI__COMMAND__PROCESOR__PASSWORD="pWd"
+      - OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__BASEURI=http://0.0.0.0:8080
+      - OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__USERID=userID
+      - OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__PASSWORD=pWd
+      - OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__ENABLED=true
     tty: true
     stdin_open: true
     volumes:
-      - config:/opt/openas2/config:rw
-      - data:/opt/openas2/data:rw
+      - ./config:/opt/openas2/config:rw
+      - ./data:/opt/openas2/data:rw
 
 
   openas2_webui:
