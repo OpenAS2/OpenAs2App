@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openas2>
    <properties storageBaseDir="%home%/../data"
-               configDir="%home%"
+               config.dir="%home%"
                console.command.processor.enabled="true"
                socket.command.processor.enabled="false"
                module.AS2SenderModule.enabled="true"

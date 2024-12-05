@@ -11,7 +11,7 @@ public abstract class AliasedCertCommand extends BaseCommand {
     public CommandResult execute(Object[] params) {
 
         try {
-            CertificateFactory certFx = getSession().getCertificateFactory();
+            CertificateFactory certFx = getSession().getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
 
             if (certFx instanceof AliasedCertificateFactory) {
                 return execute((AliasedCertificateFactory) certFx, params);

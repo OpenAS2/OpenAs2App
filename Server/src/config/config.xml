@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openas2>
-   <properties storageBaseDir="%home%/../data"
+   <properties config.dir="%home%"
+               storageBaseDir="%home%/../data"
+               partnership_file="%home%/partnerships.xml"
                log_date_format="yyyy-MM-dd HH:mm:ss.SSS"
                sql_timestamp_format="yyyy-MM-dd HH:mm:ss.SSS"
                as2_message_id_format="$date.yyyyMMddHHmmssZ$-$rand.123$-$msg.sender.as2_id$_$msg.receiver.as2_id$_$msg.attributes.filename$"
                as2_receive_message_filename_fallback="$rand.shortUUID$"
+               as2_async_mdn_url="http://localhost:$properties.async_mdn_receiver_port$"
+               as2_keystore="%home%/as2_certs.p12"
+               as2_keystore_password="testas2"
+               as2_keystore.refresh_interval="300"
+               ssl_trust_keystore.enabled="false"
+               ssl_trust_keystore="%home%/ssl_trust_certs.p12"
+               ssl_trust_keystore_password="testas2"
+               ssl_trust_keystore.refresh_interval="300"
+               ssl_keystore="%home%/ssl_certs.jks"
+               ssl_keystore_password="testas2"
                console.command.processor.enabled="false"
                restapi.command.processor.enabled="false"
                restapi.command.processor.baseuri="http://localhost:8080"
@@ -33,14 +45,12 @@
                module.AS2MDNReceiverModule.https.enabled="false"
                module.AS2MDNReceiverModule.https.port="10444"
                module.HealthCheckModule.enabled="false"
+               module.HealthCheckModule.protocol="http"
+               module.HealthCheckModule.address="localhost"
                module.HealthCheckModule.port="10099"
+               module.HealthCheckModule.keystore="$properties.ssl_keystore$"
+               module.HealthCheckModule.keystore_password="$properties.ssl_keystore_password$"
                async_mdn_receiver_port="$properties.module.AS2MDNReceiverModule.http.port$"
-               as2_async_mdn_url="http://localhost:$properties.async_mdn_receiver_port$"
-               as2_keystore="%home%/as2_certs.p12"
-               as2_keystore_password="testas2"
-               ssl_keystore="%home%/ssl_certs.jks"
-               ssl_keystore_password="testas2"
-               partnership_file="%home%/partnerships.xml"
                jakarta.mail.properties.file="%home%/java.mail.properties"
                email.from="Open AS2 Server&lt;as2msgs@openas2.org&gt;"
                email.to="your email address"
@@ -74,12 +84,20 @@
                pollerConfigBase.process_files_in_paralllel="false"
                pollerConfigBase.max_parallel_files="20"
                partnerships.polling.interval="120"
+               messages.enabled="false"
                messages.polling.interval="120"
              />
    <certificates classname="org.openas2.cert.PKCS12CertificateFactory"
+                 identifier="as2_certs"
                  filename="$properties.as2_keystore$"
                  password="$properties.as2_keystore_password$"
-                 interval="300"/>
+                 interval="$properties.as2_keystore.refresh_interval$"/>
+   <certificates enabled="$properties.ssl_trust_keystore.enabled$"
+                 classname="org.openas2.cert.PKCS12CertificateFactory"
+                 identifier="ssl_trust_certs"
+                 filename="$properties.ssl_trust_keystore$"
+                 password="$properties.ssl_trust_keystore_password$"
+                 interval="$properties.ssl_trust_keystore.refresh_interval$"/>
    <commands classname="org.openas2.cmd.XMLCommandRegistry"
              filename="%home%/commands.xml"/>
    <commandProcessors>
@@ -115,20 +133,6 @@
               mergeextratokens="true"
               sendfilename="true"
               format="sender.as2_id, receiver.as2_id, attributes.filename"
-              mimetype="application/EDI-X12"/>
-      -->
-      <!-- This directory polling module is dedicated to sending to partner PartnerA_OID -->
-      <!-- NOTE: This mechanism is no longer the preferred way to add pollers. Use the partnership config as of 3.0.0
-                 See "Partnerships XML Defined Directory Poller" in the OpenAS2HowTo for details.
-      <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-              outboxdir="$properties.storageBaseDir$/toPartnerA/"
-              errordir="$properties.storageBaseDir$/toPartnerA/error/$date.YYYY$/$date.MM$"
-              stored_error_filename="$msg.attributes.filename$-$date.YYYY$-$date.MM$-$msg.headers.message-id$"
-              sentdir="$properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/sent/$date.YYYY$/$date.MM$"
-              stored_sent_filename="$msg.attributes.filename$-$msg.headers.message-id$"
-              interval="5"
-              defaults="sender.as2_id=MyCompany_OID, receiver.as2_id=PartnerA_OID"
-              sendfilename="true"
               mimetype="application/EDI-X12"/>
       -->
       <module enabled="$properties.module.DbTrackingModule.enabled$"
@@ -188,7 +192,11 @@
               resenddelay="$properties.module.DirectoryResenderModule.resenddelay$"/>
       <module enabled="$properties.module.HealthCheckModule.enabled$"
               classname="org.openas2.processor.receiver.HealthCheckModule"
-              port="$properties.module.HealthCheckModule.port$"/>
+              protocol="$properties.module.HealthCheckModule.protocol"
+              address="$properties.module.HealthCheckModule.address$"
+              port="$properties.module.HealthCheckModule.port$"
+              ssl_keystore="$properties.module.HealthCheckModule.ssl_keystore$"
+              ssl_keystore_password="$properties.module.HealthCheckModule.ssl_keystore_password$"/>
    </processor>
    <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->
    <pollerConfigBase classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
@@ -204,7 +212,8 @@
                  filename="$properties.partnership_file$"
                  interval="$properties.partnerships.polling.interval$"/>
 
-   <messages classname="org.openas2.message.XMLMessageFactory"
-                 filename="%home%/messages.xml"
-                 interval="$properties.messages.polling.interval$"/>
+   <messages enabled="$properties.messages.enabled$"
+             classname="org.openas2.message.XMLMessageFactory"
+             filename="%home%/messages.xml"
+             interval="$properties.messages.polling.interval$"/>
 </openas2>

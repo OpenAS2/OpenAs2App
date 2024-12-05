@@ -1,32 +1,29 @@
 #              OpenAS2 Server
-#              Version 4.0.0
+#              Version 4.1.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.0.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.1.0
 
-The release download file is: OpenAS2Server-4.0.0.zip
+The release download file is: OpenAS2Server-4.1.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.0.0 - 2024-10-15
+Version 4.1.0 - 2024-12-04
 
-This is an major change and enhancement release.
+This is an enhancement release.
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-1. Java 8 is NO LONGER supported. Support is for Java 11 and newer releases only.
-2. The logging facade was switched from Jakarta Commons Logging to SLF4J and the default implementation uses the Logback framework.
-3. The DB state logging for external databases now uses an Hikari connection pool and persists to the database using a separate thread to improve performance.
-4. Switch to Jakarta package for mail and REST API implementations
-5. Remove the insecure "remote" socket command processor and associated support class in the OpenAS2 server.
-6. Remove redundant packages from maven build.
-7. Fix MDN cleanup occurring when resend mode is entered.
+1. Support for Elliptic curve certificates.
+2. Enhanced support for using SSL with self signed certificates
+3. Support PKCS12 certificate keystore for SSL certificates.
+4. Significantly updated the OpenAS2HowTo documentation.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
 
-### Upgrading to 4.0 or newer any older version:
+### Upgrading to 4.0 or newer from any older version:
       1. Ensure you implement all logging that you had configured for ealrier versions using the logback configuration or replace with another framework that works with SLF4J facade. See the OpenAS2HowTo.pdf logging section for more details.
       2. The property for email configuration in the config.xml changed:
           Change ALL occurrences of javax.mail.properties to jakarta.mail.properties in config.xml and the .properties file if you implemented it.

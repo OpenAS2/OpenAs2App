@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
-public class FilenameParsingTest extends BaserServerSetup {
+public class FilenameParsingTest extends BaseServerSetup {
     private static String testFileNamePart1 = "abc";
     private static String testFileNamePart2 = "123";
     private static String testFileName = testFileNamePart1 + "-" + testFileNamePart2 + ".txt";
@@ -34,13 +34,13 @@ public class FilenameParsingTest extends BaserServerSetup {
     	super.createFileSystemResources();
     	super.setup();
         try {
-            msg = new AS2Message();
-            msg.setAttribute(FileAttribute.MA_FILENAME, testFileName);
+            simpleTestMsg = new AS2Message();
+            simpleTestMsg.setAttribute(FileAttribute.MA_FILENAME, testFileName);
             PartnershipFactory pf = session.getPartnershipFactory();
-            Partnership myPartnership = msg.getPartnership();
-            myPartnership.setSenderID(Partnership.PID_AS2, BaserServerSetup.myCompanyOid);
-            myPartnership.setReceiverID(Partnership.PID_AS2, BaserServerSetup.myPartnerOid);
-            myPartnership.setSenderID(Partnership.PID_AS2, BaserServerSetup.myCompanyOid);
+            Partnership myPartnership = simpleTestMsg.getPartnership();
+            myPartnership.setSenderID(Partnership.PID_AS2, BaseServerSetup.myCompanyOid);
+            myPartnership.setReceiverID(Partnership.PID_AS2, BaseServerSetup.myPartnerOid);
+            myPartnership.setSenderID(Partnership.PID_AS2, BaseServerSetup.myCompanyOid);
 
 
             Partnership configuredPartnership = pf.getPartnership(myPartnership, false);
@@ -48,7 +48,7 @@ public class FilenameParsingTest extends BaserServerSetup {
             configuredPartnership.setAttribute(Partnership.PAIB_NAMES_FROM_FILENAME, attribNamesFromFileName);
             configuredPartnership.setAttribute(Partnership.PA_SUBJECT, subjectAttrib);
             // update the message's partnership with any stored information
-            pf.updatePartnership(msg, true);
+            pf.updatePartnership(simpleTestMsg, true);
 
         } catch (Throwable e) {
             // aid for debugging JUnit tests
@@ -64,9 +64,9 @@ public class FilenameParsingTest extends BaserServerSetup {
 
     @Test
     public void shouldHaveAddedAttributes() throws Exception {
-        assertThat("Verify 1st attribute added from filename", msg.getAttribute(attribNamesFromFileName1), equalTo(testFileNamePart1));
-        assertThat("Verify 2nd attribute added from filename", msg.getAttribute(attribNamesFromFileName2), equalTo(testFileNamePart2));
-        assertThat("Verify message subject", msg.getSubject(), equalTo(expectedSubject));
+        assertThat("Verify 1st attribute added from filename", simpleTestMsg.getAttribute(attribNamesFromFileName1), equalTo(testFileNamePart1));
+        assertThat("Verify 2nd attribute added from filename", simpleTestMsg.getAttribute(attribNamesFromFileName2), equalTo(testFileNamePart2));
+        assertThat("Verify message subject", simpleTestMsg.getSubject(), equalTo(expectedSubject));
     }
 
 }

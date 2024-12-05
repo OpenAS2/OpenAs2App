@@ -73,7 +73,7 @@ if [ "1" != "$IS_AUTOMATED_EXEC" ]; then
   echo "Generate a certificate to a PKCS12 key store."
   echo "Generating certificate:  using alias $certAlias to ${tgtStore}.p12 $PRE_GEN_MSG_ADDITIONAL"
   read -p "Do you wish to execute this request? [Y/N]" Response
-  if [  $Response != "Y" -a $Response != "y"  ] ; then
+  if [  "$Response" != "Y" -a "$Response" != "y"  ] ; then
     exit 1
   fi
   read -p "Enter password for keystore:" ksPwd

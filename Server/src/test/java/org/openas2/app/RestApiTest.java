@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.TestResource;
 import org.openas2.TestUtils;
 import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
+import org.openas2.util.Properties;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,7 +66,7 @@ public class RestApiTest {
         // to make sure the release package is fully tested
         scratchpad = Files.createTempDirectory("tempResources");
         File customPropsFile = Files.createFile(Paths.get(scratchpad.toString(), "openas2.properties")).toFile();
-        System.setProperty("openas2.properties.file", customPropsFile.getAbsolutePath());
+        System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, customPropsFile.getAbsolutePath());
         FileOutputStream fos = new FileOutputStream(customPropsFile);
         fos.write("restapi.command.processor.enabled=true\n".getBytes());
         fos.write(("restapi.command.processor.baseuri=" + restHostAddr + "\n").getBytes());
@@ -201,7 +202,7 @@ public class RestApiTest {
         params.add(new BasicNameValuePair("1", TEST_PARTNER_NAME)); // the sender
         params.add(new BasicNameValuePair("2", "PartnerA")); // the receiver
         params.add(new BasicNameValuePair("as2_url", "http://my.as2host.io:10080"));
-        params.add(new BasicNameValuePair("pollerConfig.enabled", "true"));
+        params.add(new BasicNameValuePair("pollerConfig.enabled", "false"));
         String buffer = this.doPost("partnership/add", true, params);
         assertThat("Add partnership via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
     }

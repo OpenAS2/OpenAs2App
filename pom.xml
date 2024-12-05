@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.sf.openas2</groupId>
     <artifactId>OpenAS2</artifactId>
-    <version>4.0.0</version>
+    <version>4.1.0</version>
     <name>OpenAS2</name>
     <packaging>pom</packaging>
 
@@ -51,17 +51,17 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcjmail-jdk18on</artifactId>
-                <version>1.78.1</version>
+                <version>1.79</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk18on</artifactId>
-                <version>1.78.1</version>
+                <version>1.79</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.78.1</version>
+                <version>1.79</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
@@ -71,7 +71,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpg-jdk18on</artifactId>
-                <version>1.78.1</version>
+                <version>1.79</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -108,7 +108,7 @@
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
 		        <artifactId>junit-jupiter</artifactId>
-		        <version>5.11.2</version>
+		        <version>5.11.3</version>
                 <scope>test</scope>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
@@ -116,14 +116,14 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
 			    <!-- Hold at version 4.x for Java 8 compatibility -->
-			    <version>5.14.1</version>
+			    <version>5.14.2</version>
                 <scope>test</scope>
             </dependency>
 			<dependency>
 			    <groupId>org.mockito</groupId>
 			    <artifactId>mockito-junit-jupiter</artifactId>
 			    <!-- Hold at version 4.x for Java 8 compatibility -->
-			    <version>5.14.1</version>
+			    <version>5.14.2</version>
 			    <scope>test</scope>
 			</dependency>
 			<!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest -->
@@ -136,7 +136,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.17.0</version>
+                <version>2.18.0</version>
             </dependency>
 			<dependency>
 			    <groupId>org.slf4j</groupId>
@@ -146,12 +146,12 @@
 			<dependency>
 			    <groupId>ch.qos.logback</groupId>
 			    <artifactId>logback-classic</artifactId>
-			    <version>1.5.8</version>
+			    <version>1.5.12</version>
 			</dependency>
 			<dependency>
 			    <groupId>jakarta.ws.rs</groupId>
 			    <artifactId>jakarta.ws.rs-api</artifactId>
-			    <version>[3]</version>
+			    <version>3.1.0</version>
 			</dependency>
 			<dependency>
 			    <groupId>jakarta.annotation</groupId>
@@ -161,32 +161,31 @@
            <dependency>
                <groupId>org.glassfish.jersey.containers</groupId>
                <artifactId>jersey-container-grizzly2-http</artifactId>
-               <version>[3]</version>
+               <version>3.1.9</version>
                <type>jar</type>
            </dependency>
            <dependency>
                <groupId>com.fasterxml.jackson.core</groupId>
                <artifactId>jackson-databind</artifactId>
-               <version>2.18.0</version>
+               <version>2.18.2</version>
                <type>jar</type>
            </dependency>
 		   <dependency>
 		        <groupId>com.fasterxml.jackson.module</groupId>
 		        <artifactId>jackson-module-jaxb-annotations</artifactId>
-		        <version>2.18.0</version>
+		        <version>2.18.2</version>
 		   </dependency>
            <dependency>
                <groupId>org.glassfish.jersey.media</groupId>
                <artifactId>jersey-media-json-jackson</artifactId>
-               <version>[3]</version>
+               <version>3.1.9</version>
                <type>jar</type>
            </dependency>
    		   <dependency>
    		    <groupId>org.glassfish.jersey.inject</groupId>
    		    <artifactId>jersey-hk2</artifactId>
-   		    <version>[3]</version>
+   		    <version>3.1.9</version>
            </dependency>
-            <!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
@@ -205,7 +204,7 @@
 			<dependency>
 			   <groupId>com.zaxxer</groupId>
 			   <artifactId>HikariCP</artifactId>
-			   <version>6.0.0</version>
+			   <version>6.2.1</version>
 			</dependency>
         </dependencies>
     </dependencyManagement>
@@ -232,7 +231,7 @@
         <developer>
             <id>uhurusurfa</id>
             <name>Christopher Broderick</name>
-            <email>uhurusurfa@users.sf.net</email>
+            <email>uhurusurfa@gmail.com</email>
         </developer>
     </developers>
 

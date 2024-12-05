@@ -1,10 +1,31 @@
 storageBaseDir=/opt/MyCompanyAS2/data
-as2_keystore=$properties.storageBaseDir$/as2_certs.p12
+# Where to find the partnerships XML file
 partnership_file=$properties.storageBaseDir$/partnerships.xml
+# the path to and name ofthe keystore fiule containing the AS2 certificates
+as2_keystore=$properties.storageBaseDir$/as2_certs.p12
+# The password for the AS2 certificates keystore
 as2_keystore_password=032scali
+# The time between checks for a changed AS2 keystore file
+as2_keystore.refesh_interval=300
+# The keystore for SSL certificates if SSL is enabled
+ssl_keystore=$properties.storageBaseDir$/ssl_certs.jks
+# The SSL certificates keystore password
+ssl_keystore_password=testas2
+# The SSL certificates keystore interval in seconds checking for changed file
+ssl_trust_keystore.refresh_interval=300
+# The trusted Self Signed SSL certificates keystore
+ssl_trust_keystore=%home%/ssl_trust_certs.p12
+# The trusted Self Signed SSL certificates keystore password
+ssl_trust_keystore_password=testas2
+# The trusted Self Signed SSL certificates keystore interval in seconds checking for changed file
+ssl_trust_keystore.refresh_interval=300
+# The format of the logging entry timestamp
 log_date_format=yyyy-MM-dd HH:mm:ss.SSS
+# The SQL servers timestamp format - default is SQL92 so should work for most DB's
 sql_timestamp_format=yyyy-MM-dd HH:mm:ss.SSS
+# The AS2 message ID is generated using this property
 as2_message_id_format=$date.ddMMyyyyHHmmssZ$-$rand.UUID$
+# The AS2 message payload file name fallback option if it is not passed in the AS2 message headers
 as2_receive_message_filename_fallback=$rand.shortUUID$
 log_invalid_http_request=false
 # The command processor that works within the command line console after startup. NOT to be used for production deployments.
@@ -46,26 +67,47 @@ module.AS2MDNReceiverModule.https.enabled=false
 module.AS2MDNReceiverModule.https.port=10444
 # Supports a healthcheck API to monitor the OpenAS2 server
 module.HealthCheckModule.enabled=false
+# The host address that the healthcheck module binds to
+module.HealthCheckModule.address=localhost
 # What port can the healthcheck module run on
-module.HealthCheckModule.port="10099"
+module.HealthCheckModule.port=10099
 # The ASYNC URL that will be used if you tunr on ASYN mode MDN for a partner. Can be overridden explicitly in the partnership definition
 #as2_async_mdn_url=https://myas2.mycomany.com:$properties.module.AS2MDNReceiverModule.https.port$
-# The keystore for SSL certificates if SSL is enabled
-ssl_keystore=$properties.storageBaseDir$/ssl_certs.jks
-# The SSL certificates keystore password
-ssl_keystore_password=Fantini0101
 # The location of the DB tracking database if using the H@ database which is the default in OpenAS2
 msg_tracking.db_directory=$properties.storageBaseDir$/DB
+# Use the H2 embedded database that is the default for OpenAS2. Change to false for other DB's
 msg_tracking.use_embedded_db=true
+# Only necessary for older JDBC drivers. Mostly just ignored.
 msg_tracking.force_load_jdbc_driver=false
+# Database user name
 msg_tracking.db_user=sa
+# Database password
 msg_tracking.db_pwd=OpenAS2
+# Database instance name
 msg_tracking.db_name=openas2
+# Database tracking table name
 msg_tracking.table_name=msg_metadata
+# Database JDBC driver
 msg_tracking.jdbc_driver=org.h2.Driver
+# The JDBC connect string. The below string is specific to H2 database
 msg_tracking.jdbc_connect_string=jdbc:h2:$component.db_directory$/$component.db_name$
 msg_tracking.sql_escape_character='
+# Specific to the embedded database that comes with OpenAS2. Ignored otherwise.
 msg_tracking.tcp_server_start=true
+# Specific to the embedded database that comes with OpenAS2. Ignored otherwise.
 msg_tracking.tcp_server_port=10092
+# Specific to the embedded database that comes with OpenAS2. Ignored otherwise.
 msg_tracking.tcp_server_password=openas2
+# Requires all received AS2 messages to be signed. If you have a partner who requires sending unsigned messages then change this to false
 reject_unsigned_messages=true
+# The following are all related to the partnership based directory poller.
+pollerConfigBase.outboxdir=$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$
+pollerConfigBase.errordir=$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+pollerConfigBase.interval=5
+pollerConfigBase.defaults=sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$
+pollerConfigBase.sendfilename=true
+pollerConfigBase.mimetype=application/EDI-X12
+pollerConfigBase.process_files_in_paralllel=false
+pollerConfigBase.max_parallel_files=20
+# The time between checks for a changed partnerships.xml file for auto reload.
+partnerships.polling.interval=120

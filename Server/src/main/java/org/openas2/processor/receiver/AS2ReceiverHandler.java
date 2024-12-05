@@ -311,7 +311,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
     }
 
     protected String decryptAndVerify(AS2Message msg) throws OpenAS2Exception {
-        CertificateFactory certFx = getModule().getSession().getCertificateFactory();
+        CertificateFactory certFx = getModule().getSession().getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
         ICryptoHelper ch;
         String mic = null;
 
@@ -633,7 +633,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         reportPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, unfoldHeaders?MimeUtility.unfold(reportMultiPart.getContentType()):reportMultiPart.getContentType());
         // Sign the data if needed
         if (signatureProtocol != null) {
-            CertificateFactory certFx = session.getCertificateFactory();
+            CertificateFactory certFx = session.getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
 
             try {
                 // The receiver of the original message is the sender of the MDN - sign with the receivers private key

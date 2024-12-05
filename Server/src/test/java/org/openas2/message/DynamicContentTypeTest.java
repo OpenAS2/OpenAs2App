@@ -1,7 +1,7 @@
 package org.openas2.message;
 
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.openas2.app.BaserServerSetup;
+import org.openas2.app.BaseServerSetup;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.util.Properties;
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class DynamicContentTypeTest extends BaserServerSetup {
+public class DynamicContentTypeTest extends BaseServerSetup {
     private DirectoryPollingModule poller;
     
     public static File systemContentTypesMappingFile;
@@ -65,7 +65,7 @@ public class DynamicContentTypeTest extends BaserServerSetup {
         }  
         writer2.close();
         super.setup();
-        this.poller = session.getPartnershipPoller(msg.getPartnership().getName());
+        this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
     }
 
     @AfterAll
@@ -76,7 +76,7 @@ public class DynamicContentTypeTest extends BaserServerSetup {
     @Test
     public void a1_shouldHaveNoMappingEnabled() throws Exception {
         // The default is to not have dynamic mapping so check
-        Partnership myPartnership = msg.getPartnership();
+        Partnership myPartnership = simpleTestMsg.getPartnership();
         assertFalse(myPartnership.isUseDynamicContentTypeLookup(), "Check default is mapping off.");
     }
 
@@ -84,7 +84,7 @@ public class DynamicContentTypeTest extends BaserServerSetup {
     @Test
     public void a2_shouldFailNoMapping() throws Exception {
         // Make sure that there is an error if no mapping file defined but trying to use mapping
-        Partnership myPartnership = msg.getPartnership();
+        Partnership myPartnership = simpleTestMsg.getPartnership();
         assertThrows(Exception.class, () -> { myPartnership.setUseDynamicContentTypeLookup(true);}, "No config for Content-Type mapping should throw exception.");
     }
 
@@ -93,26 +93,26 @@ public class DynamicContentTypeTest extends BaserServerSetup {
     public void b_shouldGetDefaultContentType() throws Exception {
         // Partnership not set for dynamic mapping so should return system poller default
         String testFilename = "random." + ediFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check default Content-Type returned when no mapping.", poller.getMessageContentType(msg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check default Content-Type returned when no mapping.", poller.getMessageContentType(simpleTestMsg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
     }
 
     @Test
     public void c_shouldGetPartnershipMappedContentTypeWhenNoSystemMapping() throws Exception {
         // Set the partnership to have dynamic mapping file
-        msg.getPartnership().setAttribute(Partnership.PA_CONTENT_TYPE_MAPPING_FILE, partnershipContentTypesMappingFile.getAbsolutePath());
+        simpleTestMsg.getPartnership().setAttribute(Partnership.PA_CONTENT_TYPE_MAPPING_FILE, partnershipContentTypesMappingFile.getAbsolutePath());
         // Force load the partnership mapping
-        msg.getPartnership().setUseDynamicContentTypeLookup(true);
+        simpleTestMsg.getPartnership().setUseDynamicContentTypeLookup(true);
         // Now check that we get the system property when no override and override when set
         String testFilename = "random." + ediFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check system default Content-Type returned when not overridden.", poller.getMessageContentType(msg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check system default Content-Type returned when not overridden.", poller.getMessageContentType(simpleTestMsg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
         testFilename = "random." + xmlFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check partnership mapped Content-Type returned when partnership mapping setup.", poller.getMessageContentType(msg).matches(partnershipMappedContentTypes.get(xmlFileExtension)), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check partnership mapped Content-Type returned when partnership mapping setup.", poller.getMessageContentType(simpleTestMsg).matches(partnershipMappedContentTypes.get(xmlFileExtension)), is(true));
         testFilename = "random." + unmappedFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check system mapped default Content-Type returned when no system or partnership mapping defined.", poller.getMessageContentType(msg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check system mapped default Content-Type returned when no system or partnership mapping defined.", poller.getMessageContentType(simpleTestMsg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
     }
 
     @Test
@@ -125,16 +125,16 @@ public class DynamicContentTypeTest extends BaserServerSetup {
         // Now reload the session to get new properties file that then loads system mapping
         super.refresh();
         // Force the partnership to have dynamic mapping enabled
-        msg.getPartnership().setUseDynamicContentTypeLookup(true);
+        simpleTestMsg.getPartnership().setUseDynamicContentTypeLookup(true);
         String testFilename = "random." + ediFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check system mapped Content-Type returned when system mapping setup.", poller.getMessageContentType(msg).matches(systemMappedContentTypes.get(ediFileExtension)), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check system mapped Content-Type returned when system mapping setup.", poller.getMessageContentType(simpleTestMsg).matches(systemMappedContentTypes.get(ediFileExtension)), is(true));
         testFilename = "random." + xmlFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check system mapped Content-Type returned when system mapping setup.", poller.getMessageContentType(msg).matches(systemMappedContentTypes.get(xmlFileExtension)), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check system mapped Content-Type returned when system mapping setup.", poller.getMessageContentType(simpleTestMsg).matches(systemMappedContentTypes.get(xmlFileExtension)), is(true));
         testFilename = "random." + unmappedFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check system mapped Content-Type returned when system mapping setup.", poller.getMessageContentType(msg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check system mapped Content-Type returned when system mapping setup.", poller.getMessageContentType(simpleTestMsg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
     }
 
     @Test
@@ -146,18 +146,18 @@ public class DynamicContentTypeTest extends BaserServerSetup {
         // Now reload the session to get new properties file that then loads system mapping
         super.refresh();
         // Set the partnership to have dynamic mapping file
-        msg.getPartnership().setAttribute(Partnership.PA_CONTENT_TYPE_MAPPING_FILE, partnershipContentTypesMappingFile.getAbsolutePath());
+        simpleTestMsg.getPartnership().setAttribute(Partnership.PA_CONTENT_TYPE_MAPPING_FILE, partnershipContentTypesMappingFile.getAbsolutePath());
         // Force load the override
-        msg.getPartnership().setUseDynamicContentTypeLookup(true);
+        simpleTestMsg.getPartnership().setUseDynamicContentTypeLookup(true);
         // Now check that we get the system property when no override and override when set
         String testFilename = "random." + ediFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check system mapped Content-Type returned when not overridden.", poller.getMessageContentType(msg).matches(systemMappedContentTypes.get(ediFileExtension)), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check system mapped Content-Type returned when not overridden.", poller.getMessageContentType(simpleTestMsg).matches(systemMappedContentTypes.get(ediFileExtension)), is(true));
         testFilename = "random." + xmlFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check partnership mapped Content-Type returned when partnership mapping setup.", poller.getMessageContentType(msg).matches(partnershipMappedContentTypes.get(xmlFileExtension)), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check partnership mapped Content-Type returned when partnership mapping setup.", poller.getMessageContentType(simpleTestMsg).matches(partnershipMappedContentTypes.get(xmlFileExtension)), is(true));
         testFilename = "random." + unmappedFileExtension;
-        poller.addMessageMetadata(msg, testFilename);
-        assertThat("Check system mapped default Content-Type returned when no system or partnership mapping defined.", poller.getMessageContentType(msg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
+        poller.addMessageMetadata(simpleTestMsg, testFilename);
+        assertThat("Check system mapped default Content-Type returned when no system or partnership mapping defined.", poller.getMessageContentType(simpleTestMsg).matches(Properties.getProperty("pollerConfigBase.mimetype", "FakeValue")), is(true));
     }
 }

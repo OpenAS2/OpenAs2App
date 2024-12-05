@@ -8,6 +8,7 @@ package org.openas2.cmd.processor.restapi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.openas2.cert.AliasedCertificateFactory;
+import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
 
@@ -225,7 +226,7 @@ public class ApiResource {
             params.add("importbystream");
             params.add(itemId);
             String payload = formParams.getFirst("data");
-            AliasedCertificateFactory certFx = (AliasedCertificateFactory) getProcessor().getSession().getCertificateFactory();
+            AliasedCertificateFactory certFx = (AliasedCertificateFactory) getProcessor().getSession().getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
             ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(payload));
 
             java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X.509");

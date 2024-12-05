@@ -54,8 +54,8 @@ public abstract class BaseSession implements Session {
         }
     }
 
-    public CertificateFactory getCertificateFactory() throws ComponentNotFoundException {
-        return (CertificateFactory) getComponent(CertificateFactory.COMPID_CERTIFICATE_FACTORY);
+    public CertificateFactory getCertificateFactory(String componentID) throws ComponentNotFoundException {
+        return (CertificateFactory) getComponent(componentID);
     }
 
     public Map<String, Map<String, Object>> getPolledDirectories() {
@@ -71,10 +71,14 @@ public abstract class BaseSession implements Session {
      *
      * @param componentID registers the component to this ID
      * @param comp        component to register
+     * @throws OpenAS2Exception 
      * @see Component
      */
-    public void setComponent(String componentID, Component comp) {
+    public void setComponent(String componentID, Component comp) throws OpenAS2Exception {
         Map<String, Component> objects = getComponents();
+        if (objects.containsKey(componentID)) {
+            throw new OpenAS2Exception("A component with this ID has already been regiostered: " + componentID);
+        }
         objects.put(componentID, comp);
     }
 
@@ -207,6 +211,10 @@ public abstract class BaseSession implements Session {
 
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception {
         DirectoryPollingModule procmod = (DirectoryPollingModule) XMLUtil.getComponent(moduleNode, this);
+        if (procmod == null) {
+            // Must be disable so do nothing
+            return;
+        }
         String pollerDir = procmod.getParameters().get(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY);
         try {
             checkPollerModuleConfig(pollerDir);

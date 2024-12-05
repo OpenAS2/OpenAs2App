@@ -105,7 +105,7 @@ public class MimeBodyPartEncodingTest {
             session.getPartnershipFactory().updatePartnership(msg, true);
             msg.updateMessageID();
 
-            CertificateFactory certFx = session.getCertificateFactory();
+            CertificateFactory certFx = session.getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
             String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
             X509Certificate senderCert = certFx.getCertificate(x509_alias);
 

@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>4.0.0</version>
+        <version>4.1.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -24,6 +24,7 @@
         <project.dist.package.name>${project.parent.artifactId}Server-${project.version}.zip</project.dist.package.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <help.file.src>${project.basedir}/../docs/OpenAS2HowTo.pdf</help.file.src>
+        <project.license>${project.basedir}/../LICENSE.txt</project.license>
         <release.notes>${project.basedir}/../RELEASE-NOTES.md</release.notes>
         <release.history>${project.basedir}/../changes.txt</release.history>
         <package.assembly.dir>${project.build.directory}/dist</package.assembly.dir>
@@ -94,6 +95,8 @@
                                 <copy file="${release.notes}"
                                       todir="${package.assembly.dir}" verbose="true"/>
                                 <copy file="${release.history}"
+                                      todir="${package.assembly.dir}" verbose="true"/>
+                                <copy file="${project.license}"
                                       todir="${package.assembly.dir}" verbose="true"/>
                                 <!-- create distribution package
                                     basedir="${package.assembly.dir}"
