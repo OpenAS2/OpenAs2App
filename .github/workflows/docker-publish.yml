@@ -1,7 +1,10 @@
 name: Build and Push OpenAS2 Docker Images with Dynamic Versioning
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - '**'  # Runs on any branch push
+  workflow_dispatch:  # Allows manual trigger
 
 env:
   IMAGE_NAME: openas2app
@@ -44,6 +47,7 @@ jobs:
 
           echo "New version: $NEW_VERSION"
           echo "version=$NEW_VERSION" >> $GITHUB_ENV
+          echo "branch=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Build and Push OpenAS2 Server Image
         uses: docker/build-push-action@v5
@@ -54,6 +58,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.branch }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Build and Push OpenAS2 Web UI Image
@@ -65,4 +70,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-web:${{ env.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-web:${{ env.branch }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}-web:latest
