@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openas2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openas2
+  template:
+    metadata:
+      labels:
+        app: openas2
+    spec:
+      containers:
+        - name: openas2
+          image: kodi1981/openas2app:v1
+          ports:
+            - containerPort: 10080
+            - containerPort: 10081
+            - containerPort: 8080
+          env:
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__BASEURI
+              value: "http://0.0.0.0:8080"
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__USERID
+              value: "userID"
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__PASSWORD
+              value: "pWd"
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__ENABLED
+              value: "true"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /opt/openas2/config
+            - name: data-volume
+              mountPath: /opt/openas2/data
+      volumes:
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: openas2-config-pvc
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: openas2-data-pvc
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openas2-service
+spec:
+  selector:
+    app: openas2
+  ports:
+    - name: web-port
+      protocol: TCP
+      port: 4080
+      targetPort: 10080
+    - name: secure-web-port
+      protocol: TCP
+      port: 4081
+      targetPort: 10081
+    - name: api-port
+      protocol: TCP
+      port: 8443
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openas2-config-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openas2-data-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openas2-webui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openas2-webui
+  template:
+    metadata:
+      labels:
+        app: openas2-webui
+    spec:
+      containers:
+        - name: openas2-webui
+          image: kodi1981/openas2ui:v1
+          ports:
+            - containerPort: 80
+          env:
+            - name: VUE_APP_RESTAPI_URL
+              value: "http://openas2-service:8443/api"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openas2-webui-service
+spec:
+  selector:
+    app: openas2-webui
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+  type: NodePort

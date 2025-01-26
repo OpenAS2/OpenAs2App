@@ -1,0 +1,247 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openas2-ns
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openas2-pvc
+  namespace: openas2-ns
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: hostpath
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: openas2-ns
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: hostpath
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: webui-pvc
+  namespace: openas2-ns
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: hostpath
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openas2
+  namespace: openas2-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openas2
+  template:
+    metadata:
+      labels:
+        app: openas2
+    spec:
+      containers:
+        - name: openas2
+          image: kodi1981/openas2app:v1
+          ports:
+            - containerPort: 10080
+            - containerPort: 10081
+            - containerPort: 8080
+          env:
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__BASEURI
+              value: "http://0.0.0.0:8080"
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__USERID
+              value: "userID"
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__PASSWORD
+              value: "pWd"
+            - name: OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__ENABLED
+              value: "true"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /opt/openas2/config
+            - name: data-volume
+              mountPath: /opt/openas2/data
+      volumes:
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: openas2-config-pvc
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: openas2-data-pvc
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: openas2
+  namespace: openas2-ns
+spec:
+  selector:
+    app: openas2
+  ports:
+    - name: web
+      protocol: TCP
+      port: 80
+      targetPort: 10080
+    - name: secure
+      protocol: TCP
+      port: 443
+      targetPort: 8080
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: openas2-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          imagePullPolicy: Always
+          env:
+            - name: POSTGRES_DB
+              value: "openas2_db"
+            - name: POSTGRES_USER
+              value: "openas2_user"
+            - name: POSTGRES_PASSWORD
+              value: "openas2_pass"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: "/var/lib/postgresql/data"
+              name: postgres-storage
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: openas2-ns
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openas2-webui
+  namespace: openas2-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openas2-webui
+  template:
+    metadata:
+      labels:
+        app: openas2-webui
+    spec:
+      containers:
+        - name: openas2-webui
+          image: kodi1981/openas2ui:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: webui-storage
+              mountPath: "/var/www/webui/config"
+          env:
+            - name: OPENAS2_SERVER_URL
+              value: "http://openas2-service:4080"
+      volumes:
+        - name: webui-storage
+          persistentVolumeClaim:
+            claimName: webui-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: openas2-webui
+  namespace: openas2-ns
+spec:
+  selector:
+    app: openas2-webui
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 80
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openas2-config
+  namespace: openas2-ns
+data:
+  OPENAS2_DB_HOST: "postgres"
+  OPENAS2_DB_PORT: "5432"
+  OPENAS2_DB_NAME: "openas2_db"
+  OPENAS2_DB_USER: "openas2_user"
+  OPENAS2_DB_PASSWORD: "openas2_pass"
+  OPENAS2_BASE: "/usr/local/tomcat"
+  OPENAS2_HOME: "/usr/local/tomcat"
+  OPENAS2_TMPDIR: "/usr/local/tomcat/temp"
+  JAVA_HOME: "/usr/local/openjdk-11"
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webui-config
+  namespace: openas2-ns
+data:
+  OPENAS2_SERVER_URL: "http://openas2-service:4080"
