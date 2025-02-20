@@ -1,0 +1,13 @@
+# Environment settings for my_keystore1
+export CERT_VALID_DAYS=365
+export CERT_KEY_SIZE=4096
+export CERT_START_DATE="2025/02/20"
+export CERT_SUBJECT_ALTERNATIVE_NAMES="EMAIL:xyz@acme.com,DNS:example.com"
+my_keystore1 my_alias1 SHA256 "CN=example.com, OU=IT, O=Company, L=City, S=State, C=US"
+
+# Environment settings for my_keystore2
+export CERT_VALID_DAYS=400
+export CERT_KEY_SIZE=2048
+export CERT_START_DATE="2025/03/01"
+export CERT_SUBJECT_ALTERNATIVE_NAMES="EMAIL:abc@xyz.com,DNS:test.com"
+my_keystore2 my_alias2 SHA512 "CN=test.com, OU=QA, O=TestOrg, L=New York, S=NY, C=US"

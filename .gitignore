@@ -16,3 +16,4 @@ pom.xml.versionsBackup
 **/.settings
 **/*.class
 .metadata/*
+Server/src/bin/generated_certs/
