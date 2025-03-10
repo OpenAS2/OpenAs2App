@@ -716,9 +716,17 @@ public class HTTPUtil {
             throw new OpenAS2Exception("Missing PROXY port since Proxy host is set");
         }
         int port = Integer.parseInt(proxyPort);
-        HttpHost proxy = new HttpHost(proxyHost, port);
 
-        rcBuilder.setProxy(proxy);
+        // WORKAROUND: if the proxy is configured (and not null) then the SystemDefaultRoutePlanner and its
+        // sun.net.spi.DefaultProxySelector won't use the system proxy settings like http.nonProxyHosts ->
+        // so we need to set the proxy to null to avoid this issue (DefaultProxySelector will read the system properties 
+        // for http(s).proxyHost/http(s).proxyPort and http.nonProxyHosts)
+        builder.setProxy(null);
+        
+        // WORKAROUND: SystemRoutePlanner is active, when proxyHost is set 
+        // (was: SystemRoutePlanner is active, when proxyHost AND proxyUser is set) 
+        SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(null);
+        builder.setRoutePlanner(routePlanner);
 
         String proxyUser1 = Properties.getProperty("http.proxyUser", null);
         final String proxyUser = proxyUser1 == null ? System.getProperty("http.proxyUser") : proxyUser1;
@@ -730,9 +738,6 @@ public class HTTPUtil {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(new AuthScope(proxyHost, port), new UsernamePasswordCredentials(proxyUser, proxyPassword));
         builder.setDefaultCredentialsProvider(credsProvider);
-
-        SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(null);
-        builder.setRoutePlanner(routePlanner);
     }
 
     // Copy headers from an Http connection to an InternetHeaders object
