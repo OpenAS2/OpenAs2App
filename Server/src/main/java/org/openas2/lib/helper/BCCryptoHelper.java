@@ -469,8 +469,7 @@ public class BCCryptoHelper implements ICryptoHelper {
                 String as2SignIgnoreTimeIssue = Properties.getProperty("as2_sign_allow_expired_certificate", "false");
                 if ("true".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
                     signer = new SignerInfoIgnoringExpiredCertificate(signer);
-                }
-                else {
+                } else {
                     logger.warn("The partner certificate is expired and there is no override set to ignore expired certificate issues.\n\tSet the \"as2_sign_allow_expired_certificate\" property to \"true\" to use expired certificates.");
                     logSignerInfo("Failed to verify signature for signer info", signer, part, x509Cert);
                     throw new SignatureException("Signature Verification failed due to expired certificate.");
