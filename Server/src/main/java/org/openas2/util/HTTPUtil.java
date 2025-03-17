@@ -671,33 +671,6 @@ public class HTTPUtil {
         return cachedJavaKeyStore;
     }
 
-    public static String getParamsString(Map<String, String> params) throws UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-            result.append("&");
-        }
-
-        String resultString = result.toString();
-        return resultString.length() > 0 ? resultString.substring(0, resultString.length() - 1) : resultString;
-    }
-
-    public static boolean isLocalhostBound(InetAddress addr) {
-        // Check if the address is a valid special local or loop back
-        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
-            return true;
-        }
-
-        // Check if the address is defined on any interface
-        try {
-            return NetworkInterface.getByInetAddress(addr) != null;
-        } catch (SocketException e) {
-            return false;
-        }
-    }
 
     private static void setProxyConfig(HttpClientBuilder builder, String protocol) throws OpenAS2Exception {
 
@@ -755,45 +728,6 @@ public class HTTPUtil {
         String valueFromSystem = System.getProperty(key, fallback);
         // Prefer the value from the properties file then the system properties
         return valueFromProperties != null ? valueFromProperties : valueFromSystem;
-    }
-
-    // Copy headers from an Http connection to an InternetHeaders object
-    public static void copyHttpHeaders(HttpURLConnection conn, InternetHeaders headers) {
-        Iterator<Map.Entry<String, List<String>>> connHeadersIt = conn.getHeaderFields().entrySet().iterator();
-        Iterator<String> connValuesIt;
-        Map.Entry<String, List<String>> connHeader;
-        String headerName;
-
-        while (connHeadersIt.hasNext()) {
-            connHeader = connHeadersIt.next();
-            headerName = connHeader.getKey();
-
-            if (headerName != null) {
-                connValuesIt = connHeader.getValue().iterator();
-
-                while (connValuesIt.hasNext()) {
-                    String value = connValuesIt.next();
-
-                    String[] existingVals = headers.getHeader(headerName);
-                    if (existingVals == null) {
-                        headers.setHeader(headerName, value);
-                    } else {
-                        // Avoid duplicates of the same value since headers that exist in the HTTP
-                        // headers
-                        // may already have been inserted in the Message object
-                        boolean exists = false;
-                        for (int i = 0; i < existingVals.length; i++) {
-                            if (value.equals(existingVals[i])) {
-                                exists = true;
-                            }
-                        }
-                        if (!exists) {
-                            headers.addHeader(headerName, value);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private static class SelfSignedTrustManager implements X509TrustManager {
