@@ -3,7 +3,6 @@ package org.openas2.util;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -365,7 +364,7 @@ public class HTTPUtil {
         }
         RequestBuilder rb = getRequestBuilder(method, urlObj, params, headers);
         RequestConfig.Builder rcBuilder = buildRequestConfig(options);
-        setProxyConfig(httpBuilder, rcBuilder, urlObj.getProtocol());
+        setProxyConfig(httpBuilder, urlObj.getProtocol());
         rb.setConfig(rcBuilder.build());
 
         String httpUser = (String) options.get(HTTPUtil.PARAM_HTTP_USER);
@@ -700,44 +699,62 @@ public class HTTPUtil {
         }
     }
 
-    private static void setProxyConfig(HttpClientBuilder builder, RequestConfig.Builder rcBuilder, String protocol) throws OpenAS2Exception {
-        String proxyHost = Properties.getProperty(protocol + ".proxyHost", null);
+    private static void setProxyConfig(HttpClientBuilder builder, String protocol) throws OpenAS2Exception {
+
+        String proxyHostKey = protocol + ".proxyHost";
+        String proxyPortKey = protocol + ".proxyPort";
+        String proxyUserKey = protocol + ".proxyUser";
+        String proxyPasswordKey = protocol + ".proxyPassword";
+        String proxyNonProxyHostsKey = "http.nonProxyHosts";
+
+        String proxyHost = getPropertyFromOpenAS2PropertiesOrSystem(proxyHostKey, null);
+        String proxyPort = getPropertyFromOpenAS2PropertiesOrSystem(proxyPortKey, null);
+        String proxyUser = getPropertyFromOpenAS2PropertiesOrSystem(proxyUserKey, null);
+        String proxyPassword = getPropertyFromOpenAS2PropertiesOrSystem(proxyPasswordKey, null);
+        String proxyNonProxyHosts = getPropertyFromOpenAS2PropertiesOrSystem(proxyNonProxyHostsKey, null);
+
+
         if (proxyHost == null) {
-            proxyHost = System.getProperty(protocol + ".proxyHost");
-        }
-        if (proxyHost == null) {
+            // fast fail
             return;
-        }
-        String proxyPort = Properties.getProperty(protocol + ".proxyPort", null);
-        if (proxyPort == null) {
-            proxyPort = System.getProperty(protocol + ".proxyPort");
         }
         if (proxyPort == null) {
             throw new OpenAS2Exception("Missing PROXY port since Proxy host is set");
         }
-        int port = Integer.parseInt(proxyPort);
 
-        // WORKAROUND: if the proxy is configured (and not null) then the SystemDefaultRoutePlanner and its
-        // sun.net.spi.DefaultProxySelector won't use the system proxy settings like http.nonProxyHosts ->
-        // so we need to set the proxy to null to avoid this issue (DefaultProxySelector will read the system properties 
-        // for http(s).proxyHost/http(s).proxyPort and http.nonProxyHosts)
+        // Set the system properties to ensure that the DefaultProxySelector uses this configuration
+        // Note: That overwrites the system properties for the current JVM and the previously set values are lost
+        System.setProperty(proxyHostKey, proxyHost);
+        System.setProperty(proxyPortKey, proxyPort);
+        System.setProperty(proxyNonProxyHostsKey, proxyNonProxyHosts);
+
+        // Don't set an explicit proxy here or else "http.nonProxyHosts" won't be respected. 
+        // Other proxy configurations like https.proxyHost will be read by the DefaultProxySelector.
+        // See https://issues.apache.org/jira/browse/HTTPCLIENT-1617
         builder.setProxy(null);
-        
-        // WORKAROUND: SystemRoutePlanner is active, when proxyHost is set 
-        // (was: SystemRoutePlanner is active, when proxyHost AND proxyUser is set) 
-        SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(null);
+
+        // Use the system default proxy selector which uses the System properties for proxy settings including http.nonProxyHosts
+        SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(ProxySelector.getDefault());
         builder.setRoutePlanner(routePlanner);
 
-        String proxyUser1 = Properties.getProperty("http.proxyUser", null);
-        final String proxyUser = proxyUser1 == null ? System.getProperty("http.proxyUser") : proxyUser1;
-        if (proxyUser == null) {
-            return;
+        if (proxyUser != null) {
+            int port = Integer.parseInt(proxyPort);
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(new AuthScope(proxyHost, port), new UsernamePasswordCredentials(proxyUser, proxyPassword));
+            builder.setDefaultCredentialsProvider(credsProvider);
         }
-        String proxyPwd1 = Properties.getProperty("http.proxyPassword", null);
-        final String proxyPassword = proxyPwd1 == null ? System.getProperty("http.proxyPassword") : proxyPwd1;
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(new AuthScope(proxyHost, port), new UsernamePasswordCredentials(proxyUser, proxyPassword));
-        builder.setDefaultCredentialsProvider(credsProvider);
+    }
+    
+    /**
+     * @param key key like "http.proxyHost"
+     * @param fallback default value like null
+     * @return value from the properties file or as first fallback the value from the system properties or as second fallback the fallback value
+     */
+    private static String getPropertyFromOpenAS2PropertiesOrSystem(String key, String fallback) {
+        String valueFromProperties = Properties.getProperty(key, fallback);
+        String valueFromSystem = System.getProperty(key, fallback);
+        // Prefer the value from the properties file then the system properties
+        return valueFromProperties != null ? valueFromProperties : valueFromSystem;
     }
 
     // Copy headers from an Http connection to an InternetHeaders object
