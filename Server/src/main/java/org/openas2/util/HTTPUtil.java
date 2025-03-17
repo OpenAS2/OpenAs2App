@@ -3,7 +3,6 @@ package org.openas2.util;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -365,7 +364,7 @@ public class HTTPUtil {
         }
         RequestBuilder rb = getRequestBuilder(method, urlObj, params, headers);
         RequestConfig.Builder rcBuilder = buildRequestConfig(options);
-        setProxyConfig(httpBuilder, rcBuilder, urlObj.getProtocol());
+        setProxyConfig(httpBuilder, urlObj.getProtocol());
         rb.setConfig(rcBuilder.build());
 
         String httpUser = (String) options.get(HTTPUtil.PARAM_HTTP_USER);
@@ -672,106 +671,63 @@ public class HTTPUtil {
         return cachedJavaKeyStore;
     }
 
-    public static String getParamsString(Map<String, String> params) throws UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
 
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-            result.append("&");
-        }
+    private static void setProxyConfig(HttpClientBuilder builder, String protocol) throws OpenAS2Exception {
 
-        String resultString = result.toString();
-        return resultString.length() > 0 ? resultString.substring(0, resultString.length() - 1) : resultString;
-    }
+        String proxyHostKey = protocol + ".proxyHost";
+        String proxyPortKey = protocol + ".proxyPort";
+        String proxyUserKey = protocol + ".proxyUser";
+        String proxyPasswordKey = protocol + ".proxyPassword";
+        String proxyNonProxyHostsKey = "http.nonProxyHosts";
 
-    public static boolean isLocalhostBound(InetAddress addr) {
-        // Check if the address is a valid special local or loop back
-        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
-            return true;
-        }
+        String proxyHost = getPropertyFromOpenAS2PropertiesOrSystem(proxyHostKey, null);
+        String proxyPort = getPropertyFromOpenAS2PropertiesOrSystem(proxyPortKey, null);
+        String proxyUser = getPropertyFromOpenAS2PropertiesOrSystem(proxyUserKey, null);
+        String proxyPassword = getPropertyFromOpenAS2PropertiesOrSystem(proxyPasswordKey, null);
+        String proxyNonProxyHosts = getPropertyFromOpenAS2PropertiesOrSystem(proxyNonProxyHostsKey, null);
 
-        // Check if the address is defined on any interface
-        try {
-            return NetworkInterface.getByInetAddress(addr) != null;
-        } catch (SocketException e) {
-            return false;
-        }
-    }
 
-    private static void setProxyConfig(HttpClientBuilder builder, RequestConfig.Builder rcBuilder, String protocol) throws OpenAS2Exception {
-        String proxyHost = Properties.getProperty(protocol + ".proxyHost", null);
         if (proxyHost == null) {
-            proxyHost = System.getProperty(protocol + ".proxyHost");
-        }
-        if (proxyHost == null) {
+            // fast fail
             return;
-        }
-        String proxyPort = Properties.getProperty(protocol + ".proxyPort", null);
-        if (proxyPort == null) {
-            proxyPort = System.getProperty(protocol + ".proxyPort");
         }
         if (proxyPort == null) {
             throw new OpenAS2Exception("Missing PROXY port since Proxy host is set");
         }
-        int port = Integer.parseInt(proxyPort);
-        HttpHost proxy = new HttpHost(proxyHost, port);
 
-        rcBuilder.setProxy(proxy);
+        // Set the system properties to ensure that the DefaultProxySelector uses this configuration
+        // Note: That overwrites the system properties for the current JVM and the previously set values are lost
+        System.setProperty(proxyHostKey, proxyHost);
+        System.setProperty(proxyPortKey, proxyPort);
+        System.setProperty(proxyNonProxyHostsKey, proxyNonProxyHosts);
 
-        String proxyUser1 = Properties.getProperty("http.proxyUser", null);
-        final String proxyUser = proxyUser1 == null ? System.getProperty("http.proxyUser") : proxyUser1;
-        if (proxyUser == null) {
-            return;
-        }
-        String proxyPwd1 = Properties.getProperty("http.proxyPassword", null);
-        final String proxyPassword = proxyPwd1 == null ? System.getProperty("http.proxyPassword") : proxyPwd1;
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(new AuthScope(proxyHost, port), new UsernamePasswordCredentials(proxyUser, proxyPassword));
-        builder.setDefaultCredentialsProvider(credsProvider);
+        // Don't set an explicit proxy here or else "http.nonProxyHosts" won't be respected. 
+        // Other proxy configurations like https.proxyHost will be read by the DefaultProxySelector.
+        // See https://issues.apache.org/jira/browse/HTTPCLIENT-1617
+        builder.setProxy(null);
 
-        SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(null);
+        // Use the system default proxy selector which uses the System properties for proxy settings including http.nonProxyHosts
+        SystemDefaultRoutePlanner routePlanner = new SystemDefaultRoutePlanner(ProxySelector.getDefault());
         builder.setRoutePlanner(routePlanner);
-    }
 
-    // Copy headers from an Http connection to an InternetHeaders object
-    public static void copyHttpHeaders(HttpURLConnection conn, InternetHeaders headers) {
-        Iterator<Map.Entry<String, List<String>>> connHeadersIt = conn.getHeaderFields().entrySet().iterator();
-        Iterator<String> connValuesIt;
-        Map.Entry<String, List<String>> connHeader;
-        String headerName;
-
-        while (connHeadersIt.hasNext()) {
-            connHeader = connHeadersIt.next();
-            headerName = connHeader.getKey();
-
-            if (headerName != null) {
-                connValuesIt = connHeader.getValue().iterator();
-
-                while (connValuesIt.hasNext()) {
-                    String value = connValuesIt.next();
-
-                    String[] existingVals = headers.getHeader(headerName);
-                    if (existingVals == null) {
-                        headers.setHeader(headerName, value);
-                    } else {
-                        // Avoid duplicates of the same value since headers that exist in the HTTP
-                        // headers
-                        // may already have been inserted in the Message object
-                        boolean exists = false;
-                        for (int i = 0; i < existingVals.length; i++) {
-                            if (value.equals(existingVals[i])) {
-                                exists = true;
-                            }
-                        }
-                        if (!exists) {
-                            headers.addHeader(headerName, value);
-                        }
-                    }
-                }
-            }
+        if (proxyUser != null) {
+            int port = Integer.parseInt(proxyPort);
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(new AuthScope(proxyHost, port), new UsernamePasswordCredentials(proxyUser, proxyPassword));
+            builder.setDefaultCredentialsProvider(credsProvider);
         }
+    }
+    
+    /**
+     * @param key key like "http.proxyHost"
+     * @param fallback default value like null
+     * @return value from the properties file or as first fallback the value from the system properties or as second fallback the fallback value
+     */
+    private static String getPropertyFromOpenAS2PropertiesOrSystem(String key, String fallback) {
+        String valueFromProperties = Properties.getProperty(key, fallback);
+        String valueFromSystem = System.getProperty(key, fallback);
+        // Prefer the value from the properties file then the system properties
+        return valueFromProperties != null ? valueFromProperties : valueFromSystem;
     }
 
     private static class SelfSignedTrustManager implements X509TrustManager {
