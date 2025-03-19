@@ -206,6 +206,10 @@ public class AS2Util {
             }
             try {
                 dt.validate();
+                logger.warn("\n\n********************\nFORCING DSIPOSTION ERROR....\n\tVALUE: " + System.getenv("FORCE_MDN_ERROR"));
+                if ("true".equals(System.getenv("FORCE_MDN_ERROR"))) {
+                    throw new DispositionException(dt, "BANG");
+                }
             } catch (DispositionException de) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Disposition error detected in MDN. Received disposition: " + disposition + msg.getLogMsgID());
@@ -348,8 +352,13 @@ public class AS2Util {
             // Going to try again so increment the try count
             retries++;
         }
-
-        if (useOriginalMsgObject) {
+        // Keep a popinter to the passed in msg object in case it is overwritten in this method so that the setting
+        // the resend flag to avoid file cleanup is not lost when this method exits and the original initiating
+        // method of this cycle queries the msg object to check if it is ok to call file cleanup
+        Message passed_in_msg = msg;
+        // The current "msg" object is the same is the persisted one if it is the first entry to the resend process
+        // so no need to retrieve from file system in that case
+        if (useOriginalMsgObject && retries > 0) {
             String pendingMsgObjFileName = msg.getAttribute(FileAttribute.MA_PENDINGFILE) + ".object";
 
             if (logger.isDebugEnabled()) {
@@ -386,7 +395,10 @@ public class AS2Util {
                 originalMsg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
             }
             if (logger.isTraceEnabled()) {
-                logger.trace("Message file extracted from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + "\n        Message file extracted from original object: " + originalMsg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
+                logger.trace("Message file extracted from passed in object: "
+                             + msg.getAttribute(FileAttribute.MA_PENDINGFILE)
+                             + "\n        Message file extracted from original object: "
+                             + originalMsg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
             }
             msg = originalMsg;
         }
@@ -399,6 +411,7 @@ public class AS2Util {
 
         if (requiresNewMessageId) {
             /**
+             * TODO: CHANGE THE DEFAULT TO FALSE
              * Per https://tools.ietf.org/html/rfc4130#section-9.3 resend should have same
              * Message-Id ... BUT Because it was implemented in the beginning to create a
              * new one for each resend, for backwards compatibility the default is the
@@ -445,6 +458,10 @@ public class AS2Util {
         options.put(ResenderModule.OPTION_RESEND_METHOD, how);
         options.put(ResenderModule.OPTION_RETRIES, "" + retries);
         session.getProcessor().handle(ResenderModule.DO_RESEND, msg, options);
+        // Make sure the flag is set in the passed in object if it was swapped out
+        if (passed_in_msg != msg) {
+            passed_in_msg.setIsResend(msg.isResend());
+        }
         return true;
     }
 

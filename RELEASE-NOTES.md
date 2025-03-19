@@ -1,24 +1,22 @@
 #              OpenAS2 Server
-#              Version 4.1.0
+#              Version 4.1.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.1.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.1.1
 
-The release download file is: OpenAS2Server-4.1.0.zip
+The release download file is: OpenAS2Server-4.1.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.1.0 - 2024-12-04
+Version 4.1.1 - 2025-03-19
 
-This is an enhancement release.
+This is a bugfix release.
        **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-1. Support for Elliptic curve certificates.
-2. Enhanced support for using SSL with self signed certificates
-3. Support PKCS12 certificate keystore for SSL certificates.
-4. Significantly updated the OpenAS2HowTo documentation.
+1. Fix the proxy support implementation.
+2. Fix handling of file cleanup when resend loop is entered.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
