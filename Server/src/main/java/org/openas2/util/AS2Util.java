@@ -206,10 +206,6 @@ public class AS2Util {
             }
             try {
                 dt.validate();
-                logger.warn("\n\n********************\nFORCING DSIPOSTION ERROR....\n\tVALUE: " + System.getenv("FORCE_MDN_ERROR"));
-                if ("true".equals(System.getenv("FORCE_MDN_ERROR"))) {
-                    throw new DispositionException(dt, "BANG");
-                }
             } catch (DispositionException de) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Disposition error detected in MDN. Received disposition: " + disposition + msg.getLogMsgID());
