@@ -154,19 +154,6 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                             // HTTP header since it may not be set in the received mime body part
                             receivedPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, receivedContentType.toString());
 
-                            // Set the transfer encoding if necessary
-                            String cte = receivedPart.getEncoding();
-                            if (cte == null) {
-                                // Not in the MimeBodyPart so try the HTTP headers...
-                                cte = msg.getHeader("Content-Transfer-Encoding");
-                                // Nada ... set to system default
-                                if (cte == null) {
-                                    cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
-                                }
-                                receivedPart.setHeader("Content-Transfer-Encoding", cte);
-                            } else if (LOG.isTraceEnabled()) {
-                                LOG.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
-                            }
                         } else {
                         // We only need the Content-Type to rebuild the mime body part.
                             InternetHeaders ih = new InternetHeaders();
@@ -176,6 +163,20 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                         if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                             LOG.trace("Received MimeBodyPart for inbound message: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(receivedPart, true));
                         }
+                        // Set the transfer encoding if necessary
+                        String cte = receivedPart.getEncoding();
+                        if (cte == null) {
+                            // Not in the MimeBodyPart so try the HTTP headers...
+                            cte = msg.getHeader("Content-Transfer-Encoding");
+                            // Nada ... set to system default
+                            if (cte == null) {
+                                cte = Session.DEFAULT_CONTENT_TRANSFER_ENCODING;
+                            }
+                            receivedPart.setHeader("Content-Transfer-Encoding", cte);
+                        } else if (LOG.isTraceEnabled()) {
+                            LOG.trace("Received msg MimePart has transfer encoding: " + cte + msg.getLogMsgID());
+                        }
+
                         msg.setData(receivedPart);
                     } catch (Exception e) {
                         msg.setLogMsg("Error extracting received message.");
@@ -401,7 +402,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     senderCert = certFx.getCertificate(x509_alias_fallback);
                     msg.setData(AS2Util.getCryptoHelper().verifySignature(msg.getData(), senderCert));
                     msg.setSenderX509Alias(x509_alias_fallback);
-                    // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback   
+                    // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback
                     // Send a message so that the certificate can be updated.
                     LOG.warn("Partner has updated their certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getSenderID(Partnership.PID_NAME));
                 }
