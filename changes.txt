@@ -1,7 +1,14 @@
+**IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
+Version 4.2.0 - 2025-03-29
+
+This is an enhancement release.
+
+1. Support AS2 systems that do not set the "Content-Transfer-Encoding" mime body part header on the outer mime body part but instead pass it as an HTTP header.
+
 Version 4.1.1 - 2025-03-19
 
 This is a bugfix release.
-       **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
 1. Fix the proxy support implementation.
 2. Fix handling of file cleanup when resend loop is entered.
@@ -9,7 +16,6 @@ This is a bugfix release.
 Version 4.1.0 - 2024-12-04
 
 This is an enhancement release.
-       **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
 1. Support for Elliptic curve certificates.
 2. Enhanced support for using SSL with self signed certificates
@@ -18,7 +24,7 @@ This is an enhancement release.
 
 Version 4.0.0 - 2024-10-15
 This is an major change and enhancement release:
-       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
 1. Java 8 is NO LONGER supported. Support is for Java 11 and newer releases only.
 2. The logging facade was switched from Jakarta Commons Logging to SLF4J and the default implementation uses the Logback framework.
 3. The DB state logging for external databases now uses an Hikari connection pool and persists to the database using a separate thread to improve performance.
@@ -30,7 +36,7 @@ This is an major change and enhancement release:
 
 Version 3.11.0 - 2024-08-22
 This is an minor enhancement release:
-       **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
+
 1. Enhance the handling of MDN processing and associated resend handling to provide more reliable error handling.
 2. Enhance the Disposition-Notification-Options handler to properly support the standard.
 3. Use the LTS releases of Java for testing
