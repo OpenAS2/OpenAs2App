@@ -1,5 +1,11 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.3.0 - 2025-04-20
+
+This is an enhancement release.
+
+1. Support retaining the original file name as received into the OpenAS2 server before processing so that it can be referenced in dynamic variables.
+
 Version 4.2.0 - 2025-03-29
 
 This is an enhancement release.
