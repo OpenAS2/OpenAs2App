@@ -261,6 +261,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         Message msg = createMessage();
         MessageParameters params = new MessageParameters(msg);
 
+        // Capture the original file name in case config changes it
+        msg.setAttribute("original_filename", filename);
         // Get the parameter that should provide the link between the polled directory
         // and an AS2 sender and recipient
         String defaults = getParameter(PARAM_DEFAULTS, false);
