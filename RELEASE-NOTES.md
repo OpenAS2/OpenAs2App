@@ -1,21 +1,20 @@
 #              OpenAS2 Server
-#              Version 4.2.0
+#              Version 4.3.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.2.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.3.0
 
-The release download file is: OpenAS2Server-4.2.0.zip
+The release download file is: OpenAS2Server-4.3.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.2.0 - 2025-03-29
+Version 4.3.0 - 2025-04-20
 
 This is an enhancement release.
-       **IMPORTANT NOTE**: Please review upgrade notes below if you are upgrading
 
-1. Support AS2 systems that do not set the "Content-Transfer-Encoding" mime body part header on the outer mime body part but instead pass it as an HTTP header.
+1. Support retaining the original file name as received into the OpenAS2 server before processing so that it can be referenced in dynamic variables.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
