@@ -1,5 +1,11 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.4.0 - 2025-05-10
+
+This is an enhancement release.
+
+1. Log the file size of the file being processed in the AS2 vmessage builder.
+
 Version 4.3.0 - 2025-04-20
 
 This is an enhancement release.
