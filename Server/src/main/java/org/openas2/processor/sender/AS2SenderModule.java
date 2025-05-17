@@ -144,6 +144,9 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             logger.error(msg.getLogMsg(), e);
             msg.setOption("STATE", Message.MSG_STATE_SEND_FAIL);
             msg.trackMsgState(getSession());
+            if ("true".equalsIgnoreCase(msg.getPartnership().getAttributeOrProperty(Partnership.PA_RESEND_ON_SSL_EXCEPTION, "false"))) {
+                resend(msg, new OpenAS2Exception(org.openas2.util.Logging.getExceptionMsg(e)), false);
+            }
             return;
         } catch (Exception e) {
             msg.setLogMsg("Unexpected error sending file: " + org.openas2.util.Logging.getExceptionMsg(e));
