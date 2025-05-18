@@ -1,20 +1,20 @@
 #              OpenAS2 Server
-#              Version 4.4.0
+#              Version 4.5.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.4.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.5.0
 
-The release download file is: OpenAS2Server-4.4.0.zip
+The release download file is: OpenAS2Server-4.5.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.4.0 - 2025-05-10
+Version 4.5.0 - 2025-05-10
 
 This is an enhancement release.
 
-1. Log the file size of the file being processed in the AS2 vmessage builder.
+1. Add configuration paramerter "resend_on_ssl_exception" to enter into a resend loop when an SSL exception occurs connecting to a partner.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
@@ -24,7 +24,7 @@ This is an enhancement release.
       2. The property for email configuration in the config.xml changed:
           Change ALL occurrences of javax.mail.properties to jakarta.mail.properties in config.xml and the .properties file if you implemented it.
       3. If using an external database for message state tracking, make sure that your configuration will work with the new Hikari JDBC pool that improves performance. See the OpenAS2HowTo.pdf message state tracking section for more details.
-      4. Completely replace all library files in the existing "lib" folder wit hthe ones supplied in the new install package (per recommended standard procedure in the user guide).
+      4. Completely replace all library files in the existing "lib" folder with the ones supplied in the new install package (per recommended standard procedure in the user guide).
 
 ### Upgrading to 3.6 or newer from 3.5 (or older) version:
       1. Run the following command after the upgrade of the code base is complete and BEFORE you start the OpenAS2 server:
