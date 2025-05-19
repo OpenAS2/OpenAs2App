@@ -68,6 +68,7 @@ public class Partnership implements Serializable {
     public static final String PA_SPLIT_FILE_THRESHOLD_SIZE_IN_BYTES = "split_file_threshold_size_in_bytes";
     public static final String PA_SPLIT_FILE_CONTAINS_HEADER_ROW = "split_file_contains_header_row";
     public static final String PA_SPLIT_FILE_NAME_PREFIX = "split_file_name_prefix";
+    public static final String PA_RESEND_ON_SSL_EXCEPTION = "resend_on_ssl_exception";
     // A hopefully temporary key to maintain backwards compatibility
     public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
 

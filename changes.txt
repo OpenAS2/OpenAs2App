@@ -1,5 +1,11 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.5.0 - 2025-05-18
+
+This is an enhancement release.
+
+1. Add configuration paramerter "resend_on_ssl_exception" to enter into a resend loop when an SSL exception occurs connecting to a partner.
+
 Version 4.4.0 - 2025-05-10
 
 This is an enhancement release.
