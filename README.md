@@ -39,7 +39,7 @@ To deploy the released artifacts requires user ID and password for Sonatype. See
 
 ## Web UI for configuration
 IMPORTANT: The WebUI will NOT work with Java 8 - you need Java 11 or newer
-Follow the instructions in the WebUI/README.md file for confoguring and using it.
+Follow the instructions in the WebUI/README.md file for configuring and using it.
 
 
 ## How to create the docker image
