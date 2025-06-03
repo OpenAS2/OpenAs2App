@@ -83,7 +83,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         if (fileSizeThresholdStr != null && fileSizeThresholdStr.length() > 0) {
             fileSizeThreshold = Long.parseLong(fileSizeThresholdStr);
         }
-        if (fileSizeThreshold > 0 && fileToSend.length() > fileSizeThreshold) {
+        long fileToSendLength = fileToSend.length();
+        if (fileSizeThreshold > 0 && fileToSendLength > fileSizeThreshold) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("File size threshold exceeded and file will be split into multiple files: " + filename);
+            }
             String newFileNamePrefix = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_NAME_PREFIX);
             if (newFileNamePrefix == null) {
                 newFileNamePrefix = "";
@@ -102,6 +106,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             new Thread(fileSplitter).start();
             return null;
         } else {
+            logger.info("Processing file for sending using AS2 - name: " + filename + "  :: Size: " + fileToSendLength);
             addMessageMetadata(msg, filename);
             File pendingFile = new File(msg.getAttribute(FileAttribute.MA_PENDINGFILE));
             try {
@@ -261,6 +266,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         Message msg = createMessage();
         MessageParameters params = new MessageParameters(msg);
 
+        // Capture the original file name in case config changes it
+        msg.setAttribute("original_filename", filename);
         // Get the parameter that should provide the link between the polled directory
         // and an AS2 sender and recipient
         String defaults = getParameter(PARAM_DEFAULTS, false);

@@ -82,6 +82,8 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECParameterSpec;
@@ -407,7 +409,6 @@ public class BCCryptoHelper implements ICryptoHelper {
             throw new GeneralSecurityException("Content-Type indicates data isn't signed");
         }
 
-        X509Certificate x509Cert = castCertificate(cert);
 
         MimeMultipart mainParts = (MimeMultipart) part.getContent();
 
@@ -434,6 +435,7 @@ public class BCCryptoHelper implements ICryptoHelper {
             }
         }
 
+        X509Certificate x509Cert = castCertificate(cert);
         Iterator<SignerInformation> it = sis.getSigners().iterator();
         SignerInformationVerifier signerInfoVerifier = new JcaSimpleSignerInfoVerifierBuilder().setProvider("BC").build(x509Cert);
         while (it.hasNext()) {
@@ -461,27 +463,27 @@ public class BCCryptoHelper implements ICryptoHelper {
                     logger.trace("Signer Attributes: data not available.");
                 }
             }
-
-            // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
             try {
-                // normal check
+                x509Cert.checkValidity();
+            } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+                String as2SignIgnoreTimeIssue = Properties.getProperty("as2_sign_allow_expired_certificate", "false");
+                if ("true".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
+                    signer = new SignerInfoIgnoringExpiredCertificate(signer);
+                } else {
+                    logger.warn("The partner certificate is expired and there is no override set to ignore expired certificate issues.\n\tSet the \"as2_sign_allow_expired_certificate\" property to \"true\" to use expired certificates.");
+                    logSignerInfo("Failed to verify signature for signer info", signer, part, x509Cert);
+                    throw new SignatureException("Signature Verification failed due to expired certificate.");
+                }
+            }
+
+            try {
                 if (signer.verify(signerInfoVerifier)) {
                     logSignerInfo("Verified signature for signer info", signer, part, x509Cert);
                     return signedPart.getContent();
                 }
             } catch (CMSVerifierCertificateNotValidException ex) {
-                String as2SignIgnoreTimeIssue = Properties.getProperty("as2_sign_allow_expired_certificate", "false");
-                if ("true".equalsIgnoreCase(as2SignIgnoreTimeIssue)) {
-                    signer = new SignerInfoIgnoringExpiredCertificate(signer);
-                    // if flag is enabled log only issue
-                    if (signer.verify(signerInfoVerifier)) {
-                        logSignerWarn("Verified signature for signer info EXCLUDING certificate date verification (OUTDATED CERTIFICATE)", signer, part, x509Cert);
-                        return signedPart.getContent();
-                    }
-                }
+                logger.error("Signature verification failed.", ex);
             }
-            // Claudio Degioanni claudio.degioanni@bmeweb.it 05/11/2021
-
             logSignerInfo("Failed to verify signature for signer info", signer, part, x509Cert);
         }
         throw new SignatureException("Signature Verification failed");
