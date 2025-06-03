@@ -313,6 +313,10 @@ public class Partnership implements Serializable {
         getSenderIDs().putAll(partnership.getSenderIDs());
         getReceiverIDs().putAll(partnership.getReceiverIDs());
         getAttributes().putAll(partnership.getAttributes());
+
+        this.useDynamicContentTypeLookup = partnership.useDynamicContentTypeLookup;
+        this.contentTypeFromFileExtensionMap = partnership.contentTypeFromFileExtensionMap;
+        this.overrideContentTypeFromFileExtensionMap = partnership.overrideContentTypeFromFileExtensionMap;
     }
 
     public boolean isAsyncMDN() {
