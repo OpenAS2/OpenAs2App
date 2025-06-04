@@ -1,5 +1,12 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.5.1 - 2025-06-04
+
+This is a bugfix release.
+
+1. Fix dynamic content-type functionality.
+
+
 Version 4.5.0 - 2025-05-18
 
 This is an enhancement release.
