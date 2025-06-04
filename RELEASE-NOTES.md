@@ -1,20 +1,20 @@
 #              OpenAS2 Server
-#              Version 4.5.0
+#              Version 4.5.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.5.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.5.1
 
-The release download file is: OpenAS2Server-4.5.0.zip
+The release download file is: OpenAS2Server-4.5.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.5.0 - 2025-05-10
+Version 4.5.1 - 2025-06-04
 
-This is an enhancement release.
+This is a bugfix release.
 
-1. Add configuration paramerter "resend_on_ssl_exception" to enter into a resend loop when an SSL exception occurs connecting to a partner.
+1. Fix dynamic content-type functionality.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
