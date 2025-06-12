@@ -97,9 +97,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     protected void persist(Message msg, Map<String, String> map) {
-        Connection conn = null;
-        try {
-            conn = dbHandler.getConnection();
+        try (Connection conn = dbHandler.getConnection()) {
             Statement s = conn.createStatement();
             String msgIdField = FIELDS.MSG_ID;
             ResultSet rs = s.executeQuery(
@@ -180,26 +178,15 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.util.Logging.getExceptionMsg(e)
                     + " ::: Data map: " + map);
             logger.error(msg.getLogMsg(), e);
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
         }
 
     }
 
     public ArrayList<HashMap<String, String>> listMessages() {
 
-        Connection conn = null;
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
 
-        try {
-            conn = dbHandler.getConnection();
+        try (Connection conn = dbHandler.getConnection()) {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID
                     + ",CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM "
@@ -216,24 +203,14 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return rows;
     }
 
     public HashMap<String, String> showMessage(String msg_id) {
 
-        Connection conn = null;
         HashMap<String, String> row = new HashMap<String, String>();
-        try {
-            conn = dbHandler.getConnection();
+        try (Connection conn = dbHandler.getConnection()) {
             PreparedStatement s = conn
                     .prepareStatement("SELECT * FROM " + tableName + " WHERE " + FIELDS.MSG_ID + " = ?");
             s.setString(1, msg_id);
@@ -248,23 +225,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return row;
     }
 
     public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
-        Connection conn = null;
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
-        try {
-            conn = dbHandler.getConnection();
+        try (Connection conn = dbHandler.getConnection()) {
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
                     + " WHERE CREATE_DT BETWEEN CAST('" + map.get("startDate").toString()
@@ -282,14 +249,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return rows;
     }
@@ -370,21 +329,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
     @Override
     public boolean healthcheck(List<String> failures) {
-        Connection conn = null;
-        try {
+        try (Connection conn = dbHandler.getConnection()) {
             Statement s = conn.createStatement();
             s.executeQuery("SELECT COUNT(*) FROM " + tableName);
         } catch (Exception e) {
             failures.add(this.getClass().getSimpleName() + " - Failed to check DB tracking module connection to DB: "
                     + e.getMessage() + " :: Connect String: " + jdbcConnectString);
             return false;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (Exception e) {
-                }
-            }
         }
         return true;
     }

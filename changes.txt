@@ -1,42 +1,46 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.5.2 - 2025-06-12
+
+This is a bugfix release.
+ 1. Fix database connection setup for healthcheck module.
+ 
 Version 4.5.1 - 2025-06-04
 
 This is a bugfix release.
 
-1. Fix dynamic content-type functionality.
-
+ 1. Fix dynamic content-type functionality.
 
 Version 4.5.0 - 2025-05-18
 
 This is an enhancement release.
 
-1. Add configuration paramerter "resend_on_ssl_exception" to enter into a resend loop when an SSL exception occurs connecting to a partner.
+ 1. Add configuration paramerter "resend_on_ssl_exception" to enter into a resend loop when an SSL exception occurs connecting to a partner.
 
 Version 4.4.0 - 2025-05-10
 
 This is an enhancement release.
 
-1. Log the file size of the file being processed in the AS2 vmessage builder.
+ 1. Log the file size of the file being processed in the AS2 vmessage builder.
 
 Version 4.3.0 - 2025-04-20
 
 This is an enhancement release.
 
-1. Support retaining the original file name as received into the OpenAS2 server before processing so that it can be referenced in dynamic variables.
+ 1. Support retaining the original file name as received into the OpenAS2 server before processing so that it can be referenced in dynamic variables.
 
 Version 4.2.0 - 2025-03-29
 
 This is an enhancement release.
 
-1. Support AS2 systems that do not set the "Content-Transfer-Encoding" mime body part header on the outer mime body part but instead pass it as an HTTP header.
+ 1. Support AS2 systems that do not set the "Content-Transfer-Encoding" mime body part header on the outer mime body part but instead pass it as an HTTP header.
 
 Version 4.1.1 - 2025-03-19
 
 This is a bugfix release.
 
-1. Fix the proxy support implementation.
-2. Fix handling of file cleanup when resend loop is entered.
+ 1. Fix the proxy support implementation.
+ 2. Fix handling of file cleanup when resend loop is entered.
 
 Version 4.1.0 - 2024-12-04
 
