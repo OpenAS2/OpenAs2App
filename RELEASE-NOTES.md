@@ -1,23 +1,27 @@
 #              OpenAS2 Server
-#              Version 4.5.1
+#              Version 4.5.2
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.5.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.5.2
 
-The release download file is: OpenAS2Server-4.5.1.zip
+The release download file is: OpenAS2Server-4.5.2.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.5.1 - 2025-06-04
+Version 4.5.2 - 2025-06-12
 
 This is a bugfix release.
 
-1. Fix dynamic content-type functionality.
+1. Fix database connection setup for healthcheck module.
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
+
+ Below are some specific things to focus on depending on which version you are upgrading from.
+
+ **You must review all notes for the relevant intermediate versions from your version to this release version.**
 
 ### Upgrading to 4.0 or newer from any older version:
       1. Ensure you implement all logging that you had configured for ealrier versions using the logback configuration or replace with another framework that works with SLF4J facade. See the OpenAS2HowTo.pdf logging section for more details.
@@ -46,10 +50,6 @@ This is a bugfix release.
       4. Copy the config.xml and partnerships.xml from your existing version to the new version if not already done in other steps.
       5. Run this command: java -cp ../lib/\* org.openas2.upgrades.MigratePollingModuleConfig config.xml partnerships.xml
       6. A backup will be created of the original file (with .00 extension|) that can be removed if the conversion is successful.
-
- Below are some specific things to focus on depending on which version you are upgrading from.
-
- **You must review all notes for the relevant intermediate versions from your version to this release version.**
 
 ### If upgrading from versions older than 2.12.0:
       1. If you are using the DB tracking module with the default H2 database then you will need to follow the DB upgrade steps "Appendix: Updating database structure" defined in the OpenAS2HowTo.pdf to ensure you do not lose your existing data because the new H2 version has issues with old databases.
