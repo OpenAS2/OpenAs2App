@@ -1,11 +1,9 @@
 name: Build and Push OpenAS2 Image to Docker Hub
 
-# Déclencheurs : Ce pipeline s'exécutera automatiquement...
 on:
-  # ...à chaque fois que vous poussez du code sur la branche 'master' de votre fork.
-  push:
-    branches: [ "master" ]
-  # ...ou si vous voulez le lancer manuellement depuis l'interface GitHub.
+  release:
+    types: [published]
+
   workflow_dispatch:
 
 jobs:
@@ -27,6 +25,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/openas2
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=edge,branch=master
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
