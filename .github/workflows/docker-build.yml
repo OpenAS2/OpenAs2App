@@ -12,7 +12,7 @@ on:
 jobs:
   build-and-push:
     # Le robot utilisera un environnement Ubuntu standard et propre.
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       # 1. Récupère le code source de votre fork
