@@ -1,0 +1,43 @@
+# Nom de votre pipeline d'automatisation
+name: Build and Push OpenAS2 Image to Docker Hub
+
+# Déclencheurs : Ce pipeline s'exécutera automatiquement...
+on:
+  # ...à chaque fois que vous poussez du code sur la branche 'main' de votre fork.
+  push:
+    branches: [ "main" ]
+  # ...ou si vous voulez le lancer manuellement depuis l'interface GitHub.
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    # Le robot utilisera un environnement Ubuntu standard et propre.
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupère le code source de votre fork
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Se connecte à Docker Hub de manière sécurisée avec les secrets que vous avez créés
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. Récupère des métadonnées pour nommer l'image intelligemment
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/mon-openas2-perso
+
+      # 4. Construit l'image Docker et la pousse sur votre Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
