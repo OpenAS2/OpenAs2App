@@ -26,7 +26,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/mon-openas2-perso
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/openas2
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
