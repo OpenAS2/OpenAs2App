@@ -9,7 +9,7 @@ on:
 
 jobs:
   check-and-release:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       # Donne au workflow la permission de créer des releases sur votre fork
       contents: write
