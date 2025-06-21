@@ -84,6 +84,27 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      # --- Build N°1 : Le Serveur ---
+      - name: Build and push SERVER Docker image
+        if: steps.decision.outputs.proceed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile  # On spécifie le Dockerfile du serveur
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/openas2:${{ steps.upstream_release.outputs.tag }}, ${{ secrets.DOCKERHUB_USERNAME }}/openas2:latest
+
+      # --- Build N°2 : L'Interface Utilisateur (UI) ---
+      - name: Build and push WEBUI Docker image
+        if: steps.decision.outputs.proceed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile_WebUI # On spécifie le Dockerfile de la UI
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/openas2-webui:${{ steps.upstream_release.outputs.tag }}, ${{ secrets.DOCKERHUB_USERNAME }}/openas2-webui:latest
+
+
       # === PARTIE 3 : Marquer le succès ===
 
       # On crée la release sur notre fork APRÈS le build réussi, pour garder une trace.
