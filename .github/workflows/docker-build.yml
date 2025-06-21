@@ -94,7 +94,7 @@ jobs:
           context: .
           file: ./Dockerfile  # On spécifie le Dockerfile du serveur
           push: true
-          platforms: linux/amd64, linux/arm64
+          #platforms: linux/amd64, linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/openas2:${{ steps.upstream_release.outputs.tag }}, ${{ secrets.DOCKERHUB_USERNAME }}/openas2:latest
 
       # --- Build N°2 : L'Interface Utilisateur (UI) ---
@@ -105,7 +105,7 @@ jobs:
           context: .
           file: ./Dockerfile_WebUI # On spécifie le Dockerfile de la UI
           push: true
-          platforms: linux/amd64, linux/arm64
+          #platforms: linux/amd64, linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/openas2-webui:${{ steps.upstream_release.outputs.tag }}, ${{ secrets.DOCKERHUB_USERNAME }}/openas2-webui:latest
 
 
