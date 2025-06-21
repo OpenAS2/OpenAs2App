@@ -69,8 +69,11 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/openas2
-          tags: type=semver,pattern={{version}}
+          # Le nom de base de votre image reste le même
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/sofena-as2-server
+          # On définit les tags manuellement à partir des résultats des étapes précédentes
+          tags: |
+            ${{ steps.upstream_release.outputs.tag }}
 
       - name: Build and push Docker image
         if: steps.decision.outputs.proceed == 'true'
