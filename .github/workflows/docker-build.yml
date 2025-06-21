@@ -75,15 +75,6 @@ jobs:
           tags: |
             ${{ steps.upstream_release.outputs.tag }}
 
-      - name: Build and push Docker image
-        if: steps.decision.outputs.proceed == 'true'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
       # --- Build N°1 : Le Serveur ---
       - name: Build and push SERVER Docker image
         if: steps.decision.outputs.proceed == 'true'
