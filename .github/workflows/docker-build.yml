@@ -70,7 +70,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           # Le nom de base de votre image reste le même
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/sofena-as2-server
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/openas2
           # On définit les tags manuellement à partir des résultats des étapes précédentes
           tags: |
             ${{ steps.upstream_release.outputs.tag }}
