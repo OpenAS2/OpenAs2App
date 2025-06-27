@@ -4,8 +4,8 @@ COPY ./WebUI /usr/src/webui
 WORKDIR /usr/src/webui
 RUN yarn install
 RUN npx browserslist@latest --update-db
-ARG VUE_APP_API_URL
-ENV VUE_APP_API_URL=${VUE_APP_API_URL:-http://localhost:8080}
+ARG VUE_APP_RESTAPI_URL
+ENV VUE_APP_RESTAPI_URL=${VUE_APP_RESTAPI_URL:-http://localhost:8080}
 RUN yarn run build
 
 FROM nginx:stable-alpine
