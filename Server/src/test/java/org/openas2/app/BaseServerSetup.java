@@ -19,7 +19,6 @@ import org.openas2.util.Properties;
 
 
 public class BaseServerSetup {
-    private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
     static String myCompanyOid = "MyCompany_OID";
     static String myPartnerOid = "PartnerA_OID";
     private boolean startActiveModules = false;
@@ -72,7 +71,7 @@ public class BaseServerSetup {
             if (openAS2PropertiesFile.exists()) {
                 System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, openAS2PropertiesFile.getAbsolutePath());
             }
-            session = new XMLSession(RESOURCE.get("MyCompany", "config", "config.xml").getAbsolutePath());
+            session = new XMLSession(TestResource.getResource("config"));
             simpleTestMsg = getSimpleTestMsg();
             if (startActiveModules) {
                 session.start();
