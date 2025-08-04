@@ -4,49 +4,66 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.file.Paths;
+import java.util.Map;
 
 /**
- * A helper class for locating files and directories on the file systems.
- * The main reason is to categorize static files used in tests.
+ * Retrieves resources used for test purposes from the file system
+ * 
  */
 public class TestResource {
-
-    /**
-     * An absolute path to a test specific resource.
+    /* Set up a map of resource files that can be generically used by all tests
+     * and some test specific property files that override the default behaviour
+     * from the standard config.xml file such as for tests using 2 AS2 server instances.
      */
-    private final String pathPrefix;
+    public static final Map<String, String[]> resources = Map.of(
+        "config", new String[]{"config", "config.xml"},
+        "partnerships", new String[]{"config", "partnerships.xml"},
+        "server1-props", new String[]{"custom", "server1.properties"},
+        "server1-partnerships", new String[]{"custom", "server1_partnerships.xml"},
+        "server2-props", new String[]{"custom", "server2.properties"},
+        "server2-partnerships", new String[]{"custom", "server2_partnerships.xml"},
+        "api-server-props", new String[]{"custom", "api-server.properties"}
+    );
 
-    private TestResource(String clazzSimpleName) {
-        try {
-            URL resource = Thread.currentThread().getContextClassLoader().getResource(".");
-            this.pathPrefix = new File(resource.toURI()).getAbsolutePath() + File.separator + clazzSimpleName;
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    static String pathPrefix = Paths.get("src","test","resources").toAbsolutePath().toString();
 
-    public static TestResource forClass(Class<?> clazz) {
-        return new TestResource(clazz.getSimpleName());
-    }
 
-    public static TestResource forGroup(String group) {
-        return new TestResource(group);
+    public static String getResource(String resourceIdentifier) throws FileNotFoundException {
+        /**
+         * Get absolute path to a file identified by the resource identifier passed in.
+         *
+         * @param resourceIdentifier - an identifier matching one of the keys in this classes resources map
+         * @return a file
+         */
+        String[] resourceAttributes = resources.get(resourceIdentifier);
+        String filePath = get(resourceAttributes);
+        
+        return filePath;
     }
 
     /**
-     * Get a file or directory within {@link #pathPrefix}
+     * Get the absolute path to a file or directory within {@link #resourceBaseFolder}
      *
-     * @param fileName a file or directory name
-     * @param child    a children name
+     * @param foldersAndFile - a list of optional folders in path with the actual file name as the last in the list
      * @return a file
      */
-    public File get(String fileName, String... child) throws FileNotFoundException {
-        File file = new File(pathPrefix + File.separator + fileName + File.separator + StringUtils.join(child, File.separator));
+    public static String get(String... foldersAndFile) throws FileNotFoundException {
+        String filePath = pathPrefix + File.separator + StringUtils.join(foldersAndFile, File.separator);
+        File file = new File(filePath);
         if (!file.exists()) {
-            throw new FileNotFoundException(file.getAbsolutePath());
+            throw new FileNotFoundException(filePath);
         }
-        return file;
+        return filePath;
+    }
+
+    /**
+     * Get a File object for a file or directory within {@link #resourceBaseFolder}
+     *
+     * @param foldersAndFile - a list of optional folders in path with the actual file name as the last in the list
+     * @return a File object
+     */
+    public static File getFile(String... foldersAndFile) throws FileNotFoundException {
+        return new File(get(foldersAndFile));
     }
 }
