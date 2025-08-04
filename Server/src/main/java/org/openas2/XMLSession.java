@@ -153,7 +153,7 @@ public class XMLSession extends BaseSession {
         if (appPropsFile != null && appPropsFile.length() > 1) {
             LOGGER.info("Processing OpenAS2 configuration properties file: {}", appPropsFile);
             java.util.Properties appProps = new java.util.Properties();
-            // Support $ENV{some_env_var} reploacement in properties
+            // Support $ENV{some_env_var} replacement in properties
             StringEnvVarReplacer envVarReplacer = new StringEnvVarReplacer();
             envVarReplacer.setAppHomeDir(getBaseDirectory());
             FileInputStream fis = null;
@@ -283,7 +283,7 @@ public class XMLSession extends BaseSession {
 
         PartnershipFactory partnerFx = (PartnershipFactory) XMLUtil.getComponent(rootNode, this);
         if (partnerFx == null) {
-            // Must be disable so do nothing
+            // Must be disabled so do nothing
             return;
         }
         setComponent(PartnershipFactory.COMPID_PARTNERSHIP_FACTORY, partnerFx);
