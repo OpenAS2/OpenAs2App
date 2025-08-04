@@ -245,6 +245,9 @@ public abstract class DirectoryPollingModule extends PollingModule {
                     // if the file length has stayed the same, process the file
                     // and then stop tracking it
                     if (processFilesAsThreads) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Parallel processing mode handling file: " + file.getName());
+                        }
                         executorService.execute(new Runnable() {
                             @Override
                             public void run() {
