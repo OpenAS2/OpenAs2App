@@ -11,6 +11,7 @@ import org.openas2.TestResource;
 import org.openas2.TestUtils;
 import org.openas2.processor.ActiveModule;
 import org.openas2.processor.receiver.NetModule;
+import org.openas2.util.Properties;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 public class HealthCheckTest {
-    private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
     private static ExecutorService executorService;
@@ -40,7 +40,7 @@ public class HealthCheckTest {
         // to make sure the release package is fully tested
     	scratchpad = Files.createTempDirectory("testResources");
         File customPropsFile = Files.createFile(Paths.get(scratchpad.toString(), "openas2.properties")).toFile();
-        System.setProperty("openas2.properties.file", customPropsFile.getAbsolutePath());
+        System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, customPropsFile.getAbsolutePath());
         FileOutputStream fos = new FileOutputStream(customPropsFile);
         fos.write("module.HealthCheckModule.enabled=true\n".getBytes());
         fos.close();
@@ -49,7 +49,7 @@ public class HealthCheckTest {
             // System.setProperty("OPENAS@_LOG_LEVEL", "TRACE");
             executorService = Executors.newFixedThreadPool(20);
 
-            HealthCheckTest.serverInstance = new OpenAS2Server.Builder().run(RESOURCE.get("MyCompany", "config", "config.xml").getAbsolutePath());
+            HealthCheckTest.serverInstance = new OpenAS2Server.Builder().run(TestResource.getResource("config"));
         } catch (Throwable e) {
             // aid for debugging JUnit tests
             System.err.println("ERROR occurred: " + ExceptionUtils.getStackTrace(e));

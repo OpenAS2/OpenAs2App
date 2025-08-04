@@ -7,7 +7,7 @@
         <!-- DO NOT CHANGE THIS "groupId" WITHOUT CHANGING XMLSession.getManifestAttributes.MANIFEST_VENDOR_ID_ATTRIB -->
         <groupId>net.sf.openas2</groupId>
         <artifactId>OpenAS2</artifactId>
-        <version>4.5.2</version>
+        <version>4.6.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -43,20 +43,54 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>properties</goal>
+                         </goals>
+                     </execution>
+                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <systemProperties>
+                    <systemPropertyVariables>
                         <OPENAS2_LOG_BASE>logs</OPENAS2_LOG_BASE>
-                    </systemProperties>
+                    </systemPropertyVariables>
+                    <!-- Below will be need in the future but is crsahing for resaons unclear  at this time:
+                          https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#mockito-instrumentation
+						This may help resolve:
+   							 https://github.com/eclipse-m2e/m2e-core/issues/1916
+                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    -->
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>test-resource-creation</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <target>
+                                <!-- Update the test certificates on every test run to ensure they are not expired -->
+								<exec executable="sh" osfamily="unix">
+								    <arg value="-c"/>
+								    <arg line="${project.basedir}/src/bin/create_test_certificates.sh"/>
+								</exec>
+                                <!-- Copy the installer config files to test resources to ensure we test the default config -->
+                                <copy todir="${project.basedir}/src/test/resources/config"
+                                      verbose="true">
+                                    <fileset dir="${project.basedir}/src/config"/>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>default-cli</id>
                         <goals>

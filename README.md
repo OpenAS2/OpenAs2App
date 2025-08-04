@@ -2,6 +2,7 @@
 
 # As2Server
 The OpenAS2 application enables you to transmit and receive AS2 messages with EDI-X12, EDIFACT, XML, or binary payloads between trading partners.
+The application supports Java 11 and up.
 
 
 ## Development
@@ -11,6 +12,9 @@ More detailed information is available in the DeveloperGuide.odt in the docs fol
 
 ## Test, Build and Package
 The following commands can be used in the build process.
+
+Updating Maven to a different version:
+`./mvnw wrapper:wrapper -Dmaven=3.9.9
 
 Checking dependency tree:
 `./mvnw dependency:tree`
@@ -38,7 +42,7 @@ To deploy the released artifacts requires user ID and password for Sonatype. See
 `./mvnw nexus-staging:release -Ddescription="Some release comment here"`
 
 ## Web UI for configuration
-IMPORTANT: The WebUI will NOT work with Java 8 - you need Java 11 or newer
+IMPORTANT: You need Java 11 or newer
 Follow the instructions in the WebUI/README.md file for configuring and using it.
 
 

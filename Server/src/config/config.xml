@@ -195,8 +195,8 @@
               protocol="$properties.module.HealthCheckModule.protocol"
               address="$properties.module.HealthCheckModule.address$"
               port="$properties.module.HealthCheckModule.port$"
-              ssl_keystore="$properties.module.HealthCheckModule.ssl_keystore$"
-              ssl_keystore_password="$properties.module.HealthCheckModule.ssl_keystore_password$"/>
+              ssl_keystore="$properties.ssl_keystore$"
+              ssl_keystore_password="$properties.ssl_keystore_password$"/>
    </processor>
    <!-- The pollerConfigBase provides the base config for the partnership directory pollers. It must be placed at the top of the file -->
    <pollerConfigBase classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"

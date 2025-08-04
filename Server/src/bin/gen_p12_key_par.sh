@@ -3,6 +3,7 @@
 x=`basename $0`
 
 if test $# -ne 4; then
+  echo "Invalid parameter list. Expected 4 got $#: $@"
   echo "Generate a certificate to a PKCS12 key store."
   echo "You must supply a target key store without the extension (extension will be added as .p12) and an alias for the generated certificate."
   echo "usage: ${x} <target keystore> <cert alias> <sigalg> <distinguished name> <start date>"

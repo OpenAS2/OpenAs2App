@@ -47,7 +47,6 @@ import static org.hamcrest.Matchers.equalTo;
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class RestApiTest {
-    private static final TestResource RESOURCE = TestResource.forGroup("SingleServerTest");
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
     private static String TEST_PARTNER_NAME = "partnerX";
@@ -78,7 +77,7 @@ public class RestApiTest {
             //System.setProperty(OPENAS2_LOG_LEVEL", "TRACE");
             //executorService = Executors.newFixedThreadPool(20);
 
-            RestApiTest.serverInstance = new OpenAS2Server.Builder().run(RESOURCE.get("MyCompany", "config", "config.xml").getAbsolutePath());
+            RestApiTest.serverInstance = new OpenAS2Server.Builder().run(TestResource.getResource("config"));
         } catch (Throwable e) {
             // aid for debugging JUnit tests
             System.err.println("ERROR occurred: " + ExceptionUtils.getStackTrace(e));
