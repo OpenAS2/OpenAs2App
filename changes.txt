@@ -1,5 +1,17 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.6.0 - 2025-08-04
+
+This is a testing enhancement release.
+
+1. Reworked the resource access class
+2. changed tests to use the same config that is provided in the installer package
+3. Optimised method to wait for files to appear on file system as part of end-to-end tests
+4. Created script to generate test certificates keystore with updated certificates
+5. Added maven phase to regenerate test certificates keystore prior to running tests
+6. Updated Maven wrapper for project
+7. Added Java 24 to test matrix
+
 Version 4.5.2 - 2025-06-12
 
 This is a bugfix release.

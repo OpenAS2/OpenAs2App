@@ -1,20 +1,28 @@
 #              OpenAS2 Server
-#              Version 4.5.2
+#              Version 4.6.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.5.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.0
 
-The release download file is: OpenAS2Server-4.5.2.zip
+The release download file is: OpenAS2Server-4.6.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.5.2 - 2025-06-12
+Version 4.6.0 - 2025-08-04
 
-This is a bugfix release.
+This is a testing enhancement release.
 
-1. Fix database connection setup for healthcheck module.
+1. Reworked the resource access class
+2. changed tests to use the same config that is provided in the installer package
+3. Optimised method to wait for files to appear on file system as part of end-to-end tests
+4. Created script to generate test certificates keystore with updated certificates
+5. Added maven phase to regenerate test certificates keystore prior to running tests
+6. Updated Maven wrapper for project
+7. Added Java 24 to test matrix
+
+
 
 ##Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
@@ -24,7 +32,7 @@ This is a bugfix release.
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
 
 ### Upgrading to 4.0 or newer from any older version:
-      1. Ensure you implement all logging that you had configured for ealrier versions using the logback configuration or replace with another framework that works with SLF4J facade. See the OpenAS2HowTo.pdf logging section for more details.
+      1. Ensure you implement all logging that you had configured for earlier versions using the logback configuration or replace with another framework that works with SLF4J facade. See the OpenAS2HowTo.pdf logging section for more details.
       2. The property for email configuration in the config.xml changed:
           Change ALL occurrences of javax.mail.properties to jakarta.mail.properties in config.xml and the .properties file if you implemented it.
       3. If using an external database for message state tracking, make sure that your configuration will work with the new Hikari JDBC pool that improves performance. See the OpenAS2HowTo.pdf message state tracking section for more details.
