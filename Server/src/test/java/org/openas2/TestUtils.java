@@ -1,7 +1,5 @@
 package org.openas2;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -36,17 +34,6 @@ public class TestUtils {
             }
         }
         throw new FileNotFoundException("Directory: " + dir.getAbsolutePath() + " File Name Substring: " + fileNameSubstr);
-    }
-
-    /**
-     * Wait till file will occur on the file system.
-     *
-     * @param file    a file
-     * @param timeout an amount of time units to wait
-     * @param unit    a time unit
-     */
-    public static boolean waitForFile(File file, int timeout, TimeUnit unit) {
-        return FileUtils.waitFor(file, Long.valueOf(unit.toSeconds(timeout)).intValue());
     }
 
     public static boolean deleteDirectory(File directoryToBeDeleted) {
