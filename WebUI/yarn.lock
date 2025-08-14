@@ -6053,10 +6053,10 @@ svgo@^2.7.0:
     picocolors "^1.0.0"
     stable "^0.1.8"
 
-sweetalert2@^11.4.14:
-  version "11.15.0"
-  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-11.15.0.tgz#d591d2cba05c14b696ff7343e1644de0c82d176a"
-  integrity sha512-34Xs0CFBac6I1cGG9d+XaBqJrp0F/0prr8rMYOcU0shU/XmkGkRtlCxWNi7PdKYGw9Qf6aoEHNYicX3au37nkw==
+sweetalert2@^11.22.4:
+  version "11.22.4"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-11.22.4.tgz#772e6448cef4e753c6c429e96d233b7e701210ed"
+  integrity sha512-JwcRODfozxiKmspFp+xctZ2izAmLAKbRPcoLMEW7LdugN/YmNrX1LT7hdBW87qsgupEO1ukBBuB17KzKFKW0tg==
 
 tapable@^2.0.0, tapable@^2.1.1, tapable@^2.2.0, tapable@^2.2.1:
   version "2.2.1"
