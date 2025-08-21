@@ -266,21 +266,32 @@ public class ApiResource {
         }
     }
     private NodeList getNodes(String xmlFileName, String xpathExpression) {
-
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        NodeList nodeList ;
+        NodeList nodeList = null;
         try {
-            File file = new File(xmlFileName);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document document = db.parse(file);
-            XPathExpression xPathExpression =  XPathFactory.newInstance().newXPath().compile(xpathExpression);
-            nodeList = (NodeList) xPathExpression.evaluate(document, XPathConstants.NODESET);
-        } catch (Exception ex) {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
-            return null;
+            // === XXE Protection ===
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            dbf.setXIncludeAware(false);
+            dbf.setExpandEntityReferences(false);
+
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            File file = new File(xmlFileName);
+            Document document = db.parse(file);
+
+            XPathExpression xPathExpr = XPathFactory.newInstance().newXPath().compile(xpathExpression);
+            nodeList = (NodeList) xPathExpr.evaluate(document, XPathConstants.NODESET);
+
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(ApiResource.class.getName()).error("Error parsing XML file: " + xmlFileName, ex);
+            // return null on error
         }
         return nodeList;
     }
+
     private CommandResult importCertificateByStream(String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         try {
             List<String> params = new ArrayList<String>();
