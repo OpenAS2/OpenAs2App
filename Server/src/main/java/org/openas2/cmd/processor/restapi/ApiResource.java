@@ -5,30 +5,22 @@
  */
 package org.openas2.cmd.processor.restapi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import jakarta.ws.rs.*;
 import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
+import org.openas2.Session;
+import org.openas2.util.Properties;
 
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.Consumes;
-
-import jakarta.ws.rs.DefaultValue;
 
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.HEAD;
 
-
-import jakarta.ws.rs.PathParam;
 
 import jakarta.ws.rs.core.Context;
 
@@ -37,15 +29,26 @@ import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.StringWriter;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 /**
  * @author javier
@@ -73,9 +76,9 @@ public class ApiResource {
     @Context
     Request request;
     private final ObjectMapper mapper;
-    
+
     public ApiResource() {
-                
+
         mapper = new ObjectMapper();
         // enable pretty printing
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -220,6 +223,64 @@ public class ApiResource {
         return Response.status(200).build();
     }
 
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/getPropertyList")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPropertyList() {
+        Map<String, String> result = new HashMap<>();
+        result = (Map<String,String>) Properties.getProperties();
+
+        ObjectMapper om = new ObjectMapper();
+        try {
+            String js = om.writeValueAsString(result);
+            return Response.ok(js, MediaType.APPLICATION_JSON).build();
+        } catch (JsonProcessingException e) {
+             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("error").type(MediaType.APPLICATION_JSON).build();
+        }
+    }
+
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/getXml")
+    @Produces(MediaType.APPLICATION_XML)
+    public Response getXml(@QueryParam("filename") String filename, @QueryParam("xpath") String xpathExpression) {
+        Session session = getProcessor().getSession();
+        String filePath = session.getBaseDirectory() + '\\' + filename;
+        try {
+            NodeList nodeList = getNodes(filePath, xpathExpression);
+            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document resultDocument = db.newDocument();
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node importedNode = resultDocument.importNode(nodeList.item(i), true);
+                resultDocument.appendChild(importedNode);
+            }
+            StringWriter stringWriter = new StringWriter();    // Convert the XML document to a string
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.transform(new DOMSource(resultDocument), new StreamResult(stringWriter));
+            String xmlContent = stringWriter.toString();
+            return Response.ok(xmlContent, MediaType.APPLICATION_XML).build();
+        } catch (Exception exception) {
+            return Response.serverError().entity("error").type(MediaType.APPLICATION_JSON).build();
+        }
+    }
+    private NodeList getNodes(String xmlFileName, String xpathExpression) {
+
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        NodeList nodeList ;
+        try {
+            File file = new File(xmlFileName);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.parse(file);
+            XPathExpression xPathExpression =  XPathFactory.newInstance().newXPath().compile(xpathExpression);
+            nodeList = (NodeList) xPathExpression.evaluate(document, XPathConstants.NODESET);
+        } catch (Exception ex) {
+
+            return null;
+        }
+        return nodeList;
+    }
     private CommandResult importCertificateByStream(String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         try {
             List<String> params = new ArrayList<String>();

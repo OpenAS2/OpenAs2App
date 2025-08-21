@@ -12,7 +12,10 @@ pom.xml.versionsBackup
 /Bundle/target/
 /lib/
 /Server/src/logs/
+/Server/src/config/config.xml
 /Server/src/test/resources/config/
+/Server/s.bat
+/Server/src/bin/c.bat
 **/.DS_Store
 **/.settings
 **/*.class
