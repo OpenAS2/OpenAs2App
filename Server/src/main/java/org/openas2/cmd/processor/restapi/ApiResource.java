@@ -40,13 +40,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+
+
+
+import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
@@ -63,6 +69,7 @@ import org.openas2.util.Properties;
 import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -281,34 +288,53 @@ public class ApiResource {
                     .type(MediaType.APPLICATION_JSON)
                     .build();
         }
-        if (xpathExpression == null || !xpathExpression.matches("[a-zA-Z0-9_/@\\[\\]/\\*\\-]+")) {
+
+
+        Set<String> allowedXPaths = Set.of(
+                "/partnerships/partner",
+                "/partnerships/partner/name",
+                "/partnerships/*",
+                "*"
+        );
+
+        if (xpathExpression == null || !allowedXPaths.contains(xpathExpression)) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\":\"Invalid XPath expression\"}")
+                    .entity("{\"error\":\"Invalid or disallowed XPath expression\"}")
                     .type(MediaType.APPLICATION_JSON)
                     .build();
         }
-
 
         Session session = getProcessor().getSession();
         String filePath = session.getBaseDirectory() + "/" + filename;
 
         try {
-            NodeList nodeList = getNodes(filePath, xpathExpression);
-            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document resultDocument = db.newDocument();
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true); // prevent XXE
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(new File(filePath));
+
+
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            XPathExpression expr = xpath.compile(xpathExpression);
+            NodeList nodeList = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+
+
+            Document resultDocument = builder.newDocument();
+            Element root = resultDocument.createElement("results");
+            resultDocument.appendChild(root);
 
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node importedNode = resultDocument.importNode(nodeList.item(i), true);
-                resultDocument.appendChild(importedNode);
+                root.appendChild(importedNode);
             }
 
+            // Convert to string
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
             StringWriter stringWriter = new StringWriter();
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
             transformer.transform(new DOMSource(resultDocument), new StreamResult(stringWriter));
 
-            String xmlContent = stringWriter.toString();
-            return Response.ok(xmlContent, MediaType.APPLICATION_XML).build();
+            return Response.ok(stringWriter.toString(), MediaType.APPLICATION_XML).build();
 
         } catch (Exception exception) {
             LoggerFactory.getLogger(ApiResource.class.getName()).error(
@@ -319,6 +345,7 @@ public class ApiResource {
                     .build();
         }
     }
+
 
 
     private static boolean isLocalhost(Request request) {
