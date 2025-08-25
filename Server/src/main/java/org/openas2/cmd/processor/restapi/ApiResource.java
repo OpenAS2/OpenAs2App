@@ -281,8 +281,6 @@ public class ApiResource {
                     .type(MediaType.APPLICATION_JSON)
                     .build();
         }
-
-        // Validate XPath input: only allow letters, numbers, underscores, and slashes
         if (xpathExpression == null || !xpathExpression.matches("[a-zA-Z0-9_/@\\[\\]/\\*\\-]+")) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"Invalid XPath expression\"}")

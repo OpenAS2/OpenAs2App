@@ -17,3 +17,4 @@ pom.xml.versionsBackup
 **/.settings
 **/*.class
 .metadata/*
+"Server/OPENAS2_LOG_DIR_IS_UNDEFINED/*.txt" 
