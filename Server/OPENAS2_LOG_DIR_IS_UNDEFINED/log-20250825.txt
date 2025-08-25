@@ -1,0 +1,389 @@
+09:49:50.438 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+09:49:50.810 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+09:49:50.871 [main] INFO  org.openas2.XMLSession -- Loading configuration...
+09:49:50.871 [main] INFO  org.openas2.XMLSession -- Loading properties...
+09:49:52.139 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+09:49:52.176 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+09:49:52.190 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+09:49:52.242 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+09:49:52.242 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+09:49:53.255 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+09:49:53.335 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2ReceiverModule" enabled="$properties.module.AS2ReceiverModule.https.enabled$" errordir="$properties.storageBaseDir$/inbox/error" errorformat="sender.as2_id, receiver.as2_id, headers.message-id" port="$properties.module.AS2ReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+09:49:53.339 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule" enabled="$properties.module.AS2MDNReceiverModule.https.enabled$" port="$properties.module.AS2MDNReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+09:49:53.345 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+09:49:53.443 [main] INFO  org.openas2.XMLSession -- Loading messages...
+09:49:53.445 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+09:49:53.452 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+09:49:53.453 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+09:49:53.481 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+09:49:53.761 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+09:49:53.779 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+09:49:53.783 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+09:49:53.794 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+09:49:53.796 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+09:49:53.797 [main] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) started.
+09:49:53.799 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+09:52:25.023 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+09:52:25.020 [SchedulerComponent-Thread-1] ERROR org.openas2.cmd.processor.BaseCommandProcessor -- Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+java.lang.NullPointerException: Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+	at org.openas2.cmd.processor.StreamCommandProcessor.readLine(StreamCommandProcessor.java:107)
+	at org.openas2.cmd.processor.StreamCommandProcessor.processCommand(StreamCommandProcessor.java:49)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:96)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:91)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+09:52:25.023 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+09:52:25.023 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+09:52:25.025 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+09:52:25.026 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+09:52:25.027 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+09:52:25.028 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+09:52:25.028 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+09:52:25.029 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) stopped.
+09:52:25.029 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+
+09:53:06.483 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+09:53:06.815 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+09:53:06.873 [main] INFO  org.openas2.XMLSession -- Loading configuration...org.openas2.lib.xml.PropertyReplacementFilter@51dcb805
+09:53:06.875 [main] INFO  org.openas2.XMLSession -- Loading properties...
+09:53:08.136 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+09:53:08.164 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+09:53:08.180 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+09:53:08.233 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+09:53:08.233 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+09:53:09.201 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+09:53:09.272 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2ReceiverModule" enabled="$properties.module.AS2ReceiverModule.https.enabled$" errordir="$properties.storageBaseDir$/inbox/error" errorformat="sender.as2_id, receiver.as2_id, headers.message-id" port="$properties.module.AS2ReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+09:53:09.275 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule" enabled="$properties.module.AS2MDNReceiverModule.https.enabled$" port="$properties.module.AS2MDNReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+09:53:09.281 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+09:53:09.361 [main] INFO  org.openas2.XMLSession -- Loading messages...
+09:53:09.363 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+09:53:09.371 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+09:53:09.372 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+09:53:09.398 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+09:53:09.630 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+09:53:09.640 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+09:53:09.644 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+09:53:09.648 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+09:53:09.650 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+09:53:09.650 [main] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) started.
+09:53:09.651 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+09:55:27.922 [SchedulerComponent-Thread-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor destroyed...
+09:55:27.943 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+09:55:27.945 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+09:55:27.945 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+09:55:27.971 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+09:55:27.970 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+09:55:28.017 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+09:55:28.018 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+09:55:28.019 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+09:55:28.020 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) stopped.
+09:55:28.049 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+09:55:28.050 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 1 active module(s) stopped.
+09:55:28.050 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+
+09:56:13.560 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+09:56:13.898 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+09:56:13.946 [main] INFO  org.openas2.XMLSession -- Loading configuration...D:\REPOS\apeiris\OpenAs2AppMyConfig
+09:56:13.947 [main] INFO  org.openas2.XMLSession -- Loading properties...
+09:56:15.170 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+09:56:15.199 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+09:56:15.214 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+09:56:15.264 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+09:56:15.264 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+09:56:16.212 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+09:56:16.285 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2ReceiverModule" enabled="$properties.module.AS2ReceiverModule.https.enabled$" errordir="$properties.storageBaseDir$/inbox/error" errorformat="sender.as2_id, receiver.as2_id, headers.message-id" port="$properties.module.AS2ReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+09:56:16.288 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule" enabled="$properties.module.AS2MDNReceiverModule.https.enabled$" port="$properties.module.AS2MDNReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+09:56:16.293 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+09:56:16.368 [main] INFO  org.openas2.XMLSession -- Loading messages...
+09:56:16.369 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+09:56:16.375 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+09:56:16.376 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+09:56:16.404 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+09:56:16.632 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+09:56:16.645 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+09:56:16.646 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+09:56:16.648 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+09:56:16.651 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+09:56:16.654 [main] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) started.
+09:56:16.657 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+09:57:07.743 [grizzly-http-server-0] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+09:57:07.955 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: POST /api/v2/WriteToConsole/==================================================================
+09:57:08.025 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+09:57:08.415 [pool-4-thread-1] INFO  org.openas2.processor.receiver.AS2ReceiverHandler -- received 4790 bytes in 0.9 seconds at 519.766 KBps 0:0:0:0:0:0:0:1 52269 [<AS2_095708Mon.>]
+09:57:08.625 [pool-4-thread-1] INFO  org.openas2.processor.storage.MessageFileModule -- stored message to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\inbox\AS2_095708Mon. [<AS2_095708Mon.>]
+09:57:08.628 [pool-4-thread-1] INFO  org.openas2.processor.storage.MessageFileModule -- stored headers to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\msgheaders\2025-08-25\AS2_095708Mon. [<AS2_095708Mon.>]
+09:57:08.920 [pool-4-thread-1] INFO  org.openas2.processor.sender.MDNSenderModule -- sent MDN [automatic-action/mdn-sent-automatically; processed] [<AS2_095708Mon.>]
+10:03:16.708 [SchedulerComponent-Thread-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor destroyed...
+10:03:16.710 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+10:03:16.711 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+10:03:16.711 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:03:16.714 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+10:03:16.714 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:03:16.720 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+10:03:16.721 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:03:16.721 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+10:03:16.725 [SchedulerComponent-Thread-1] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) stopped.
+10:03:16.746 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+10:03:16.748 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 1 active module(s) stopped.
+10:03:16.749 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+
+10:28:45.937 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+10:28:46.318 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+10:28:46.382 [main] INFO  org.openas2.XMLSession -- Loading configuration...
+10:28:46.382 [main] INFO  org.openas2.XMLSession -- Loading properties...
+10:28:47.833 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+10:28:47.861 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+10:28:47.884 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+10:28:47.976 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+10:28:47.982 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+10:28:49.051 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+10:28:49.121 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2ReceiverModule" enabled="$properties.module.AS2ReceiverModule.https.enabled$" errordir="$properties.storageBaseDir$/inbox/error" errorformat="sender.as2_id, receiver.as2_id, headers.message-id" port="$properties.module.AS2ReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+10:28:49.123 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule" enabled="$properties.module.AS2MDNReceiverModule.https.enabled$" port="$properties.module.AS2MDNReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+10:28:49.127 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+10:28:49.218 [main] INFO  org.openas2.XMLSession -- Loading messages...
+10:28:49.219 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+10:28:49.227 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+10:28:49.228 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+10:28:49.271 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+10:28:49.523 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+10:28:49.534 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+10:28:49.535 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+10:28:49.536 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+10:28:49.537 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+10:28:49.539 [main] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) started.
+10:28:49.542 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+10:29:01.082 [grizzly-http-server-0] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+10:29:01.362 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getPropertyList
+10:29:01.441 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+10:29:01.477 [pool-5-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Incoming connection [ 127.0.0.1 52896]
+10:29:01.483 [pool-5-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Healthcheck ping detected [ 127.0.0.1 52896] [null]
+10:29:06.752 [grizzly-http-server-1] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+10:29:06.753 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getXml
+10:29:06.755 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 400{Content-Type=[application/json]}
+10:30:33.883 [grizzly-http-server-2] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+10:30:33.886 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getPropertyList
+10:30:33.889 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+10:30:33.893 [pool-5-thread-2] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Incoming connection [ 127.0.0.1 52922]
+10:30:33.896 [pool-5-thread-2] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Healthcheck ping detected [ 127.0.0.1 52922] [null]
+10:33:17.448 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+10:33:17.446 [SchedulerComponent-Thread-1] ERROR org.openas2.cmd.processor.BaseCommandProcessor -- Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+java.lang.NullPointerException: Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+	at org.openas2.cmd.processor.StreamCommandProcessor.readLine(StreamCommandProcessor.java:107)
+	at org.openas2.cmd.processor.StreamCommandProcessor.processCommand(StreamCommandProcessor.java:49)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:96)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:91)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+10:33:17.450 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:33:17.450 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+10:33:17.455 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+10:33:17.455 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:33:17.455 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+10:33:17.456 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:33:17.456 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+10:33:17.499 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) stopped.
+10:33:17.500 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+
+10:33:58.184 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+10:33:58.537 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+10:33:58.580 [main] INFO  org.openas2.XMLSession -- Loading configuration...
+10:33:58.581 [main] INFO  org.openas2.XMLSession -- Loading properties...
+10:33:59.988 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+10:34:00.026 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+10:34:00.046 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+10:34:00.106 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+10:34:00.106 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+10:34:01.241 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+10:34:01.337 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2ReceiverModule" enabled="$properties.module.AS2ReceiverModule.https.enabled$" errordir="$properties.storageBaseDir$/inbox/error" errorformat="sender.as2_id, receiver.as2_id, headers.message-id" port="$properties.module.AS2ReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+10:34:01.342 [main] INFO  org.openas2.XMLSession -- Module is disabled ... ignoring: <module classname="org.openas2.processor.receiver.AS2MDNReceiverModule" enabled="$properties.module.AS2MDNReceiverModule.https.enabled$" port="$properties.module.AS2MDNReceiverModule.https.port$" protocol="https" ssl_keystore="$properties.ssl_keystore$" ssl_keystore_password="$properties.ssl_keystore_password$" ssl_protocol="TLS"/>
+10:34:01.351 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+10:34:01.480 [main] INFO  org.openas2.XMLSession -- Loading messages...
+10:34:01.481 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+10:34:01.488 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+10:34:01.489 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+10:34:01.515 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+10:34:01.760 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+10:34:01.772 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+10:34:01.775 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+10:34:01.776 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+10:34:01.777 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+10:34:01.778 [main] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) started.
+10:34:01.780 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+10:34:17.982 [grizzly-http-server-0] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+10:34:18.220 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getPropertyList
+10:34:18.290 [pool-5-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Incoming connection [ 127.0.0.1 53008]
+10:34:18.292 [pool-5-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Healthcheck ping detected [ 127.0.0.1 53008] [null]
+10:34:18.295 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+10:34:20.503 [grizzly-http-server-1] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+10:34:20.504 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getXml
+10:34:20.521 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/xml]}
+10:34:36.744 [grizzly-http-server-2] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+10:34:36.752 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: POST /api/v2/WriteToConsole/==================================================================
+10:34:36.812 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+10:34:37.460 [pool-4-thread-1] INFO  org.openas2.processor.receiver.AS2ReceiverHandler -- received 4790 bytes in 0.1 seconds at 4.581 MBps 0:0:0:0:0:0:0:1 53018 [<AS2_103437Mon.>]
+10:34:37.670 [pool-4-thread-1] INFO  org.openas2.processor.storage.MessageFileModule -- stored message to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\inbox\AS2_103437Mon. [<AS2_103437Mon.>]
+10:34:37.681 [pool-4-thread-1] INFO  org.openas2.processor.storage.MessageFileModule -- stored headers to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\msgheaders\2025-08-25\AS2_103437Mon. [<AS2_103437Mon.>]
+10:34:38.050 [pool-4-thread-1] INFO  org.openas2.processor.sender.MDNSenderModule -- sent MDN [automatic-action/mdn-sent-automatically; processed] [<AS2_103437Mon.>]
+10:36:19.533 [SchedulerComponent-Thread-1] ERROR org.openas2.cmd.processor.BaseCommandProcessor -- Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+java.lang.NullPointerException: Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+	at org.openas2.cmd.processor.StreamCommandProcessor.readLine(StreamCommandProcessor.java:107)
+	at org.openas2.cmd.processor.StreamCommandProcessor.processCommand(StreamCommandProcessor.java:49)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:96)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:91)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+10:36:19.538 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+10:36:19.566 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+10:36:19.567 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:36:19.568 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+10:36:19.568 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:36:19.573 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+10:36:19.580 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+10:36:19.580 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+10:36:19.582 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 5 active module(s) stopped.
+10:36:19.590 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+

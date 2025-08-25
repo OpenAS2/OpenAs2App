@@ -270,8 +270,10 @@ public class ApiResource {
     @GET
     @RolesAllowed({"ADMIN"})
     @Path("/getXml")
-    @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
-    public Response getXml(@Context Request request, @QueryParam("filename") String filename, @QueryParam("xpath") String xpathExpression){
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response getXml(@Context Request request,
+                           @QueryParam("filename") String filename,
+                           @QueryParam("xpath") String xpathExpression) {
 
         if (!request.isSecure() && !isLocalhost(request)) {
             return Response.status(Response.Status.FORBIDDEN)
@@ -280,26 +282,46 @@ public class ApiResource {
                     .build();
         }
 
+        // Validate XPath input: only allow letters, numbers, underscores, and slashes
+        if (xpathExpression == null || !xpathExpression.matches("[a-zA-Z0-9_/@\\[\\]/\\*\\-]+")) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"Invalid XPath expression\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+
+
         Session session = getProcessor().getSession();
         String filePath = session.getBaseDirectory() + "/" + filename;
+
         try {
             NodeList nodeList = getNodes(filePath, xpathExpression);
             DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document resultDocument = db.newDocument();
+
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node importedNode = resultDocument.importNode(nodeList.item(i), true);
                 resultDocument.appendChild(importedNode);
             }
-            StringWriter stringWriter = new StringWriter();    // Convert the XML document to a string
+
+            StringWriter stringWriter = new StringWriter();
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.transform(new DOMSource(resultDocument), new StreamResult(stringWriter));
+
             String xmlContent = stringWriter.toString();
             return Response.ok(xmlContent, MediaType.APPLICATION_XML).build();
+
         } catch (Exception exception) {
-            return Response.serverError().entity("error").type(MediaType.APPLICATION_JSON).build();
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(
+                    "Error processing XML file: " + filePath, exception);
+            return Response.serverError()
+                    .entity("{\"error\":\"Internal server error\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         }
     }
+
 
     private static boolean isLocalhost(Request request) {
         boolean isLocalhost = request.getRemoteAddr().equals("127.0.0.1") || request.getRemoteAddr().equals("::1");
