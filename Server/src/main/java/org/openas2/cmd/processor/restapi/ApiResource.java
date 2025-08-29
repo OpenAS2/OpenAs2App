@@ -5,47 +5,71 @@
  */
 package org.openas2.cmd.processor.restapi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.openas2.cert.AliasedCertificateFactory;
-import org.openas2.cert.CertificateFactory;
-import org.openas2.cmd.CommandResult;
-import org.openas2.cmd.processor.RestCommandProcessor;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
-
 import jakarta.ws.rs.DefaultValue;
-
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
-
-
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
-
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
-
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.StringWriter;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
+import org.glassfish.grizzly.http.server.Request;
+
+import org.openas2.cert.AliasedCertificateFactory;
+import org.openas2.cert.CertificateFactory;
+import org.openas2.cmd.CommandResult;
+import org.openas2.cmd.processor.RestCommandProcessor;
+import org.openas2.Session;
+import org.openas2.util.Properties;
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.NamedNodeMap;
+
+
 
 /**
  * @author javier
@@ -70,12 +94,11 @@ public class ApiResource {
     private static RestCommandProcessor processor;
     @Context
     UriInfo ui;
-    @Context
     Request request;
     private final ObjectMapper mapper;
-    
+
     public ApiResource() {
-                
+
         mapper = new ObjectMapper();
         // enable pretty printing
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -220,6 +243,164 @@ public class ApiResource {
         return Response.status(200).build();
     }
 
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/getPropertyList")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPropertyList(@Context Request request) {
+        if (!request.isSecure() && !isLocalhost(request)) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity("{\"error\":\"SSL/TLS required\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+        Map<String, String> result = new HashMap<>();
+        try {
+            result = (Map<String, String>) Properties.getProperties();
+            for (String key : new HashSet<>(result.keySet())) {  // === Redact sensitive entries ===
+                String lowerKey = key.toLowerCase();
+                if (lowerKey.contains("password") || lowerKey.contains("pwd")) {
+                    result.remove(key);
+                    // result.computeIfPresent(key, (k, v) -> "***REDACTED***"); // mask instead of removing
+                }
+            }
+
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
+            throw ex;
+        }
+        ObjectMapper om = new ObjectMapper();
+        try {
+            String js = om.writeValueAsString(result);
+            return Response.ok(js, MediaType.APPLICATION_JSON).build();
+        } catch (JsonProcessingException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\":\"Serialization failed\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
+    @GET
+    @RolesAllowed({"ADMIN"})
+    @Path("/getXml")
+    @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
+    public Response getXml(@Context Request request,
+                           @QueryParam("filename") String filename,
+                           @QueryParam("xpath") String xpathExpression) {
+        if (!request.isSecure() && !isLocalhost(request)) {  // Require HTTPS unless localhost
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity("{\"error\":\"SSL/TLS required\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+        Session session = getProcessor().getSession();
+        String filePath = session.getBaseDirectory() + "/" + filename;
+        try {
+            NodeList nodeList = getNodes(filePath, xpathExpression);
+            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document resultDocument = db.newDocument();
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node importedNode = resultDocument.importNode(nodeList.item(i), true);
+                redactSensitiveAttributes(importedNode);  // === Redact sensitive attributes ===
+                resultDocument.appendChild(importedNode);
+            }
+            StringWriter stringWriter = new StringWriter();// Convert XML document to string
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.transform(new DOMSource(resultDocument), new StreamResult(stringWriter));
+
+            String xmlContent = stringWriter.toString();
+            return Response.ok(xmlContent, MediaType.APPLICATION_XML).build();
+
+        } catch (Exception exception) {
+            LoggerFactory.getLogger(ApiResource.class.getName())
+                    .error("Error building XML response", exception);
+            return Response.serverError()
+                    .entity("{\"error\":\"Internal Server Error\"}")
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
+        }
+    }
+
+    /**
+     * Remove or mask sensitive attributes (password/pwd).
+     */
+    private void redactSensitiveAttributes(Node node) {
+        if (node == null){
+            return;
+        }
+        if (node.hasAttributes()) {
+            NamedNodeMap attrs = node.getAttributes();
+            for (int j = attrs.getLength() - 1; j >= 0; j--) {
+                Node attr = attrs.item(j);
+                String attrName = attr.getNodeName().toLowerCase();
+                if (attrName.contains("password") || attrName.contains("pwd")) {
+                    // Either mask or remove
+                    //attr.setNodeValue("***REDACTED***");
+                    attrs.removeNamedItem(attr.getNodeName());
+                }
+            }
+        }
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            redactSensitiveAttributes(children.item(i));
+        }
+    }
+
+    private static boolean isLocalhost(Request request) {
+        boolean isLocalhost = request.getRemoteAddr().equals("127.0.0.1") || request.getRemoteAddr().equals("::1");
+        return isLocalhost;
+    }
+
+    private NodeList getNodes(String xmlFileName, String xpathExpression) {
+        NodeList nodeList = null;
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+            // === XXE Protection ===
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            dbf.setXIncludeAware(false);
+            dbf.setExpandEntityReferences(false);
+
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            File file = new File(xmlFileName);
+            Document document = db.parse(file);
+
+            XPathExpression xPathExpr = XPathFactory.newInstance().newXPath().compile(xpathExpression);
+            nodeList = (NodeList) xPathExpr.evaluate(document, XPathConstants.NODESET);
+
+
+            if (nodeList != null) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node node = nodeList.item(i);
+                    if (node.hasAttributes()) {
+                        NamedNodeMap attrs = node.getAttributes();
+                        for (int j = attrs.getLength() - 1; j >= 0; j--) {
+                            Node attr = attrs.item(j);
+                            String attrName = attr.getNodeName().toLowerCase();
+                            if (attrName.contains("password") || attrName.contains("pwd")) {
+                                attrs.removeNamedItem(attr.getNodeName()); // Remove the sensitive attribute
+                                // Or mask instead: attr.setNodeValue("***REDACTED***");
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(ApiResource.class.getName())
+                    .error("Error parsing XML file: " + xmlFileName, ex);
+            return null;
+        }
+        return nodeList;
+    }
+
+
+
     private CommandResult importCertificateByStream(String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         try {
             List<String> params = new ArrayList<String>();
@@ -245,7 +426,7 @@ public class ApiResource {
         } catch (Exception ex) {
             LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
             throw ex;
-            // return Response.status(506).entity( ex.getMessage()).build();
+
         }
     }
 
