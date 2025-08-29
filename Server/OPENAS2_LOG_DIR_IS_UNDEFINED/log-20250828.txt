@@ -1,0 +1,1124 @@
+20:57:24.410 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+20:57:24.865 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+20:57:24.915 [main] INFO  org.openas2.XMLSession -- Loading configuration...
+20:57:24.916 [main] INFO  org.openas2.XMLSession -- Loading properties...
+20:57:24.918 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.base.dir : D:\REPOS\apeiris\OpenAs2AppMyConfig
+20:57:24.920 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.http.enabled : true
+20:57:24.920 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.bodytemplate : D:\REPOS\apeiris\OpenAs2AppMyConfig/emailtemplate.txt
+20:57:24.928 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore_password : testas2
+20:57:24.928 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.http.enabled : true
+20:57:24.929 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpuser : mySmtpUserId
+20:57:24.929 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpserver : mail.openas2.org
+20:57:24.929 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DirectoryResenderModule.resenddelay : 60
+20:57:24.930 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_port : 9092
+20:57:24.930 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.enabled : true
+20:57:24.930 [main] DEBUG org.openas2.XMLSession -- Parsing property: partnerships.polling.interval : 120
+20:57:24.930 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.keystore : $properties.ssl_keystore$
+20:57:24.931 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.HealthCheckModule.keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_certs.jks
+20:57:24.931 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.interval : 5
+20:57:24.931 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.filename : $properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$
+20:57:24.931 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MDNFileModule.filename : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$
+20:57:24.932 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2SenderModule.enabled : true
+20:57:24.932 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_name : openas2
+20:57:24.933 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.mimetype : application/EDI-X12
+20:57:24.933 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.http.port : 10081
+20:57:24.933 [main] DEBUG org.openas2.XMLSession -- Parsing property: console.command.processor.enabled : true
+20:57:24.933 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_keystore_password : testas2
+20:57:24.934 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore.enabled : false
+20:57:24.935 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore.refresh_interval : 300
+20:57:24.935 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.errordir : $properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+20:57:24.935 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: pollerConfigBase.errordir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+20:57:24.936 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.process_files_in_paralllel : false
+20:57:24.936 [main] DEBUG org.openas2.XMLSession -- Parsing property: log_date_format : yyyy-MM-dd HH:mm:ss.SSS
+20:57:24.936 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.userid : userID
+20:57:24.936 [main] DEBUG org.openas2.XMLSession -- Parsing property: config.dir : D:\REPOS\apeiris\OpenAs2AppMyConfig
+20:57:24.936 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtppwd : mySmtpPwd
+20:57:24.936 [main] DEBUG org.openas2.XMLSession -- Parsing property: reject_unsigned_messages : false
+20:57:24.936 [main] DEBUG org.openas2.XMLSession -- Parsing property: messages.enabled : false
+20:57:24.937 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_receive_message_filename_fallback : $rand.shortUUID$
+20:57:24.937 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.password : pWd
+20:57:24.937 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DbTrackingModule.enabled : true
+20:57:24.937 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.enabled : true
+20:57:24.938 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.table_name : msg_metadata
+20:57:24.938 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.https.port : 10444
+20:57:24.938 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.version : 4.6.0
+20:57:24.938 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_message_id_format : $date.yyyyMMddHHmmssZ$-$rand.123$-$msg.sender.as2_id$_$msg.receiver.as2_id$_$msg.attributes.filename$
+20:57:24.938 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.enabled : true
+20:57:24.939 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.outboxdir : $properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$
+20:57:24.939 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: pollerConfigBase.outboxdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/outbox/$partnership.receiver.as2_id$
+20:57:24.939 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.sendfilename : true
+20:57:24.940 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpauth : true
+20:57:24.940 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_pwd : OpenAS2
+20:57:24.940 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/as2_certs.p12
+20:57:24.941 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.subject : $exception.name$: $exception.message$
+20:57:24.941 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.header : $properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$
+20:57:24.941 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.header : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$
+20:57:24.941 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore.refresh_interval : 300
+20:57:24.941 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.tempdir : $properties.storageBaseDir$/temp
+20:57:24.942 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.tempdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/temp
+20:57:24.943 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpport : 25
+20:57:24.944 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.https.port : 10443
+20:57:24.944 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.enabled : true
+20:57:24.945 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12
+20:57:24.945 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.http.port : 10080
+20:57:24.946 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.to : your email address
+20:57:24.947 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNSenderModule.enabled : true
+20:57:24.947 [main] DEBUG org.openas2.XMLSession -- Parsing property: jakarta.mail.properties.file : D:\REPOS\apeiris\OpenAs2AppMyConfig/java.mail.properties
+20:57:24.948 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_user : sa
+20:57:24.948 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_certs.jks
+20:57:24.948 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.keystore_password : $properties.ssl_keystore_password$
+20:57:24.949 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.HealthCheckModule.keystore_password : testas2
+20:57:24.949 [main] DEBUG org.openas2.XMLSession -- Parsing property: messages.polling.interval : 120
+20:57:24.949 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.from : Open AS2 Server<as2msgs@openas2.org>
+20:57:24.949 [main] DEBUG org.openas2.XMLSession -- Parsing property: partnership_file : D:\REPOS\apeiris\OpenAs2AppMyConfig/partnerships.xml
+20:57:24.949 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.defaults : sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$
+20:57:24.950 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_directory : D:\REPOS\apeiris\OpenAs2AppMyConfig/DB
+20:57:24.950 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_password : openas2
+20:57:24.951 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.sql_escape_character : '
+20:57:24.951 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DirectoryResenderModule.enabled : true
+20:57:24.952 [main] DEBUG org.openas2.XMLSession -- Parsing property: async_mdn_receiver_port : $properties.module.AS2MDNReceiverModule.http.port$
+20:57:24.953 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: async_mdn_receiver_port : 10081
+20:57:24.959 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.jdbc_connect_string : jdbc:h2:$component.db_directory$/$component.db_name$
+20:57:24.960 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.use_embedded_db : true
+20:57:24.960 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.address : localhost
+20:57:24.960 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2SenderModule.readtimeout : 60000
+20:57:24.960 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.baseuri : http://localhost:8080
+20:57:24.960 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.https.enabled : true
+20:57:24.962 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.port : 10099
+20:57:24.962 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_start : true
+20:57:24.963 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.title : OpenAS2 Server v4.6.0
+20:57:24.963 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_async_mdn_url : http://localhost:$properties.async_mdn_receiver_port$
+20:57:24.963 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: as2_async_mdn_url : http://localhost:10081
+20:57:24.963 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.https.enabled : true
+20:57:24.964 [main] DEBUG org.openas2.XMLSession -- Parsing property: storageBaseDir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data
+20:57:24.964 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.protocol : http
+20:57:24.964 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.jdbc_driver : org.h2.Driver
+20:57:24.964 [main] DEBUG org.openas2.XMLSession -- Parsing property: processor.resend_max_retries : 5
+20:57:24.964 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.max_parallel_files : 20
+20:57:24.965 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.tempdir : $properties.storageBaseDir$/temp
+20:57:24.965 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MDNFileModule.tempdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/temp
+20:57:24.966 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.filename : $properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$
+20:57:24.966 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.filename : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$
+20:57:24.966 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.force_load_jdbc_driver : false
+20:57:24.966 [main] DEBUG org.openas2.XMLSession -- Parsing property: sql_timestamp_format : yyyy-MM-dd HH:mm:ss.SSS
+20:57:24.966 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore_password : testas2
+20:57:26.292 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+20:57:26.331 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+20:57:26.346 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+20:57:26.399 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+20:57:26.400 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+20:57:27.419 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+20:57:27.438 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+20:57:27.564 [main] INFO  org.openas2.XMLSession -- Loading messages...
+20:57:27.568 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+20:57:27.572 [main] DEBUG org.openas2.schedule.SchedulerComponent -- Scheduler module is ready.
+20:57:27.581 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+20:57:27.586 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+20:57:27.631 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+20:57:28.068 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+20:57:28.079 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+20:57:28.160 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+20:57:28.161 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+20:57:28.163 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+20:57:28.165 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+20:57:28.166 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+20:57:28.166 [main] INFO  org.openas2.processor.DefaultProcessor -- 7 active module(s) started.
+20:57:28.168 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+20:57:41.098 [grizzly-http-server-0] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+20:57:41.116 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 405{Allow=[HEAD,OPTIONS]}
+20:59:03.381 [SchedulerComponent-Thread-1] ERROR org.openas2.cmd.processor.BaseCommandProcessor -- Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+java.lang.NullPointerException: Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+	at org.openas2.cmd.processor.StreamCommandProcessor.readLine(StreamCommandProcessor.java:107)
+	at org.openas2.cmd.processor.StreamCommandProcessor.processCommand(StreamCommandProcessor.java:49)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:96)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:91)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+20:59:03.384 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+20:59:03.389 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+20:59:03.406 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+20:59:03.408 [HTTPServerThread (0.0.0.0:10443)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:596)
+	at java.base/sun.security.ssl.SSLServerSocketImpl.accept(SSLServerSocketImpl.java:271)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+20:59:03.410 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+20:59:03.412 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+20:59:03.413 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+20:59:03.414 [HTTPServerThread (0.0.0.0:10444)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:596)
+	at java.base/sun.security.ssl.SSLServerSocketImpl.accept(SSLServerSocketImpl.java:271)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+20:59:03.414 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+20:59:03.415 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+20:59:03.416 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+20:59:03.416 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+20:59:03.496 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 7 active module(s) stopped.
+20:59:03.497 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+
+21:05:51.255 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+21:05:51.614 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+21:05:51.655 [main] INFO  org.openas2.XMLSession -- Loading configuration...
+21:05:51.656 [main] INFO  org.openas2.XMLSession -- Loading properties...
+21:05:51.657 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.base.dir : D:\REPOS\apeiris\OpenAs2AppMyConfig
+21:05:51.659 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.http.enabled : true
+21:05:51.660 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.bodytemplate : D:\REPOS\apeiris\OpenAs2AppMyConfig/emailtemplate.txt
+21:05:51.660 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore_password : testas2
+21:05:51.660 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.http.enabled : true
+21:05:51.660 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpuser : mySmtpUserId
+21:05:51.660 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpserver : mail.openas2.org
+21:05:51.660 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DirectoryResenderModule.resenddelay : 60
+21:05:51.661 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_port : 9092
+21:05:51.661 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.enabled : true
+21:05:51.661 [main] DEBUG org.openas2.XMLSession -- Parsing property: partnerships.polling.interval : 120
+21:05:51.662 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.keystore : $properties.ssl_keystore$
+21:05:51.662 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.HealthCheckModule.keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_certs.jks
+21:05:51.662 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.interval : 5
+21:05:51.662 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.filename : $properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$
+21:05:51.663 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MDNFileModule.filename : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$
+21:05:51.663 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2SenderModule.enabled : true
+21:05:51.663 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_name : openas2
+21:05:51.664 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.mimetype : application/EDI-X12
+21:05:51.664 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.http.port : 10081
+21:05:51.664 [main] DEBUG org.openas2.XMLSession -- Parsing property: console.command.processor.enabled : true
+21:05:51.665 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_keystore_password : testas2
+21:05:51.665 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore.enabled : false
+21:05:51.665 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore.refresh_interval : 300
+21:05:51.665 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.errordir : $properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+21:05:51.666 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: pollerConfigBase.errordir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+21:05:51.666 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.process_files_in_paralllel : false
+21:05:51.666 [main] DEBUG org.openas2.XMLSession -- Parsing property: log_date_format : yyyy-MM-dd HH:mm:ss.SSS
+21:05:51.666 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.userid : userID
+21:05:51.666 [main] DEBUG org.openas2.XMLSession -- Parsing property: config.dir : D:\REPOS\apeiris\OpenAs2AppMyConfig
+21:05:51.666 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtppwd : mySmtpPwd
+21:05:51.667 [main] DEBUG org.openas2.XMLSession -- Parsing property: reject_unsigned_messages : false
+21:05:51.667 [main] DEBUG org.openas2.XMLSession -- Parsing property: messages.enabled : false
+21:05:51.667 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_receive_message_filename_fallback : $rand.shortUUID$
+21:05:51.667 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.password : pWd
+21:05:51.668 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DbTrackingModule.enabled : true
+21:05:51.668 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.enabled : true
+21:05:51.668 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.table_name : msg_metadata
+21:05:51.668 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.https.port : 10444
+21:05:51.669 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.version : 4.6.0
+21:05:51.669 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_message_id_format : $date.yyyyMMddHHmmssZ$-$rand.123$-$msg.sender.as2_id$_$msg.receiver.as2_id$_$msg.attributes.filename$
+21:05:51.669 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.enabled : true
+21:05:51.669 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.outboxdir : $properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$
+21:05:51.669 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: pollerConfigBase.outboxdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/outbox/$partnership.receiver.as2_id$
+21:05:51.669 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.sendfilename : true
+21:05:51.670 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpauth : true
+21:05:51.670 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_pwd : OpenAS2
+21:05:51.670 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/as2_certs.p12
+21:05:51.670 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.subject : $exception.name$: $exception.message$
+21:05:51.670 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.header : $properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$
+21:05:51.671 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.header : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$
+21:05:51.671 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore.refresh_interval : 300
+21:05:51.673 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.tempdir : $properties.storageBaseDir$/temp
+21:05:51.673 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.tempdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/temp
+21:05:51.673 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpport : 25
+21:05:51.674 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.https.port : 10443
+21:05:51.674 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.enabled : true
+21:05:51.676 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12
+21:05:51.676 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.http.port : 10080
+21:05:51.678 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.to : your email address
+21:05:51.679 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNSenderModule.enabled : true
+21:05:51.679 [main] DEBUG org.openas2.XMLSession -- Parsing property: jakarta.mail.properties.file : D:\REPOS\apeiris\OpenAs2AppMyConfig/java.mail.properties
+21:05:51.680 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_user : sa
+21:05:51.680 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_certs.jks
+21:05:51.680 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.keystore_password : $properties.ssl_keystore_password$
+21:05:51.680 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.HealthCheckModule.keystore_password : testas2
+21:05:51.680 [main] DEBUG org.openas2.XMLSession -- Parsing property: messages.polling.interval : 120
+21:05:51.681 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.from : Open AS2 Server<as2msgs@openas2.org>
+21:05:51.682 [main] DEBUG org.openas2.XMLSession -- Parsing property: partnership_file : D:\REPOS\apeiris\OpenAs2AppMyConfig/partnerships.xml
+21:05:51.683 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.defaults : sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$
+21:05:51.684 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_directory : D:\REPOS\apeiris\OpenAs2AppMyConfig/DB
+21:05:51.684 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_password : openas2
+21:05:51.684 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.sql_escape_character : '
+21:05:51.684 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DirectoryResenderModule.enabled : true
+21:05:51.685 [main] DEBUG org.openas2.XMLSession -- Parsing property: async_mdn_receiver_port : $properties.module.AS2MDNReceiverModule.http.port$
+21:05:51.685 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: async_mdn_receiver_port : 10081
+21:05:51.685 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.jdbc_connect_string : jdbc:h2:$component.db_directory$/$component.db_name$
+21:05:51.685 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.use_embedded_db : true
+21:05:51.686 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.address : localhost
+21:05:51.686 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2SenderModule.readtimeout : 60000
+21:05:51.686 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.baseuri : http://localhost:8080
+21:05:51.686 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.https.enabled : true
+21:05:51.687 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.port : 10099
+21:05:51.689 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_start : true
+21:05:51.693 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.title : OpenAS2 Server v4.6.0
+21:05:51.694 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_async_mdn_url : http://localhost:$properties.async_mdn_receiver_port$
+21:05:51.694 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: as2_async_mdn_url : http://localhost:10081
+21:05:51.694 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.https.enabled : true
+21:05:51.694 [main] DEBUG org.openas2.XMLSession -- Parsing property: storageBaseDir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data
+21:05:51.695 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.protocol : http
+21:05:51.695 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.jdbc_driver : org.h2.Driver
+21:05:51.696 [main] DEBUG org.openas2.XMLSession -- Parsing property: processor.resend_max_retries : 5
+21:05:51.696 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.max_parallel_files : 20
+21:05:51.696 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.tempdir : $properties.storageBaseDir$/temp
+21:05:51.696 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MDNFileModule.tempdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/temp
+21:05:51.697 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.filename : $properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$
+21:05:51.697 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.filename : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$
+21:05:51.697 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.force_load_jdbc_driver : false
+21:05:51.697 [main] DEBUG org.openas2.XMLSession -- Parsing property: sql_timestamp_format : yyyy-MM-dd HH:mm:ss.SSS
+21:05:51.698 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore_password : testas2
+21:05:53.020 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+21:05:53.057 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+21:05:53.071 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+21:05:53.123 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+21:05:53.123 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+21:05:54.181 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+21:05:54.200 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+21:05:54.302 [main] INFO  org.openas2.XMLSession -- Loading messages...
+21:05:54.303 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+21:05:54.306 [main] DEBUG org.openas2.schedule.SchedulerComponent -- Scheduler module is ready.
+21:05:54.311 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+21:05:54.312 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+21:05:54.341 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+21:05:54.586 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+21:05:54.601 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+21:05:54.665 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+21:05:54.666 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+21:05:54.668 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+21:05:54.670 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+21:05:54.671 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+21:05:54.671 [main] INFO  org.openas2.processor.DefaultProcessor -- 7 active module(s) started.
+21:05:54.675 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+21:06:11.248 [pool-8-thread-1] DEBUG org.openas2.processor.receiver.HealthCheckHandler -- HealthCheck received request: [POST, /, HTTP/1.1]
+	Headers: ;;Host==localhost:10099;;IsHealthCheck==true;;Content-Length==0
+	Data: [B@278fcddd
+21:06:11.342 [grizzly-http-server-0] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+21:06:11.618 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getPropertyList
+21:06:11.639 [pool-4-thread-1] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- incoming connection 127.0.0.1 64650
+21:06:11.642 [pool-4-thread-1] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- Healthcheck ping detected [ 127.0.0.1 64650] [null]
+21:06:11.652 [pool-8-thread-1] WARN  org.openas2.util.HTTPUtil -- SSL factory building using:
+	isExtendedSelfsignedTrustCheck: false
+	overrideSslChecks: true
+	isTrustSelfSignedCNHandling: false
+21:06:11.661 [pool-5-thread-1] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- incoming connection 127.0.0.1 64651
+21:06:11.681 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+21:06:11.879 [pool-8-thread-1] ERROR org.openas2.processor.receiver.NetModule -- Failed to execute healthcheck.
+javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:131)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:378)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:321)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:316)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1351)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1226)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1169)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.createLayeredSocket(SSLConnectionSocketFactory.java:436)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.connectSocket(SSLConnectionSocketFactory.java:384)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:142)
+	at org.apache.http.impl.conn.BasicHttpClientConnectionManager.connect(BasicHttpClientConnectionManager.java:313)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.openas2.util.HTTPUtil.execRequest(HTTPUtil.java:411)
+	at org.openas2.processor.receiver.NetModule.healthcheck(NetModule.java:107)
+	at org.openas2.processor.DefaultProcessor.checkActiveModules(DefaultProcessor.java:146)
+	at org.openas2.app.HealthCheck.runCheck(HealthCheck.java:28)
+	at org.openas2.processor.receiver.HealthCheckHandler.handle(HealthCheckHandler.java:51)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:439)
+	at java.base/sun.security.validator.PKIXValidator.engineValidate(PKIXValidator.java:306)
+	at java.base/sun.security.validator.Validator.validate(Validator.java:264)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:231)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:132)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1335)
+	... 31 common frames omitted
+Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.build(SunCertPathBuilder.java:148)
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.engineBuild(SunCertPathBuilder.java:129)
+	at java.base/java.security.cert.CertPathBuilder.build(CertPathBuilder.java:297)
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:434)
+	... 36 common frames omitted
+21:06:11.884 [pool-5-thread-1] ERROR org.openas2.processor.receiver.AS2ReceiverHandler -- HTTP connection error on inbound message. Error is: An established connection was aborted by the software in your host machine
+java.net.SocketException: An established connection was aborted by the software in your host machine
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:425)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:445)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:831)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1035)
+	at java.base/sun.security.ssl.SSLSocketOutputRecord.flush(SSLSocketOutputRecord.java:271)
+	at java.base/sun.security.ssl.HandshakeOutStream.flush(HandshakeOutStream.java:89)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.onProduceFinished(Finished.java:787)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.produce(Finished.java:675)
+	at java.base/sun.security.ssl.SSLHandshake.produce(SSLHandshake.java:440)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.goServerHello(ClientHello.java:1246)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.consume(ClientHello.java:1182)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.onClientHello(ClientHello.java:840)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.consume(ClientHello.java:801)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.ensureNegotiated(SSLSocketImpl.java:921)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1012)
+	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:263)
+	at org.openas2.util.HTTPUtil.readRequest(HTTPUtil.java:276)
+	at org.openas2.util.HTTPUtil.readHTTP(HTTPUtil.java:148)
+	at org.openas2.util.HTTPUtil.readData(HTTPUtil.java:231)
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:103)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:06:11.951 [pool-5-thread-1] ERROR org.openas2.OpenAS2Exception -- Error occurred:: An established connection was aborted by the software in your host machine
+    Sources: {}
+org.openas2.processor.receiver.NetException: Address = /127.0.0.1 port = 64651
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:108)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.net.SocketException: An established connection was aborted by the software in your host machine
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:425)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:445)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:831)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1035)
+	at java.base/sun.security.ssl.SSLSocketOutputRecord.flush(SSLSocketOutputRecord.java:271)
+	at java.base/sun.security.ssl.HandshakeOutStream.flush(HandshakeOutStream.java:89)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.onProduceFinished(Finished.java:787)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.produce(Finished.java:675)
+	at java.base/sun.security.ssl.SSLHandshake.produce(SSLHandshake.java:440)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.goServerHello(ClientHello.java:1246)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.consume(ClientHello.java:1182)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.onClientHello(ClientHello.java:840)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.consume(ClientHello.java:801)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.ensureNegotiated(SSLSocketImpl.java:921)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1012)
+	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:263)
+	at org.openas2.util.HTTPUtil.readRequest(HTTPUtil.java:276)
+	at org.openas2.util.HTTPUtil.readHTTP(HTTPUtil.java:148)
+	at org.openas2.util.HTTPUtil.readData(HTTPUtil.java:231)
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:103)
+	... 4 common frames omitted
+21:06:12.328 [pool-5-thread-1] INFO  org.openas2.processor.receiver.AS2ReceiverHandler -- Error receiving message for inbound AS2 request. There is no data.
+org.openas2.OpenAS2Exception: Missing data in AS2 request.
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:125)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:06:12.332 [pool-6-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Incoming connection [ 127.0.0.1 64652]
+21:06:12.337 [pool-8-thread-1] WARN  org.openas2.util.HTTPUtil -- SSL factory building using:
+	isExtendedSelfsignedTrustCheck: false
+	overrideSslChecks: true
+	isTrustSelfSignedCNHandling: false
+21:06:12.340 [pool-6-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Healthcheck ping detected [ 127.0.0.1 64652] [null]
+21:06:12.347 [pool-7-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Incoming connection [ 127.0.0.1 64654]
+21:06:12.358 [pool-8-thread-1] ERROR org.openas2.processor.receiver.NetModule -- Failed to execute healthcheck.
+javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:131)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:378)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:321)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:316)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1351)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1226)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1169)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.createLayeredSocket(SSLConnectionSocketFactory.java:436)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.connectSocket(SSLConnectionSocketFactory.java:384)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:142)
+	at org.apache.http.impl.conn.BasicHttpClientConnectionManager.connect(BasicHttpClientConnectionManager.java:313)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.openas2.util.HTTPUtil.execRequest(HTTPUtil.java:411)
+	at org.openas2.processor.receiver.NetModule.healthcheck(NetModule.java:107)
+	at org.openas2.processor.DefaultProcessor.checkActiveModules(DefaultProcessor.java:146)
+	at org.openas2.app.HealthCheck.runCheck(HealthCheck.java:28)
+	at org.openas2.processor.receiver.HealthCheckHandler.handle(HealthCheckHandler.java:51)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:439)
+	at java.base/sun.security.validator.PKIXValidator.engineValidate(PKIXValidator.java:306)
+	at java.base/sun.security.validator.Validator.validate(Validator.java:264)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:231)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:132)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1335)
+	... 31 common frames omitted
+Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.build(SunCertPathBuilder.java:148)
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.engineBuild(SunCertPathBuilder.java:129)
+	at java.base/java.security.cert.CertPathBuilder.build(CertPathBuilder.java:297)
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:434)
+	... 36 common frames omitted
+21:06:12.366 [pool-7-thread-1] ERROR org.openas2.processor.receiver.AS2MDNReceiverHandler -- Unhandled error condition receiving asynchronous MDN. Processing will be aborted.
+java.net.SocketException: An established connection was aborted by the software in your host machine
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:425)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:445)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:831)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1035)
+	at java.base/sun.security.ssl.SSLSocketOutputRecord.flush(SSLSocketOutputRecord.java:271)
+	at java.base/sun.security.ssl.HandshakeOutStream.flush(HandshakeOutStream.java:89)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.onProduceFinished(Finished.java:787)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.produce(Finished.java:675)
+	at java.base/sun.security.ssl.SSLHandshake.produce(SSLHandshake.java:440)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.goServerHello(ClientHello.java:1246)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.consume(ClientHello.java:1182)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.onClientHello(ClientHello.java:840)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.consume(ClientHello.java:801)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.ensureNegotiated(SSLSocketImpl.java:921)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1012)
+	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:263)
+	at org.openas2.util.HTTPUtil.readRequest(HTTPUtil.java:276)
+	at org.openas2.util.HTTPUtil.readHTTP(HTTPUtil.java:148)
+	at org.openas2.util.HTTPUtil.readData(HTTPUtil.java:231)
+	at org.openas2.processor.receiver.AS2MDNReceiverHandler.handle(AS2MDNReceiverHandler.java:55)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:06:14.131 [grizzly-http-server-1] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+21:06:14.132 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getXml
+21:06:14.244 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/xml]}
+21:06:28.461 [grizzly-http-server-2] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+21:06:28.463 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getXml
+21:06:28.485 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/xml]}
+21:07:28.749 [SchedulerComponent-Thread-1] ERROR org.openas2.cmd.processor.BaseCommandProcessor -- Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+java.lang.NullPointerException: Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+	at org.openas2.cmd.processor.StreamCommandProcessor.readLine(StreamCommandProcessor.java:107)
+	at org.openas2.cmd.processor.StreamCommandProcessor.processCommand(StreamCommandProcessor.java:49)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:96)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:91)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:07:28.752 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+21:07:28.752 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+21:07:28.752 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:07:28.755 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+21:07:28.755 [HTTPServerThread (0.0.0.0:10443)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:596)
+	at java.base/sun.security.ssl.SSLServerSocketImpl.accept(SSLServerSocketImpl.java:271)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:07:28.757 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:07:28.757 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+21:07:28.758 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+21:07:28.758 [HTTPServerThread (0.0.0.0:10444)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:596)
+	at java.base/sun.security.ssl.SSLServerSocketImpl.accept(SSLServerSocketImpl.java:271)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:07:28.759 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+21:07:28.759 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+21:07:28.759 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:07:28.760 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 7 active module(s) stopped.
+21:07:28.781 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+
+21:14:02.980 [main] INFO  org.openas2.app.OpenAS2Server -- Retrieving config file...
+21:14:03.360 [main] INFO  org.openas2.app.OpenAS2Server -- Using MANIFEST file:/D:/REPOS/apeiris/OpenAs2App/Server/target/dist/lib/openas2-server-4.6.0.jar!/META-INF/MANIFEST.MF
+21:14:03.408 [main] INFO  org.openas2.XMLSession -- Loading configuration...
+21:14:03.408 [main] INFO  org.openas2.XMLSession -- Loading properties...
+21:14:03.410 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.base.dir : D:\REPOS\apeiris\OpenAs2AppMyConfig
+21:14:03.413 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.http.enabled : true
+21:14:03.413 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.bodytemplate : D:\REPOS\apeiris\OpenAs2AppMyConfig/emailtemplate.txt
+21:14:03.413 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore_password : testas2
+21:14:03.413 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.http.enabled : true
+21:14:03.413 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpuser : mySmtpUserId
+21:14:03.414 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpserver : mail.openas2.org
+21:14:03.414 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DirectoryResenderModule.resenddelay : 60
+21:14:03.414 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_port : 9092
+21:14:03.414 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.enabled : true
+21:14:03.414 [main] DEBUG org.openas2.XMLSession -- Parsing property: partnerships.polling.interval : 120
+21:14:03.415 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.keystore : $properties.ssl_keystore$
+21:14:03.415 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.HealthCheckModule.keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_certs.jks
+21:14:03.416 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.interval : 5
+21:14:03.416 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.filename : $properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$
+21:14:03.416 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MDNFileModule.filename : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$
+21:14:03.416 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2SenderModule.enabled : true
+21:14:03.417 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_name : openas2
+21:14:03.417 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.mimetype : application/EDI-X12
+21:14:03.417 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.http.port : 10081
+21:14:03.417 [main] DEBUG org.openas2.XMLSession -- Parsing property: console.command.processor.enabled : true
+21:14:03.417 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_keystore_password : testas2
+21:14:03.418 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore.enabled : false
+21:14:03.418 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore.refresh_interval : 300
+21:14:03.418 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.errordir : $properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+21:14:03.418 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: pollerConfigBase.errordir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+21:14:03.419 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.process_files_in_paralllel : false
+21:14:03.419 [main] DEBUG org.openas2.XMLSession -- Parsing property: log_date_format : yyyy-MM-dd HH:mm:ss.SSS
+21:14:03.419 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.userid : userID
+21:14:03.419 [main] DEBUG org.openas2.XMLSession -- Parsing property: config.dir : D:\REPOS\apeiris\OpenAs2AppMyConfig
+21:14:03.419 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtppwd : mySmtpPwd
+21:14:03.419 [main] DEBUG org.openas2.XMLSession -- Parsing property: reject_unsigned_messages : false
+21:14:03.420 [main] DEBUG org.openas2.XMLSession -- Parsing property: messages.enabled : false
+21:14:03.420 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_receive_message_filename_fallback : $rand.shortUUID$
+21:14:03.420 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.password : pWd
+21:14:03.420 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DbTrackingModule.enabled : true
+21:14:03.420 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.enabled : true
+21:14:03.420 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.table_name : msg_metadata
+21:14:03.421 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.https.port : 10444
+21:14:03.421 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.version : 4.6.0
+21:14:03.421 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_message_id_format : $date.yyyyMMddHHmmssZ$-$rand.123$-$msg.sender.as2_id$_$msg.receiver.as2_id$_$msg.attributes.filename$
+21:14:03.421 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.enabled : true
+21:14:03.422 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.outboxdir : $properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$
+21:14:03.422 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: pollerConfigBase.outboxdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/outbox/$partnership.receiver.as2_id$
+21:14:03.422 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.sendfilename : true
+21:14:03.423 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpauth : true
+21:14:03.423 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_pwd : OpenAS2
+21:14:03.423 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/as2_certs.p12
+21:14:03.423 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.subject : $exception.name$: $exception.message$
+21:14:03.423 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.header : $properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$
+21:14:03.424 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.header : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/msgheaders/$date.yyyy-MM-dd$/$msg.headers.message-id$
+21:14:03.428 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_keystore.refresh_interval : 300
+21:14:03.428 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.tempdir : $properties.storageBaseDir$/temp
+21:14:03.428 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.tempdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/temp
+21:14:03.429 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.smtpport : 25
+21:14:03.429 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.https.port : 10443
+21:14:03.429 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.enabled : true
+21:14:03.430 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12
+21:14:03.430 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.http.port : 10080
+21:14:03.430 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.to : your email address
+21:14:03.431 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNSenderModule.enabled : true
+21:14:03.431 [main] DEBUG org.openas2.XMLSession -- Parsing property: jakarta.mail.properties.file : D:\REPOS\apeiris\OpenAs2AppMyConfig/java.mail.properties
+21:14:03.431 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_user : sa
+21:14:03.432 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_keystore : D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_certs.jks
+21:14:03.432 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.keystore_password : $properties.ssl_keystore_password$
+21:14:03.432 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.HealthCheckModule.keystore_password : testas2
+21:14:03.432 [main] DEBUG org.openas2.XMLSession -- Parsing property: messages.polling.interval : 120
+21:14:03.432 [main] DEBUG org.openas2.XMLSession -- Parsing property: email.from : Open AS2 Server<as2msgs@openas2.org>
+21:14:03.432 [main] DEBUG org.openas2.XMLSession -- Parsing property: partnership_file : D:\REPOS\apeiris\OpenAs2AppMyConfig/partnerships.xml
+21:14:03.433 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.defaults : sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$
+21:14:03.433 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.db_directory : D:\REPOS\apeiris\OpenAs2AppMyConfig/DB
+21:14:03.433 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_password : openas2
+21:14:03.433 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.sql_escape_character : '
+21:14:03.433 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.DirectoryResenderModule.enabled : true
+21:14:03.434 [main] DEBUG org.openas2.XMLSession -- Parsing property: async_mdn_receiver_port : $properties.module.AS2MDNReceiverModule.http.port$
+21:14:03.434 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: async_mdn_receiver_port : 10081
+21:14:03.434 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.jdbc_connect_string : jdbc:h2:$component.db_directory$/$component.db_name$
+21:14:03.434 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.use_embedded_db : true
+21:14:03.434 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.address : localhost
+21:14:03.435 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2SenderModule.readtimeout : 60000
+21:14:03.435 [main] DEBUG org.openas2.XMLSession -- Parsing property: restapi.command.processor.baseuri : http://localhost:8080
+21:14:03.435 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2MDNReceiverModule.https.enabled : true
+21:14:03.436 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.port : 10099
+21:14:03.437 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.tcp_server_start : true
+21:14:03.437 [main] DEBUG org.openas2.XMLSession -- Parsing property: app.title : OpenAS2 Server v4.6.0
+21:14:03.438 [main] DEBUG org.openas2.XMLSession -- Parsing property: as2_async_mdn_url : http://localhost:$properties.async_mdn_receiver_port$
+21:14:03.439 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: as2_async_mdn_url : http://localhost:10081
+21:14:03.440 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.AS2ReceiverModule.https.enabled : true
+21:14:03.440 [main] DEBUG org.openas2.XMLSession -- Parsing property: storageBaseDir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data
+21:14:03.440 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.HealthCheckModule.protocol : http
+21:14:03.440 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.jdbc_driver : org.h2.Driver
+21:14:03.441 [main] DEBUG org.openas2.XMLSession -- Parsing property: processor.resend_max_retries : 5
+21:14:03.441 [main] DEBUG org.openas2.XMLSession -- Parsing property: pollerConfigBase.max_parallel_files : 20
+21:14:03.441 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MDNFileModule.tempdir : $properties.storageBaseDir$/temp
+21:14:03.441 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MDNFileModule.tempdir : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/temp
+21:14:03.441 [main] DEBUG org.openas2.XMLSession -- Parsing property: module.MessageFileModule.filename : $properties.storageBaseDir$/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$
+21:14:03.441 [main] DEBUG org.openas2.XMLSession -- Overriding property with new parsed value: module.MessageFileModule.filename : D:\REPOS\apeiris\OpenAs2AppMyConfig/../data/$msg.sender.as2_id$-$msg.receiver.as2_id$/inbox/$msg.headers.message-id$
+21:14:03.442 [main] DEBUG org.openas2.XMLSession -- Parsing property: msg_tracking.force_load_jdbc_driver : false
+21:14:03.442 [main] DEBUG org.openas2.XMLSession -- Parsing property: sql_timestamp_format : yyyy-MM-dd HH:mm:ss.SSS
+21:14:03.443 [main] DEBUG org.openas2.XMLSession -- Parsing property: ssl_trust_keystore_password : testas2
+21:14:04.792 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {identifier=ssl_trust_certs, password=testas2, filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/ssl_trust_certs.p12, classname=org.openas2.cert.PKCS12CertificateFactory, interval=300, enabled=false}
+21:14:04.824 [main] INFO  org.openas2.XMLSession -- Loading command processor(s)...
+21:14:04.841 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- RestCommandProcessor initialized...
+21:14:04.904 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Creating and starting a new instance of grizzly http server
+21:14:04.906 [main] INFO  org.openas2.cmd.processor.RestCommandProcessor -- Exposing the Jersey application at http://localhost:8080
+21:14:06.008 [main] INFO  org.openas2.XMLSession -- Loading processor nodes...
+21:14:06.036 [main] INFO  org.openas2.XMLSession -- Loading partnerships...
+21:14:06.143 [main] INFO  org.openas2.XMLSession -- Loading messages...
+21:14:06.146 [main] INFO  org.openas2.util.XMLUtil -- Component node ignored as it is not enabled: {filename=D:\REPOS\apeiris\OpenAs2AppMyConfig/messages.xml, classname=org.openas2.message.XMLMessageFactory, interval=120, enabled=false}
+21:14:06.148 [main] DEBUG org.openas2.schedule.SchedulerComponent -- Scheduler module is ready.
+21:14:06.153 [main] INFO  org.openas2.app.OpenAS2Server -- Shutdown hook registered.
+21:14:06.154 [main] INFO  org.openas2.app.OpenAS2Server -- Starting OpenAS2 Server v4.6.0...
+21:14:06.182 [main] INFO  EmbeddedDBHandler -- Using JDBC driver: org.h2.Driver
+21:14:06.439 [main] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule started.
+21:14:06.449 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+21:14:06.517 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule started.
+21:14:06.518 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+21:14:06.520 [main] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule started.
+21:14:06.523 [main] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule started.
+21:14:06.524 [main] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule started.
+21:14:06.524 [main] INFO  org.openas2.processor.DefaultProcessor -- 7 active module(s) started.
+21:14:06.527 [main] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 Server v4.6.0 started.
+21:14:24.316 [pool-8-thread-1] DEBUG org.openas2.processor.receiver.HealthCheckHandler -- HealthCheck received request: [POST, /, HTTP/1.1]
+	Headers: ;;Host==localhost:10099;;IsHealthCheck==true;;Content-Length==0
+	Data: [B@305638bc
+21:14:24.393 [grizzly-http-server-0] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+21:14:24.654 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getPropertyList
+21:14:24.671 [pool-4-thread-1] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- incoming connection 127.0.0.1 64972
+21:14:24.675 [pool-4-thread-1] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- Healthcheck ping detected [ 127.0.0.1 64972] [null]
+21:14:24.686 [pool-8-thread-1] WARN  org.openas2.util.HTTPUtil -- SSL factory building using:
+	isExtendedSelfsignedTrustCheck: false
+	overrideSslChecks: true
+	isTrustSelfSignedCNHandling: false
+21:14:24.699 [pool-5-thread-1] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- incoming connection 127.0.0.1 64973
+21:14:24.709 [grizzly-http-server-0] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+21:14:24.874 [pool-5-thread-1] ERROR org.openas2.processor.receiver.AS2ReceiverHandler -- HTTP connection error on inbound message. Error is: Received fatal alert: certificate_unknown
+javax.net.ssl.SSLHandshakeException: Received fatal alert: certificate_unknown
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:131)
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:117)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:365)
+	at java.base/sun.security.ssl.Alert$AlertConsumer.consume(Alert.java:293)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:204)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.ensureNegotiated(SSLSocketImpl.java:921)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1012)
+	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:263)
+	at org.openas2.util.HTTPUtil.readRequest(HTTPUtil.java:276)
+	at org.openas2.util.HTTPUtil.readHTTP(HTTPUtil.java:148)
+	at org.openas2.util.HTTPUtil.readData(HTTPUtil.java:231)
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:103)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:14:24.875 [pool-8-thread-1] ERROR org.openas2.processor.receiver.NetModule -- Failed to execute healthcheck.
+javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:131)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:378)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:321)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:316)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1351)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1226)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1169)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.createLayeredSocket(SSLConnectionSocketFactory.java:436)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.connectSocket(SSLConnectionSocketFactory.java:384)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:142)
+	at org.apache.http.impl.conn.BasicHttpClientConnectionManager.connect(BasicHttpClientConnectionManager.java:313)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.openas2.util.HTTPUtil.execRequest(HTTPUtil.java:411)
+	at org.openas2.processor.receiver.NetModule.healthcheck(NetModule.java:107)
+	at org.openas2.processor.DefaultProcessor.checkActiveModules(DefaultProcessor.java:146)
+	at org.openas2.app.HealthCheck.runCheck(HealthCheck.java:28)
+	at org.openas2.processor.receiver.HealthCheckHandler.handle(HealthCheckHandler.java:51)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:439)
+	at java.base/sun.security.validator.PKIXValidator.engineValidate(PKIXValidator.java:306)
+	at java.base/sun.security.validator.Validator.validate(Validator.java:264)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:231)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:132)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1335)
+	... 31 common frames omitted
+Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.build(SunCertPathBuilder.java:148)
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.engineBuild(SunCertPathBuilder.java:129)
+	at java.base/java.security.cert.CertPathBuilder.build(CertPathBuilder.java:297)
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:434)
+	... 36 common frames omitted
+21:14:24.882 [pool-5-thread-1] ERROR org.openas2.OpenAS2Exception -- Error occurred:: Received fatal alert: certificate_unknown
+    Sources: {}
+org.openas2.processor.receiver.NetException: Address = /127.0.0.1 port = 64973
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:108)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: certificate_unknown
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:131)
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:117)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:365)
+	at java.base/sun.security.ssl.Alert$AlertConsumer.consume(Alert.java:293)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:204)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.ensureNegotiated(SSLSocketImpl.java:921)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1012)
+	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:263)
+	at org.openas2.util.HTTPUtil.readRequest(HTTPUtil.java:276)
+	at org.openas2.util.HTTPUtil.readHTTP(HTTPUtil.java:148)
+	at org.openas2.util.HTTPUtil.readData(HTTPUtil.java:231)
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:103)
+	... 4 common frames omitted
+21:14:24.995 [pool-5-thread-1] INFO  org.openas2.processor.receiver.AS2ReceiverHandler -- Error receiving message for inbound AS2 request. There is no data.
+org.openas2.OpenAS2Exception: Missing data in AS2 request.
+	at org.openas2.processor.receiver.AS2ReceiverHandler.handle(AS2ReceiverHandler.java:125)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:14:24.997 [pool-6-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Incoming connection [ 127.0.0.1 64974]
+21:14:24.998 [pool-8-thread-1] WARN  org.openas2.util.HTTPUtil -- SSL factory building using:
+	isExtendedSelfsignedTrustCheck: false
+	overrideSslChecks: true
+	isTrustSelfSignedCNHandling: false
+21:14:25.001 [pool-6-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Healthcheck ping detected [ 127.0.0.1 64974] [null]
+21:14:25.010 [pool-7-thread-1] INFO  org.openas2.processor.receiver.AS2MDNReceiverHandler -- Incoming connection [ 127.0.0.1 64976]
+21:14:25.026 [pool-8-thread-1] ERROR org.openas2.processor.receiver.NetModule -- Failed to execute healthcheck.
+javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:131)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:378)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:321)
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:316)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1351)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1226)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1169)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.createLayeredSocket(SSLConnectionSocketFactory.java:436)
+	at org.apache.http.conn.ssl.SSLConnectionSocketFactory.connectSocket(SSLConnectionSocketFactory.java:384)
+	at org.apache.http.impl.conn.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:142)
+	at org.apache.http.impl.conn.BasicHttpClientConnectionManager.connect(BasicHttpClientConnectionManager.java:313)
+	at org.apache.http.impl.execchain.MainClientExec.establishRoute(MainClientExec.java:393)
+	at org.apache.http.impl.execchain.MainClientExec.execute(MainClientExec.java:236)
+	at org.apache.http.impl.execchain.ProtocolExec.execute(ProtocolExec.java:186)
+	at org.apache.http.impl.execchain.RetryExec.execute(RetryExec.java:89)
+	at org.apache.http.impl.execchain.RedirectExec.execute(RedirectExec.java:110)
+	at org.apache.http.impl.client.InternalHttpClient.doExecute(InternalHttpClient.java:185)
+	at org.apache.http.impl.client.CloseableHttpClient.execute(CloseableHttpClient.java:83)
+	at org.openas2.util.HTTPUtil.execRequest(HTTPUtil.java:411)
+	at org.openas2.processor.receiver.NetModule.healthcheck(NetModule.java:107)
+	at org.openas2.processor.DefaultProcessor.checkActiveModules(DefaultProcessor.java:146)
+	at org.openas2.app.HealthCheck.runCheck(HealthCheck.java:28)
+	at org.openas2.processor.receiver.HealthCheckHandler.handle(HealthCheckHandler.java:51)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:439)
+	at java.base/sun.security.validator.PKIXValidator.engineValidate(PKIXValidator.java:306)
+	at java.base/sun.security.validator.Validator.validate(Validator.java:264)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:231)
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:132)
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1335)
+	... 31 common frames omitted
+Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.build(SunCertPathBuilder.java:148)
+	at java.base/sun.security.provider.certpath.SunCertPathBuilder.engineBuild(SunCertPathBuilder.java:129)
+	at java.base/java.security.cert.CertPathBuilder.build(CertPathBuilder.java:297)
+	at java.base/sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:434)
+	... 36 common frames omitted
+21:14:25.036 [pool-7-thread-1] ERROR org.openas2.processor.receiver.AS2MDNReceiverHandler -- Unhandled error condition receiving asynchronous MDN. Processing will be aborted.
+java.net.SocketException: An established connection was aborted by the software in your host machine
+	at java.base/sun.nio.ch.NioSocketImpl.implWrite(NioSocketImpl.java:425)
+	at java.base/sun.nio.ch.NioSocketImpl.write(NioSocketImpl.java:445)
+	at java.base/sun.nio.ch.NioSocketImpl$2.write(NioSocketImpl.java:831)
+	at java.base/java.net.Socket$SocketOutputStream.write(Socket.java:1035)
+	at java.base/sun.security.ssl.SSLSocketOutputRecord.flush(SSLSocketOutputRecord.java:271)
+	at java.base/sun.security.ssl.HandshakeOutStream.flush(HandshakeOutStream.java:89)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.onProduceFinished(Finished.java:787)
+	at java.base/sun.security.ssl.Finished$T13FinishedProducer.produce(Finished.java:675)
+	at java.base/sun.security.ssl.SSLHandshake.produce(SSLHandshake.java:440)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.goServerHello(ClientHello.java:1246)
+	at java.base/sun.security.ssl.ClientHello$T13ClientHelloConsumer.consume(ClientHello.java:1182)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.onClientHello(ClientHello.java:840)
+	at java.base/sun.security.ssl.ClientHello$ClientHelloConsumer.consume(ClientHello.java:801)
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:396)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:480)
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:458)
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:201)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506)
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421)
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455)
+	at java.base/sun.security.ssl.SSLSocketImpl.ensureNegotiated(SSLSocketImpl.java:921)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1012)
+	at java.base/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:263)
+	at org.openas2.util.HTTPUtil.readRequest(HTTPUtil.java:276)
+	at org.openas2.util.HTTPUtil.readHTTP(HTTPUtil.java:148)
+	at org.openas2.util.HTTPUtil.readData(HTTPUtil.java:231)
+	at org.openas2.processor.receiver.AS2MDNReceiverHandler.handle(AS2MDNReceiverHandler.java:55)
+	at org.openas2.processor.receiver.NetModule$ConnectionHandler.run(NetModule.java:176)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:14:26.970 [grizzly-http-server-2] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+21:14:26.971 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getXml
+21:14:27.091 [grizzly-http-server-2] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/xml]}
+21:14:37.160 [grizzly-http-server-1] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+21:14:37.161 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: GET /api/getXml
+21:14:37.185 [grizzly-http-server-1] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/xml]}
+21:18:49.396 [grizzly-http-server-3] INFO  o.openas2.cmd.processor.restapi.AuthenticationRequestFilter -- Username: userID
+21:18:49.398 [grizzly-http-server-3] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Request: POST /api/v2/WriteToConsole/==================================================================
+21:18:49.443 [grizzly-http-server-3] INFO  org.openas2.cmd.processor.RestCommandProcessor -- API Response: 200{Content-Type=[application/json]}
+21:18:50.074 [pool-4-thread-2] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- incoming connection 0:0:0:0:0:0:0:1 65079
+21:18:50.079 [pool-4-thread-2] INFO  org.openas2.processor.receiver.AS2ReceiverHandler -- received 4790 bytes in 0.2 seconds at 2.290 MBps 0:0:0:0:0:0:0:1 65079 [<AS2_091849Thu.>]
+21:18:50.089 [pool-4-thread-2] DEBUG org.openas2.processor.DefaultProcessor -- Processor searching for module handler for action: track_msg
+21:18:50.093 [pool-4-thread-2] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- decrypting ::: [<AS2_091849Thu.>]
+21:18:50.106 [Thread-6] DEBUG org.openas2.processor.msgtracking.DbTrackingModule -- Tracking record successfully persisted to database: {state_msg=Message receiving started, receiver_id=PartnerA_OID, file_name=null, sender_id=MyCompany_OID, content_transfer_encoding=null, content_type=application/pkcs7-mime; smime-type=enveloped-data; name="smime.p7m", sent_file_name=null, prior_msg_id=null, signature_algorithm=SHA-256, mdn_mode=SYNC, encryption_algorithm=3DES, state=msg_receive_start, msg_id=<AS2_091849Thu.>, compression=null, direction=RECEIVE, status=initializing_msg}
+21:18:50.142 [pool-4-thread-2] DEBUG org.openas2.lib.helper.BCCryptoHelper -- Recipient RID: org.bouncycastle.cms.KeyTransRecipientId@650c162d
+21:18:50.143 [pool-4-thread-2] DEBUG org.openas2.lib.helper.BCCryptoHelper -- Recipient Info Type: org.bouncycastle.cms.KeyTransRecipientInformation
+21:18:50.143 [pool-4-thread-2] DEBUG org.openas2.lib.helper.BCCryptoHelper -- Using private key algorithm: RSA
+21:18:50.191 [pool-4-thread-2] DEBUG org.openas2.lib.helper.BCCryptoHelper -- Check for compressed data failed on BASE content type: multipart/signed
+21:18:50.191 [pool-4-thread-2] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- verifying signature [<AS2_091849Thu.>]
+21:18:50.304 [pool-4-thread-2] DEBUG org.openas2.lib.helper.BCCryptoHelper -- Verified signature for signer info: 
+    Digest Alg OID: 2.16.840.1.101.3.4.2.1
+    Encrypt Alg OID: 1.2.840.113549.1.1.1
+    Signer Version: 1
+    Content Digest: [24, -39, 15, 126, -76, 48, -49, 16, 15, 93, -87, -104, 64, -69, 2, -104, -12, 55, 27, 38, 27, -14, -98, 20, -62, 32, 37, 82, -23, 15, -123, -75]
+    Content Type: 1.2.840.113549.1.7.1
+    SID: C=ZA,ST=Western Cape,L=Cape Town,O=MyCompany,OU=QA,CN=as2.${alias1}.com
+    Signature: [5, 0, -21, -24, -86, 11, -79, 61, -16, 89, -110, -31, 93, 2, 71, 11, -115, -83, 88, 61, 121, -70, -74, -78, 59, 8, -15, -120, 127, 102, 93, -35, -80, 21, 113, 78, -79, -2, -58, -105, 19, 56, -118, 94, 85, -24, -87, 57, 14, -104, 30, 93, -33, -38, 104, 35, 82, -15, 81, 38, -38, -94, 79, -42, -8, -50, 76, -57, 70, -4, 67, 115, -22, -20, -6, -48, -57, -99, 77, -72, -97, 61, -123, -65, -55, 54, -49, 106, 116, -25, -84, -59, 39, -128, -122, -31, 48, 58, -53, -114, -12, -16, 18, 3, -77, 38, 107, 118, -98, 72, 32, -66, 109, 75, -59, -55, -48, 47, 91, 30, 58, 81, 35, 24, -82, -108, -71, 103, -50, -18, -68, -61, -95, 17, -60, -89, 71, -43, 2, -114, -73, -35, 87, -21, 30, 70, 115, 86, 51, 57, -59, 103, -122, 64, 90, -125, 69, -83, 20, -58, 97, -128, 81, 0, -20, 104, 28, 40, 4, 101, -73, 28, -92, -64, -62, 34, -25, 52, 47, -51, 23, -28, -49, 39, 22, -18, 97, 63, 35, 33, 115, 65, -102, 94, 98, -2, 82, 17, 64, 27, 51, -49, 42, -124, -3, 73, 109, -92, -52, 40, -24, -105, -22, 93, -56, -26, 12, 66, 115, 26, 8, 117, 109, -86, 30, 32, 119, -126, 65, 59, 112, 89, -36, 103, -79, 123, 92, 64, -83, -45, 116, -122, -20, -32, 102, -17, -113, -47, -33, 6, -90, -121, -117, 38, 21, 1]
+    Unsigned attribs: null
+    Content-transfer-encoding: null
+    Certificate:   [0]         Version: 3
+         SerialNumber: 906323000378441010
+             IssuerDN: C=ZA,ST=Western Cape,L=Cape Town,O=MyCompany,OU=QA,CN=as2.${alias1}.com
+           Start Date: Mon Aug 04 07:00:42 EDT 2025
+           Final Date: Wed Aug 04 07:00:42 EDT 2027
+            SubjectDN: C=ZA,ST=Western Cape,L=Cape Town,O=MyCompany,OU=QA,CN=as2.${alias1}.com
+           Public Key: RSA Public Key [31:43:7c:62:f4:df:0a:66:0b:9f:96:7d:2f:b0:ff:a3:47:a2:ed:b4],[56:66:d1:a4]
+        modulus: 9cf0af0908cc2b9aa0920c92947177a936b34c5ed66391187c4a7c6315afb3ff5b2951e9228495842497a034dd882a6964acd071fb4bcc7fd11c583efdc6ce91b5b06ca07c99de89f871ecb8797a624a126ea0ae5e5c76a584bfb5cf08e26a7588ad6db78b6c57269d951151376c0336caf127aa7c786a822ba4e0d22e0bf63e6ec8f9b5ce12c3fccee8ec5bd7c912da09398eab38de917e7f8a996915e23b5aedc3aef562c39ac9b783bc3d08e9089c11a861fa6549756eaf6090aa2c5cbc72596eacc4ba2355975f37c09f4eee48dac3dae5620c4f816f32c09df9706cef83686e377f5a35b12e12e90661b9f6f8bbdf033a0aff54b7960adc4584589d4263
+public exponent: 10001
+
+  Signature Algorithm: SHA256WITHRSA
+            Signature: 2dbaa5aa5f9cf9b650607352fddac422815508e8
+                       d34bb6527e222b3217cbb0f5b8a1a426b1ceb750
+                       870951a47e3e975500333caa51fb395d2817202b
+                       32acef790ae7d3207c0ea26a15f9197daecf5433
+                       94be105162591a189f774d7fda12dc5ba745a7b1
+                       c7773fc03c6985b1b5c39383e6628a545f069e0c
+                       e9c895cbda25df0b6024f1645b3f5936988a8e3d
+                       c0c852273646623a1d675468e4e45e724147722d
+                       7fc60e1782246ea7b421857d19f3451b3ac603ea
+                       67a0ba40472874cdb9abc99392c7d9d30cae0766
+                       c12ead8a2c2a7360fb29b2c98db4744b5649159b
+                       2d267d3c2e5aadcc9832b78de6f537f712bf00f5
+                       c8710ed56b565f857ced195eec17e84c
+       Extensions: 
+                       critical(false) 2.5.29.14 value = DER Octet String[20]
+
+
+21:18:50.308 [pool-4-thread-2] DEBUG org.openas2.processor.receiver.AS2ReceiverHandler -- Received Disposition-Notification-Options header value: 
+21:18:50.308 [pool-4-thread-2] DEBUG org.openas2.lib.helper.BCCryptoHelper -- Check for compressed data failed on BASE content type: application/edi-x12
+21:18:50.311 [pool-4-thread-2] DEBUG org.openas2.processor.DefaultProcessor -- Processor searching for module handler for action: store
+21:18:50.328 [pool-4-thread-2] DEBUG org.openas2.util.IOUtil -- Moved file atomically from D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\temp\AS2_091849Thu..2db0a941-a978-4b45-9da4-98fef6396e17 to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\inbox\AS2_091849Thu.
+21:18:50.328 [pool-4-thread-2] INFO  org.openas2.processor.storage.MessageFileModule -- stored message to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\inbox\AS2_091849Thu. [<AS2_091849Thu.>]
+21:18:50.330 [pool-4-thread-2] DEBUG org.openas2.util.IOUtil -- Moved file atomically from D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\temp\AS2_091849Thu..5e8ab359-d112-4b89-83f2-151d8c9445bd to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\msgheaders\2025-08-28\AS2_091849Thu.
+21:18:50.334 [pool-4-thread-2] INFO  org.openas2.processor.storage.MessageFileModule -- stored headers to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\msgheaders\2025-08-28\AS2_091849Thu. [<AS2_091849Thu.>]
+21:18:50.334 [pool-4-thread-2] DEBUG org.openas2.processor.DefaultProcessor -- Processor searching for module handler for action: track_msg
+21:18:50.346 [Thread-7] DEBUG org.openas2.processor.msgtracking.DbTrackingModule -- Tracking record successfully persisted to database: {state_msg=Message received. MDN sending started, receiver_id=PartnerA_OID, file_name=rxRGgm6SSjSOy4EeQpIIpAieie, sender_id=MyCompany_OID, content_transfer_encoding=null, content_type=application/edi-x12, sent_file_name=null, prior_msg_id=null, signature_algorithm=SHA-256, mdn_mode=SYNC, encryption_algorithm=3DES, state=mdn_send_start, msg_id=<AS2_091849Thu.>, compression=null, direction=RECEIVE, status=initializing_msg}
+21:18:50.593 [pool-4-thread-2] DEBUG org.openas2.processor.DefaultProcessor -- Processor searching for module handler for action: sendmdn
+21:18:50.594 [pool-4-thread-2] DEBUG org.openas2.processor.sender.MDNSenderModule -- MDN sending started. Partner requested SYNC mode for MDN response.
+21:18:50.600 [pool-4-thread-2] DEBUG org.openas2.processor.DefaultProcessor -- Processor searching for module handler for action: track_msg
+21:18:50.602 [pool-4-thread-2] DEBUG org.openas2.processor.DefaultProcessor -- Processor searching for module handler for action: storemdn
+21:18:50.605 [pool-4-thread-2] DEBUG org.openas2.util.IOUtil -- Moved file atomically from D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\temp\AS2_091849Thu..592f5ca8-55dc-47f6-8a22-8ee5684a3719 to D:\REPOS\apeiris\OpenAs2AppMyConfig\..\data\MyCompany_OID-PartnerA_OID\mdn\2025-08-28\AS2_091849Thu.
+21:18:50.605 [pool-4-thread-2] INFO  org.openas2.processor.sender.MDNSenderModule -- sent MDN [automatic-action/mdn-sent-automatically; processed] [<AS2_091849Thu.>]
+21:18:50.606 [pool-4-thread-2] DEBUG org.openas2.processor.DefaultProcessor -- Processor searching for module handler for action: track_msg
+21:18:50.620 [Thread-9] DEBUG org.openas2.processor.msgtracking.DbTrackingModule -- Tracking record successfully persisted to database: {state_msg=Message received successfully and MDN succesfully sent to partner., receiver_id=PartnerA_OID, file_name=rxRGgm6SSjSOy4EeQpIIpAieie, mdn_response=The message sent to Recipient PartnerA_OID on null with Subject C:\EDI\x12\inbound\810_walmart.txt transmission. has been received, the EDI Interchange was successfully decrypted and it's integrity was verified. In addition, the sender of the message, Sender MyCompany_OID at Location /0:0:0:0:0:0:0:1 was authenticated as the originator of the message. There is no guarantee however that the EDI Interchange was syntactically correct, or was received by the EDI application/translator., sender_id=MyCompany_OID, content_transfer_encoding=null, content_type=application/edi-x12, sent_file_name=null, mdn_id=<20250828211850-0400-519-MyCompany_OID_PartnerA_OID_null>, prior_msg_id=null, signature_algorithm=SHA-256, mdn_mode=SYNC, encryption_algorithm=3DES, state=msg_rxd_mdn_sent_ok, msg_id=<AS2_091849Thu.>, compression=null, direction=RECEIVE, status=initializing_msg}
+21:18:50.621 [Thread-8] DEBUG org.openas2.processor.msgtracking.DbTrackingModule -- Tracking record successfully persisted to database: {state_msg=Message received successfully and MDN succesfully sent to partner., receiver_id=PartnerA_OID, file_name=rxRGgm6SSjSOy4EeQpIIpAieie, mdn_response=The message sent to Recipient PartnerA_OID on null with Subject C:\EDI\x12\inbound\810_walmart.txt transmission. has been received, the EDI Interchange was successfully decrypted and it's integrity was verified. In addition, the sender of the message, Sender MyCompany_OID at Location /0:0:0:0:0:0:0:1 was authenticated as the originator of the message. There is no guarantee however that the EDI Interchange was syntactically correct, or was received by the EDI application/translator., sender_id=MyCompany_OID, content_transfer_encoding=null, content_type=application/edi-x12, sent_file_name=null, mdn_id=<20250828211850-0400-519-MyCompany_OID_PartnerA_OID_null>, prior_msg_id=null, signature_algorithm=SHA-256, mdn_mode=SYNC, encryption_algorithm=3DES, state=msg_rxd_mdn_sent_ok, msg_id=<AS2_091849Thu.>, compression=null, direction=RECEIVE, status=initializing_msg}
+21:23:46.838 [SchedulerComponent-Thread-1] ERROR org.openas2.cmd.processor.BaseCommandProcessor -- Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+java.lang.NullPointerException: Cannot invoke "String.trim()" because the return value of "java.io.BufferedReader.readLine()" is null
+	at org.openas2.cmd.processor.StreamCommandProcessor.readLine(StreamCommandProcessor.java:107)
+	at org.openas2.cmd.processor.StreamCommandProcessor.processCommand(StreamCommandProcessor.java:49)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:96)
+	at org.openas2.cmd.processor.BaseCommandProcessor$1.call(BaseCommandProcessor.java:91)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+21:23:46.841 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DbTrackingModule stopped.
+21:23:46.846 [HTTPServerThread (0.0.0.0:10080)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:23:46.846 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+21:23:46.857 [HTTPServerThread (0.0.0.0:10443)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:596)
+	at java.base/sun.security.ssl.SSLServerSocketImpl.accept(SSLServerSocketImpl.java:271)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:23:46.857 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2ReceiverModule stopped.
+21:23:46.861 [HTTPServerThread (0.0.0.0:10081)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:23:46.861 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+21:23:46.862 [HTTPServerThread (0.0.0.0:10444)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:596)
+	at java.base/sun.security.ssl.SSLServerSocketImpl.accept(SSLServerSocketImpl.java:271)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:23:46.863 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- AS2MDNReceiverModule stopped.
+21:23:46.867 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- DirectoryResenderModule stopped.
+21:23:46.868 [HTTPServerThread (localhost:10099)] ERROR org.openas2.processor.receiver.NetModule -- Failed transferring data over HTTP connection: Socket closed
+java.net.SocketException: Socket closed
+	at java.base/sun.nio.ch.NioSocketImpl.endAccept(NioSocketImpl.java:694)
+	at java.base/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:767)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:675)
+	at java.base/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:617)
+	at java.base/java.net.ServerSocket.implAccept(ServerSocket.java:574)
+	at java.base/java.net.ServerSocket.accept(ServerSocket.java:532)
+	at org.openas2.processor.receiver.NetModule$HTTPServerThread.run(NetModule.java:314)
+21:23:46.869 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- HealthCheckModule stopped.
+21:23:46.912 [Thread-0] INFO  org.openas2.processor.DefaultProcessor -- 7 active module(s) stopped.
+21:23:46.913 [Thread-0] INFO  org.openas2.app.OpenAS2Server -- OpenAS2 has shut down
+
