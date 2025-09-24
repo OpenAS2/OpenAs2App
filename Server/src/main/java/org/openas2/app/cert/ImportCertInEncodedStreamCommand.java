@@ -20,7 +20,7 @@ public class ImportCertInEncodedStreamCommand extends AliasedCertCommand {
     }
 
     public String getDefaultUsage() {
-        return "importbybstream <alias> <encodedCertificateStream>";
+        return "importbystream <alias> <encodedCertificateStream>";
     }
 
     public CommandResult execute(AliasedCertificateFactory certFx, Object[] params) throws OpenAS2Exception {
