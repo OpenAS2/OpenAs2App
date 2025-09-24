@@ -8,9 +8,7 @@ import org.openas2.util.ByteCoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 
 public class ImportCertInEncodedStreamCommand extends AliasedCertCommand {
     public String getDefaultDescription() {

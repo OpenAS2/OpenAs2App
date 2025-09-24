@@ -71,7 +71,7 @@ public class FileMonitorAdapterTest {
     @Test
     public void shouldScheduleConfigRefresh() throws Exception {
 
-        int refreshInterval = RandomUtils.nextInt(1, 10);
+        int refreshInterval = RandomUtils.secure().randomInt(1, 10);
 
         doReturn(true).when(configFile).exists();
         doReturn(true).when(configFile).isFile();
