@@ -1,12 +1,13 @@
-    import org.apache.commons.cli.CommandLine;
-    import org.apache.commons.cli.CommandLineParser;
-    import org.apache.commons.cli.DefaultParser;
-    import org.apache.commons.cli.HelpFormatter;
-    import org.apache.commons.cli.Option;
-    import org.apache.commons.cli.Options;
-    import org.apache.commons.cli.ParseException;
-    import org.openas2.util.FileUtil;
-    import java.io.File;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.help.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.openas2.util.FileUtil;
+import java.io.File;
+import java.io.IOException;
 
     /**
      * Class used to add the server's certificate to the KeyStore with your trusted
@@ -38,8 +39,13 @@
             String header = "Splits  CSV file." + "\nReads the file as a line based file creating new files that will not exceed the specified maximum size.";
             String footer = "NOTE: The file is expected to contain lines separated by newline characters.";
 
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(this.getClass().getName(), header, options, footer, true);
+            HelpFormatter formatter = HelpFormatter.builder().get();
+            try {
+                formatter.printHelp(this.getClass().getName(), header, options, footer, true);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
         private CommandLine parseCommandLine(String[] args) {
@@ -49,7 +55,7 @@
             // create the Options
             Options options = new Options();
             for (String[] opt : opts) {
-                Option option = Option.builder(opt[0]).longOpt(opt[1]).hasArg("true".equalsIgnoreCase(opt[2])).desc(opt[4]).build();
+                Option option = Option.builder(opt[0]).longOpt(opt[1]).hasArg("true".equalsIgnoreCase(opt[2])).desc(opt[4]).get();
                 option.setRequired("true".equalsIgnoreCase(opt[3]));
                 options.addOption(option);
             }
