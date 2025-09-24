@@ -1,7 +1,6 @@
 package org.openas2.app;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.PrefixFileFilter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.AfterAll;
