@@ -19,8 +19,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public abstract class DirectoryPollingModule extends PollingModule {
@@ -30,18 +28,27 @@ public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_FILE_EXTENSION_FILTER = "fileextensionfilter";
     public static final String PARAM_FILE_EXTENSION_EXCLUDE_FILTER = "fileextensionexcludefilter";
     public static final String PARAM_FILE_NAME_EXCLUDE_FILTER = "filenameexcluderegexfilter";
-    public static final String PARAM_PROCESS_IN_PARALLEL = "process_files_in_paralllel";
+    public static final String PARAM_PROCESS_IN_PARALLEL = "process_files_in_parallel";
     public static final String PARAM_MAX_PARALLEL_FILES = "max_parallel_files";
-    private Map<String, Long> trackedFiles;
+    public static final String PARAM_MAX_FILE_PROCESSING_TIME_MINUTES = "max_file_processing_time_minutes";
+
+    private final int MAX_FILE_PROCESSING_TIME_DEFAULT_MINUTES = 30;
+
+    // Files that have been registered by the poller - key is the absolute file path and value is the file size
+    private Map<String, Long> trackedFiles = new HashMap<String, Long>(); 
+    // Files that have been passed to a processor - key is the absolute file path and value is the processing start timestamp
+    private Map<String, Long> processingFiles = new HashMap<String, Long>(); 
+
     private String errorDir = null;
     private String sentDir = null;
     private boolean processFilesAsThreads = false;
     private int maxProcessingThreads = 20;
+    private long maxFileProcessingTime = MAX_FILE_PROCESSING_TIME_DEFAULT_MINUTES*60*1000;
     // support fixed size thread group to run file processing as threads 
     private ExecutorService executorService = null;
-    private List<String> allowExtensions;
-    private List<String> excludeExtensions;
-    private String excludeFilenameRegexFilter = null;
+    private List<String> allowExtensions = new ArrayList<String>();
+    private List<String> excludeExtensions = new ArrayList<String>();
+    private String excludeFilenameRegexFilter = "";
 
     private Logger logger = LoggerFactory.getLogger(DirectoryPollingModule.class);
 
@@ -69,23 +76,21 @@ public abstract class DirectoryPollingModule extends PollingModule {
             IOUtil.getDirectoryFile(pendingInfoFolder);
             String pendingFolder = getSession().getProcessor().getParameters().get(Processor.PENDING_MDN_MSG_DIRECTORY_IDENTIFIER);
             IOUtil.getDirectoryFile(pendingFolder);
-            
-            
+            String maxFileProcessingTimeFromPAram = getParameter(PARAM_MAX_FILE_PROCESSING_TIME_MINUTES, "");
+            if (maxFileProcessingTimeFromPAram.length() > 0) {
+                maxFileProcessingTime = Long.parseLong(maxFileProcessingTimeFromPAram) * 60 * 1000;
+            }
             String allowExtensionFilter = getParameter(PARAM_FILE_EXTENSION_FILTER, "");
             String excludeExtensionFilter = getParameter(PARAM_FILE_EXTENSION_EXCLUDE_FILTER, "");
             String excludeFilenameRegexFilter = getParameter(PARAM_FILE_NAME_EXCLUDE_FILTER, "");
 
-            if (allowExtensionFilter == null || allowExtensionFilter.length() < 1) {
-                this.allowExtensions = new ArrayList<String>();
-            } else {
+            if (allowExtensionFilter.length() > 0) {
                 this.allowExtensions = Arrays.asList(allowExtensionFilter.split("\\s*,\\s*"));
             }
-            if (excludeExtensionFilter == null || excludeExtensionFilter.length() < 1) {
-                this.excludeExtensions = new ArrayList<String>();
-            } else {
+            if (excludeExtensionFilter.length() > 0) {
                 this.excludeExtensions = Arrays.asList(excludeExtensionFilter.split("\\s*,\\s*"));
             }
-            if (excludeFilenameRegexFilter != null && excludeFilenameRegexFilter.length() > 0) {
+            if (excludeFilenameRegexFilter.length() > 0) {
                 this.excludeFilenameRegexFilter = excludeFilenameRegexFilter;
             }
 
@@ -125,11 +130,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
 
     protected void scanDirectory(String directory) throws IOException, InvalidParameterException {
 
-        /* Claudio.Degioanni - Versione modificata 20210628 2.11 - Start */
-
         /**
-         * Rispetto alla versione tesi ho aggiunto il supporto per allowExtensions e
-         * excludeExtensions aggiunto nelle versioni dopo
+         * Support allowed extensions excluded extensions.
          */
         if (logger.isTraceEnabled()) {
             logger.trace("Polling module scanning directory: " + directory);
@@ -141,46 +143,45 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 if (Files.isDirectory(entry)) {
                     return false;
                 }
+                if (isTracked(entry.toString())) {
+                    return false;
+                }
                 if (logger.isTraceEnabled()) {
                     logger.trace("Polling module file name found: " + name);
                 }
                 String extension = name.substring(name.lastIndexOf(".") + 1);
-                boolean isAllowed = true;
-                if (!allowExtensions.isEmpty()) {
-                    isAllowed = allowExtensions.contains(extension);
+                if (!allowExtensions.isEmpty() && !allowExtensions.contains(extension)) {
+                    // There is a list of allowed extensions and this one not in it so do not include
+                    return false;
                 }
-                // Check for the excluded filters if not already disallowed
-                if (isAllowed && !excludeExtensions.isEmpty()) {
-                    isAllowed = !excludeExtensions.contains(extension);
+                if (!excludeExtensions.isEmpty() && excludeExtensions.contains(extension)) {
+                    // This is a disallowed extension so ignore this file
+                    return false;
                 }
                 // Check if there are filename regex exclusions if not already disallowed
-                if (isAllowed && excludeFilenameRegexFilter != null) {
-                    isAllowed = !name.matches(excludeFilenameRegexFilter);
+                if (excludeFilenameRegexFilter.length() > 0 && name.matches(excludeFilenameRegexFilter)) {
+                    // This is a disallowed extension so ignore this file
+                    return false;
                 }
-                return isAllowed;
-
+                return true;
             })) {
-
-            for (Path dir : dirs) {
-                File currentFile = dir.toFile();
-
-                if (checkFile(currentFile)) {
-                    // start watching the file's size if it's not already being watched
-                    trackFile(currentFile);
+                for (Path dir : dirs) {
+                    File currentFile = dir.toFile();
+                    // Don't track locked files as this can create false positives when file is being created
+                    if (!fileIsLocked(currentFile)) {
+                        // Found an untracked file so add it
+                        trackedFiles.put(currentFile.getAbsolutePath(), currentFile.length());
+                    }
                 }
-            }
-            /* Claudio.degioanni - Versione modificata 20210628 2.11 - End */
         }
     }
 
-    protected boolean checkFile(File file) {
-        if (file.exists() && file.isFile()) {
+    protected boolean fileIsLocked(File file) {
+        if (file.isFile()) {
             try {
-                // check for a write-lock on file, will skip file if it's write
-                // locked
+                // check for a write-lock on file, will skip file if it's write locked
                 FileOutputStream fOut = new FileOutputStream(file, true);
                 fOut.close();
-                return true;
             } catch (IOException ioe) {
                 // a sharing violation occurred, ignore the file for now
                 if (logger.isDebugEnabled()) {
@@ -190,20 +191,22 @@ public abstract class DirectoryPollingModule extends PollingModule {
                         e.printStackTrace();
                     }
                 }
+                return true;
             }
         }
         return false;
     }
 
-    private void trackFile(File file) {
-        Map<String, Long> trackedFiles = getTrackedFiles();
-        String filePath = file.getAbsolutePath();
-        if (trackedFiles.get(filePath) == null) {
-            trackedFiles.put(filePath, file.length());
-        }
+    private boolean isTracked(String filePath) {
+        return trackedFiles.containsKey(filePath);
+    }
+
+    private boolean isBeingProcessed(String filePath) {
+        return processingFiles.containsKey(filePath);
     }
 
     protected void processSingleFile(File file, String fileEntryKey) {
+        processingFiles.put(fileEntryKey, System.currentTimeMillis());
         try {
             processFile(file);
         } catch (OpenAS2Exception e) {
@@ -217,50 +220,60 @@ public abstract class DirectoryPollingModule extends PollingModule {
             }
         } finally {
             trackedFiles.remove(fileEntryKey);
+            processingFiles.remove(fileEntryKey);
         }        
     }
 
     private void updateTracking() {
-        // clone the trackedFiles map, iterator through the clone and modify the
-        // original to avoid iterator exceptions
-        // is there a better way to do this?
-        Map<String, Long> trackedFiles = getTrackedFiles();
-        Map<String, Long> trackedFilesClone = new HashMap<String, Long>(trackedFiles);
-
-        for (Map.Entry<String, Long> fileEntry : trackedFilesClone.entrySet()) {
+        // Use an iterator to be able to remove entries whilst iterating over the map.
+        Iterator<Map.Entry<String, Long>> iter = trackedFiles.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<String, Long> fileEntry = iter.next();
             // get the file and it's stored length
             String fileEntryKey = fileEntry.getKey();
-            File file = new File(fileEntry.getKey());
-            long fileLength = fileEntry.getValue().longValue();
+            File file = new File(fileEntryKey);
+            long trackedFileLength = fileEntry.getValue().longValue();
 
             // if the file no longer exists, remove it from the tracker
-            if (!checkFile(file)) {
-                trackedFiles.remove(fileEntryKey);
+            if (!file.exists()) {
+                iter.remove();
+                processingFiles.remove(fileEntryKey);
+            } else if (isBeingProcessed(fileEntryKey)) {
+                // Handle failed processing of files based on a max timeout
+                long elapsedTime = System.currentTimeMillis() - processingFiles.get(fileEntryKey);
+                if (elapsedTime > maxFileProcessingTime) {
+                    iter.remove();
+                    processingFiles.remove(fileEntryKey);
+                    logger.error("WARNING: A file that was being processed has exceeded the processing time limit and has been removed from the processing tracker: " + fileEntryKey
+                            + "\n\tThis will trigger a retry to send the file. If this causes duplicate sends then try to increase the " + PARAM_MAX_FILE_PROCESSING_TIME_MINUTES + " value.");
+                }
             } else {
-                // if the file length has changed, update the tracker
+                // if the file length has increased, update the tracker
                 long newLength = file.length();
-                if (newLength != fileLength) {
+                if (newLength > trackedFileLength) {
                     trackedFiles.put(fileEntryKey, Long.valueOf(newLength));
                 } else {
                     // if the file length has stayed the same, process the file
-                    // and then stop tracking it
                     if (processFilesAsThreads) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Parallel processing mode handling file: " + file.getName());
-                        }
-                        executorService.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                processSingleFile(file, fileEntryKey);
-                            }
-                        });
-
+                        processFileInThread(file, fileEntryKey);
                     } else {
                         processSingleFile(file, fileEntryKey);
                     }
                 }
             }
         }
+    }
+
+    private void processFileInThread(File file, String fileEntryKey) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Parallel processing mode handling file: " + file.getName());
+        }
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                processSingleFile(file, fileEntryKey);
+            }
+        });
     }
 
     protected abstract Message createMessage();
@@ -279,11 +292,4 @@ public abstract class DirectoryPollingModule extends PollingModule {
             throw new OpenAS2Exception("Failed to initiate processing for file:" + file.getAbsolutePath(), e);
         }
     }
-
-    private Map<String, Long> getTrackedFiles() {
-        if (trackedFiles == null) {
-            trackedFiles = new HashMap<String, Long>();
-        }
-        return trackedFiles;
-    }
-}
+ }
