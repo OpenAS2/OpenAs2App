@@ -43,13 +43,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>properties</goal>
-                         </goals>
-                     </execution>
-                 </executions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -79,10 +79,10 @@
                         <configuration>
                             <target>
                                 <!-- Update the test certificates on every test run to ensure they are not expired -->
-								<exec executable="sh" osfamily="unix">
-								    <arg value="-c"/>
-								    <arg line="${project.basedir}/src/bin/create_test_certificates.sh"/>
-								</exec>
+                                <exec executable="sh" osfamily="unix">
+                                    <arg value="-c"/>
+                                    <arg line="${project.basedir}/src/bin/create_test_certificates.sh"/>
+                                </exec>
                                 <!-- Copy the installer config files to test resources to ensure we test the default config -->
                                 <copy todir="${project.basedir}/src/test/resources/config"
                                       verbose="true">
@@ -99,16 +99,16 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                               <copy todir="${package.assembly.dir}/bin"
+                                <copy todir="${package.assembly.dir}/bin"
                                       verbose="true">
                                     <fileset dir="${project.basedir}/src/bin"/>
                                 </copy>
                                 <echo message="OS Name: ${os.name}"/>
-								<exec executable="sh" osfamily="unix">
-								    <arg value="-c"/>
-								    <arg line="'chmod uga+x ${package.assembly.dir}/bin/*.sh'"/>
-								</exec>
-								<!--Copy config directory to assembly directory -->
+                                <exec executable="sh" osfamily="unix">
+                                    <arg value="-c"/>
+                                    <arg line="'chmod uga+x ${package.assembly.dir}/bin/*.sh'"/>
+                                </exec>
+                                <!--Copy config directory to assembly directory -->
                                 <copy todir="${package.assembly.dir}/config"
                                       verbose="true">
                                     <fileset dir="${project.basedir}/src/config"/>
@@ -120,8 +120,8 @@
                                 </copy>
                                 <!--Copy artifact to build lib directory -->
                                 <copy
-                                    file="${project.build.directory}/${project.build.finalName}.jar"
-                                    todir="${package.assembly.dir}/lib" verbose="true"/>
+                                        file="${project.build.directory}/${project.build.finalName}.jar"
+                                        todir="${package.assembly.dir}/lib" verbose="true"/>
                                 <!-- Add the help PDF version to the distro -->
                                 <copy file="${help.file.src}"
                                       todir="${package.assembly.dir}" verbose="true"/>
@@ -138,14 +138,14 @@
                                 <!--
                                     Pre-delete the package otherwise it keeps old files in it
                                 -->
- 							    <delete file="${project.basedir}/dist/${project.dist.package.name}"/>
+                                <delete file="${project.basedir}/dist/${project.dist.package.name}"/>
                                 <zip
-                                    destfile="${project.basedir}/dist/${project.dist.package.name}"
-                                    update="true">
-                                        <zipfileset dir="${package.assembly.dir}" encoding="UTF-8"
-                                                 includes="**/*.sh" filemode="755"/>
-                                        <zipfileset dir="${package.assembly.dir}" encoding="UTF-8"
-                                                 excludes="**/*.sh"/>
+                                        destfile="${project.basedir}/dist/${project.dist.package.name}"
+                                        update="true">
+                                    <zipfileset dir="${package.assembly.dir}" encoding="UTF-8"
+                                                includes="**/*.sh" filemode="755"/>
+                                    <zipfileset dir="${package.assembly.dir}" encoding="UTF-8"
+                                                excludes="**/*.sh"/>
 
                                 </zip>
                             </target>
@@ -160,18 +160,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                        <configuration>
-                            <archive>
-                                <!-- Configures the content of the created manifest -->
-                                <manifest>
-                                    <!-- Adds the classpath to the created manifest -->
-                                    <addClasspath>true</addClasspath>
-                                    <!-- Specifies that all dependencies of our application are found -->
-                                    <!-- Configures the main class of the application -->
-                                    <mainClass>org.openas2.app.OpenAS2Server</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
+                <configuration>
+                    <archive>
+                        <!-- Configures the content of the created manifest -->
+                        <manifest>
+                            <!-- Adds the classpath to the created manifest -->
+                            <addClasspath>true</addClasspath>
+                            <!-- Specifies that all dependencies of our application are found -->
+                            <!-- Configures the main class of the application -->
+                            <mainClass>org.openas2.app.OpenAS2Server</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -188,6 +188,15 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-dynamodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>DynamoDBLocal</artifactId>
+            <scope>test</scope>
+       </dependency>
         <dependency>
             <groupId>org.dom4j</groupId>
             <artifactId>dom4j</artifactId>
@@ -212,26 +221,26 @@
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
         </dependency>
-		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>ch.qos.logback</groupId>
-		    <artifactId>logback-classic</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
-		<dependency>
-		   <groupId>com.zaxxer</groupId>
-		   <artifactId>HikariCP</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpg-jdk18on</artifactId>
@@ -258,31 +267,31 @@
             <artifactId>jackson-databind</artifactId>
             <type>jar</type>
         </dependency>
-	    <dependency>
-	        <groupId>com.fasterxml.jackson.module</groupId>
-	        <artifactId>jackson-module-jaxb-annotations</artifactId>
-	    </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <type>jar</type>
         </dependency>
-		<dependency>
-		    <groupId>org.glassfish.jersey.inject</groupId>
-		    <artifactId>jersey-hk2</artifactId>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
         </dependency>
         <!-- Removed JavaEE APIs removed from Java 9+ -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
-		<dependency>
-		    <groupId>jakarta.ws.rs</groupId>
-		    <artifactId>jakarta.ws.rs-api</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>jakarta.annotation</groupId>
-		    <artifactId>jakarta.annotation-api</artifactId>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -294,15 +303,15 @@
             <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
-		<dependency>
-		    <groupId>org.mockito</groupId>
-		    <artifactId>mockito-junit-jupiter</artifactId>
-		    <scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
-		</dependency>
+        </dependency>
     </dependencies>
 </project>
