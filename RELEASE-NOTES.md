@@ -1,27 +1,21 @@
 #              OpenAS2 Server
-#              Version 4.6.0
+#              Version 4.6.1
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.1
 
-The release download file is: OpenAS2Server-4.6.0.zip
+The release download file is: OpenAS2Server-4.6.1.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.6.0 - 2025-08-04
+Version 4.6.1 - 2025-09-25
 
-This is a testing enhancement release.
+This is a bugfix release.
 
-1. Reworked the resource access class
-2. changed tests to use the same config that is provided in the installer package
-3. Optimised method to wait for files to appear on file system as part of end-to-end tests
-4. Created script to generate test certificates keystore with updated certificates
-5. Added maven phase to regenerate test certificates keystore prior to running tests
-6. Updated Maven wrapper for project
-7. Added Java 24 to test matrix
-
+1. Enhanced the poller algorithm to avoid problems with high volume file processing.
+2. Fixed the attribute name to enable the parallel processing mode (paralllel - > parallel) - IMPORTANT- if you used the parallel processing mode, remove the 3rd L from the attribute so it looks like this: process_files_in_parallel
 
 
 ##Upgrade Notes

@@ -1,5 +1,13 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.6.1 - 2025-09-25
+
+This is a bugfix release.
+
+1. Enhanced the poller algorithm to avoid problems with high volume file processing.
+2. Fixed the attribute name to enable the parallel processing mode (paralllel - > parallel)
+
+
 Version 4.6.0 - 2025-08-04
 
 This is a testing enhancement release.
