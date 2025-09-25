@@ -34,10 +34,23 @@
 
     <properties>
         <java.version>11</java.version>
+        <aws.java.sdk.version>1.12.791</aws.java.sdk.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-bom</artifactId>
+                <version>${aws.java.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>DynamoDBLocal</artifactId>
+                <version>[1.11,2.0)</version>
+            </dependency>
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
@@ -107,105 +120,105 @@
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
-		        <artifactId>junit-jupiter</artifactId>
-		        <version>5.13.4</version>
+                <artifactId>junit-jupiter</artifactId>
+                <version>5.13.4</version>
                 <scope>test</scope>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-			    <!-- Hold at version 4.x for Java 8 compatibility -->
-			    <version>5.18.0</version>
+                <!-- Hold at version 4.x for Java 8 compatibility -->
+                <version>5.18.0</version>
                 <scope>test</scope>
             </dependency>
-			<dependency>
-			    <groupId>org.mockito</groupId>
-			    <artifactId>mockito-junit-jupiter</artifactId>
-			    <!-- Hold at version 4.x for Java 8 compatibility -->
-			    <version>5.18.0</version>
-			    <scope>test</scope>
-			</dependency>
-			<!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest -->
-			<dependency>
-			    <groupId>org.hamcrest</groupId>
-			    <artifactId>hamcrest</artifactId>
-			    <version>3.0</version>
-			    <scope>test</scope>
-			</dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <!-- Hold at version 4.x for Java 8 compatibility -->
+                <version>5.18.0</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest -->
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>3.0</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.20.0</version>
             </dependency>
-			<dependency>
-			    <groupId>org.slf4j</groupId>
-			    <artifactId>slf4j-api</artifactId>
-			    <version>2.0.17</version>
-			</dependency>
-			<dependency>
-			    <groupId>ch.qos.logback</groupId>
-			    <artifactId>logback-classic</artifactId>
-			    <version>1.5.18</version>
-			</dependency>
-			<dependency>
-			    <groupId>jakarta.ws.rs</groupId>
-			    <artifactId>jakarta.ws.rs-api</artifactId>
-			    <version>3.1.0</version>
-			</dependency>
-			<dependency>
-			    <groupId>jakarta.annotation</groupId>
-			    <artifactId>jakarta.annotation-api</artifactId>
-			    <version>3.0.0</version>
-			</dependency>
-           <dependency>
-               <groupId>org.glassfish.jersey.containers</groupId>
-               <artifactId>jersey-container-grizzly2-http</artifactId>
-               <version>3.1.10</version>
-               <type>jar</type>
-           </dependency>
-           <dependency>
-               <groupId>com.fasterxml.jackson.core</groupId>
-               <artifactId>jackson-databind</artifactId>
-               <version>2.19.2</version>
-               <type>jar</type>
-           </dependency>
-		   <dependency>
-		        <groupId>com.fasterxml.jackson.module</groupId>
-		        <artifactId>jackson-module-jaxb-annotations</artifactId>
-		        <version>2.19.2</version>
-		   </dependency>
-           <dependency>
-               <groupId>org.glassfish.jersey.media</groupId>
-               <artifactId>jersey-media-json-jackson</artifactId>
-               <version>3.1.10</version>
-               <type>jar</type>
-           </dependency>
-   		   <dependency>
-   		    <groupId>org.glassfish.jersey.inject</groupId>
-   		    <artifactId>jersey-hk2</artifactId>
-   		    <version>3.1.10</version>
-           </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.17</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.5.18</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>3.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>3.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-grizzly2-http</artifactId>
+                <version>3.1.10</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.19.2</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>2.19.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <version>3.1.10</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.inject</groupId>
+                <artifactId>jersey-hk2</artifactId>
+                <version>3.1.10</version>
+            </dependency>
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
                 <version>4.0.2</version>
             </dependency>
             <dependency>
-               <groupId>com.sun.xml.bind</groupId>
-               <artifactId>jaxb-core</artifactId>
-               <version>4.0.5</version>
-           </dependency>
-           <dependency>
-               <groupId>com.sun.xml.bind</groupId>
-               <artifactId>jaxb-impl</artifactId>
-               <version>4.0.5</version>
-           </dependency>
-			<dependency>
-			   <groupId>com.zaxxer</groupId>
-			   <artifactId>HikariCP</artifactId>
-			   <version>7.0.0</version>
-			</dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>7.0.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -284,15 +297,15 @@
                         </execution>
                     </executions>
                 </plugin>
-		        <plugin>
-		            <groupId>org.codehaus.mojo</groupId>
-		            <artifactId>versions-maven-plugin</artifactId>
-		            <version>2.16.2</version>
-		            <configuration>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.16.2</version>
+                    <configuration>
                         <allowSnapshots>false</allowSnapshots>
                         <rulesUri>file://${session.executionRootDirectory}/version-rules.xml</rulesUri>
-		            </configuration>
-		        </plugin>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
@@ -406,26 +419,28 @@
                     </checkstyleRules>
                 </configuration>
             </plugin>
-	        <!-- SpotBugs Static Analysis -->
-	        <plugin>
-	            <groupId>com.github.spotbugs</groupId>
-	            <artifactId>spotbugs-maven-plugin</artifactId>
-	            <version>4.8.5.0</version>
-	            <configuration>
-	                <effort>Max</effort>
-	                <threshold>medium</threshold>
-	                <failOnError>true</failOnError>
-	                <includeFilterFile>${session.executionRootDirectory}/spotbugs-security-include.xml</includeFilterFile>
-	                <excludeFilterFile>${session.executionRootDirectory}/spotbugs-security-exclude.xml</excludeFilterFile>
-	                <plugins>
-	                    <plugin>
-	                        <groupId>com.h3xstream.findsecbugs</groupId>
-	                        <artifactId>findsecbugs-plugin</artifactId>
-	                        <version>1.13.0</version>
-	                    </plugin>
-	                </plugins>
-	            </configuration>
-	        </plugin>
+            <!-- SpotBugs Static Analysis -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.5.0</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>medium</threshold>
+                    <failOnError>true</failOnError>
+                    <includeFilterFile>${session.executionRootDirectory}/spotbugs-security-include.xml
+                    </includeFilterFile>
+                    <excludeFilterFile>${session.executionRootDirectory}/spotbugs-security-exclude.xml
+                    </excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>1.13.0</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -450,11 +465,11 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>3.6.3</version>
-				        <configuration>
-				            <failOnError>true</failOnError>
-				            <quiet>true</quiet>
-				            <detectJavaApiLink>false</detectJavaApiLink>
-				        </configuration>
+                        <configuration>
+                            <failOnError>true</failOnError>
+                            <quiet>true</quiet>
+                            <detectJavaApiLink>false</detectJavaApiLink>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -469,10 +484,10 @@
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>3.2.4</version>
                         <configuration>
-                          <gpgArguments>
-                              <arg>--pinentry-mode</arg>
-                              <arg>loopback</arg>
-                          </gpgArguments>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
                         </configuration>
                         <executions>
                             <execution>

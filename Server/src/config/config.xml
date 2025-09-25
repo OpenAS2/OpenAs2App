@@ -26,7 +26,8 @@
                module.AS2SenderModule.enabled="true"
                module.AS2SenderModule.readtimeout="60000"
                module.MDNSenderModule.enabled="true"
-               module.DbTrackingModule.enabled="true"
+               module.DbTrackingModule.enabled="false"
+               module.DynamoDbTrackingModule.enabled="true"
                module.MDNFileModule.enabled="true"
                module.MDNFileModule.filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$"
                module.MDNFileModule.tempdir="$properties.storageBaseDir$/temp"
@@ -61,6 +62,7 @@
                email.smtppwd="mySmtpPwd"
                email.subject="$exception.name$: $exception.message$"
                email.bodytemplate="%home%/emailtemplate.txt"
+               msg_tracking.use_dynamo_db="true"
                msg_tracking.use_embedded_db="true"
                msg_tracking.force_load_jdbc_driver="false"
                msg_tracking.db_user="sa"
@@ -109,7 +111,7 @@
                         ssl_protocol="TLS"
                         ssl_keystore="$properties.ssl_keystore$"
                         ssl_keystore_password="$properties.ssl_keystore_password$"
-                        userid="$properties.restapi.command.processor.userid$" 
+                        userid="$properties.restapi.command.processor.userid$"
                         password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
@@ -150,6 +152,9 @@
               tcp_server_start="$properties.msg_tracking.tcp_server_start$"
               tcp_server_port="$properties.msg_tracking.tcp_server_port$"
               tcp_server_password="$properties.msg_tracking.tcp_server_password$"/>
+     <module enabled="$properties.module.DynamoDbTrackingModule.enabled$"
+              classname="org.openas2.processor.msgtracking.DynamoDbTrackingModule"
+              table_name="$properties.msg_tracking.table_name$"/>
       <module enabled="$properties.module.MDNFileModule.enabled$"
               classname="org.openas2.processor.storage.MDNFileModule"
               filename="$properties.module.MDNFileModule.filename$"
