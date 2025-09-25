@@ -62,7 +62,6 @@
                email.smtppwd="mySmtpPwd"
                email.subject="$exception.name$: $exception.message$"
                email.bodytemplate="%home%/emailtemplate.txt"
-               msg_tracking.use_dynamo_db="true"
                msg_tracking.use_embedded_db="true"
                msg_tracking.force_load_jdbc_driver="false"
                msg_tracking.db_user="sa"
