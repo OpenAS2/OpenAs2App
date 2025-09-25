@@ -107,7 +107,7 @@ pollerConfigBase.interval=5
 pollerConfigBase.defaults=sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$
 pollerConfigBase.sendfilename=true
 pollerConfigBase.mimetype=application/EDI-X12
-pollerConfigBase.process_files_in_paralllel=false
+pollerConfigBase.process_files_in_parallel=false
 pollerConfigBase.max_parallel_files=20
 # The time between checks for a changed partnerships.xml file for auto reload.
 partnerships.polling.interval=120
