@@ -1,5 +1,10 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.6.2 - 2025-09-27
+
+This is a bugfix release.
+1. Enhanced the poller algorithm to avoid race conditions under very high volume file processing.
+
 Version 4.6.1 - 2025-09-25
 
 This is a bugfix release.

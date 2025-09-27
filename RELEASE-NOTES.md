@@ -1,21 +1,19 @@
 #              OpenAS2 Server
-#              Version 4.6.1
+#              Version 4.6.2
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.2
 
-The release download file is: OpenAS2Server-4.6.1.zip
+The release download file is: OpenAS2Server-4.6.2.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.6.1 - 2025-09-25
+Version 4.6.2 - 2025-09-27
 
 This is a bugfix release.
-
-1. Enhanced the poller algorithm to avoid problems with high volume file processing.
-2. Fixed the attribute name to enable the parallel processing mode (paralllel - > parallel) - IMPORTANT- if you used the parallel processing mode, remove the 3rd L from the attribute so it looks like this: process_files_in_parallel
+1. Enhanced the poller algorithm to avoid race conditions under very high volume file processing.
 
 
 ##Upgrade Notes
@@ -24,6 +22,9 @@ This is a bugfix release.
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
+
+### Upgrading to 4.6.1 or newer from any older version if using parallel processing mode:
+      1. Ensure you change the property for enabling parallel mode by removing the 3rd consecutive "l" from "process_files_in_paralllel".
 
 ### Upgrading to 4.0 or newer from any older version:
       1. Ensure you implement all logging that you had configured for earlier versions using the logback configuration or replace with another framework that works with SLF4J facade. See the OpenAS2HowTo.pdf logging section for more details.
