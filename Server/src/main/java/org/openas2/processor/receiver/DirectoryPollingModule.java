@@ -220,7 +220,6 @@ public abstract class DirectoryPollingModule extends PollingModule {
         } finally {
             // Remove trackedFiles entry first to avoid race condition in parallel processing
             trackedFiles.remove(fileEntryKey);
-            logger.warn("File about to be removed from PROCESSING:" + fileEntryKey);
             processingFiles.remove(fileEntryKey);
         }        
     }
@@ -228,7 +227,6 @@ public abstract class DirectoryPollingModule extends PollingModule {
     protected void triggerFileProcessing(File file, String fileEntryKey) {
         // Add the in processing flag on the file now otherwise in threaded mode there is a race condition
         processingFiles.put(fileEntryKey, System.currentTimeMillis());
-        logger.warn("File set to PROCESSING:" + fileEntryKey + "::: Threaded MODE: " + processFilesAsThreads);
         if (processFilesAsThreads) {
             processFileInThread(file, fileEntryKey);
         } else {
