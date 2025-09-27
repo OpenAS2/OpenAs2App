@@ -6,17 +6,18 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.openas2.TestPartner;
 import org.openas2.TestResource;
 import org.openas2.TestUtils;
+import org.openas2.XMLSession;
+import org.openas2.processor.ActiveModule;
+import org.openas2.processor.ProcessorModule;
+import org.openas2.processor.receiver.AS2DirectoryPollingModule;
+import org.openas2.processor.receiver.DirectoryPollingModule;
+import org.openas2.processor.storage.MessageFileModule;
+import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.Properties;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,7 +41,7 @@ public class ParallelProcessingTest {
     private static OpenAS2Server server1;
     private static OpenAS2Server server2;
     private static String[] dataFolders = new String[2];
-    private final int msgCnt = 100;
+    private final int msgCnt = 1000;
 
     @TempDir
     public static File resourceTmp;
@@ -96,6 +98,14 @@ public class ParallelProcessingTest {
             System.out.println("shouldSendMessagesSyncMdn ERROR OCCURRED: " + ExceptionUtils.getStackTrace(e));
             throw new Exception(e);
         }
+    }
+
+    @Test
+    public void shouldBeParallelMode() throws Exception {
+        XMLSession session = (XMLSession)server1.getSession();
+        DirectoryPollingModule pollingModule = session.getPartnershipPoller(server1PartnerSender.getPartnership().getName());
+        String modeSetting = pollingModule.getParameter(DirectoryPollingModule.PARAM_PROCESS_IN_PARALLEL, "false");
+        assertThat("Directory polling module running in parallel mode", "true", Matchers.equalTo(modeSetting));
     }
 
     @AfterAll
