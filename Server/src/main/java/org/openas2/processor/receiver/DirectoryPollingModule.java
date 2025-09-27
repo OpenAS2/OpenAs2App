@@ -139,13 +139,13 @@ public abstract class DirectoryPollingModule extends PollingModule {
         File directoryAsFile = IOUtil.getDirectoryFile(directory);
         // Wrap in try-with-resources block to ensure close() is called
         try (DirectoryStream<Path> dirs = Files.newDirectoryStream(directoryAsFile.toPath(), entry -> {
-                String name = entry.getFileName().toString();
                 if (Files.isDirectory(entry)) {
                     return false;
                 }
-                if (isTracked(entry.toString())) {
+                if (isTracked(entry.toAbsolutePath().toString())) {
                     return false;
                 }
+                String name = entry.getFileName().toString();
                 if (logger.isTraceEnabled()) {
                     logger.trace("Polling module file name found: " + name);
                 }
@@ -206,7 +206,6 @@ public abstract class DirectoryPollingModule extends PollingModule {
     }
 
     protected void processSingleFile(File file, String fileEntryKey) {
-        processingFiles.put(fileEntryKey, System.currentTimeMillis());
         try {
             processFile(file);
         } catch (OpenAS2Exception e) {
@@ -219,9 +218,22 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 return;
             }
         } finally {
+            // Remove trackedFiles entry first to avoid race condition in parallel processing
             trackedFiles.remove(fileEntryKey);
+            logger.warn("File about to be removed from PROCESSING:" + fileEntryKey);
             processingFiles.remove(fileEntryKey);
         }        
+    }
+
+    protected void triggerFileProcessing(File file, String fileEntryKey) {
+        // Add the in processing flag on the file now otherwise in threaded mode there is a race condition
+        processingFiles.put(fileEntryKey, System.currentTimeMillis());
+        logger.warn("File set to PROCESSING:" + fileEntryKey + "::: Threaded MODE: " + processFilesAsThreads);
+        if (processFilesAsThreads) {
+            processFileInThread(file, fileEntryKey);
+        } else {
+            processSingleFile(file, fileEntryKey);
+        }
     }
 
     private void updateTracking() {
@@ -253,12 +265,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 if (newLength > trackedFileLength) {
                     trackedFiles.put(fileEntryKey, Long.valueOf(newLength));
                 } else {
-                    // if the file length has stayed the same, process the file
-                    if (processFilesAsThreads) {
-                        processFileInThread(file, fileEntryKey);
-                    } else {
-                        processSingleFile(file, fileEntryKey);
-                    }
+                    // no change in file length so process the file
+                    triggerFileProcessing(file, fileEntryKey);
                 }
             }
         }
