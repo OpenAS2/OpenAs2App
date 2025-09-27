@@ -34,8 +34,8 @@ public class CompositeParameters extends ParameterParser {
     public void setParameter(String key, String value) throws InvalidParameterException {
         StringTokenizer keyParts = new StringTokenizer(key, ".", false);
 
-        keyParts.nextToken();
-        ParameterParser parser = getParameterParsers().get(keyParts);
+        String parserKey = keyParts.nextToken();
+        ParameterParser parser = getParameterParsers().get(parserKey);
 
         if (parser != null) {
             if (!keyParts.hasMoreTokens()) {

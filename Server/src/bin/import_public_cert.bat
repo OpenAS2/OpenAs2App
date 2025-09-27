@@ -73,7 +73,7 @@ if "%action%" == "replace" (
 if errorlevel 1 (
 	echo. 
     echo ***** Failed to import the certificate to the keystore. See errors above to correct the problem.
-    echo       If the error shows the certifcate already eists then add the "replace" option to the command line.
+    echo       If the error shows the certifcate already exists then add the "replace" option to the command line.
     EXIT /B 1
 )
 

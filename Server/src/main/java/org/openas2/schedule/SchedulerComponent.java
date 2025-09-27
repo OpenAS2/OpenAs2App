@@ -38,7 +38,7 @@ public class SchedulerComponent extends BaseComponent {
     private void createExecutor() throws InvalidParameterException {
         int configuredAmountOfThreads = getParameterInt(PARAMETER_THREADS, false);
         int amountOfThreads = configuredAmountOfThreads < MIN_AMOUNT_OF_THREADS ? MIN_AMOUNT_OF_THREADS : configuredAmountOfThreads;
-        BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern(getName() + "-Thread-%d").build();
+        BasicThreadFactory threadFactory = BasicThreadFactory.builder().namingPattern(getName() + "-Thread-%d").build();
 
         this.executorService = Executors.newScheduledThreadPool(amountOfThreads, threadFactory);
         logger.debug("Scheduler module is ready.");

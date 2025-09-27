@@ -70,6 +70,10 @@ public class TestPartner {
         return name;
     }
 
+    public Partnership getPartnership() {
+        return partnership;
+    }
+
     public String getPartnerName() {
         return partnerName;
     }

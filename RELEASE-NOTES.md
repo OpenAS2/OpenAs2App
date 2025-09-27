@@ -1,27 +1,19 @@
 #              OpenAS2 Server
-#              Version 4.6.0
+#              Version 4.6.2
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.2
 
-The release download file is: OpenAS2Server-4.6.0.zip
+The release download file is: OpenAS2Server-4.6.2.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.6.0 - 2025-08-04
+Version 4.6.2 - 2025-09-27
 
-This is a testing enhancement release.
-
-1. Reworked the resource access class
-2. changed tests to use the same config that is provided in the installer package
-3. Optimised method to wait for files to appear on file system as part of end-to-end tests
-4. Created script to generate test certificates keystore with updated certificates
-5. Added maven phase to regenerate test certificates keystore prior to running tests
-6. Updated Maven wrapper for project
-7. Added Java 24 to test matrix
-
+This is a bugfix release.
+1. Enhanced the poller algorithm to avoid race conditions under very high volume file processing.
 
 
 ##Upgrade Notes
@@ -30,6 +22,9 @@ This is a testing enhancement release.
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
+
+### Upgrading to 4.6.1 or newer from any older version if using parallel processing mode:
+      1. Ensure you change the property for enabling parallel mode by removing the 3rd consecutive "l" from "process_files_in_paralllel".
 
 ### Upgrading to 4.0 or newer from any older version:
       1. Ensure you implement all logging that you had configured for earlier versions using the logback configuration or replace with another framework that works with SLF4J facade. See the OpenAS2HowTo.pdf logging section for more details.

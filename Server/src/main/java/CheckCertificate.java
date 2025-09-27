@@ -1,7 +1,7 @@
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -64,8 +64,13 @@ public class CheckCertificate {
         String header = "Checks SSL connectivity." + "\nTries to connect to the remote server and establish a connection.";
         String footer = "Good luck!";
 
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(this.getClass().getName(), header, options, footer, true);
+        HelpFormatter formatter = HelpFormatter.builder().get();
+        try {
+            formatter.printHelp(this.getClass().getName(), header, options, footer, true);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private CommandLine parseCommandLine(String[] args) {
@@ -75,7 +80,7 @@ public class CheckCertificate {
         // create the Options
         Options options = new Options();
         for (String[] opt : opts) {
-            Option option = Option.builder(opt[0]).longOpt(opt[1]).hasArg("true".equalsIgnoreCase(opt[2])).desc(opt[4]).build();
+            Option option = Option.builder(opt[0]).longOpt(opt[1]).hasArg("true".equalsIgnoreCase(opt[2])).desc(opt[4]).get();
             option.setRequired("true".equalsIgnoreCase(opt[3]));
             options.addOption(option);
         }

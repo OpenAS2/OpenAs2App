@@ -47,7 +47,6 @@ public class IOUtilTest {
         }
     }
 
-    @SuppressWarnings("serial")
     private List<Record> testParameterParsingData = new ArrayList<Record>() {
         {
             add(new Record("MyCo-PartnerCo-MyFileNameWithExtension.edi", "sender.as2_id, receiver.as2_id," + " attributes.filename", "-.", false, "MyFileNameWithExtension", "MyCo", "PartnerCo"));

@@ -24,15 +24,15 @@ set OPENAS2_CONFIG_FILE=%OPENAS2_BASE_DIR%/config/config.xml
 :skip_config_file_set
 for %%F in ("%OPENAS2_CONFIG_FILE%") do set OPENAS2_CONFIG_DIR=%%~dpF
 
-if [%OPENAS2_PROPERTIES_FILE%]==[]] goto skip_properties_file
+if [%OPENAS2_PROPERTIES_FILE%]==[] goto skip_properties_file
 set EXTRA_PARMS=%EXTRA_PARMS% -Dopenas2.properties.file="%OPENAS2_PROPERTIES_FILE%"
 :skip_properties_file
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dhttps.protocols=TLSv1.2
 
-if NOT [%OPENAS2_LOGGING_BASE%]==[]] goto skip_logging_base_set
+if NOT [%OPENAS2_LOGGING_BASE%]==[] goto skip_logging_base_set
 set OPENAS2_LOGGING_BASE=%OPENAS2_BASE_DIR%\logs
 :skip_logging_base_set
-set EXTRA_PARMS=%EXTRA_PARMS% -DOPENAS2_LOGGING_BASE=OPENAS2_LOGGING_BASE
+set EXTRA_PARMS=%EXTRA_PARMS% DOPENAS2_LOG_DIR="%OPENAS2_LOGGING_BASE%"
 
 rem Uncomment any of the following for enhanced debug
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dmaillogger.debug.enabled=true
