@@ -32,7 +32,7 @@ rem set EXTRA_PARMS=%EXTRA_PARMS% -Dhttps.protocols=TLSv1.2
 if NOT [%OPENAS2_LOGGING_BASE%]==[] goto skip_logging_base_set
 set OPENAS2_LOGGING_BASE=%OPENAS2_BASE_DIR%\logs
 :skip_logging_base_set
-set EXTRA_PARMS=%EXTRA_PARMS% DOPENAS2_LOG_DIR="%OPENAS2_LOGGING_BASE%"
+set EXTRA_PARMS=%EXTRA_PARMS% -DOPENAS2_LOG_DIR="%OPENAS2_LOGGING_BASE%"
 
 rem Uncomment any of the following for enhanced debug
 rem set EXTRA_PARMS=%EXTRA_PARMS% -Dmaillogger.debug.enabled=true
