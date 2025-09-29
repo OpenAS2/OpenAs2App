@@ -38,6 +38,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
     private Map<String, Long> trackedFiles = new HashMap<String, Long>(); 
     // Files that have been passed to a processor - key is the absolute file path and value is the processing start timestamp
     private Map<String, Long> processingFiles = new HashMap<String, Long>(); 
+    // Files that have been processed in thread mode and need removing from the tracked files maps by the main thread
+    Collection<String> threadProcessedFiles = Collections.synchronizedCollection(new ArrayList<String>());
 
     private String errorDir = null;
     private String sentDir = null;
@@ -217,24 +219,37 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 //forceStop(e1);
                 return;
             }
-        } finally {
-            // Remove trackedFiles entry first to avoid race condition in parallel processing
-            trackedFiles.remove(fileEntryKey);
-            processingFiles.remove(fileEntryKey);
-        }        
+        }     
     }
 
-    protected void triggerFileProcessing(File file, String fileEntryKey) {
-        // Add the in processing flag on the file now otherwise in threaded mode there is a race condition
-        processingFiles.put(fileEntryKey, System.currentTimeMillis());
-        if (processFilesAsThreads) {
-            processFileInThread(file, fileEntryKey);
-        } else {
-            processSingleFile(file, fileEntryKey);
+    private void processFileInThread(File file, String fileEntryKey) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Parallel processing mode handling file: " + file.getName());
         }
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    processSingleFile(file, fileEntryKey);
+                } finally {
+                    // Add to list for removal from tracking maps when updateTracking is called
+                    threadProcessedFiles.add(fileEntryKey);
+                }
+            }
+        });
     }
 
     private void updateTracking() {
+        // first remove processed files if we are running in parallel processing mode to avoid concurrency issues
+        if (processFilesAsThreads) {
+            synchronized (threadProcessedFiles) {
+                threadProcessedFiles.forEach((fileEntryKey) -> {
+                    trackedFiles.remove(fileEntryKey);
+                    processingFiles.remove(fileEntryKey);
+                });
+                threadProcessedFiles.clear();
+            }
+        }
         // Use an iterator to be able to remove entries whilst iterating over the map.
         Iterator<Map.Entry<String, Long>> iter = trackedFiles.entrySet().iterator();
         while (iter.hasNext()) {
@@ -264,22 +279,22 @@ public abstract class DirectoryPollingModule extends PollingModule {
                     trackedFiles.put(fileEntryKey, Long.valueOf(newLength));
                 } else {
                     // no change in file length so process the file
-                    triggerFileProcessing(file, fileEntryKey);
+                    // Add the processing flag on the file now otherwise in threaded mode there is a race condition
+                    processingFiles.put(fileEntryKey, System.currentTimeMillis());
+                    if (processFilesAsThreads) {
+                        processFileInThread(file, fileEntryKey);
+                    } else {
+                        try {
+                            processSingleFile(file, fileEntryKey);
+                        } finally {
+                            iter.remove();
+                            processingFiles.remove(fileEntryKey);
+                        }
+                    }
+
                 }
             }
         }
-    }
-
-    private void processFileInThread(File file, String fileEntryKey) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Parallel processing mode handling file: " + file.getName());
-        }
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                processSingleFile(file, fileEntryKey);
-            }
-        });
     }
 
     protected abstract Message createMessage();

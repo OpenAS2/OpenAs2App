@@ -1,5 +1,10 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.6.3 - 2025-09-29
+
+This is a bugfix release.
+1. Avoid  concurrent processing error that occurs after files after sent as part of the cleanup process.
+
 Version 4.6.2 - 2025-09-27
 
 This is a bugfix release.
