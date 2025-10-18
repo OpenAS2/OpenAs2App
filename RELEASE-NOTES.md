@@ -1,19 +1,19 @@
 #              OpenAS2 Server
-#              Version 4.6.3
+#              Version 4.7.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.6.3
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.7.0
 
-The release download file is: OpenAS2Server-4.6.3.zip
+The release download file is: OpenAS2Server-4.7.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.6.3 - 2025-09-29
+Version 4.7.0 - 2025-10-28
 
-This is a bugfix release.
-1. Avoid  concurrent processing error that occurs after files after sent as part of the cleanup process.
+This is a minor enhancement release.
+1. Enhance MDN processing to extract possible responses from partner that provide information on why the partner rejected the AS2 transaction.
 
 
 ##Upgrade Notes
