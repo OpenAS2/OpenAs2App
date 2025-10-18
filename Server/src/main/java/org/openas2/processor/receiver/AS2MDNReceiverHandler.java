@@ -109,10 +109,10 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                 logger.trace("Incoming ASYNC MDN message - MDN struct: " + mdn.toString());
             }
             try {
-                boolean partnerIdentificationProblem = AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this.getClass());
+                boolean mdnResponseIssue = AS2Util.processMDN(msg, data, s.getOutputStream(), true, getModule().getSession(), this.getClass());
                 // Assume that appropriate logging and state handling was done upstream if an error occurred so only log state change for success
-                if (!partnerIdentificationProblem) {
-                    // Logger  state
+                if (!mdnResponseIssue) {
+                    // Log state
                     msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
                     msg.trackMsgState(getModule().getSession());
                 }
