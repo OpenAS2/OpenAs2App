@@ -1,6 +1,13 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-Version 4.7.0 - 2025-10-28
+Version 4.7.1 - 2025-10-20
+
+This is a minor enhancement release.
+1. Fix boolean return values from processMDN method causing wrong log message.
+2. Fix logging WARN message that should have been a TRACE log.
+
+
+Version 4.7.0 - 2025-10-18
 
 This is a minor enhancement release.
 1. Enhance MDN processing to extract possible responses from partner that provide information on why the partner rejected the AS2 transaction.

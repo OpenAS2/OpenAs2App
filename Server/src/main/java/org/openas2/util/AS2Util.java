@@ -535,7 +535,8 @@ public class AS2Util {
         } catch (MessagingException e1) {
             msg.setLogMsg("Failed to create mimebodypart from received MDN data for partnership " + mdn.getPartnership().getName() + ": " + org.openas2.util.Logging.getExceptionMsg(e1));
             logger.error(msg.getLogMsg(), e1);
-            return AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
+            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
+            return true;
         }
         CertificateFactory cFx = session.getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
         String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
@@ -617,7 +618,7 @@ public class AS2Util {
         logger.info(msg.getLogMsg());
 
         cleanupFiles(msg, false);
-        return true;
+        return false;
 
     }
 
