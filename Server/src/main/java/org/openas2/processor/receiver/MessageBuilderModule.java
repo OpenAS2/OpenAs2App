@@ -55,7 +55,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     public static final String PARAM_DEFAULTS = "defaults";
     public static final String PARAM_MIMETYPE = "mimetype";
     public static final String PARAM_RESEND_MAX_RETRIES = "resend_max_retries";
-
+    // Note: When this option is enabled, you can also configure its quoting using "quote_send_file_name" at partnership-level
+    public static final String PARAM_SEND_FILENAME = "sendfilename";
+    
     private Logger logger = LoggerFactory.getLogger(MessageBuilderModule.class);
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
@@ -403,9 +405,24 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         try {
             // add below statement will tell the receiver to save the filename
             // as the one sent by sender. 2007-06-01
-            String sendFileName = getParameter("sendfilename", false);
+            String sendFileName = getParameter(PARAM_SEND_FILENAME, false);
             if (sendFileName != null && sendFileName.equals("true")) {
-                String contentDisposition = "Attachment; filename=\"" + msg.getAttribute(FileAttribute.MA_FILENAME) + "\"";
+                // Allow configuration of the quoting at partnership-level 
+                String quoteFileName = msg.getPartnership().getAttribute(Partnership.PA_QUOTE_SEND_FILE_NAME);
+
+                String quoteFileNameSign;
+                if (quoteFileName == null) {
+                    // For backward compatibility - default
+                    quoteFileNameSign = "\"";
+                } else if ("true".equals(quoteFileName)) {
+                    // Explicitly enabled (same as the default)
+                    quoteFileNameSign = "\"";
+                } else {
+                    // Explicitly disabled
+                    quoteFileNameSign = "";
+                }
+
+                String contentDisposition = String.format("Attachment; filename=%s%s%s", quoteFileNameSign, msg.getAttribute(FileAttribute.MA_FILENAME), quoteFileNameSign);
                 mimeBodyPart.setHeader("Content-Disposition", contentDisposition);
                 msg.setContentDisposition(contentDisposition);
             }
