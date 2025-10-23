@@ -1,5 +1,32 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.7.2 - 2025-10-23
+
+This is a minor enhancement release.
+1.  Changes to partnership.xml
+    
+    * New optional attribute "quote_send_file_name" for the partnership to specify if 
+    the filename which is to be included in the headers should be quoted or not. 
+    Some target AS2 servers are picky about the quotes. 
+
+    Any value other than "true" will be considered false - default: true (previous behaviour). 
+    
+    <partnership name="MyCompany-to-PartnerA">
+        <sender name="MyCompany"/>
+        <receiver name="PartnerA"/>
+        <!-- ... -->
+		<!--
+		Example for disabling the quoting of the sent filename at partnership-level.
+		Works only in combination with sendfilename="true" at module-level of AS2DirectoryPollingModule in config.xml.
+		-->
+        <attribute name="quote_send_file_name" value="false"/>
+    </partnership>
+
+    <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
+              ...
+              sendfilename="true"
+              />
+
 Version 4.7.1 - 2025-10-20
 
 This is a minor enhancement release.
