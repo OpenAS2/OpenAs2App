@@ -16,28 +16,27 @@ This is a minor bugfix release.
 
 1.  Changes to partnership.xml
 
- * New optional attribute "quote_send_file_name" for the partnership to specify if
-   the filename which is to be included in the headers should be quoted or not.
-   Some target AS2 servers are picky about the quotes.
+ * New optional attribute `quote_send_file_name` for the partnership to specify if
+   the filename which is to be included in header `Content-Disposition: Attachment; filename="filename.ext"` should be quoted or not.
+   Useful for target AS2 servers which are picky about the quotes. Requires `sendfilename="true"` to be set.  
 
-    Any value other than "true" will be considered false - default: true (previous behaviour).
-````
-    <partnership name="MyCompany-to-PartnerA">
-        <sender name="MyCompany"/>
-        <receiver name="PartnerA"/>
-        <!-- ... -->
-    <!--
-    Example for disabling the quoting of the sent filename at partnership-level.
-    Works only in combination with sendfilename="true" at module-level of AS2DirectoryPollingModule in config.xml.
-    -->
-        <attribute name="quote_send_file_name" value="false"/>
-    </partnership>
-
-    <module classname="org.openas2.processor.receiver.AS2DirectoryPollingModule"
-    ...
-    sendfilename="true"
-    />
-````
+   Any value other than "false" will be considered true - default: true (previous behaviour).
+   ````
+   <!-- Configuration at partnership-level -->
+   <partnership name="MyCompany-to-PartnerA">
+       <sender name="MyCompany"/>
+       <receiver name="PartnerA"/>
+       <!-- ... -->
+   
+       <!-- Prerequisite: sendfilename has to be set -->
+       <!--  a) Set pollerConfigBase.sendfilename="true" in the config.xml OR -->
+       <!--  b) Set sendfilename="true" at partnership-level in the partnerships.xml using pollerConfig -->
+       <pollerConfig enabled="true" sendfilename="true"/>
+   
+       <!-- Example for disabling the quoting of the sent filename at partnership-level. -->
+       <attribute name="quote_send_file_name" value="false"/>
+   </partnership>
+   ````
 
 ## Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

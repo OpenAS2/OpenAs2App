@@ -69,7 +69,9 @@
 		-->
         <!--
         Example for disabling the quoting of the sent filename at partnership-level.
-        Works only in combination with sendfilename="true" at module-level of AS2DirectoryPollingModule in config.xml.
+        Works only in combination with sendfilename="true" using pollerConfigBase.sendfilename="true" in the config.xml OR
+        at partnership-level in the partnerships.xml using &lt;pollerConfig enabled="true" sendfilename="true"/&gt; 
+
         <attribute name="quote_send_file_name" value="false"/>
         -->
     </partnership>
