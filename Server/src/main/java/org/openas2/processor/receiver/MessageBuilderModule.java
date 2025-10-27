@@ -400,7 +400,8 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         return contentType;
     }
 
-    private void setAdditionalMetaData(Message msg, MimeBodyPart mimeBodyPart) throws OpenAS2Exception {
+    // @VisibleForTesting
+    protected void setAdditionalMetaData(Message msg, MimeBodyPart mimeBodyPart) throws OpenAS2Exception {
 
         try {
             // add below statement will tell the receiver to save the filename
@@ -411,16 +412,14 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
                 String quoteFileName = msg.getPartnership().getAttribute(Partnership.PA_QUOTE_SEND_FILE_NAME);
 
                 String quoteFileNameSign;
-                if (quoteFileName == null) {
-                    // For backward compatibility - default
-                    quoteFileNameSign = "\"";
-                } else if ("true".equals(quoteFileName)) {
-                    // Explicitly enabled (same as the default)
-                    quoteFileNameSign = "\"";
-                } else {
+                if ("false".equalsIgnoreCase(quoteFileName)){
                     // Explicitly disabled
                     quoteFileNameSign = "";
-                }
+                } else {
+                    // For backward compatibility - default
+                    // Or explicitly enabled
+                    quoteFileNameSign = "\"";
+                } 
 
                 String contentDisposition = String.format("Attachment; filename=%s%s%s", quoteFileNameSign, msg.getAttribute(FileAttribute.MA_FILENAME), quoteFileNameSign);
                 mimeBodyPart.setHeader("Content-Disposition", contentDisposition);
