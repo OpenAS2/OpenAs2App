@@ -67,6 +67,13 @@
         <attribute name="split_file_contains_header_row" value="true"/>
         <attribute name="split_file_name_prefix" value="SF"/>
 		-->
+        <!--
+        Example for disabling the quoting of the sent filename at partnership-level.
+        Works only in combination with sendfilename="true" using pollerConfigBase.sendfilename="true" in the config.xml OR
+        at partnership-level in the partnerships.xml using &lt;pollerConfig enabled="true" sendfilename="true"/&gt; 
+
+        <attribute name="quote_send_file_name" value="false"/>
+        -->
     </partnership>
     <partnership name="PartnerA-to-MyCompany">
         <sender name="PartnerA"/>

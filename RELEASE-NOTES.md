@@ -1,23 +1,44 @@
 #              OpenAS2 Server
-#              Version 4.7.1
+#              Version 4.7.2
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.7.1
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.7.2
 
-The release download file is: OpenAS2Server-4.7.1.zip
+The release download file is: OpenAS2Server-4.7.2.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.7.1 - 2025-10-20
+Version 4.7.2 - 2025-10-23
 
-This is a minor bufix release.
-1. Fix boolean return values from processMDN method causing wrong log message.
-2. Fix logging WARN message that should have been a TRACE log.
+This is a minor bugfix release.
 
+1.  Changes to partnership.xml
 
-##Upgrade Notes
+ * New optional attribute `quote_send_file_name` for the partnership to specify if
+   the filename which is to be included in header `Content-Disposition: Attachment; filename="filename.ext"` should be quoted or not.
+   Useful for target AS2 servers which are picky about the quotes. Requires `sendfilename="true"` to be set.  
+
+   Any value other than "false" will be considered true - default: true (previous behaviour).
+   ````
+   <!-- Configuration at partnership-level -->
+   <partnership name="MyCompany-to-PartnerA">
+       <sender name="MyCompany"/>
+       <receiver name="PartnerA"/>
+       <!-- ... -->
+   
+       <!-- Prerequisite: sendfilename has to be set -->
+       <!--  a) Set pollerConfigBase.sendfilename="true" in the config.xml OR -->
+       <!--  b) Set sendfilename="true" at partnership-level in the partnerships.xml using pollerConfig -->
+       <pollerConfig enabled="true" sendfilename="true"/>
+   
+       <!-- Example for disabling the quoting of the sent filename at partnership-level. -->
+       <attribute name="quote_send_file_name" value="false"/>
+   </partnership>
+   ````
+
+## Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
 
  Below are some specific things to focus on depending on which version you are upgrading from.

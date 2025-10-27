@@ -14,7 +14,7 @@ More detailed information is available in the DeveloperGuide.odt in the docs fol
 The following commands can be used in the build process.
 
 Updating Maven to a different version:
-`./mvnw wrapper:wrapper -Dmaven=3.9.9
+`./mvnw wrapper:wrapper -Dmaven=3.9.9`
 
 Checking dependency tree:
 `./mvnw dependency:tree`
@@ -92,7 +92,7 @@ $ docker build -t openas2:latest .
 ```
 
 Run the OpenAS2 server, with its network set to "host", so that the WebUI can access the server.
-NOTE: Some users have reported that using --net=host does not work for them and removing it solves the problem..
+NOTE: Some users have reported that using --net=host does not work for them and removing it solves the problem.
 
 ```console
 $ docker run -it --rm --net=host -p 4080:10080 -p 4081:10081 -p 8443:8080 -v ${PWD}/config:/opt/openas2/config -v ${PWD}/data:/opt/openas2/data openas2:latest
@@ -145,7 +145,7 @@ $ docker compose logs openas2_webui
 
 ## Dynamically configure your container using environment variables
 
-Here is a short explaination how to override properties in the container's `config.xml` file using environment variables. 
+Here is a short explanation how to override properties in the container's `config.xml` file using environment variables. 
 
 **Prerequisites:**
 
