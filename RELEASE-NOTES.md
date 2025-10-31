@@ -1,16 +1,16 @@
 #              OpenAS2 Server
-#              Version 4.7.2
+#              Version 4.8.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.7.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.8.0
 
-The release download file is: OpenAS2Server-4.7.2.zip
+The release download file is: OpenAS2Server-4.8.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.7.2 - 2025-10-23
+Version 4.8.0 - 2025-10-31
 
 This is a minor bugfix release.
 
