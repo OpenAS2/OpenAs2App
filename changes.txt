@@ -1,6 +1,6 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-Version 4.7.2 - 2025-10-23
+Version 4.8.0 - 2025-10-31
 
 This is a minor enhancement release.
 1.  Changes to partnership.xml
