@@ -3,12 +3,14 @@
  */
 package org.openas2.processor.msgtracking;
 
+import org.openas2.util.DateUtil;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
 
 import java.time.Instant;
+import java.util.Map;
 
 /**
  * DynamoDB data model for AS2 message metadata.
@@ -89,6 +91,9 @@ public class MessageMetadata {
 
     public Integer getResendCount() {
         return resendCount;
+    }
+    public String getResendCountStr() {
+        return resendCount == null ? null : resendCount.toString();
     }
 
     public void setResendCount(Integer resendCount) {

@@ -15,15 +15,10 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +62,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
 
         if (logger.isInfoEnabled()) {
             logger.info("DynamoDB tracking module initialized with consistent_read=" + consistentRead +
-                       (consistentReadParam == null ? " (not specified, using DynamoDB default)" : " (explicitly configured)"));
+                    (consistentReadParam == null ? " (not specified, using DynamoDB default)" : " (explicitly configured)"));
         }
     }
 
@@ -77,25 +72,21 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
             // Check if record exists
             String msgId = map.get(FIELDS.MSG_ID);
             if (msgId == null || msgId.isEmpty()) {
-                logger.error("Cannot persist record without MSG_ID: " + map);
+                logger.error("Cannot persist record without MSG_ID: {}", map);
                 return;
             }
-
             MessageMetadata existingMetadata = getMessageMetadata(msgId);
-            boolean isUpdate = (existingMetadata != null);
-
-            MessageMetadata metadata = mapToMetadata(map, existingMetadata, isUpdate);
+            MessageMetadata metadata = mapToMetadata(map, existingMetadata);
 
             // Put item to DynamoDB (will insert or update)
             table.putItem(metadata);
 
             if (logger.isDebugEnabled()) {
-                logger.debug((isUpdate ? "Updated" : "Created") + " tracking record in DynamoDB: " + metadata);
+                logger.debug("{} tracking record in DynamoDB: {}", existingMetadata != null ? "Updated" : "Created", metadata);
             }
-
         } catch (Exception e) {
             msg.setLogMsg("Failed to persist tracking event to DynamoDB: " +
-                org.openas2.util.Logging.getExceptionMsg(e) + " ::: Data map: " + map);
+                    org.openas2.util.Logging.getExceptionMsg(e) + " ::: Data map: " + map);
             logger.error(msg.getLogMsg(), e);
         }
     }
@@ -107,17 +98,17 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
      *
      * @return list of message metadata records
      */
-    public ArrayList<HashMap<String, String>> listMessages() {
-        ArrayList<HashMap<String, String>> rows = new ArrayList<>();
+    public ArrayList<Map<String, String>> listMessages() {
+        ArrayList<Map<String, String>> rows = new ArrayList<>();
 
         try {
             // Scan the table (consider using pagination for large datasets)
             ScanEnhancedRequest scanRequest = ScanEnhancedRequest.builder()
-                .limit(1000) // Limit to 1000 items
-                .build();
+                    .limit(1000) // Limit to 1000 items
+                    .build();
 
             table.scan(scanRequest).items().forEach(metadata -> {
-                HashMap<String, String> row = metadataToMap(metadata);
+                Map<String, String> row = metadataToMap(metadata);
                 rows.add(row);
             });
 
@@ -139,18 +130,18 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
      * @param msgId the message ID to retrieve
      * @return map containing message metadata, or empty map if not found
      */
-    public HashMap<String, String> showMessage(String msgId) {
-        HashMap<String, String> row = new HashMap<>();
+    public Map<String, String> showMessage(String msgId) {
+        Map<String, String> row = new HashMap<>();
 
         try {
             Key key = Key.builder()
-                .partitionValue(msgId)
-                .build();
+                    .partitionValue(msgId)
+                    .build();
 
             GetItemEnhancedRequest request = GetItemEnhancedRequest.builder()
-                .key(key)
-                .consistentRead(consistentRead)
-                .build();
+                    .key(key)
+                    .consistentRead(consistentRead)
+                    .build();
 
             MessageMetadata metadata = table.getItem(request);
 
@@ -200,12 +191,12 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
             expressionValues.put(":endDate", AttributeValue.builder().s(endTimestamp).build());
 
             ScanEnhancedRequest scanRequest = ScanEnhancedRequest.builder()
-                .filterExpression(software.amazon.awssdk.enhanced.dynamodb.Expression.builder()
-                    .expression("createDt BETWEEN :startDate AND :endDate")
-                    .expressionValues(expressionValues)
-                    .build())
-                .limit(1000)
-                .build();
+                    .filterExpression(software.amazon.awssdk.enhanced.dynamodb.Expression.builder()
+                            .expression("createDt BETWEEN :startDate AND :endDate")
+                            .expressionValues(expressionValues)
+                            .build())
+                    .limit(1000)
+                    .build();
 
             table.scan(scanRequest).items().forEach(metadata -> {
                 HashMap<String, String> row = new HashMap<>();
@@ -217,7 +208,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
             });
 
             if (logger.isDebugEnabled()) {
-                logger.debug("Retrieved " + rows.size() + " chart data records from DynamoDB");
+                logger.debug("Retrieved {} chart data records from DynamoDB", rows.size());
             }
 
         } catch (Exception e) {
@@ -236,14 +227,14 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
     public void start() throws OpenAS2Exception {
         dbHandler = new DynamoDBHandler();
         dbHandler.start(null,
-            getParameter(PARAM_AWS_ACCESS_KEY, null),
-            getParameter(PARAM_AWS_SECRET_KEY, null),
-            getParameters());
+                getParameter(PARAM_AWS_ACCESS_KEY, null),
+                getParameter(PARAM_AWS_SECRET_KEY, null),
+                getParameters());
 
         // Initialize Enhanced Client
         enhancedClient = DynamoDbEnhancedClient.builder()
-            .dynamoDbClient(dbHandler.getDynamoDbClient())
-            .build();
+                .dynamoDbClient(dbHandler.getDynamoDbClient())
+                .build();
 
         // Get table reference
         table = enhancedClient.table(tableName, TableSchema.fromBean(MessageMetadata.class));
@@ -276,7 +267,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
 
         } catch (Exception e) {
             failures.add(this.getClass().getSimpleName() +
-                " - Failed to check DynamoDB tracking module: " + e.getMessage());
+                    " - Failed to check DynamoDB tracking module: " + e.getMessage());
             return false;
         }
     }
@@ -291,13 +282,13 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
     private MessageMetadata getMessageMetadata(String msgId) {
         try {
             Key key = Key.builder()
-                .partitionValue(msgId)
-                .build();
+                    .partitionValue(msgId)
+                    .build();
 
             GetItemEnhancedRequest request = GetItemEnhancedRequest.builder()
-                .key(key)
-                .consistentRead(consistentRead)
-                .build();
+                    .key(key)
+                    .consistentRead(consistentRead)
+                    .build();
 
             return table.getItem(request);
         } catch (Exception e) {
@@ -309,93 +300,52 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
     /**
      * Converts a map to MessageMetadata object.
      *
-     * @param map the source map
+     * @param map              the source map
      * @param existingMetadata existing metadata for update operations
-     * @param isUpdate whether this is an update operation
      * @return MessageMetadata object
      */
-    private MessageMetadata mapToMetadata(Map<String, String> map, MessageMetadata existingMetadata, boolean isUpdate) {
+    private MessageMetadata mapToMetadata(Map<String, String> map, MessageMetadata existingMetadata) {
         MessageMetadata metadata = existingMetadata != null ? existingMetadata : new MessageMetadata();
 
         // Set partition key
-        if (map.containsKey(FIELDS.MSG_ID)) {
-            metadata.setMsgId(map.get(FIELDS.MSG_ID));
-        }
+        metadata.setMsgId(map.get(FIELDS.MSG_ID));
 
         // Set other fields only if they're present in the map
-        if (map.containsKey(FIELDS.PRIOR_MSG_ID)) {
-            metadata.setPriorMsgId(map.get(FIELDS.PRIOR_MSG_ID));
-        }
-        if (map.containsKey(FIELDS.MDN_ID)) {
-            metadata.setMdnId(map.get(FIELDS.MDN_ID));
-        }
-        if (map.containsKey(FIELDS.DIRECTION)) {
-            metadata.setDirection(map.get(FIELDS.DIRECTION));
-        }
-        if (map.containsKey(FIELDS.IS_RESEND)) {
-            metadata.setIsResend(map.get(FIELDS.IS_RESEND));
-        }
-        if (map.containsKey(FIELDS.RESEND_COUNT)) {
-            String resendCountStr = map.get(FIELDS.RESEND_COUNT);
-            if (resendCountStr != null && !resendCountStr.isEmpty()) {
-                try {
-                    metadata.setResendCount(Integer.parseInt(resendCountStr));
-                } catch (NumberFormatException e) {
-                    logger.warn("Invalid resend_count value: " + resendCountStr);
-                }
+        metadata.setPriorMsgId(map.get(FIELDS.PRIOR_MSG_ID));
+        metadata.setMdnId(map.get(FIELDS.MDN_ID));
+        metadata.setDirection(map.get(FIELDS.DIRECTION));
+        metadata.setIsResend(map.get(FIELDS.IS_RESEND));
+        String resendCountStr = map.get(FIELDS.RESEND_COUNT);
+        if (resendCountStr != null && !resendCountStr.isEmpty()) {
+            try {
+                metadata.setResendCount(Integer.parseInt(resendCountStr));
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid resend_count value: {}", resendCountStr);
             }
         }
-        if (map.containsKey(FIELDS.SENDER_ID)) {
-            metadata.setSenderId(map.get(FIELDS.SENDER_ID));
-        }
-        if (map.containsKey(FIELDS.RECEIVER_ID)) {
-            metadata.setReceiverId(map.get(FIELDS.RECEIVER_ID));
-        }
-        if (map.containsKey(FIELDS.STATUS)) {
-            metadata.setStatus(map.get(FIELDS.STATUS));
-        }
-        if (map.containsKey(FIELDS.STATE)) {
-            metadata.setState(map.get(FIELDS.STATE));
-        }
-        if (map.containsKey(FIELDS.STATE_MSG)) {
-            metadata.setStateMsg(map.get(FIELDS.STATE_MSG));
-        }
-        if (map.containsKey(FIELDS.SIGNATURE_ALGORITHM)) {
-            metadata.setSignatureAlgorithm(map.get(FIELDS.SIGNATURE_ALGORITHM));
-        }
-        if (map.containsKey(FIELDS.ENCRYPTION_ALGORITHM)) {
-            metadata.setEncryptionAlgorithm(map.get(FIELDS.ENCRYPTION_ALGORITHM));
-        }
-        if (map.containsKey(FIELDS.COMPRESSION)) {
-            metadata.setCompression(map.get(FIELDS.COMPRESSION));
-        }
-        if (map.containsKey(FIELDS.FILE_NAME)) {
-            metadata.setFileName(map.get(FIELDS.FILE_NAME));
-        }
-        if (map.containsKey(FIELDS.SENT_FILE_NAME)) {
-            metadata.setSentFileName(map.get(FIELDS.SENT_FILE_NAME));
-        }
-        if (map.containsKey(FIELDS.CONTENT_TYPE)) {
-            metadata.setContentType(map.get(FIELDS.CONTENT_TYPE));
-        }
-        if (map.containsKey(FIELDS.CONTENT_TRANSFER_ENCODING)) {
-            metadata.setContentTransferEncoding(map.get(FIELDS.CONTENT_TRANSFER_ENCODING));
-        }
-        if (map.containsKey(FIELDS.MDN_MODE)) {
-            metadata.setMdnMode(map.get(FIELDS.MDN_MODE));
-        }
-        if (map.containsKey(FIELDS.MDN_RESPONSE)) {
-            metadata.setMdnResponse(map.get(FIELDS.MDN_RESPONSE));
-        }
+        metadata.setSenderId(map.get(FIELDS.SENDER_ID));
+        metadata.setReceiverId(map.get(FIELDS.RECEIVER_ID));
+        metadata.setStatus(map.get(FIELDS.STATUS));
+        metadata.setState(map.get(FIELDS.STATE));
+        metadata.setStateMsg(map.get(FIELDS.STATE_MSG));
+        metadata.setSignatureAlgorithm(map.get(FIELDS.SIGNATURE_ALGORITHM));
+        metadata.setEncryptionAlgorithm(map.get(FIELDS.ENCRYPTION_ALGORITHM));
+        metadata.setCompression(map.get(FIELDS.COMPRESSION));
+        metadata.setFileName(map.get(FIELDS.FILE_NAME));
+        metadata.setSentFileName(map.get(FIELDS.SENT_FILE_NAME));
+        metadata.setContentType(map.get(FIELDS.CONTENT_TYPE));
+        metadata.setContentTransferEncoding(map.get(FIELDS.CONTENT_TRANSFER_ENCODING));
+        metadata.setMdnMode(map.get(FIELDS.MDN_MODE));
+        metadata.setMdnResponse(map.get(FIELDS.MDN_RESPONSE));
 
         // Handle timestamps
         String currentTimestamp = DateUtil.getSqlTimestamp();
 
-        if (isUpdate) {
+        if (existingMetadata != null) {
             // Update timestamp
             metadata.setUpdateDt(currentTimestamp);
             // Preserve create timestamp
-            if (existingMetadata != null && existingMetadata.getCreateDt() != null) {
+            if (existingMetadata.getCreateDt() != null) {
                 metadata.setCreateDt(existingMetadata.getCreateDt());
             }
         } else {
@@ -412,76 +362,30 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
      * @param metadata the MessageMetadata object
      * @return map containing message metadata
      */
-    private HashMap<String, String> metadataToMap(MessageMetadata metadata) {
-        HashMap<String, String> map = new HashMap<>();
-
-        if (metadata.getMsgId() != null) {
-            map.put("MSG_ID", metadata.getMsgId());
-        }
-        if (metadata.getPriorMsgId() != null) {
-            map.put("PRIOR_MSG_ID", metadata.getPriorMsgId());
-        }
-        if (metadata.getMdnId() != null) {
-            map.put("MDN_ID", metadata.getMdnId());
-        }
-        if (metadata.getDirection() != null) {
-            map.put("DIRECTION", metadata.getDirection());
-        }
-        if (metadata.getIsResend() != null) {
-            map.put("IS_RESEND", metadata.getIsResend());
-        }
-        if (metadata.getResendCount() != null) {
-            map.put("RESEND_COUNT", metadata.getResendCount().toString());
-        }
-        if (metadata.getSenderId() != null) {
-            map.put("SENDER_ID", metadata.getSenderId());
-        }
-        if (metadata.getReceiverId() != null) {
-            map.put("RECEIVER_ID", metadata.getReceiverId());
-        }
-        if (metadata.getStatus() != null) {
-            map.put("STATUS", metadata.getStatus());
-        }
-        if (metadata.getState() != null) {
-            map.put("STATE", metadata.getState());
-        }
-        if (metadata.getStateMsg() != null) {
-            map.put("STATE_MSG", metadata.getStateMsg());
-        }
-        if (metadata.getSignatureAlgorithm() != null) {
-            map.put("SIGNATURE_ALGORITHM", metadata.getSignatureAlgorithm());
-        }
-        if (metadata.getEncryptionAlgorithm() != null) {
-            map.put("ENCRYPTION_ALGORITHM", metadata.getEncryptionAlgorithm());
-        }
-        if (metadata.getCompression() != null) {
-            map.put("COMPRESSION", metadata.getCompression());
-        }
-        if (metadata.getFileName() != null) {
-            map.put("FILE_NAME", metadata.getFileName());
-        }
-        if (metadata.getSentFileName() != null) {
-            map.put("SENT_FILE_NAME", metadata.getSentFileName());
-        }
-        if (metadata.getContentType() != null) {
-            map.put("CONTENT_TYPE", metadata.getContentType());
-        }
-        if (metadata.getContentTransferEncoding() != null) {
-            map.put("CONTENT_TRANSFER_ENCODING", metadata.getContentTransferEncoding());
-        }
-        if (metadata.getMdnMode() != null) {
-            map.put("MDN_MODE", metadata.getMdnMode());
-        }
-        if (metadata.getMdnResponse() != null) {
-            map.put("MDN_RESPONSE", metadata.getMdnResponse());
-        }
-        if (metadata.getCreateDt() != null) {
-            map.put("CREATE_DT", metadata.getCreateDt());
-        }
-        if (metadata.getUpdateDt() != null) {
-            map.put("UPDATE_DT", metadata.getUpdateDt());
-        }
-
+    private Map<String, String> metadataToMap(MessageMetadata metadata) {
+        Map<String, String> map = new HashMap<>();
+        map.put(FIELDS.MSG_ID, metadata.getMsgId());
+        map.put(FIELDS.PRIOR_MSG_ID, metadata.getPriorMsgId());
+        map.put(FIELDS.MDN_ID, metadata.getMdnId());
+        map.put(FIELDS.DIRECTION, metadata.getDirection());
+        map.put(FIELDS.IS_RESEND, metadata.getIsResend());
+        map.put(FIELDS.RESEND_COUNT, metadata.getResendCountStr());
+        map.put(FIELDS.SENDER_ID, metadata.getSenderId());
+        map.put(FIELDS.RECEIVER_ID, metadata.getReceiverId());
+        map.put(FIELDS.STATUS, metadata.getStatus());
+        map.put(FIELDS.STATE, metadata.getState());
+        map.put(FIELDS.STATE_MSG, metadata.getStateMsg());
+        map.put(FIELDS.SIGNATURE_ALGORITHM, metadata.getSignatureAlgorithm());
+        map.put(FIELDS.ENCRYPTION_ALGORITHM, metadata.getEncryptionAlgorithm());
+        map.put(FIELDS.COMPRESSION, metadata.getCompression());
+        map.put(FIELDS.FILE_NAME, metadata.getFileName());
+        map.put(FIELDS.SENT_FILE_NAME, metadata.getSentFileName());
+        map.put(FIELDS.CONTENT_TYPE, metadata.getContentType());
+        map.put(FIELDS.CONTENT_TRANSFER_ENCODING, metadata.getContentTransferEncoding());
+        map.put(FIELDS.MDN_MODE, metadata.getMdnMode());
+        map.put(FIELDS.MDN_RESPONSE, metadata.getMdnResponse());
+        map.put(FIELDS.CREATE_DT, metadata.getCreateDt());
+        map.put(FIELDS.UPDATE_DT, metadata.getUpdateDt());
         return map;
     }
 }
