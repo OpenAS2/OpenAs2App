@@ -31,20 +31,17 @@ import java.util.Map;
  */
 public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
 
-    public static final String PARAM_AWS_REGION = "aws_region";
     public static final String PARAM_AWS_ACCESS_KEY = "aws_access_key_id";
     public static final String PARAM_AWS_SECRET_KEY = "aws_secret_access_key";
     public static final String PARAM_TABLE_NAME = "table_name";
-    public static final String PARAM_DYNAMODB_ENDPOINT = "dynamodb_endpoint";
     public static final String PARAM_CONSISTENT_READ = "consistent_read";
 
     private static final Logger logger = LoggerFactory.getLogger(DynamoDBTrackingModule.class);
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     private DynamoDBHandler dbHandler = null;
-    private DynamoDbEnhancedClient enhancedClient = null;
     private DynamoDbTable<MessageMetadata> table = null;
-    private String tableName = "msg_metadata";
+    private String tableName;
     private boolean consistentRead = false; // Optional: defaults to eventually consistent if not specified
     private boolean isRunning = false;
 
@@ -59,11 +56,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
             consistentRead = Boolean.parseBoolean(consistentReadParam);
         }
         // else: remains false (eventually consistent, DynamoDB default)
-
-        if (logger.isInfoEnabled()) {
-            logger.info("DynamoDB tracking module initialized with consistent_read=" + consistentRead +
-                    (consistentReadParam == null ? " (not specified, using DynamoDB default)" : " (explicitly configured)"));
-        }
+        logger.info("DynamoDB tracking module initialized with consistent_read_param={}, consistent_read={}", consistentReadParam, consistentRead);
     }
 
     @Override
@@ -232,7 +225,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
                 getParameters());
 
         // Initialize Enhanced Client
-        enhancedClient = DynamoDbEnhancedClient.builder()
+        DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dbHandler.getDynamoDbClient())
                 .build();
 
@@ -240,7 +233,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
         table = enhancedClient.table(tableName, TableSchema.fromBean(MessageMetadata.class));
 
         isRunning = true;
-        logger.info("DynamoDB tracking module started with table: " + tableName);
+        logger.info("DynamoDB tracking module started with table: {}", tableName);
     }
 
     @Override
@@ -260,14 +253,11 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
                 failures.add(this.getClass().getSimpleName() + " - DynamoDB client not initialized");
                 return false;
             }
-
             // Try a simple get operation to verify connectivity
             table.describeTable();
             return true;
-
         } catch (Exception e) {
-            failures.add(this.getClass().getSimpleName() +
-                    " - Failed to check DynamoDB tracking module: " + e.getMessage());
+            failures.add(this.getClass().getSimpleName() + " - Failed to check DynamoDB tracking module: " + e.getMessage());
             return false;
         }
     }
@@ -292,7 +282,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
 
             return table.getItem(request);
         } catch (Exception e) {
-            logger.trace("Message not found (this is normal for new records): " + msgId);
+            logger.trace("Message not found (this is normal for new records): {}", msgId);
             return null;
         }
     }
