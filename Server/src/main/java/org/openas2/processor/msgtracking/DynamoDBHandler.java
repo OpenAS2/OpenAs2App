@@ -33,22 +33,20 @@ class DynamoDBHandler implements IDBHandler {
     @Nullable
     private DynamoDbClient dynamoDbClient = null;
 
-    private String tableName = null;
     private String awsRegion = null;
 
     /**
      * Creates DynamoDB client with provided credentials and configuration.
      *
      * @param connectString Not used for DynamoDB (table name passed in params)
-     * @param userName AWS Access Key ID (can be null to use default credentials)
-     * @param pwd AWS Secret Access Key (can be null to use default credentials)
+     * @param userName      AWS Access Key ID (can be null to use default credentials)
+     * @param pwd           AWS Secret Access Key (can be null to use default credentials)
      * @throws OpenAS2Exception if client creation fails
      */
     @Override
     public void createConnectionPool(String connectString, String userName, String pwd) throws OpenAS2Exception {
         if (dynamoDbClient != null) {
-            throw new OpenAS2Exception(
-                "DynamoDB client already initialized. Cannot create a new client. Stop current one first.");
+            throw new OpenAS2Exception("DynamoDB client already initialized. Cannot create a new client. Stop current one first.");
         }
 
         try {
@@ -74,7 +72,7 @@ class DynamoDBHandler implements IDBHandler {
             }
 
             dynamoDbClient = builder.build();
-            logger.info("DynamoDB client initialized successfully for region: " + awsRegion);
+            logger.info("DynamoDB client initialized successfully for region: {}", awsRegion);
 
         } catch (Exception e) {
             throw new OpenAS2Exception("Failed to initialize DynamoDB client: " + e.getMessage(), e);
@@ -85,9 +83,9 @@ class DynamoDBHandler implements IDBHandler {
      * Initializes the DynamoDB handler with configuration parameters.
      *
      * @param jdbcConnectString Not used for DynamoDB
-     * @param dbUser AWS Access Key ID (can be null)
-     * @param dbPwd AWS Secret Access Key (can be null)
-     * @param params Configuration parameters including table_name, aws_region, dynamodb_endpoint
+     * @param dbUser            AWS Access Key ID (can be null)
+     * @param dbPwd             AWS Secret Access Key (can be null)
+     * @param params            Configuration parameters including table_name, aws_region, dynamodb_endpoint
      * @throws OpenAS2Exception if initialization fails
      */
     @Override
@@ -95,7 +93,7 @@ class DynamoDBHandler implements IDBHandler {
             throws OpenAS2Exception {
 
         // Extract DynamoDB-specific parameters
-        tableName = params.get("table_name");
+        String tableName = params.get(DbTrackingModule.PARAM_TABLE_NAME);
         if (tableName == null || tableName.isEmpty()) {
             tableName = "msg_metadata"; // Default table name
         }
@@ -112,18 +110,18 @@ class DynamoDBHandler implements IDBHandler {
         // If custom endpoint is specified (for local DynamoDB testing)
         String endpoint = params.get("dynamodb_endpoint");
         if (endpoint != null && !endpoint.isEmpty()) {
-            logger.info("Using custom DynamoDB endpoint: " + endpoint);
+            logger.info("Using custom DynamoDB endpoint: {}", endpoint);
             dynamoDbClient.close();
             dynamoDbClient = DynamoDbClient.builder()
-                .region(Region.of(awsRegion))
-                .endpointOverride(URI.create(endpoint))
-                .credentialsProvider(dbUser != null && dbPwd != null
-                    ? StaticCredentialsProvider.create(AwsBasicCredentials.create(dbUser, dbPwd))
-                    : DefaultCredentialsProvider.create())
-                .build();
+                    .region(Region.of(awsRegion))
+                    .endpointOverride(URI.create(endpoint))
+                    .credentialsProvider(dbUser != null && dbPwd != null
+                            ? StaticCredentialsProvider.create(AwsBasicCredentials.create(dbUser, dbPwd))
+                            : DefaultCredentialsProvider.create())
+                    .build();
         }
 
-        logger.info("DynamoDB handler started with table: " + tableName + " in region: " + awsRegion);
+        logger.info("DynamoDB handler started with table: {}  in region:  {}", tableName, awsRegion);
     }
 
     /**
@@ -158,7 +156,7 @@ class DynamoDBHandler implements IDBHandler {
      * Use getDynamoDbClient() instead.
      *
      * @return null (DynamoDB doesn't use JDBC Connection)
-     * @throws SQLException Not thrown
+     * @throws SQLException     Not thrown
      * @throws OpenAS2Exception if client is not initialized
      */
     @Override
@@ -185,20 +183,11 @@ class DynamoDBHandler implements IDBHandler {
     }
 
     /**
-     * Gets the configured table name.
-     *
-     * @return the DynamoDB table name
-     */
-    public String getTableName() {
-        return tableName;
-    }
-
-    /**
      * Shuts down the DynamoDB client.
      *
      * @param connectString Not used for DynamoDB
      * @return true if shutdown was successful
-     * @throws SQLException Not thrown
+     * @throws SQLException     Not thrown
      * @throws OpenAS2Exception if shutdown fails
      */
     @Override

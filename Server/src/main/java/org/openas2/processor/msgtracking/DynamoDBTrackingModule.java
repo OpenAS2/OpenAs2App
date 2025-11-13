@@ -33,7 +33,6 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
 
     public static final String PARAM_AWS_ACCESS_KEY = "aws_access_key_id";
     public static final String PARAM_AWS_SECRET_KEY = "aws_secret_access_key";
-    public static final String PARAM_TABLE_NAME = "table_name";
     public static final String PARAM_CONSISTENT_READ = "consistent_read";
 
     private static final Logger logger = LoggerFactory.getLogger(DynamoDBTrackingModule.class);
@@ -48,7 +47,7 @@ public class DynamoDBTrackingModule extends BaseMsgTrackingModule {
     @Override
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
-        tableName = getParameter(PARAM_TABLE_NAME, "msg_metadata");
+        tableName = getParameter(DbTrackingModule.PARAM_TABLE_NAME, "msg_metadata");
 
         // Configure read consistency (optional - defaults to eventually consistent if not specified)
         String consistentReadParam = getParameter(PARAM_CONSISTENT_READ, null);
