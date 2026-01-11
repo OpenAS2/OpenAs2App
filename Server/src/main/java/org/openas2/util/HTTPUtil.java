@@ -430,7 +430,9 @@ public class HTTPUtil {
         String selfSignedCN = System.getProperty("org.openas2.cert.TrustSelfSignedCN");
         boolean isTrustSelfSignedCNHandling = (selfSignedCN != null && selfSignedCN.contains(urlObj.getHost()))?true:false;
 
-        LOG.warn("SSL factory building using:\n\tisExtendedSelfsignedTrustCheck: {}\n\toverrideSslChecks: {}\n\tisTrustSelfSignedCNHandling: {}", isExtendedSelfsignedTrustCheck, overrideSslChecks, isTrustSelfSignedCNHandling);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("SSL factory building values: isExtendedSelfsignedTrustCheck - {}  ::: overrideSslChecks - {} ::: isTrustSelfSignedCNHandling - {}", isExtendedSelfsignedTrustCheck, overrideSslChecks, isTrustSelfSignedCNHandling);
+        }
         // Find a keystore to verify the self signed certs against if required
         // Even if TrustSelfSignedCN is passed, use the custom keystore if it is defined
         KeyStore selfsignedCertsKeystore = null;
@@ -447,7 +449,9 @@ public class HTTPUtil {
             try {
                 // Trust own CA and all self-signed certs
                 sslcontext = SSLContexts.custom().loadTrustMaterial(selfsignedCertsKeystore, new TrustSelfSignedStrategy()).build();
-                LOG.debug("SSL context built using self signed trust store...");
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("SSL context built using self signed trust store...");
+                }
             } catch (Exception e) {
                 throw new OpenAS2Exception("Attempted connection using self-signed manager failed connecting to : " + urlObj.toString(), e);
             }

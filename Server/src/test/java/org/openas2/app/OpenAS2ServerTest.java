@@ -1,20 +1,15 @@
 package org.openas2.app;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.PrefixFileFilter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.openas2.ComponentNotFoundException;
 import org.openas2.TestPartner;
 import org.openas2.TestResource;
-import org.openas2.XMLSession;
-import org.openas2.partner.Partnership;
-import org.openas2.partner.PartnershipFactory;
-import org.openas2.processor.receiver.DirectoryPollingModule;
+import org.openas2.TestUtils;
 import org.openas2.util.Properties;
 
 import java.io.File;
@@ -23,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -64,19 +58,19 @@ public class OpenAS2ServerTest {
             // Get the data folder from Properties before starting the other server as it overwrites the Properties
             dataFolders[0] = Properties.getProperty("storageBaseDir", null);
             // Iterate over the partnerships picking the first one that has a directory poller
-            server1PartnerSender = getFromFirstSendingPartnership(server1);
+            server1PartnerSender = TestUtils.getFromFirstSendingPartnership(server1);
             // Use the 2 partners in the initial partnership to get other parnerships to test both way transfer
             // Get a receiver partnership for the matching partners in the sender partnership for server A
-            server1PartnerReceiver = getFromPartnerIds(server1, server1PartnerSender.getPartnerAS2Id(), server1PartnerSender.getAs2Id());
+            server1PartnerReceiver = TestUtils.getFromPartnerIds(server1, server1PartnerSender.getPartnerAS2Id(), server1PartnerSender.getAs2Id());
 
             System.setProperty("SERVER2_PARTNERSHIP_FILE", TestResource.getResource("server2-partnerships"));
             String props2File = TestResource.getResource("server2-props");
             System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, props2File);
             server2 = new OpenAS2Server.Builder().run(configFile);
             // Set up the receiver fin server B for the sender from server A
-            server2PartnerReceiver = getFromPartnerIds(server2, server1PartnerSender.getAs2Id(), server1PartnerSender.getPartnerAS2Id());
+            server2PartnerReceiver = TestUtils.getFromPartnerIds(server2, server1PartnerSender.getAs2Id(), server1PartnerSender.getPartnerAS2Id());
             // Get a sender partnership for the matching partners in the receiver partnership for server B
-            server2PartnerSender = getFromPartnerIds(server2, server1PartnerSender.getPartnerAS2Id(), server1PartnerSender.getAs2Id());
+            server2PartnerSender = TestUtils.getFromPartnerIds(server2, server1PartnerSender.getPartnerAS2Id(), server1PartnerSender.getAs2Id());
             dataFolders[1] = Properties.getProperty("storageBaseDir", null);
             executorService = Executors.newFixedThreadPool(20);
         } catch (FileNotFoundException e) {
@@ -179,56 +173,6 @@ public class OpenAS2ServerTest {
 
         File sentMDN = waitForFile(testMessage.fromPartner.getSentMDNs(), testMessage.fileName, 10, TimeUnit.SECONDS);
         assertThat("Verify sent MDN was stored by " + testMessage.fromPartner.getName(), sentMDN.exists(), is(true));
-    }
-
-    /**
-     * Finds the first partnership in the list for the server instance that has a directory poller and builds a TestPartner object using that
-     * @param server - the instance of an OpenAS2 server
-     * @return - a TestPartner instance based on the partnership found
-     * @throws Exception
-     */
-    private static TestPartner getFromFirstSendingPartnership(OpenAS2Server server) throws Exception {
-        PartnershipFactory pf = server.getSession().getPartnershipFactory();
-        List<Partnership> partnerships = pf.getPartnerships();
-        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
-            Partnership partnership = (Partnership) iterator.next();
-            DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
-            if (pollerModule != null) {
-                return new TestPartner(server, partnership, pollerModule);
-            }
-        }
-        return null;
-    }
-
-    private static TestPartner getFromPartnerIds(OpenAS2Server server, String senderAs2Id, String receiverAs2Id) throws Exception {
-        PartnershipFactory pf = server.getSession().getPartnershipFactory();
-        List<Partnership> partnerships = pf.getPartnerships();
-        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
-            Partnership partnership = (Partnership) iterator.next();
-            if (senderAs2Id.equals(partnership.getSenderID(Partnership.PID_AS2)) && receiverAs2Id.equals(partnership.getReceiverID(Partnership.PID_AS2))) {
-                DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
-                return new TestPartner(server, partnership, pollerModule);
-            }
-        }
-        return null;
-    }
-
-    private static DirectoryPollingModule getPollingModule(XMLSession session, Partnership partnership) throws ComponentNotFoundException {
-        DirectoryPollingModule dirPollMod = session.getPartnershipPoller(partnership.getName());
-        if (dirPollMod != null) {
-            return dirPollMod;
-        }
-        // Try to find a module defined poller since there is no matching poller by name. (config.xml defined pollers do not have the correct partnership name in the poller cache)
-        return session.getPartnershipPoller(partnership.getSenderID(Partnership.PID_AS2), partnership.getReceiverID(Partnership.PID_AS2));        
-    }
-
-    @SuppressWarnings("unused")
-    private void setPartnershipToAsync(Partnership partnership) throws Exception {
-        if (partnership != null) {
-            partnership.setAttribute(Partnership.PA_AS2_RECEIPT_OPTION, "http://localhost:20081");
-        } else {
-            throw new Exception("Could not set partnership to ASYNC mode");
-        }
     }
 
     private static class TestMessage {

@@ -85,7 +85,13 @@ public class AS2Util {
         return id;
     }
 
-    public static void parseMDN(Message msg, X509Certificate receiver) throws OpenAS2Exception {
+    /**
+     * @param msg- the AS2 message that is being processed
+     * @param receiver - the receivers X509 certificate
+     * @return - a boolean indicating if the extracted response indicated an issue processing the AS2 message that was sent. Message state is NOT updated in this method.
+     * @throws OpenAS2Exception - thrown if there are issues trying to extract the response from the partner
+     */
+    public static boolean parseMDN(Message msg, X509Certificate receiver) throws OpenAS2Exception {
         Logger logger = LoggerFactory.getLogger(AS2Util.class);
         MessageMDN mdn = msg.getMDN();
         MimeBodyPart mainPart = mdn.getData();
@@ -106,13 +112,12 @@ public class AS2Util {
         } catch (Exception e1) {
             logger.error("Error parsing MDN: " + org.openas2.util.Logging.getExceptionMsg(e1), e1);
             throw new OpenAS2Exception("Failed to verify signature of received MDN.");
-
         }
 
         try {
             MimeMultipart reportParts = new MimeMultipart(mainPart.getDataHandler().getDataSource());
 
-            if (reportParts != null) {
+            if (reportParts != null && reportParts.getCount() > 0) {
                 ContentType reportType = new ContentType(reportParts.getContentType());
                 Charset charset = getCharset(reportType, msg, logger);
 
@@ -141,11 +146,27 @@ public class AS2Util {
                 } else {
                     // No multipart/report so now what?
                     logger.warn("MDN received from partner but did not contain a multipart/report section. " + msg.getLogMsgID());
+                    int reportCount = reportParts.getCount();
+                    MimeBodyPart reportPart;
+                    for (int j = 0; j < reportCount; j++) {
+                        reportPart = (MimeBodyPart) reportParts.getBodyPart(j);
+                        logger.warn("Received MimeBodyPart from Multipart for inbound MDN: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(reportPart, true));
+                    }
+                    return false;
                 }
+            } else {
+                logger.error("The received MimeBodyPart for inbound MDN did not contain a standard MDN response. This is probably because an error occurred on the remote side processing the message. Review the response below for possible reasons: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(mainPart, true));                
+                return false;
             }
         } catch (Exception e) {
+            try {
+                logger.error("Failed to extract report from received MimeBodyPart for inbound MDN: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(mainPart, true));
+            } catch (Exception e1) {
+                // Do nothing
+            }
             throw new OpenAS2Exception("Failed to parse MDN: " + org.openas2.util.Logging.getExceptionMsg(e), e);
         }
+        return true;
     }
 
     private static String getMimeBodyPartText(MimeBodyPart part, Charset charset) throws MessagingException, IOException {
@@ -180,7 +201,7 @@ public class AS2Util {
      * @param msg - the original message sent to the partner that the MDN
      *            relates to
      * @return true if mdn processed
-     * @throws DispositionException - something wrong t=with the Disposition
+     * @throws DispositionException - something wrong with the Disposition
      *                              structure
      * @throws OpenAS2Exception     - an internally handled error has occurred
      */
@@ -473,12 +494,11 @@ public class AS2Util {
      * @param session     - Session object
      * @param sourceClass - who invoked this method
 
-     * @return partnerIdentificationProblem - boolean indicating that the partnership for this MDN not identified
+     * @return mdnResponseIssue - boolean indicating that the MDN processing identified an issue.
 
      * @throws OpenAS2Exception - an internally handled error has occurred
      * @throws IOException      - the IO system has a problem
      * 
-     * TODO:: Possibly do away with returning a boolean as it does not add value ATM
      */
     public static boolean processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
         Logger logger = LoggerFactory.getLogger(AS2Util.class);
@@ -515,7 +535,8 @@ public class AS2Util {
         } catch (MessagingException e1) {
             msg.setLogMsg("Failed to create mimebodypart from received MDN data for partnership " + mdn.getPartnership().getName() + ": " + org.openas2.util.Logging.getExceptionMsg(e1));
             logger.error(msg.getLogMsg(), e1);
-            return AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
+            AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, new OpenAS2Exception(e1), true, false);
+            return true;
         }
         CertificateFactory cFx = session.getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
         String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
@@ -525,7 +546,12 @@ public class AS2Util {
         if (logger.isTraceEnabled()) {
             logger.trace("Parsing MDN: " + mdn.toString() + msg.getLogMsgID());
         }
-        AS2Util.parseMDN(msg, senderCert);
+        if (!AS2Util.parseMDN(msg, senderCert)) {
+            msg.setStatus(Message.MSG_STATUS_MSG_TERMINATED_IN_ERROR);
+            msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
+            msg.trackMsgState(session);
+            return false;
+        }
 
         if (isAsyncMDN) {
             getMetaData(msg, session);
@@ -533,12 +559,12 @@ public class AS2Util {
 
         msg.setStatus(Message.MSG_STATUS_MDN_VERIFY);
         if (logger.isTraceEnabled()) {
-            logger.trace("MDN parsed. \n    Payload file name: " + msg.getPayloadFilename() + "\n    Checking MDN report..." + msg.getLogMsgID());
+            logger.trace("MDN parsed.    Payload file name: " + msg.getPayloadFilename() + "\n    Checking MDN report..." + msg.getLogMsgID());
         }
         try {
             AS2Util.checkMDN(msg);
             /*
-             * If the MDN was successfully received send correct HTTP response irrespective
+             * If the MDN was successfully received, send correct HTTP response irrespective
              * of possible error conditions due to disposition errors or MIC mismatch
              */
             if (isAsyncMDN) {
@@ -592,7 +618,7 @@ public class AS2Util {
         logger.info(msg.getLogMsg());
 
         cleanupFiles(msg, false);
-        return true;
+        return false;
 
     }
 
@@ -652,6 +678,7 @@ public class AS2Util {
         getMetaData(msg, iFile);
     }
 
+    @SuppressWarnings("unchecked")
     public static void getMetaData(AS2Message msg, File inFile) throws OpenAS2Exception {
         Logger logger = LoggerFactory.getLogger(AS2Util.class);
         ObjectInputStream pifois;

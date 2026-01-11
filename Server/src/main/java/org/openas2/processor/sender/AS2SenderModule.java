@@ -234,12 +234,11 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             msg.setStatus(Message.MSG_STATUS_MDN_PROCESS_INIT);
             try {
-                @SuppressWarnings("unused")
-                boolean partnerIdentificationProblem = AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
-                // Possibly a place for adding suspicious activity tracking here?
-                //  if (partnerIdentificationProblem) {
-                //       trackSuspiciousActivity(msg);
-                //  }
+                // Assume that appropriate logging and state handling was done upstream if an error occurred so only log state change for success
+                boolean mdnResponseIssue = AS2Util.processMDN((AS2Message) msg, response.getBody(), null, false, getSession(), this.getClass());
+                if (mdnResponseIssue) {
+                    logger.warn("There was an issue identified processing the response from the partner. Review upstream log messages for details on the problem.");
+                }
             } catch (Exception e) {
                 /* Processing of the MDN would have done extensive error handling so only log an error if the error
                  * is an not OpenAS2 custom error.
