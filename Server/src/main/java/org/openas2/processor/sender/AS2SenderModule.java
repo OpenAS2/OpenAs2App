@@ -1,21 +1,16 @@
 package org.openas2.processor.sender;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
 import org.apache.commons.io.filefilter.AgeFileFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.util.MimeUtil;
-import org.openas2.message.AS2Message;
-import org.openas2.message.AS2MessageMDN;
-import org.openas2.message.DataHistoryItem;
-import org.openas2.message.FileAttribute;
-import org.openas2.message.Message;
-import org.openas2.message.MessageMDN;
-import org.openas2.message.NetAttribute;
+import org.openas2.message.*;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageParameters;
@@ -25,19 +20,11 @@ import org.openas2.processor.Processor;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.schedule.HasSchedule;
-import org.openas2.util.AS2Util;
-import org.openas2.util.DateUtil;
-import org.openas2.util.DispositionOptions;
-import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtil;
-import org.openas2.util.Properties;
-import org.openas2.util.ResponseWrapper;
+import org.openas2.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
 import javax.net.ssl.SSLHandshakeException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,9 +43,10 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
 
     private Logger logger = LoggerFactory.getLogger(AS2SenderModule.class);
 
-    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
-    *
-    */
+    /**
+     * TODO: Remove this when module config enforces setting the action so that the super method does all the work
+     *
+     */
     public String getModuleAction() {
         String action = super.getModuleAction();
         if (action == null) {
@@ -243,7 +231,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
                 /* Processing of the MDN would have done extensive error handling so only log an error if the error
                  * is an not OpenAS2 custom error.
                  */
-                if (!(e instanceof OpenAS2Exception)){
+                if (!(e instanceof OpenAS2Exception)) {
                     /*
                      * Something unexpected (assumes a resend was not successfully initiated)
                      */
@@ -555,7 +543,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             }
             oos = new ObjectOutputStream(new FileOutputStream(pendingInfoFile));
             oos.writeObject(msg.getCalculatedMIC());
-            int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
+            int retries = Integer.parseInt((String) msg.getOption(ResenderModule.OPTION_RETRIES));
             oos.writeObject("" + retries);
 
             if (logger.isInfoEnabled()) {
@@ -624,7 +612,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             logger.warn("Failed to retrieve the name of the pending info folder for sent messages in trying to run the failed message detection method.", e);
             return;
         }
-        File pendingDir=null;
+        File pendingDir = null;
         try {
             pendingDir = IOUtil.getDirectoryFile(dir);
         } catch (IOException e) {
@@ -658,7 +646,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
                 AS2Util.cleanupFiles(msg, true);
                 // Logger significant msg state
                 msg.setOption("STATE", Message.MSG_STATE_MDN_ASYNC_RECEIVE_FAIL);
-                msg.trackMsgState(getSession());                
+                msg.trackMsgState(getSession());
             }
         }
     }

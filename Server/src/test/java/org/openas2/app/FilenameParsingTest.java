@@ -12,8 +12,9 @@ import org.openas2.message.AS2Message;
 import org.openas2.message.FileAttribute;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
-import static org.hamcrest.Matchers.equalTo;
+
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
@@ -31,8 +32,8 @@ public class FilenameParsingTest extends BaseServerSetup {
 
     @BeforeAll
     public void setup() throws Exception {
-    	super.createFileSystemResources();
-    	super.setup();
+        super.createFileSystemResources();
+        super.setup();
         try {
             simpleTestMsg = new AS2Message();
             simpleTestMsg.setAttribute(FileAttribute.MA_FILENAME, testFileName);
@@ -59,7 +60,8 @@ public class FilenameParsingTest extends BaseServerSetup {
 
     @AfterAll
     public void tearDown() throws Exception {
-        super.tearDown();;
+        super.tearDown();
+        ;
     }
 
     @Test

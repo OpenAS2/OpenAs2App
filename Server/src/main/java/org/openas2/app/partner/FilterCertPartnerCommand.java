@@ -42,7 +42,7 @@ public class FilterCertPartnerCommand extends AliasedPartnershipsCommand {
                 //if (partName.equals(x509_alias)) {
                 @SuppressWarnings("unchecked")
                 Map<Object, Object> partDefs = (Map<Object, Object>) partFx.getPartners().get(partName);
-                if(partDefs.getOrDefault("x509_alias", x509_alias).equals(x509_alias)){
+                if (partDefs.getOrDefault("x509_alias", x509_alias).equals(x509_alias)) {
                     //System.out.println("%%%%%%%% " + partDefs);
                     // String out = name + "\n" + partDefs.toString();
                     return new CommandResult(CommandResult.TYPE_OK, partDefs);

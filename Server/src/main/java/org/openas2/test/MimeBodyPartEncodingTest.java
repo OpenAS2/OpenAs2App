@@ -1,5 +1,8 @@
 package org.openas2.test;
 
+import jakarta.activation.DataHandler;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 import org.openas2.Session;
 import org.openas2.XMLSession;
 import org.openas2.cert.CertificateFactory;
@@ -13,15 +16,7 @@ import org.openas2.partner.Partnership;
 import org.openas2.util.AS2Util;
 import org.openas2.util.ByteArrayDataSource;
 
-import jakarta.activation.DataHandler;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeBodyPart;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Map;

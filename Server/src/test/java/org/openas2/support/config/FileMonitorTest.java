@@ -16,11 +16,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by nick on 08.04.17.
@@ -35,7 +31,7 @@ public class FileMonitorTest {
 
     @Test
     public void shouldTriggerListenersWhenFileChanged() throws Exception {
-    	tmp = Files.createTempDirectory("testResources").toFile();
+        tmp = Files.createTempDirectory("testResources").toFile();
         File fileToObserve = spy(Files.createFile(Paths.get(tmp.toString(), "test.txt")).toFile());
         doReturn(true).when(fileToObserve).exists();
         doReturn(true).when(fileToObserve).isFile();

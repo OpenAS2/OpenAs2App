@@ -1,7 +1,6 @@
 package org.openas2.processor.receiver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.mail.internet.MimeBodyPart;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.AS2Message;
 import org.openas2.message.AS2MessageMDN;
@@ -11,8 +10,8 @@ import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.util.AS2Util;
 import org.openas2.util.HTTPUtil;
-
-import jakarta.mail.internet.MimeBodyPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -64,7 +63,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                         HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
                     } catch (IOException e1) {
                     }
-                    msg.setLogMsg("Error receiving asynchronous MDN. There is no data in the receivd MDN: " +  getClientInfo(s) + ":: " + msg.getLogMsgID());
+                    msg.setLogMsg("Error receiving asynchronous MDN. There is no data in the receivd MDN: " + getClientInfo(s) + ":: " + msg.getLogMsgID());
                     logger.error(msg.getLogMsg());
                     return;
                 }
@@ -97,7 +96,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                 }
                 if (logger.isInfoEnabled()) {
                     logger.info("Partnership lookup failed for MDN received from: " + msg.getHeader("AS2-To")
-                        + "  MDN is targeting partner: " + msg.getHeader("AS2-From"));
+                            + "  MDN is targeting partner: " + msg.getHeader("AS2-From"));
                 }
                 return;
             }
@@ -120,7 +119,7 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
                 /* Processing of the MDN would have done extensive error handling so only log an error if the error
                  * is an not OpenAS2 custom error.
                  */
-                if (!(e instanceof OpenAS2Exception)){
+                if (!(e instanceof OpenAS2Exception)) {
                     /*
                      * Something unexpected (assumes a resend was not successfully initiated)
                      */
@@ -134,12 +133,12 @@ public class AS2MDNReceiverHandler implements NetModuleHandler {
             }
 
         } catch (Exception e) {
-                msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Processing will be aborted.");
-                logger.error(msg.getLogMsg(), e);
-                try {
-                    HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
-                } catch (IOException e1) {
-                }
+            msg.setLogMsg("Unhandled error condition receiving asynchronous MDN. Processing will be aborted.");
+            logger.error(msg.getLogMsg(), e);
+            try {
+                HTTPUtil.sendHTTPResponse(s.getOutputStream(), HttpURLConnection.HTTP_BAD_REQUEST, null);
+            } catch (IOException e1) {
+            }
         }
 
     }

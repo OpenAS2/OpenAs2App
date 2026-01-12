@@ -1,8 +1,9 @@
 package org.openas2.util;
 
+import jakarta.mail.Header;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetHeaders;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -32,13 +33,15 @@ import org.apache.http.ssl.SSLContexts;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 import org.openas2.processor.sender.HttpSenderModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.mail.Header;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetHeaders;
 import javax.net.ssl.*;
 import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.ProxySelector;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -243,8 +246,8 @@ public class HTTPUtil {
             } else {
                 HTTPUtil.sendHTTPResponse(outStream, HttpURLConnection.HTTP_LENGTH_REQUIRED, null);
                 if ("true".equals(Properties.getProperty(Properties.LOG_INVALID_HTTP_REQUEST, "true"))) {
-                  Logger logger = LoggerFactory.getLogger(HTTPUtil.class);
-                  logger.warn("The request either contained no data or has issues with the Transfer-Encoding or Content-Length: : " + request.get(0) + " " + request.get(1) + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;"));
+                    Logger logger = LoggerFactory.getLogger(HTTPUtil.class);
+                    logger.warn("The request either contained no data or has issues with the Transfer-Encoding or Content-Length: : " + request.get(0) + " " + request.get(1) + "\n\tHeaders: " + printHeaders(msg.getHeaders().getAllHeaders(), "==", ";;"));
                 }
                 return null;
             }
@@ -347,8 +350,8 @@ public class HTTPUtil {
             httpBuilder.setConnectionManager(
                     new BasicHttpClientConnectionManager(
                             RegistryBuilder.<ConnectionSocketFactory>create()
-                            .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                            .register("https", sslCsf).build()
+                                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                                    .register("https", sslCsf).build()
                     )
             );
         } else {
@@ -357,7 +360,7 @@ public class HTTPUtil {
 
         // Check if Content-Length was added and remove it so it as it is managed by the HttpRequest when processing the entity
         long contentLength = -1; // Initialise as unknown
-        String[] contentLengthValues = headers==null?null:headers.getHeader(HTTP.CONTENT_LEN);
+        String[] contentLengthValues = headers == null ? null : headers.getHeader(HTTP.CONTENT_LEN);
         if (contentLengthValues != null && contentLengthValues.length > 0) {
             contentLength = Long.parseLong(contentLengthValues[0]);
             headers.removeHeader(HTTP.CONTENT_LEN);
@@ -428,7 +431,7 @@ public class HTTPUtil {
         boolean overrideSslChecks = "true".equalsIgnoreCase((String) options.get(HTTPUtil.HTTP_PROP_OVERRIDE_SSL_CHECKS));
         // The original method where hostnames to be trusted can be passed in a system property
         String selfSignedCN = System.getProperty("org.openas2.cert.TrustSelfSignedCN");
-        boolean isTrustSelfSignedCNHandling = (selfSignedCN != null && selfSignedCN.contains(urlObj.getHost()))?true:false;
+        boolean isTrustSelfSignedCNHandling = (selfSignedCN != null && selfSignedCN.contains(urlObj.getHost())) ? true : false;
 
         if (LOG.isTraceEnabled()) {
             LOG.trace("SSL factory building values: isExtendedSelfsignedTrustCheck - {}  ::: overrideSslChecks - {} ::: isTrustSelfSignedCNHandling - {}", isExtendedSelfsignedTrustCheck, overrideSslChecks, isTrustSelfSignedCNHandling);
@@ -469,14 +472,14 @@ public class HTTPUtil {
                     return true;
                 }
             };
-        } else if(selfsignedCertsKeystore != null) {
+        } else if (selfsignedCertsKeystore != null) {
             SelfSignedTrustManager tm = new SelfSignedTrustManager((X509TrustManager) tmf.getTrustManagers()[0]);
             if (isTrustSelfSignedCNHandling) {
                 tm.setTrustCN(selfSignedCN);
             }
             tm.setCustomSelfSignedHandling(isExtendedSelfsignedTrustCheck);
             tm.setCustomTrustKeyStore(selfsignedCertsKeystore);
-            if(isExtendedSelfsignedTrustCheck) {
+            if (isExtendedSelfsignedTrustCheck) {
                 hnv = new HostnameVerifier() {
                     @Override
                     public boolean verify(String hostname, SSLSession session) {
@@ -484,7 +487,7 @@ public class HTTPUtil {
                             // Check if the certificate's fingerprint is cached or if it exists in the custom keystore
                             X509Certificate[] certs = (X509Certificate[]) session.getPeerCertificates();
                             String fingerprint = tm.getCertificateFingerprint(certs[0]);
-            
+
                             if (cachedFingerprints.contains(fingerprint) || tm.isCertificateInCustomKeystore(certs[0], fingerprint)) {
                                 LOG.info("Hostname verification skipped for trusted certificate: " + certs[0].getSubjectX500Principal().getName());
                                 return true;
@@ -492,7 +495,7 @@ public class HTTPUtil {
                         } catch (Exception e) {
                             LOG.error("Hostname verification failed: " + e.getMessage(), e);
                         }
-    
+
                         // fallback to default hostname verifier
                         return SSLConnectionSocketFactory.getDefaultHostnameVerifier().verify(hostname, session);
                     }
@@ -705,7 +708,7 @@ public class HTTPUtil {
         System.setProperty(proxyPortKey, proxyPort);
         System.setProperty(proxyNonProxyHostsKey, proxyNonProxyHosts);
 
-        // Don't set an explicit proxy here or else "http.nonProxyHosts" won't be respected. 
+        // Don't set an explicit proxy here or else "http.nonProxyHosts" won't be respected.
         // Other proxy configurations like https.proxyHost will be read by the DefaultProxySelector.
         // See https://issues.apache.org/jira/browse/HTTPCLIENT-1617
         builder.setProxy(null);
@@ -721,9 +724,9 @@ public class HTTPUtil {
             builder.setDefaultCredentialsProvider(credsProvider);
         }
     }
-    
+
     /**
-     * @param key key like "http.proxyHost"
+     * @param key      key like "http.proxyHost"
      * @param fallback default value like null
      * @return value from the properties file or as first fallback the value from the system properties or as second fallback the fallback value
      */
@@ -761,7 +764,7 @@ public class HTTPUtil {
 
             if (chain.length == 1) {
                 // check if certificate is in the truststore or is cached - IF SSL_KEYSTORE_PATH && SSL_KEYSTORE PASSWORD ARE SET
-                if(this.isExtendedSelfsignedTrustCheck) {
+                if (this.isExtendedSelfsignedTrustCheck) {
 
                     String fingerprint = getCertificateFingerprint(chain[0]);
 
@@ -770,7 +773,7 @@ public class HTTPUtil {
                         LOG.info("Certificate validation passed (cached) for " + chain[0].getSubjectX500Principal().getName());
                         return;
                     }
-            
+
                     // Proceed with custom keystore handling if not cached
                     if (isCertificateInCustomKeystore(chain[0], fingerprint)) {
                         LOG.info("Custom self-signed certificate validation passed for " + chain[0].getSubjectX500Principal().getName());

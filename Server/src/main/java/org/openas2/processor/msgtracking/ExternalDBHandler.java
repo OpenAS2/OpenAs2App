@@ -3,23 +3,21 @@
  */
 package org.openas2.processor.msgtracking;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.openas2.OpenAS2Exception;
-import org.openas2.util.Properties;
-
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
 import jakarta.annotation.Nullable;
+import org.openas2.OpenAS2Exception;
+import org.openas2.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -34,8 +32,8 @@ class ExternalDBHandler extends DbTrackingModule implements IDBHandler {
         // Check that a connection pool is not already running
         if (ds != null) {
             throw new OpenAS2Exception(
-                "Connection pool already initialized. Cannot create a new connection pool. Stop current one first. DB connect string:"
-                + connectString + " :: Active pool connect string: " + this.connectString);
+                    "Connection pool already initialized. Cannot create a new connection pool. Stop current one first. DB connect string:"
+                            + connectString + " :: Active pool connect string: " + this.connectString);
         }
         this.connectString = connectString;
 
@@ -61,10 +59,10 @@ class ExternalDBHandler extends DbTrackingModule implements IDBHandler {
 
     public void start(String connectString, String userName, String pwd, Map<String, String> params) throws OpenAS2Exception {
         createConnectionPool(connectString, userName, pwd);
-            Enumeration<Driver> drivers = DriverManager.getDrivers();
-            Driver driver = drivers.nextElement();// home into first and the only
-            Logger logger = LoggerFactory.getLogger(getName());
-            logger.info("Using JDBC driver: " + driver.getClass().getName());
+        Enumeration<Driver> drivers = DriverManager.getDrivers();
+        Driver driver = drivers.nextElement();// home into first and the only
+        Logger logger = LoggerFactory.getLogger(getName());
+        logger.info("Using JDBC driver: " + driver.getClass().getName());
     }
 
     public void stop() {

@@ -7,9 +7,9 @@ import org.openas2.cmd.CommandRegistry;
 import org.openas2.cmd.processor.BaseCommandProcessor;
 import org.openas2.lib.util.StringEnvVarReplacer;
 import org.openas2.lib.xml.PropertyReplacementFilter;
+import org.openas2.message.MessageFactory;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.ParameterParser;
-import org.openas2.message.MessageFactory;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
@@ -25,11 +25,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.transform.TransformerException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
@@ -135,10 +131,10 @@ public class XMLSession extends BaseSession {
      * Then loads system properties into the OpenAS2 properties container.
      * Then adds the application title and version.
      * Finally checks if an additional property file was provided and loads those.
-     * 
+     *
      * @param propNode - the "properties" element of the configuration file containing property values
-     * @throws IOException 
-     * @throws OpenAS2Exception 
+     * @throws IOException
+     * @throws OpenAS2Exception
      */
     private void loadProperties(Node propNode) throws IOException, OpenAS2Exception {
         LOGGER.info("Loading properties...");
@@ -201,11 +197,11 @@ public class XMLSession extends BaseSession {
                 Properties.setProperty(key, parsedVal);
             }
         }
-        /* Put system properties in afterwards to avoid parsing embedded properties that may have 
+        /* Put system properties in afterwards to avoid parsing embedded properties that may have
            a $ sign in the value but only if the key does not exist.
         */
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        Map<String, String> sysProps = (Map)System.getProperties();
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        Map<String, String> sysProps = (Map) System.getProperties();
         for (Map.Entry<String, String> entry : sysProps.entrySet()) {
             String key = entry.getKey();
             if (Properties.getProperty(key, null) == null) {
@@ -237,7 +233,7 @@ public class XMLSession extends BaseSession {
         return this.basePollerConfigNode;
     }
 
-   private void loadCommands(Node rootNode) throws OpenAS2Exception {
+    private void loadCommands(Node rootNode) throws OpenAS2Exception {
         Component component = XMLUtil.getComponent(rootNode, this);
         if (component == null) {
             // Must be disable so do nothing
@@ -368,6 +364,7 @@ public class XMLSession extends BaseSession {
         return false;
 
     }
+
     private void getManifestAttributes() throws OpenAS2Exception {
         manifestAttributes = OpenAS2Server.getManifestAttributes();
     }

@@ -1,14 +1,11 @@
 package org.openas2.upgrades;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringReader;
-import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import org.openas2.WrappedException;
+import org.openas2.XMLSession;
+import org.openas2.util.XMLUtil;
+import org.w3c.dom.*;
+import org.xml.sax.InputSource;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -21,17 +18,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
-
-import org.openas2.WrappedException;
-import org.openas2.XMLSession;
-import org.openas2.util.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.helpers.XMLFilterImpl;
+import java.io.*;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 
 public class MigratePollingModuleConfig {
@@ -43,7 +34,7 @@ public class MigratePollingModuleConfig {
     static Map<String, String> extractParameters(String encodedParams) throws Exception {
         StringTokenizer params = new StringTokenizer(encodedParams, "=,", false);
         String key;
-        Map<String, String>  map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<String, String>();
         //System.out.println("Procesing defaults parameter: " + encodedParams);
         //System.out.println("Tokens found: " + params.countTokens());
 
@@ -76,11 +67,11 @@ public class MigratePollingModuleConfig {
         if (nodeList.getLength() != 1) {
             throw new Exception("More than 1 " + XMLSession.EL_PARTNERSHIPS + " element found in config.xml file.");
         }
-        Element partnershipNode = (Element)nodeList.item(0);
+        Element partnershipNode = (Element) nodeList.item(0);
         root.removeChild(partnershipNode);
         root.appendChild(partnershipNode);
     }
-    
+
     static String getPartnerName(String as2Id) throws Exception {
         String partnerXpath = "//partner[@as2_id='" + as2Id + "']/@name";
         //System.out.println("Using Xpath for partner lookup: " + partnerXpath);
@@ -105,7 +96,7 @@ public class MigratePollingModuleConfig {
         // Evaluate expression result on XML document
         NodeList cfgFilePollerNodes = (NodeList) expr.evaluate(cfgDoc, XPathConstants.NODESET);
         System.out.println("Found " + cfgFilePollerNodes.getLength() + " poller nodes in config XML file ...");
-        for (int i=0; i < cfgFilePollerNodes.getLength(); i++) {
+        for (int i = 0; i < cfgFilePollerNodes.getLength(); i++) {
             Node cfgFilePollerNode = cfgFilePollerNodes.item(i);
             NamedNodeMap cfgFilePollerAttribs = cfgFilePollerNode.getAttributes();
             Node formatNode = cfgFilePollerAttribs.getNamedItem("format");
@@ -114,9 +105,9 @@ public class MigratePollingModuleConfig {
                 System.out.println("Ignoring generic poller node in config XML file ...");
                 continue;
             }
-            String partnerDef = ((Element)cfgFilePollerNode).getAttribute("defaults");
+            String partnerDef = ((Element) cfgFilePollerNode).getAttribute("defaults");
             //System.out.println(XMLUtil.toString(cfgFilePollerNode, true));
-            Map<String, String>  pollerMap = extractParameters(partnerDef);
+            Map<String, String> pollerMap = extractParameters(partnerDef);
             String senderAS2Id = pollerMap.get("sender.as2_id");
             String receiverAS2Id = pollerMap.get("receiver.as2_id");
             String partnershipXpath = "//partnership[sender[@name='" + getPartnerName(senderAS2Id) + "'] and receiver[@name='" + getPartnerName(receiverAS2Id) + "']]";
@@ -131,8 +122,8 @@ public class MigratePollingModuleConfig {
             }
             Node partnershipNode = partnershipNodes.item(0);
             Node newPollerNode = partnershipDoc.importNode(pollerConfigDoc.getDocumentElement(), true);
-            Element elem = (Element)newPollerNode;
-            for (int j=0; j<cfgFilePollerAttribs.getLength(); j++) {
+            Element elem = (Element) newPollerNode;
+            for (int j = 0; j < cfgFilePollerAttribs.getLength(); j++) {
                 Node attrib = cfgFilePollerAttribs.item(j);
                 String name = attrib.getNodeName();
                 if ("defaults".equals(name) || "format".equals(name)) {
@@ -214,13 +205,13 @@ public class MigratePollingModuleConfig {
             movePollerConfigToPartnershipsXml();
             System.out.println("Writing " + args[0] + " ...");
             storeXmlDoc(configInFile, cfgDoc);
-            System.out.println("Writing " + args[1] + " ..."); 
+            System.out.println("Writing " + args[1] + " ...");
             storeXmlDoc(partnershipInFile, partnershipDoc);
             System.out.println("Configuration has been ugraded.");
             if (hasHomeInConfig) {
                 System.out.println("\n\nWARNING: The poller config migrated to the partnership but 1 or more attributes contain the string \"%home%\" which must be replaced with a property or a fixed string.");
             }
-       } finally {
+        } finally {
             if (configAsStream != null) {
                 configAsStream.close();
             }

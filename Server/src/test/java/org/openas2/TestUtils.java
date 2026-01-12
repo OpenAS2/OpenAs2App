@@ -1,5 +1,10 @@
 package org.openas2;
 
+import org.openas2.app.OpenAS2Server;
+import org.openas2.partner.Partnership;
+import org.openas2.partner.PartnershipFactory;
+import org.openas2.processor.receiver.DirectoryPollingModule;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -10,11 +15,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import org.openas2.app.OpenAS2Server;
-import org.openas2.partner.Partnership;
-import org.openas2.partner.PartnershipFactory;
-import org.openas2.processor.receiver.DirectoryPollingModule;
 
 /**
  * Utilities for tests
@@ -41,7 +41,7 @@ public class TestUtils {
             if (files.length == 1) {
                 return new File(dir.getPath() + File.separator + files[0]);
             } else if (files.length > 1) {
-                    throw new IllegalStateException("Result is not unique.");
+                throw new IllegalStateException("Result is not unique.");
             }
         }
         throw new FileNotFoundException("Directory: " + dir.getAbsolutePath() + " File Name Substring: " + fileNameSubstr);
@@ -64,7 +64,7 @@ public class TestUtils {
             if (files.length == fileCount) {
                 return fileCount;
             } else if (files.length > fileCount) {
-                    return files.length;
+                return files.length;
             }
         }
         return dir.listFiles().length;
@@ -72,6 +72,7 @@ public class TestUtils {
 
     /**
      * Finds the first partnership in the list for the server instance that has a directory poller and builds a TestPartner object using that
+     *
      * @param server - the instance of an OpenAS2 server
      * @return - a TestPartner instance based on the partnership found
      * @throws Exception
@@ -79,7 +80,7 @@ public class TestUtils {
     public static TestPartner getFromFirstSendingPartnership(OpenAS2Server server) throws Exception {
         PartnershipFactory pf = server.getSession().getPartnershipFactory();
         List<Partnership> partnerships = pf.getPartnerships();
-        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
+        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext(); ) {
             Partnership partnership = (Partnership) iterator.next();
             DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
             if (pollerModule != null) {
@@ -92,7 +93,7 @@ public class TestUtils {
     public static TestPartner getFromPartnerIds(OpenAS2Server server, String senderAs2Id, String receiverAs2Id) throws Exception {
         PartnershipFactory pf = server.getSession().getPartnershipFactory();
         List<Partnership> partnerships = pf.getPartnerships();
-        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext();) {
+        for (Iterator<Partnership> iterator = partnerships.iterator(); iterator.hasNext(); ) {
             Partnership partnership = (Partnership) iterator.next();
             if (senderAs2Id.equals(partnership.getSenderID(Partnership.PID_AS2)) && receiverAs2Id.equals(partnership.getReceiverID(Partnership.PID_AS2))) {
                 DirectoryPollingModule pollerModule = getPollingModule((XMLSession) server.getSession(), partnership);
@@ -108,15 +109,15 @@ public class TestUtils {
             return dirPollMod;
         }
         // Try to find a module defined poller since there is no matching poller by name. (config.xml defined pollers do not have the correct partnership name in the poller cache)
-        return session.getPartnershipPoller(partnership.getSenderID(Partnership.PID_AS2), partnership.getReceiverID(Partnership.PID_AS2));        
+        return session.getPartnershipPoller(partnership.getSenderID(Partnership.PID_AS2), partnership.getReceiverID(Partnership.PID_AS2));
     }
 
     public static void appendLinesToFile(Path filePath, String[] lines) throws IOException {
         for (int i = 0; i < lines.length; i++) {
             Files.write(
-                filePath, 
-                ("\n" + lines[i]).getBytes(), 
-                StandardOpenOption.APPEND);
+                    filePath,
+                    ("\n" + lines[i]).getBytes(),
+                    StandardOpenOption.APPEND);
         }
 
     }

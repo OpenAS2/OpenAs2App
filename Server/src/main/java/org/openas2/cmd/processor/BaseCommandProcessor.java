@@ -1,5 +1,6 @@
 package org.openas2.cmd.processor;
 
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.ClassUtils;
 import org.openas2.Component;
 import org.openas2.OpenAS2Exception;
@@ -7,15 +8,13 @@ import org.openas2.Session;
 import org.openas2.cmd.Command;
 import org.openas2.cmd.CommandRegistry;
 import org.openas2.schedule.HasSchedule;
+import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
-import org.slf4j.LoggerFactory;
-
 
 
 public abstract class BaseCommandProcessor implements CommandProcessor, Component, HasSchedule {

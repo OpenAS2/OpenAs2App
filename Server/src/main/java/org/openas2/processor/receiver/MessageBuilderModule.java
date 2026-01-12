@@ -1,8 +1,11 @@
 package org.openas2.processor.receiver;
 
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -10,12 +13,7 @@ import org.openas2.lib.util.MimeUtil;
 import org.openas2.message.FileAttribute;
 import org.openas2.message.InvalidMessageException;
 import org.openas2.message.Message;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.params.*;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.Processor;
 import org.openas2.processor.resender.ResenderModule;
@@ -24,18 +22,10 @@ import org.openas2.util.AS2Util;
 import org.openas2.util.FileUtil;
 import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.activation.DataHandler;
-import jakarta.activation.DataSource;
-import jakarta.activation.FileDataSource;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeBodyPart;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -57,7 +47,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     public static final String PARAM_RESEND_MAX_RETRIES = "resend_max_retries";
     // Note: When this option is enabled, you can also configure its quoting using "quote_send_file_name" at partnership-level
     public static final String PARAM_SEND_FILENAME = "sendfilename";
-    
+
     private Logger logger = LoggerFactory.getLogger(MessageBuilderModule.class);
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
@@ -72,13 +62,14 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     /**
      * Move the file into the processing folder then invoke the sending process.
      * This method supports splitting files if configured to do so
+     *
      * @param fileToSend
      * @param filename
      * @return
      * @throws OpenAS2Exception
      * @throws FileNotFoundException
      */
-    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {       
+    protected Message processDocument(File fileToSend, String filename) throws OpenAS2Exception, FileNotFoundException {
         Message msg = buildBaseMessage(filename);
         String fileSizeThresholdStr = msg.getPartnership().getAttribute(Partnership.PA_SPLIT_FILE_THRESHOLD_SIZE_IN_BYTES);
         long fileSizeThreshold = 0;
@@ -119,13 +110,14 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             }
             // Update the message's partnership with any additional attributes since initial call in case dynamic variables were not set initially
             getSession().getPartnershipFactory().updatePartnership(msg, true);
-            return processDocument(pendingFile, msg); 
+            return processDocument(pendingFile, msg);
         }
     }
 
     /**
      * Take the file input stream and write it to a file system file in the processing folder.
      * Use this method if the file is produced in real time through a stream.
+     *
      * @param ip
      * @param filename
      * @return
@@ -259,8 +251,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     /**
      * Creates a Message object and sets up the sender and receiver to identify the partnership.
+     *
      * @param filename - the name of the file to be processed.
-     *                   Only used if the poller is a filename based poller to identify sender and receiver.
+     *                 Only used if the poller is a filename based poller to identify sender and receiver.
      * @return - the Message object
      * @throws OpenAS2Exception
      */
@@ -316,30 +309,31 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     }
 
     /**
-     * Provides support for a random InputStream. 
-     *     NOTE: This method should not be used for very large files as it will consume all the available heap and fail to send.
-     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
-     * @param ip - the generic inputstream
+     * Provides support for a random InputStream.
+     * NOTE: This method should not be used for very large files as it will consume all the available heap and fail to send.
+     *
+     * @param msg      - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param ip       - the generic inputstream
      * @param filename - name of the file being sent (currently unused)
      * @throws OpenAS2Exception
-
      */
     public void buildMessageData(Message msg, InputStream ip, String filename) throws OpenAS2Exception {
-            String contentType = getMessageContentType(msg);
-            jakarta.mail.util.ByteArrayDataSource byteSource;
-            try {
-                byteSource = new jakarta.mail.util.ByteArrayDataSource(ip, contentType);
-            } catch (IOException e) {
-                throw new OpenAS2Exception("Failed to set up datasource from input stream: " + e.getMessage(), e);
-            }
-            buildMessageData(msg, byteSource, contentType);
+        String contentType = getMessageContentType(msg);
+        jakarta.mail.util.ByteArrayDataSource byteSource;
+        try {
+            byteSource = new jakarta.mail.util.ByteArrayDataSource(ip, contentType);
+        } catch (IOException e) {
+            throw new OpenAS2Exception("Failed to set up datasource from input stream: " + e.getMessage(), e);
+        }
+        buildMessageData(msg, byteSource, contentType);
 
     }
 
     /**
      * This method will minimise the memory usage when creating the MimeBodyPart
-     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
-     * @param fileObject - a File object that will provide the file content
+     *
+     * @param msg         - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param fileObject  - a File object that will provide the file content
      * @param contentType - the Content-Type for the sent data - can be null and fall back to the OpenAS2 default
      * @throws OpenAS2Exception
      */
@@ -349,8 +343,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
 
     /**
      * This method will minimise the memory usage when creating the MimeBodyPart
-     * @param msg - the AS2 message structure that will be formulated into an AS2 HTTP message.
-     * @param dataSource - a DatsSource object that will provide the file content
+     *
+     * @param msg         - the AS2 message structure that will be formulated into an AS2 HTTP message.
+     * @param dataSource  - a DatsSource object that will provide the file content
      * @param contentType - the Content-Type for the sent data - can be null and fall back to the OpenAS2 default
      * @throws OpenAS2Exception
      */
@@ -408,18 +403,18 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             // as the one sent by sender. 2007-06-01
             String sendFileName = getParameter(PARAM_SEND_FILENAME, false);
             if (sendFileName != null && sendFileName.equals("true")) {
-                // Allow configuration of the quoting at partnership-level 
+                // Allow configuration of the quoting at partnership-level
                 String quoteFileName = msg.getPartnership().getAttribute(Partnership.PA_QUOTE_SEND_FILE_NAME);
 
                 String quoteFileNameSign;
-                if ("false".equalsIgnoreCase(quoteFileName)){
+                if ("false".equalsIgnoreCase(quoteFileName)) {
                     // Explicitly disabled
                     quoteFileNameSign = "";
                 } else {
                     // For backward compatibility - default
                     // Or explicitly enabled
                     quoteFileNameSign = "\"";
-                } 
+                }
 
                 String contentDisposition = String.format("Attachment; filename=%s%s%s", quoteFileNameSign, msg.getAttribute(FileAttribute.MA_FILENAME), quoteFileNameSign);
                 mimeBodyPart.setHeader("Content-Disposition", contentDisposition);

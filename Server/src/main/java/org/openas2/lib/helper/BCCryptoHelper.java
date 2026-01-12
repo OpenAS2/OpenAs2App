@@ -1,8 +1,12 @@
 package org.openas2.lib.helper;
 
+import jakarta.activation.CommandMap;
+import jakarta.activation.MailcapCommandMap;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -16,26 +20,10 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.*;
 import org.bouncycastle.cms.bc.BcRSAKeyTransEnvelopedRecipient;
-import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
-import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
-import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
-import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient;
-import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator;
-import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
-
-import org.bouncycastle.cms.jcajce.ZlibCompressor;
-import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
+import org.bouncycastle.cms.jcajce.*;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.mail.smime.SMIMECompressed;
-import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
-import org.bouncycastle.mail.smime.SMIMEEnveloped;
-import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
-import org.bouncycastle.mail.smime.SMIMEException;
-import org.bouncycastle.mail.smime.SMIMESigned;
-import org.bouncycastle.mail.smime.SMIMESignedGenerator;
-import org.bouncycastle.mail.smime.SMIMESignedParser;
-import org.bouncycastle.mail.smime.SMIMEUtil;
+import org.bouncycastle.mail.smime.*;
 import org.bouncycastle.mail.smime.util.CRLFOutputStream;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -54,33 +42,11 @@ import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DispositionType;
 import org.openas2.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.activation.CommandMap;
-import jakarta.activation.MailcapCommandMap;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.ContentType;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMultipart;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.DigestInputStream;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.SignatureException;
+import java.io.*;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -208,8 +174,8 @@ public class BCCryptoHelper implements ICryptoHelper {
         return micResult.toString();
     }
 
-    public MimeBodyPart decrypt(MimeBodyPart part, Certificate receiverCert, Key receiverKey) 
-    throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
+    public MimeBodyPart decrypt(MimeBodyPart part, Certificate receiverCert, Key receiverKey)
+            throws GeneralSecurityException, MessagingException, CMSException, IOException, SMIMEException {
 
         if (!isEncrypted(part)) {
             throw new GeneralSecurityException("Content-Type indicates data isn't encrypted");
@@ -228,7 +194,7 @@ public class BCCryptoHelper implements ICryptoHelper {
         boolean foundRecipient = false;
         for (RecipientInformation recipientInfo : recipients) {
 
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug("Recipient RID: " + recipientInfo.getRID());
                 logger.debug("Recipient Info Type: " + recipientInfo.getClass().getName());
                 logger.debug("Using private key algorithm: " + receiverKey.getAlgorithm());
@@ -239,8 +205,8 @@ public class BCCryptoHelper implements ICryptoHelper {
                 if (certRecId.match(recipientInfo) && !foundRecipient) {
                     foundRecipient = true;
                     byte[] decryptedData = recipientInfo.getContent(
-                        new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(
-                            PrivateKeyInfo.getInstance(receiverKey.getEncoded())))
+                            new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(
+                                    PrivateKeyInfo.getInstance(receiverKey.getEncoded())))
                     );
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
                 }
@@ -250,25 +216,25 @@ public class BCCryptoHelper implements ICryptoHelper {
                 if (certRecId.match(recipientInfo) && !foundRecipient) {
                     foundRecipient = true;
                     byte[] decryptedData = recipientInfo.getContent(
-                        new JceKeyAgreeEnvelopedRecipient((PrivateKey) receiverKey).setProvider("BC")
+                            new JceKeyAgreeEnvelopedRecipient((PrivateKey) receiverKey).setProvider("BC")
                     );
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
                 }
             } else {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Failed match on recipient ID's:: RID type from msg: " 
-                                + recipientInfo.getRID().getType() 
-                                + "  RID type from priv cert: " 
-                                + (recipientInfo instanceof KeyTransRecipientInformation ? "0" : "2"));
+                    logger.debug("Failed match on recipient ID's:: RID type from msg: "
+                            + recipientInfo.getRID().getType()
+                            + "  RID type from priv cert: "
+                            + (recipientInfo instanceof KeyTransRecipientInformation ? "0" : "2"));
                 }
             }
         }
 
         if (!foundRecipient) {
             throw new GeneralSecurityException(
-                "Matching certificate recipient could not be found trying to decrypt the message."
-                + " Either the sender has encrypted the message with a public key that does not match"
-                + " a private key in your keystore or there is a problem in your keystore where the private key has not been imported or is corrupt.");
+                    "Matching certificate recipient could not be found trying to decrypt the message."
+                            + " Either the sender has encrypted the message with a public key that does not match"
+                            + " a private key in your keystore or there is a problem in your keystore where the private key has not been imported or is corrupt.");
         }
 
         return null;
@@ -297,29 +263,29 @@ public class BCCryptoHelper implements ICryptoHelper {
         if ("RSA".equalsIgnoreCase(receiverCertAlgorithm)) {
             logger.debug("Using RSA based encryption...");
             gen.addRecipientInfoGenerator(
-                new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC")
+                    new JceKeyTransRecipientInfoGenerator(x509Cert).setProvider("BC")
             );
             encryptor = getOutputEncryptor(encryptionAlgorithm, isECKey, false);
 
         } else if ("EC".equalsIgnoreCase(receiverCertAlgorithm)) {
             logger.debug("Using EC based encryption...");
-        
+
             KeyPair keypair = this.generateECKeypair(receiverCert);
 
-                JceKeyAgreeRecipientInfoGenerator recipientGenerator
+            JceKeyAgreeRecipientInfoGenerator recipientGenerator
                     = new JceKeyAgreeRecipientInfoGenerator(
-                        CMSAlgorithm.ECMQV_SHA256KDF, 
-                        keypair.getPrivate(), 
-                        keypair.getPublic(),
-                        getEncryptionOID(encryptionAlgorithm, isECKey, true)
-                        ).setProvider("BC");
+                    CMSAlgorithm.ECMQV_SHA256KDF,
+                    keypair.getPrivate(),
+                    keypair.getPublic(),
+                    getEncryptionOID(encryptionAlgorithm, isECKey, true)
+            ).setProvider("BC");
 
             recipientGenerator.addRecipient((X509Certificate) receiverCert);
 
             encryptor = getOutputEncryptor(encryptionAlgorithm, isECKey, false);
 
             gen.addRecipientInfoGenerator(recipientGenerator);
-        
+
         } else {
             throw new GeneralSecurityException("Unsupported certificate algorithm: " + receiverCertAlgorithm);
         }
@@ -556,17 +522,18 @@ public class BCCryptoHelper implements ICryptoHelper {
     /**
      * Standard for Algorithm identifiers is RFC5751. Cater for non-standard algorithm identifiers by converting the identifier
      * as needed.
-     * @param algorithm - the string identifier of the algorithm to be used
+     *
+     * @param algorithm          - the string identifier of the algorithm to be used
      * @param useHyphenSeparator - use the hyphen between SHA and the key size designator or not
      * @return
      */
     public String standardiseAlgorithmIdentifier(String algorithm, boolean useHyphenSeparator) {
-        String matchStr = "(sha)[0-9]+[-_]+(.*)$" + (useHyphenSeparator?"|(sha)([0-9]+)$":"|(sha)-([0-9]+)$");
+        String matchStr = "(sha)[0-9]+[-_]+(.*)$" + (useHyphenSeparator ? "|(sha)([0-9]+)$" : "|(sha)-([0-9]+)$");
         Pattern pttrn = Pattern.compile(matchStr, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pttrn.matcher(algorithm);
         if (matcher.matches()) {
-            int baseMatchGroup = matcher.group(2) == null?3:1;
-            algorithm = matcher.group(baseMatchGroup) + (useHyphenSeparator?"-":"") + matcher.group(baseMatchGroup+1);
+            int baseMatchGroup = matcher.group(2) == null ? 3 : 1;
+            algorithm = matcher.group(baseMatchGroup) + (useHyphenSeparator ? "-" : "") + matcher.group(baseMatchGroup + 1);
         }
         return algorithm;
 
@@ -649,30 +616,30 @@ public class BCCryptoHelper implements ICryptoHelper {
     /**
      * Resolves the appropriate ASN1 OID for the given encryption algorithm.
      * This method determines the correct object identifier to use for encryption
-     * based on the algorithm name, whether the encryption is being used with 
+     * based on the algorithm name, whether the encryption is being used with
      * EC keys, and whether the algorithm should support wrapping.
      *
      * @param algorithm The name of the encryption algorithm (e.g., "AES128_CBC").
-     * @param isECKey Indicates if the encryption involves EC (Elliptic Curve) keys.
-     * @param isWrap Indicates if the algorithm is being used for key wrapping.
+     * @param isECKey   Indicates if the encryption involves EC (Elliptic Curve) keys.
+     * @param isWrap    Indicates if the algorithm is being used for key wrapping.
      * @return The ASN1ObjectIdentifier representing the OID for the encryption algorithm.
-     * @throws NoSuchAlgorithmException If the algorithm is null, unsupported, 
+     * @throws NoSuchAlgorithmException If the algorithm is null, unsupported,
      *                                  or incompatible with the given parameters.
      *
-     * <p><b>Behavior:</b></p>
-     * <ul>
-     *   <li>Throws an exception for unsupported or invalid algorithm names.</li>
-     *   <li>Handles special cases for EC keys, ensuring compatibility with 
-     *       wrapping and non-wrapping modes.</li>
-     *   <li>Supports a variety of algorithms, including AES, 3DES, RC2, CAST5, 
-     *       and IDEA, with appropriate restrictions for EC key usage.</li>
-     * </ul> 
-    */
+     *                                  <p><b>Behavior:</b></p>
+     *                                  <ul>
+     *                                    <li>Throws an exception for unsupported or invalid algorithm names.</li>
+     *                                    <li>Handles special cases for EC keys, ensuring compatibility with
+     *                                        wrapping and non-wrapping modes.</li>
+     *                                    <li>Supports a variety of algorithms, including AES, 3DES, RC2, CAST5,
+     *                                        and IDEA, with appropriate restrictions for EC key usage.</li>
+     *                                  </ul>
+     */
     protected ASN1ObjectIdentifier getEncryptionOID(String algorithm, boolean isECKey, boolean isWrap) throws NoSuchAlgorithmException {
         if (algorithm == null) {
             throw new NoSuchAlgorithmException("Algorithm is null");
         }
-    
+
         if (algorithm.equalsIgnoreCase(DIGEST_MD2)) {
             return new ASN1ObjectIdentifier(PKCSObjectIdentifiers.md2.getId());
         } else if (algorithm.equalsIgnoreCase(DIGEST_MD5)) {
@@ -744,8 +711,8 @@ public class BCCryptoHelper implements ICryptoHelper {
      * @return the OutputEncryptor of the given hash algorithm
      * @throws NoSuchAlgorithmException - Houston we have a problem
      *                                  <p>
-     *                                  TODO: Possibly just use new ASN1ObjectIdentifier(algorithm) instead of explicit lookup to support random configured algorithms
-     *                                  but will require determining if this has any side effects from a security point of view.
+     *                                                                                                    TODO: Possibly just use new ASN1ObjectIdentifier(algorithm) instead of explicit lookup to support random configured algorithms
+     *                                                                                                    but will require determining if this has any side effects from a security point of view.
      */
     protected OutputEncryptor getOutputEncryptor(String algorithm, boolean isECKey, boolean isWrap) throws NoSuchAlgorithmException {
         if (algorithm == null) {

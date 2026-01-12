@@ -1,7 +1,7 @@
 package org.openas2;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.activation.CommandMap;
+import jakarta.activation.MailcapCommandMap;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.message.MessageFactory;
@@ -11,10 +11,9 @@ import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
-
-import jakarta.activation.CommandMap;
-import jakarta.activation.MailcapCommandMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +70,7 @@ public abstract class BaseSession implements Session {
      *
      * @param componentID registers the component to this ID
      * @param comp        component to register
-     * @throws OpenAS2Exception 
+     * @throws OpenAS2Exception
      * @see Component
      */
     public void setComponent(String componentID, Component comp) throws OpenAS2Exception {
@@ -167,8 +166,8 @@ public abstract class BaseSession implements Session {
             try {
                 LOGGER.trace("Destroying poller:" + meta);
                 if (poller.isRunning()) {
-                        poller.stop();
-                        poller = null;
+                    poller.stop();
+                    poller = null;
                 }
                 // track the removed pollers keys to update the map after iteration to avoid concurrent modification error
                 stoppedPollerKeys.add(entry.getKey());
@@ -200,10 +199,10 @@ public abstract class BaseSession implements Session {
         // so iterate over all and search by the AS2 ID's in the defaults element
         for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
             Map<String, Object> meta = entry.getValue();
-            DirectoryPollingModule pollerModule = (DirectoryPollingModule)meta.get("pollerInstance");
+            DirectoryPollingModule pollerModule = (DirectoryPollingModule) meta.get("pollerInstance");
             String defaults = pollerModule.getParameters().get("defaults");
             if (defaults != null && defaults.contains("receiver.as2_id=" + receiverAs2Id) && defaults.contains("sender.as2_id=" + senderAs2Id)) {
-                    return pollerModule;
+                return pollerModule;
             }
         }
         return null;

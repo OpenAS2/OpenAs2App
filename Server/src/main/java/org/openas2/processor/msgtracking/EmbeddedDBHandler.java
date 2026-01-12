@@ -3,18 +3,14 @@
  */
 package org.openas2.processor.msgtracking;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.annotation.Nullable;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.Server;
 import org.openas2.OpenAS2Exception;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.Nullable;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Driver;
-import java.sql.DriverManager;
+import java.sql.*;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

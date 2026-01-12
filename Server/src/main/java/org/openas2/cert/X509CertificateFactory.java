@@ -1,12 +1,5 @@
 package org.openas2.cert;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.openas2.OpenAS2Exception;
-import org.openas2.Session;
-import org.openas2.WrappedException;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.util.AS2Util;
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -22,33 +15,21 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
+import org.openas2.WrappedException;
+import org.openas2.params.InvalidParameterException;
+import org.openas2.util.AS2Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class X509CertificateFactory extends BaseCertificateFactory implements AliasedCertificateFactory, KeyStoreCertificateFactory, StorableCertificateFactory {
     public static final String PARAM_IDENTIFIER = "identifier";
@@ -254,10 +235,10 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
     }
 
     /**
-     * @param keyAlg - key algorithm eg RSA, DSA, EC
+     * @param keyAlg  - key algorithm eg RSA, DSA, EC
      * @param keySize - normally a binary multiple eg 2048
      * @return - the key pair
-     * @throws OpenAS2Exception 
+     * @throws OpenAS2Exception
      * @throws NoSuchAlgorithmException
      */
     public KeyPair generateKeyPair(String keyAlg, int keySize) throws OpenAS2Exception {
@@ -269,15 +250,15 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
         }
         keyPairGenerator.initialize(keySize, new SecureRandom());
         return keyPairGenerator.generateKeyPair();
-    }   
-    
+    }
+
     /**
      * @param alias
      * @param distinguishedName - provide in this format:  "CN=test.openas2.org,O=OpenAS2 Foundation,L=London,C=UK"
-     * @param hashAlg -  hashing algorithm for the certificate;; eg "SHA256"
-     * @param keyAlg - key algorithm for the certificate. eg. RSA, EC
-     * @param keySizec - typically at least 2048 for security
-     * @param validDays - how many days from current time will the certificate be valid for
+     * @param hashAlg           -  hashing algorithm for the certificate;; eg "SHA256"
+     * @param keyAlg            - key algorithm for the certificate. eg. RSA, EC
+     * @param keySizec          - typically at least 2048 for security
+     * @param validDays         - how many days from current time will the certificate be valid for
      * @throws OpenAS2Exception
      */
     public void genSelfSignedCertificate(
@@ -291,7 +272,7 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
         KeyPair kp = generateKeyPair(keyAlg, keySize);
         ASN1Sequence seq = null;
         try (ASN1InputStream asn1InputStream = new ASN1InputStream(kp.getPublic().getEncoded())) {
-            seq= (ASN1Sequence) asn1InputStream.readObject();
+            seq = (ASN1Sequence) asn1InputStream.readObject();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -299,7 +280,7 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
         //SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(kp.getPublic().getEncoded());
         SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(seq);
         String signatureAlg = hashAlg + "With" + keyAlg;
-        if (keyAlg=="EC") {
+        if (keyAlg == "EC") {
             signatureAlg += "DSA";
         }
         X500Name x500Name = new X500Name(distinguishedName);
@@ -307,13 +288,13 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
         Date notBefore = new Date(currentTime);
         Date notAfter = new Date(currentTime + (1000L * 3600L * 24 * validDays));
         X509v3CertificateBuilder certBuilder = new X509v3CertificateBuilder(
-                    x500Name,
-                    new BigInteger(64, new Random()),
-                    notBefore,
-                    notAfter,
-                    x500Name,
-                    subPubKeyInfo
-                );
+                x500Name,
+                new BigInteger(64, new Random()),
+                notBefore,
+                notAfter,
+                x500Name,
+                subPubKeyInfo
+        );
         try {
             SubjectKeyIdentifier ski = new SubjectKeyIdentifier(subPubKeyInfo.getEncoded());
             certBuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
@@ -323,8 +304,8 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
         ContentSigner signer;
         try {
             signer = new JcaContentSignerBuilder(signatureAlg)
-                        .setProvider(new BouncyCastleProvider())
-                        .build(kp.getPrivate());
+                    .setProvider(new BouncyCastleProvider())
+                    .build(kp.getPrivate());
         } catch (OperatorCreationException e) {
             throw new OpenAS2Exception("Failed to create signer when generating certificate.", e);
         }
@@ -443,7 +424,7 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
 
     /**
      * Exports the public key to a PKCS12 keystore file.
-     * 
+     *
      * @param filename - name of the Keystore file to export the certificate to
      * @param password - password for the keystore
      * @throws Exception
@@ -462,8 +443,9 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
 
     /**
      * Exports public key in PEM or DER encoding to a file.
-     * @param filename - name of the file to store the encoded certificate to
-     * @param srcAlias - the alis of the public key in the factory object
+     *
+     * @param filename     - name of the file to store the encoded certificate to
+     * @param srcAlias     - the alis of the public key in the factory object
      * @param outputFormat - supports "DER" or "PEM
      * @throws Exception
      */

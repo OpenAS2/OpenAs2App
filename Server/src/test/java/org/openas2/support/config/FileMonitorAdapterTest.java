@@ -22,10 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by nick on 08.04.17.
@@ -45,7 +42,7 @@ public class FileMonitorAdapterTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-    	tmp = Files.createTempDirectory("testResources").toFile();
+        tmp = Files.createTempDirectory("testResources").toFile();
         configFile = spy(Files.createFile(Paths.get(tmp.toString(), "config.xml")).toFile());
         adapter = spy(new FileMonitorAdapter() {
             @Override

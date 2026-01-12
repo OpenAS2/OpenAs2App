@@ -1,9 +1,5 @@
 package org.openas2.app;
 
-import java.io.File;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -16,6 +12,10 @@ import org.openas2.message.Message;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.receiver.api.AS2FileReceiverModule;
 import org.openas2.util.Properties;
+
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 
 public class BaseServerSetup {
@@ -35,7 +35,7 @@ public class BaseServerSetup {
         setup();
     }
 
-    public AS2Message  getSimpleTestMsg() throws Exception {
+    public AS2Message getSimpleTestMsg() throws Exception {
         AS2Message msg = new AS2Message();
         Partnership myPartnership = msg.getPartnership();
         myPartnership.setSenderID(Partnership.PID_AS2, myCompanyOid);

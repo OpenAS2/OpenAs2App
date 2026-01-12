@@ -16,8 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @ExtendWith(MockitoExtension.class)
 public class IOUtilTest {
@@ -58,12 +58,12 @@ public class IOUtilTest {
      * Format is <filename>, <allowed file extensions list>, "excluded extensions list>, <count of files to return (as a string)
      */
     private String[][] testFilePollingFilters = {{"File1.txt", "txt", "", "1"}, {"File2.edi", "txt, edi", "", "1"}, {"File3.tmp", "", "temp", "1"},
-        // Tests that should not return a file
-        {"File4.txt", "edi", "", "0"}, {"File5.edi", "txt, edint", "", "0"}, {"File6.tmp", "", "tmp", "0"}, {"File7.tmp", "", "part , tmp", "0"}};
+            // Tests that should not return a file
+            {"File4.txt", "edi", "", "0"}, {"File5.edi", "txt, edint", "", "0"}, {"File6.tmp", "", "tmp", "0"}, {"File7.tmp", "", "part , tmp", "0"}};
 
     @BeforeAll
     public static void setUp() throws Exception {
-    	tmp = Files.createTempDirectory("testResources").toFile();
+        tmp = Files.createTempDirectory("testResources").toFile();
     }
 
     @Test

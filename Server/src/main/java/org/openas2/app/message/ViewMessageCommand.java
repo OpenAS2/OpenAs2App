@@ -43,9 +43,9 @@ public class ViewMessageCommand extends AliasedMessagesCommand {
             }
             // Assume we only load one DB tracking module - not sure it makes sense if more than 1 was loaded
             DbTrackingModule db = (DbTrackingModule) mpl.get(0);
-            HashMap<String,String> message = db.showMessage(msg_id);
+            HashMap<String, String> message = db.showMessage(msg_id);
 
-            if(message.isEmpty()){
+            if (message.isEmpty()) {
                 return new CommandResult(CommandResult.TYPE_ERROR, "Unknown message");
             }
 

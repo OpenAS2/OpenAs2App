@@ -1,7 +1,8 @@
 package org.openas2.processor.receiver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.activation.DataHandler;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.*;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
@@ -12,40 +13,17 @@ import org.openas2.cert.KeyNotFoundException;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.message.AS2Standards;
 import org.openas2.lib.util.MimeUtil;
-import org.openas2.message.AS2Message;
-import org.openas2.message.AS2MessageMDN;
-import org.openas2.message.Message;
-import org.openas2.message.MessageMDN;
-import org.openas2.message.NetAttribute;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.message.*;
+import org.openas2.params.*;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.BaseMsgTrackingModule.FIELDS;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
-import org.openas2.util.AS2Util;
-import org.openas2.util.ByteArrayDataSource;
-import org.openas2.util.DateUtil;
-import org.openas2.util.DispositionOptions;
-import org.openas2.util.DispositionType;
-import org.openas2.util.HTTPUtil;
-import org.openas2.util.IOUtil;
-import org.openas2.util.Profiler;
-import org.openas2.util.ProfilerStub;
-import org.openas2.util.Properties;
+import org.openas2.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.activation.DataHandler;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.ContentType;
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMultipart;
-import jakarta.mail.internet.MimeUtility;
-import jakarta.mail.internet.ParseException;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -145,7 +123,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     try {
                         MimeBodyPart receivedPart = null;
                         if ("true".equals(msg.getPartnership().getAttributeOrProperty("use_old_mime_deserialise_method", "false"))) {
-                        // TODO: Delete this when the new method is confirmed working reliably. Changed for 3.4.1
+                            // TODO: Delete this when the new method is confirmed working reliably. Changed for 3.4.1
                             receivedContentType = new ContentType(msg.getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY));
 
                             receivedPart = new MimeBodyPart();
@@ -155,7 +133,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                             receivedPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, receivedContentType.toString());
 
                         } else {
-                        // We only need the Content-Type to rebuild the mime body part.
+                            // We only need the Content-Type to rebuild the mime body part.
                             InternetHeaders ih = new InternetHeaders();
                             ih.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, msg.getHeader(MimeUtil.MIME_CONTENT_TYPE_KEY));
                             receivedPart = new MimeBodyPart(ih, data);
@@ -631,7 +609,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
         MimeBodyPart reportPart = new MimeBodyPart();
         reportPart.setContent(reportMultiPart);
         //IMPORTANT: Set the Content-Type AFTER setting the content as setContent() clears the Content-Type of the BodyPart
-        reportPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, unfoldHeaders?MimeUtility.unfold(reportMultiPart.getContentType()):reportMultiPart.getContentType());
+        reportPart.setHeader(MimeUtil.MIME_CONTENT_TYPE_KEY, unfoldHeaders ? MimeUtility.unfold(reportMultiPart.getContentType()) : reportMultiPart.getContentType());
         // Sign the data if needed
         if (signatureProtocol != null) {
             CertificateFactory certFx = session.getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);

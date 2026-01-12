@@ -1,13 +1,7 @@
 package org.openas2.util;
 
 import org.openas2.message.Message;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageMDNParameters;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.params.*;
 
 import java.util.List;
 import java.util.Map;
@@ -97,7 +91,7 @@ public class StringUtil {
             return inputString;
         }
         StringBuilder sb = new StringBuilder();
-        for (int x=0; x < length - inputString.length(); x++) {
+        for (int x = 0; x < length - inputString.length(); x++) {
             sb.append('0');
         }
         sb.append(inputString);

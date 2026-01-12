@@ -11,8 +11,8 @@ import org.openas2.partner.Partnership;
 import org.openas2.util.Properties;
 import org.openas2.util.StringUtil;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 

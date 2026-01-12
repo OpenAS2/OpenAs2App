@@ -1,13 +1,13 @@
 package org.openas2.processor.receiver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.processor.Processor;
 import org.openas2.util.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,9 +35,9 @@ public abstract class DirectoryPollingModule extends PollingModule {
     private final int MAX_FILE_PROCESSING_TIME_DEFAULT_MINUTES = 30;
 
     // Files that have been registered by the poller - key is the absolute file path and value is the file size
-    private Map<String, Long> trackedFiles = new HashMap<String, Long>(); 
+    private Map<String, Long> trackedFiles = new HashMap<String, Long>();
     // Files that have been passed to a processor - key is the absolute file path and value is the processing start timestamp
-    private Map<String, Long> processingFiles = new HashMap<String, Long>(); 
+    private Map<String, Long> processingFiles = new HashMap<String, Long>();
     // Files that have been processed in thread mode and need removing from the tracked files maps by the main thread
     Collection<String> threadProcessedFiles = Collections.synchronizedCollection(new ArrayList<String>());
 
@@ -45,8 +45,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
     private String sentDir = null;
     private boolean processFilesAsThreads = false;
     private int maxProcessingThreads = 20;
-    private long maxFileProcessingTime = MAX_FILE_PROCESSING_TIME_DEFAULT_MINUTES*60*1000;
-    // support fixed size thread group to run file processing as threads 
+    private long maxFileProcessingTime = MAX_FILE_PROCESSING_TIME_DEFAULT_MINUTES * 60 * 1000;
+    // support fixed size thread group to run file processing as threads
     private ExecutorService executorService = null;
     private List<String> allowExtensions = new ArrayList<String>();
     private List<String> excludeExtensions = new ArrayList<String>();
@@ -64,7 +64,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
             errorDir = getParameter(PARAM_ERROR_DIRECTORY, true);
             IOUtil.getDirectoryFile(errorDir);
             sentDir = getParameter(PARAM_SENT_DIRECTORY, false);
-            if(null != sentDir) {
+            if (null != sentDir) {
                 IOUtil.getDirectoryFile(sentDir);
             }
             processFilesAsThreads = getParameter(PARAM_PROCESS_IN_PARALLEL, "false").equalsIgnoreCase("true");
@@ -73,7 +73,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 // Create the thread pool
                 executorService = Executors.newFixedThreadPool(maxProcessingThreads);
             }
-            
+
             String pendingInfoFolder = getSession().getProcessor().getParameters().get(Processor.PENDING_MDN_INFO_DIRECTORY_IDENTIFIER);
             IOUtil.getDirectoryFile(pendingInfoFolder);
             String pendingFolder = getSession().getProcessor().getParameters().get(Processor.PENDING_MDN_MSG_DIRECTORY_IDENTIFIER);
@@ -141,40 +141,40 @@ public abstract class DirectoryPollingModule extends PollingModule {
         File directoryAsFile = IOUtil.getDirectoryFile(directory);
         // Wrap in try-with-resources block to ensure close() is called
         try (DirectoryStream<Path> dirs = Files.newDirectoryStream(directoryAsFile.toPath(), entry -> {
-                if (Files.isDirectory(entry)) {
-                    return false;
+            if (Files.isDirectory(entry)) {
+                return false;
+            }
+            if (isTracked(entry.toAbsolutePath().toString())) {
+                return false;
+            }
+            String name = entry.getFileName().toString();
+            if (logger.isTraceEnabled()) {
+                logger.trace("Polling module file name found: " + name);
+            }
+            String extension = name.substring(name.lastIndexOf(".") + 1);
+            if (!allowExtensions.isEmpty() && !allowExtensions.contains(extension)) {
+                // There is a list of allowed extensions and this one not in it so do not include
+                return false;
+            }
+            if (!excludeExtensions.isEmpty() && excludeExtensions.contains(extension)) {
+                // This is a disallowed extension so ignore this file
+                return false;
+            }
+            // Check if there are filename regex exclusions if not already disallowed
+            if (excludeFilenameRegexFilter.length() > 0 && name.matches(excludeFilenameRegexFilter)) {
+                // This is a disallowed extension so ignore this file
+                return false;
+            }
+            return true;
+        })) {
+            for (Path dir : dirs) {
+                File currentFile = dir.toFile();
+                // Don't track locked files as this can create false positives when file is being created
+                if (!fileIsLocked(currentFile)) {
+                    // Found an untracked file so add it
+                    trackedFiles.put(currentFile.getAbsolutePath(), currentFile.length());
                 }
-                if (isTracked(entry.toAbsolutePath().toString())) {
-                    return false;
-                }
-                String name = entry.getFileName().toString();
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Polling module file name found: " + name);
-                }
-                String extension = name.substring(name.lastIndexOf(".") + 1);
-                if (!allowExtensions.isEmpty() && !allowExtensions.contains(extension)) {
-                    // There is a list of allowed extensions and this one not in it so do not include
-                    return false;
-                }
-                if (!excludeExtensions.isEmpty() && excludeExtensions.contains(extension)) {
-                    // This is a disallowed extension so ignore this file
-                    return false;
-                }
-                // Check if there are filename regex exclusions if not already disallowed
-                if (excludeFilenameRegexFilter.length() > 0 && name.matches(excludeFilenameRegexFilter)) {
-                    // This is a disallowed extension so ignore this file
-                    return false;
-                }
-                return true;
-            })) {
-                for (Path dir : dirs) {
-                    File currentFile = dir.toFile();
-                    // Don't track locked files as this can create false positives when file is being created
-                    if (!fileIsLocked(currentFile)) {
-                        // Found an untracked file so add it
-                        trackedFiles.put(currentFile.getAbsolutePath(), currentFile.length());
-                    }
-                }
+            }
         }
     }
 
@@ -219,7 +219,7 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 //forceStop(e1);
                 return;
             }
-        }     
+        }
     }
 
     private void processFileInThread(File file, String fileEntryKey) {
@@ -313,4 +313,4 @@ public abstract class DirectoryPollingModule extends PollingModule {
             throw new OpenAS2Exception("Failed to initiate processing for file:" + file.getAbsolutePath(), e);
         }
     }
- }
+}

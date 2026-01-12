@@ -1,19 +1,15 @@
 package org.openas2.lib.util.javamail;
 
-import org.openas2.lib.message.AS2Standards;
-
 import jakarta.activation.ActivationDataFlavor;
 import jakarta.activation.DataContentHandler;
 import jakarta.activation.DataSource;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
+import org.openas2.lib.message.AS2Standards;
+
 import java.awt.datatransfer.DataFlavor;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 
 public class DispositionDataContentHandler implements DataContentHandler {
@@ -54,7 +50,7 @@ public class DispositionDataContentHandler implements DataContentHandler {
         return null;
     }
 
-        public ActivationDataFlavor[] getTransferDataFlavors() {
+    public ActivationDataFlavor[] getTransferDataFlavors() {
         return ADFs;
     }
 

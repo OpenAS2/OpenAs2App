@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * Retrieves resources used for test purposes from the file system
- * 
+ *
  */
 public class TestResource {
     /* Set up a map of resource files that can be generically used by all tests
@@ -17,16 +17,16 @@ public class TestResource {
      * from the standard config.xml file such as for tests using 2 AS2 server instances.
      */
     public static final Map<String, String[]> resources = Map.of(
-        "config", new String[]{"config", "config.xml"},
-        "partnerships", new String[]{"config", "partnerships.xml"},
-        "server1-props", new String[]{"custom", "server1.properties"},
-        "server1-partnerships", new String[]{"custom", "server1_partnerships.xml"},
-        "server2-props", new String[]{"custom", "server2.properties"},
-        "server2-partnerships", new String[]{"custom", "server2_partnerships.xml"},
-        "api-server-props", new String[]{"custom", "api-server.properties"}
+            "config", new String[]{"config", "config.xml"},
+            "partnerships", new String[]{"config", "partnerships.xml"},
+            "server1-props", new String[]{"custom", "server1.properties"},
+            "server1-partnerships", new String[]{"custom", "server1_partnerships.xml"},
+            "server2-props", new String[]{"custom", "server2.properties"},
+            "server2-partnerships", new String[]{"custom", "server2_partnerships.xml"},
+            "api-server-props", new String[]{"custom", "api-server.properties"}
     );
 
-    static String pathPrefix = Paths.get("src","test","resources").toAbsolutePath().toString();
+    static String pathPrefix = Paths.get("src", "test", "resources").toAbsolutePath().toString();
 
 
     public static String getResource(String resourceIdentifier) throws FileNotFoundException {
@@ -38,7 +38,7 @@ public class TestResource {
          */
         String[] resourceAttributes = resources.get(resourceIdentifier);
         String filePath = get(resourceAttributes);
-        
+
         return filePath;
     }
 

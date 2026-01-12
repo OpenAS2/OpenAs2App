@@ -3,11 +3,7 @@
  */
 package org.openas2.cmd.processor;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.SAXParser;
@@ -18,8 +14,8 @@ import java.io.StringReader;
 
 /**
  * used to parse  commands from the socket command processor
- * message format 
- *   &lt;command userid="abc" pasword="xyz"&gt; the actual command &lt;/command&gt;
+ * message format
+ * &lt;command userid="abc" pasword="xyz"&gt; the actual command &lt;/command&gt;
  *
  * @author joseph mcverry
  *
@@ -31,10 +27,14 @@ public class SocketCommandParser extends DefaultHandler implements EntityResolve
     private String password;
     private String commandText;
 
-    /**     simple string processor    */
+    /**
+     * simple string processor
+     */
     protected CharArrayWriter contents = new CharArrayWriter();
 
-    /** construct the factory with a xml parser
+    /**
+     * construct the factory with a xml parser
+     *
      * @throws Exception an xml parser exception
      */
 
@@ -56,8 +56,9 @@ public class SocketCommandParser extends DefaultHandler implements EntityResolve
 
     /**
      * Method handles #PCDATA
-     * @param ch array
-     * @param start position in array where next has been placed
+     *
+     * @param ch     array
+     * @param start  position in array where next has been placed
      * @param length int
      *
      *

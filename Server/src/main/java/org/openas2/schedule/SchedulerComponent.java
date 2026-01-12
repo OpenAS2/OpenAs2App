@@ -1,14 +1,14 @@
 package org.openas2.schedule;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.BaseComponent;
 import org.openas2.Component;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.processor.ProcessorModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.Executors;

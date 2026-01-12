@@ -19,14 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.openas2.TestUtils.waitForFile;
 
 public class OpenAS2ServerTest {
@@ -164,7 +160,7 @@ public class OpenAS2ServerTest {
     }
 
     private void verifyMessageDelivery(TestMessage testMessage) throws IOException {
-        assertThat("A file was received by " + testMessage.toPartner.getName() + " from " + testMessage.fromPartner.getName(),  testMessage.deliveredMsg != null, is(true));
+        assertThat("A file was received by " + testMessage.toPartner.getName() + " from " + testMessage.fromPartner.getName(), testMessage.deliveredMsg != null, is(true));
         String deliveredMsgBody = FileUtils.readFileToString(testMessage.deliveredMsg, "UTF-8");
         assertThat("Verify content of delivered message", deliveredMsgBody, is(testMessage.body));
 

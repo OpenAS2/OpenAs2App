@@ -1,27 +1,21 @@
 package org.openas2.processor.receiver;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
 import jakarta.mail.internet.MimeBodyPart;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.openas2.OpenAS2Exception;
 import org.openas2.app.BaseServerSetup;
 import org.openas2.message.FileAttribute;
 import org.openas2.partner.Partnership;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class ContentDispositionTest extends BaseServerSetup {
     private DirectoryPollingModule poller;
-    
+
     @BeforeAll
     public void setUp() throws Exception {
         super.createFileSystemResources();
@@ -50,7 +44,7 @@ public class ContentDispositionTest extends BaseServerSetup {
 
     @Test
     public void shouldUseDefaultSetting() throws Exception {
-        
+
         //Check backward compatible configuration
         assertThat(getContentDispositionForQuoteConfiguration(""), is("Attachment; filename=\"filename.ext\""));
         assertThat(getContentDispositionForQuoteConfiguration(null), is("Attachment; filename=\"filename.ext\""));
@@ -58,7 +52,7 @@ public class ContentDispositionTest extends BaseServerSetup {
     }
 
     private String getContentDispositionForQuoteConfiguration(String valueOfQuoteSendFileName) throws OpenAS2Exception {
-        
+
         if (valueOfQuoteSendFileName != null) {
             simpleTestMsg.getPartnership().setAttribute(Partnership.PA_QUOTE_SEND_FILE_NAME, valueOfQuoteSendFileName);
         }

@@ -1,6 +1,11 @@
 package org.openas2.message;
 
-import org.slf4j.LoggerFactory;
+import jakarta.mail.Header;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.ContentDisposition;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.ParseException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -9,15 +14,10 @@ import org.openas2.lib.util.MimeUtil;
 import org.openas2.params.InvalidParameterException;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.msgtracking.TrackingModule;
-import org.openas2.util.Properties;
 import org.openas2.util.IOUtil;
+import org.openas2.util.Properties;
+import org.slf4j.LoggerFactory;
 
-import jakarta.mail.Header;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.ContentDisposition;
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.ParseException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +75,7 @@ public abstract class BaseMessage implements Message {
 
     public void setReceiverX509Alias(String alias) {
         receiverX509Alias = alias;
-        
+
     }
 
     @Override
@@ -512,7 +512,7 @@ public abstract class BaseMessage implements Message {
             return null;
         }
         try {
-          tmpFilename = IOUtil.getSafeFilename(tmpFilename);
+            tmpFilename = IOUtil.getSafeFilename(tmpFilename);
         } catch (OpenAS2Exception oae) {
             LoggerFactory.getLogger(BaseMessage.class).warn("Unable to extract a usable filename from: " + tmpFilename);
             return null;

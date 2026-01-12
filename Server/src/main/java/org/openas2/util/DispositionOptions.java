@@ -1,9 +1,9 @@
 package org.openas2.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.processor.receiver.AS2MDNReceiverHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +26,8 @@ public class DispositionOptions {
         this.micalgs = micalgs;
     }
 
-    /** Per the RFC, there can be multiple algorithm options defined for the micalg disposition.
+    /**
+     * Per the RFC, there can be multiple algorithm options defined for the micalg disposition.
      * The RFC states : The list of MIC algorithms SHOULD be honored by the recipient from left to right.
      * The original code that has been used for years simply assumed there was only a single algorithm passed.
      * Therefore we will return the first available micalg in the list. This will work for processing the response
@@ -35,10 +36,11 @@ public class DispositionOptions {
      * supported, it will generate an error response allowing the partner to fix on their end but some AS2 systems
      * may not support individual settings for algorithms on a per partner basis so we may have to enhance MIC
      * processing in the future to cycle through algorithms
+     *
      * @return a string defining the algorithm to use for generating the MIC.
      */
     public String getMicalg() {
-        return micalgs.isEmpty()?null:micalgs.get(0);
+        return micalgs.isEmpty() ? null : micalgs.get(0);
     }
 
     public void setMicalgImportance(String micalgImportance) throws OpenAS2Exception {

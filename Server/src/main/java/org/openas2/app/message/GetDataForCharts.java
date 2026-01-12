@@ -1,13 +1,12 @@
 package org.openas2.app.message;
 
 import org.openas2.OpenAS2Exception;
-
 import org.openas2.cmd.CommandResult;
-
 import org.openas2.message.MessageFactory;
+import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.msgtracking.DbTrackingModule;
 import org.openas2.processor.msgtracking.TrackingModule;
-import org.openas2.processor.ProcessorModule;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

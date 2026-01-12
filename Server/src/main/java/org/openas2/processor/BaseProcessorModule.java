@@ -1,11 +1,11 @@
 package org.openas2.processor;
 
-import java.util.Map;
-
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
 import org.openas2.params.InvalidParameterException;
+
+import java.util.Map;
 
 
 public class BaseProcessorModule extends BaseComponent implements ProcessorModule {
@@ -28,7 +28,7 @@ public class BaseProcessorModule extends BaseComponent implements ProcessorModul
     @Override
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         throw new OpenAS2Exception("Module must implement the handle() method: " + this.getClass().getName());
-        
+
     }
 
 }

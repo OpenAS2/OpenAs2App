@@ -1,8 +1,12 @@
 package org.openas2.util;
 
+import jakarta.mail.Header;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
@@ -21,13 +25,8 @@ import org.openas2.processor.receiver.MessageBuilderModule;
 import org.openas2.processor.resender.ResenderModule;
 import org.openas2.processor.sender.SenderModule;
 import org.openas2.processor.storage.StorageModule;
-
-import jakarta.mail.Header;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.ContentType;
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMultipart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -57,7 +56,7 @@ public class AS2Util {
         CompositeParameters params = new CompositeParameters(
                 false).add("date",
                 new DateParameters()).add("msg",
-                new MessageParameters(msg)).add("rand",new RandomParameters()
+                new MessageParameters(msg)).add("rand", new RandomParameters()
         );
         if (isMDN) {
             params.add("mdn", new MessageMDNParameters(msg.getMDN()));
@@ -65,8 +64,8 @@ public class AS2Util {
         }
         if (idFormat == null) {
             idFormat = msg.getPartnership().getAttributeOrProperty(
-                Properties.AS2_MESSAGE_ID_FORMAT,
-                "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>"
+                    Properties.AS2_MESSAGE_ID_FORMAT,
+                    "<OPENAS2-$date.ddMMyyyyHHmmssZ$-$rand.UUID$@$msg.sender.as2_id$_$msg.receiver.as2_id$>"
             );
         }
         String id = ParameterParser.parse(idFormat, params);
@@ -86,7 +85,7 @@ public class AS2Util {
     }
 
     /**
-     * @param msg- the AS2 message that is being processed
+     * @param msg-     the AS2 message that is being processed
      * @param receiver - the receivers X509 certificate
      * @return - a boolean indicating if the extracted response indicated an issue processing the AS2 message that was sent. Message state is NOT updated in this method.
      * @throws OpenAS2Exception - thrown if there are issues trying to extract the response from the partner
@@ -155,7 +154,7 @@ public class AS2Util {
                     return false;
                 }
             } else {
-                logger.error("The received MimeBodyPart for inbound MDN did not contain a standard MDN response. This is probably because an error occurred on the remote side processing the message. Review the response below for possible reasons: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(mainPart, true));                
+                logger.error("The received MimeBodyPart for inbound MDN did not contain a standard MDN response. This is probably because an error occurred on the remote side processing the message. Review the response below for possible reasons: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(mainPart, true));
                 return false;
             }
         } catch (Exception e) {
@@ -250,7 +249,7 @@ public class AS2Util {
             return true;
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("MIC processing start... "  + msg.getLogMsgID());
+            logger.trace("MIC processing start... " + msg.getLogMsgID());
         }
         // get the returned mic from mdn object
         String returnMIC = msg.getMDN().getAttribute(AS2MessageMDN.MDNA_MIC);
@@ -328,10 +327,6 @@ public class AS2Util {
     }
 
     /**
-     * @description Attempts to check if a resend should go ahead and if so
-     * decrements the resend count and stores the decremented retry count in the
-     * options map. If the passed in retry count is null or invalid it will fall
-     * back to a system default
      * @param session
      * @param sourceClass
      * @param how
@@ -341,10 +336,14 @@ public class AS2Util {
      * @param keepOriginalData
      * @return
      * @throws OpenAS2Exception
+     * @description Attempts to check if a resend should go ahead and if so
+     * decrements the resend count and stores the decremented retry count in the
+     * options map. If the passed in retry count is null or invalid it will fall
+     * back to a system default
      */
     public static boolean resend(Session session, Class<?> sourceClass, String how, Message msg, OpenAS2Exception cause, boolean useOriginalMsgObject, boolean keepOriginalData) throws OpenAS2Exception {
         Logger logger = LoggerFactory.getLogger(AS2Util.class);
-        int retries = Integer.parseInt((String)msg.getOption(ResenderModule.OPTION_RETRIES));
+        int retries = Integer.parseInt((String) msg.getOption(ResenderModule.OPTION_RETRIES));
         int maxRetryCount = getMaxResendCount(session, msg);
         if (logger.isDebugEnabled()) {
             logger.debug("RESEND requested. Retries: " + retries + " Max retries: " + maxRetryCount + "\n        Message file from passed in object: " + msg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
@@ -413,9 +412,9 @@ public class AS2Util {
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Message file extracted from passed in object: "
-                             + msg.getAttribute(FileAttribute.MA_PENDINGFILE)
-                             + "\n        Message file extracted from original object: "
-                             + originalMsg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
+                        + msg.getAttribute(FileAttribute.MA_PENDINGFILE)
+                        + "\n        Message file extracted from original object: "
+                        + originalMsg.getAttribute(FileAttribute.MA_PENDINGFILE) + msg.getLogMsgID());
             }
             msg = originalMsg;
         }
@@ -493,12 +492,10 @@ public class AS2Util {
      * @param isAsyncMDN  boolean indicating if this is an ASYNC MDN
      * @param session     - Session object
      * @param sourceClass - who invoked this method
-
      * @return mdnResponseIssue - boolean indicating that the MDN processing identified an issue.
-
      * @throws OpenAS2Exception - an internally handled error has occurred
      * @throws IOException      - the IO system has a problem
-     * 
+     *
      */
     public static boolean processMDN(AS2Message msg, byte[] data, OutputStream out, boolean isAsyncMDN, Session session, Class<?> sourceClass) throws OpenAS2Exception, IOException {
         Logger logger = LoggerFactory.getLogger(AS2Util.class);
@@ -515,13 +512,13 @@ public class AS2Util {
             session.getPartnershipFactory().updatePartnership(mdn, false);
         } catch (OpenAS2Exception e) {
             // Partnership not found
-           try {
+            try {
                 HTTPUtil.sendHTTPResponse(out, HttpURLConnection.HTTP_BAD_REQUEST, null);
             } catch (IOException e1) {
             }
             if (logger.isInfoEnabled()) {
                 logger.info("Partnership lookup failed for MDN received from: " + msg.getHeader("AS2-To")
-                    + "  MDN is targeting partner: " + msg.getHeader("AS2-From"));
+                        + "  MDN is targeting partner: " + msg.getHeader("AS2-From"));
             }
             cleanupFiles(msg, true);
             // since we cannot identify the partnership there is nothing to do here except tell the caller we did not process it
@@ -884,7 +881,7 @@ public class AS2Util {
         if (maxRetryCntStr == null || maxRetryCntStr.length() < 1) {
             maxRetryCntStr = session.getProcessor().getParameters().get(MessageBuilderModule.PARAM_RESEND_MAX_RETRIES);
         }
-        int maxResendCount = (maxRetryCntStr != null && maxRetryCntStr.length() > 0)?Integer.parseInt(maxRetryCntStr):ResenderModule.DEFAULT_RETRIES;
+        int maxResendCount = (maxRetryCntStr != null && maxRetryCntStr.length() > 0) ? Integer.parseInt(maxRetryCntStr) : ResenderModule.DEFAULT_RETRIES;
         return maxResendCount;
     }
 }

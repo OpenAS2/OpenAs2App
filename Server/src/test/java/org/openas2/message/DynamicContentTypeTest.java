@@ -1,15 +1,13 @@
 package org.openas2.message;
 
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.app.BaseServerSetup;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.util.Properties;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,21 +15,17 @@ import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.extension.ExtendWith;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public class DynamicContentTypeTest extends BaseServerSetup {
     private DirectoryPollingModule poller;
-    
+
     public static File systemContentTypesMappingFile;
     public static File partnershipContentTypesMappingFile;
 
@@ -48,21 +42,21 @@ public class DynamicContentTypeTest extends BaseServerSetup {
         super.createFileSystemResources();
         // Set up the system level mappings
         systemContentTypesMappingFile = new File(tmpDir, "content_type_map.properties");
-        systemMappedContentTypes.put(xmlFileExtension,  "application/xml");
-        systemMappedContentTypes.put(ediFileExtension,  "application/edifact");
-        systemMappedContentTypes.put("txt",  "text/plain");
+        systemMappedContentTypes.put(xmlFileExtension, "application/xml");
+        systemMappedContentTypes.put(ediFileExtension, "application/edifact");
+        systemMappedContentTypes.put("txt", "text/plain");
         BufferedWriter writer = new BufferedWriter(new FileWriter(systemContentTypesMappingFile));
         for (Map.Entry<String, String> entry : systemMappedContentTypes.entrySet()) {
             writer.write(entry.getKey() + "=" + entry.getValue() + "\n");
-        }  
+        }
         writer.close();
         // Set up the partnership override mappings
         partnershipContentTypesMappingFile = new File(tmpDir, "override_content_type_map.properties");
-        partnershipMappedContentTypes.put(xmlFileExtension,  "application/xml-custom");
+        partnershipMappedContentTypes.put(xmlFileExtension, "application/xml-custom");
         BufferedWriter writer2 = new BufferedWriter(new FileWriter(partnershipContentTypesMappingFile));
         for (Map.Entry<String, String> entry : partnershipMappedContentTypes.entrySet()) {
             writer2.write(entry.getKey() + "=" + entry.getValue() + "\n");
-        }  
+        }
         writer2.close();
         super.setup();
         this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
@@ -85,7 +79,9 @@ public class DynamicContentTypeTest extends BaseServerSetup {
     public void a2_shouldFailNoMapping() throws Exception {
         // Make sure that there is an error if no mapping file defined but trying to use mapping
         Partnership myPartnership = simpleTestMsg.getPartnership();
-        assertThrows(Exception.class, () -> { myPartnership.setUseDynamicContentTypeLookup(true);}, "No config for Content-Type mapping should throw exception.");
+        assertThrows(Exception.class, () -> {
+            myPartnership.setUseDynamicContentTypeLookup(true);
+        }, "No config for Content-Type mapping should throw exception.");
     }
 
 

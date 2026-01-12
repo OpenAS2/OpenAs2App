@@ -8,11 +8,7 @@ import org.dom4j.io.SAXReader;
 
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class XMLUtil {
     public static Document getDocument(InputStream in) throws DocumentException {

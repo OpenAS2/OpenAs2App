@@ -22,7 +22,7 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 
         Map<String, String> fields = buildMap(msg, options);
         new Thread(() -> {
-        persist(msg, fields);
+            persist(msg, fields);
         }).start();
 
     }
@@ -31,7 +31,8 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
         super.init(session, options);
     }
 
-    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
+    /**
+     * TODO: Remove this when module config enforces setting the action so that the super method does all the work
      *
      */
     public String getModuleAction() {

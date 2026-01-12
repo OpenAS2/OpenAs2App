@@ -1,12 +1,12 @@
 package org.openas2.lib.helper;
 
+import jakarta.mail.internet.MimeBodyPart;
 import org.bouncycastle.mail.smime.SMIMEException;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
 
-import jakarta.mail.internet.MimeBodyPart;
 import java.io.InputStream;
 import java.security.Key;
 import java.security.KeyStore;

@@ -1,27 +1,18 @@
 package org.openas2.mail;
 
-import org.openas2.BaseComponent;
-import org.openas2.OpenAS2Exception;
-import org.openas2.Session;
-import org.openas2.message.AS2Message;
-import org.openas2.message.MessageMDN;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.ExceptionParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageMDNParameters;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import org.openas2.BaseComponent;
+import org.openas2.OpenAS2Exception;
+import org.openas2.Session;
+import org.openas2.message.AS2Message;
+import org.openas2.message.MessageMDN;
+import org.openas2.params.*;
+
+import java.io.*;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;

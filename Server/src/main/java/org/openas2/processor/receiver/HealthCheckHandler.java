@@ -3,12 +3,12 @@
  */
 package org.openas2.processor.receiver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.mail.internet.InternetHeaders;
 import org.openas2.app.HealthCheck;
 import org.openas2.util.HTTPUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.mail.internet.InternetHeaders;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;

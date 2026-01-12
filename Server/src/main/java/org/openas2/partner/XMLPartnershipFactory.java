@@ -1,7 +1,5 @@
 package org.openas2.partner;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -11,6 +9,8 @@ import org.openas2.schedule.HasSchedule;
 import org.openas2.support.FileMonitorAdapter;
 import org.openas2.util.AS2Util;
 import org.openas2.util.XMLUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -24,12 +24,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
+import javax.xml.xpath.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -166,7 +161,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         Node partnerNode = XMLUtil.findChildNode(partnershipNode, partnerType);
 
         if (partnerNode == null) {
-            throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing a node entry for the " +  partnerType + ".");
+            throw new OpenAS2Exception("Partnership \"" + partnershipName + "\" is missing a node entry for the " + partnerType + ".");
         }
 
         Map<String, String> partnerAttr = XMLUtil.mapAttributes(partnerNode);
@@ -220,13 +215,13 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         }
         // add the partnership to the list of available partnerships
         partnerships.add(partnership);
-        
+
         // Now check if we need to add a directory polling module
         Node pollerCfgNode = XMLUtil.findChildNode(node, Partnership.PCFG_POLLER);
         if (pollerCfgNode != null) {
             /* Load a poller configuration.
              * This will require fetching the base configuration for the pollers loaded from
-             * the config.xml and merging with the configured setup in the partnership 
+             * the config.xml and merging with the configured setup in the partnership
              * overriding the base attribute values with any found in the partnership
              * pollerConfig element then enhancing the attribute values to cater for embedded
              * dynamic variables before activating the poller.
@@ -235,10 +230,10 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
             if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
                 if (logger.isTraceEnabled()) {
-                        logger.trace("Found partnership poller for partnership: " + name);
+                    logger.trace("Found partnership poller for partnership: " + name);
                 }
                 // Create a copy of the base config node
-                Node basePollerConfigNode = ((XMLSession)getSession()).getBasePartnershipPollerConfig();
+                Node basePollerConfigNode = ((XMLSession) getSession()).getBasePartnershipPollerConfig();
                 if (basePollerConfigNode == null) {
                     throw new OpenAS2Exception("Missing base poller config node in config.xml to configure partnership poller.");
                 }
@@ -257,7 +252,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                 // Now update the XML with the attribute values
                 attributes.forEach((key, value) -> {
                     pollerConfigElem.setAttribute(key, value);
-                }); 
+                });
                 // replace the $partnertship.* placeholders
                 replacePartnershipPlaceHolders(pollerDoc, partnership);
                 // Now launch a directory poller module for this config
@@ -269,6 +264,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     /**
      * Appends the passed element as a child of the root in the partnership document.
      * It does NOT check if the passed element is a valid element.
+     *
      * @param newElement - the element to be added.
      */
     public void addElement(Element newElement) {
@@ -280,6 +276,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     /**
      * Appends the passed element as a child of the root in the partnership document.
      * It does NOT check if the passed element is a valid element.
+     *
      * @param newElement - the element to be added.
      */
     public boolean deleteElement(String xpath) {
@@ -287,7 +284,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         XPath xPath = XPathFactory.newInstance().newXPath();
         NodeList nodes;
         try {
-            nodes = (NodeList)xPath.evaluate(xpath, doc, XPathConstants.NODESET);
+            nodes = (NodeList) xPath.evaluate(xpath, doc, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
             logger.error("Error trying to find any nodes in the XPATH expression: " + xpath, e);
             return false;
@@ -382,24 +379,24 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
                     String[] keys = matcher.group(1).split("\\.");
                     if (keys.length == 1) {
                         switch (keys[0]) {
-                        case "name":
-                            value = partnership.getName();
-                            break;
-                        default:
-                            throw new OpenAS2Exception(
-                                    "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
+                            case "name":
+                                value = partnership.getName();
+                                break;
+                            default:
+                                throw new OpenAS2Exception(
+                                        "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
                         }
                     } else if (keys.length == 2) {
                         switch (keys[0]) {
-                        case "receiver":
-                            value = partnership.getReceiverID(keys[1]);
-                            break;
-                        case "sender":
-                            value = partnership.getSenderID(keys[1]);
-                            break;
-                        default:
-                            throw new OpenAS2Exception(
-                                    "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
+                            case "receiver":
+                                value = partnership.getReceiverID(keys[1]);
+                                break;
+                            case "sender":
+                                value = partnership.getSenderID(keys[1]);
+                                break;
+                            default:
+                                throw new OpenAS2Exception(
+                                        "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
                         }
                     } else {
                         // don't know how to handle this

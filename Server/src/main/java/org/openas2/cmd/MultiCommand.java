@@ -3,11 +3,7 @@ package org.openas2.cmd;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MultiCommand extends BaseCommand {
     private List<Command> cmds;

@@ -9,5 +9,5 @@ public interface MessageFactory extends Component {
 
     Map<String, Object> getMessages();
 
-    
+
 }

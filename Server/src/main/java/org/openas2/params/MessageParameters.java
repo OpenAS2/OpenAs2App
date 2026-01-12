@@ -1,11 +1,11 @@
 package org.openas2.params;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.mail.internet.ParseException;
 import org.openas2.message.Message;
 import org.openas2.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.mail.internet.ParseException;
 import java.util.StringTokenizer;
 
 public class MessageParameters extends ParameterParser {

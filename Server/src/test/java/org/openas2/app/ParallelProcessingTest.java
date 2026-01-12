@@ -12,12 +12,7 @@ import org.openas2.TestPartner;
 import org.openas2.TestResource;
 import org.openas2.TestUtils;
 import org.openas2.XMLSession;
-import org.openas2.processor.ActiveModule;
-import org.openas2.processor.ProcessorModule;
-import org.openas2.processor.receiver.AS2DirectoryPollingModule;
 import org.openas2.processor.receiver.DirectoryPollingModule;
-import org.openas2.processor.storage.MessageFileModule;
-import org.openas2.processor.storage.StorageModule;
 import org.openas2.util.Properties;
 
 import java.io.File;
@@ -26,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -102,7 +96,7 @@ public class ParallelProcessingTest {
 
     @Test
     public void shouldBeParallelMode() throws Exception {
-        XMLSession session = (XMLSession)server1.getSession();
+        XMLSession session = (XMLSession) server1.getSession();
         DirectoryPollingModule pollingModule = session.getPartnershipPoller(server1PartnerSender.getPartnership().getName());
         String modeSetting = pollingModule.getParameter(DirectoryPollingModule.PARAM_PROCESS_IN_PARALLEL, "false");
         assertThat("Directory polling module running in parallel mode", "true", Matchers.equalTo(modeSetting));
@@ -136,7 +130,7 @@ public class ParallelProcessingTest {
     private void sendAllMessages(TestPartner fromPartner, TestPartner toPartner) throws IOException {
         File[] files = resourceTmp.listFiles();
         System.out.println("Moving " + files.length + " files to outbox for sending to:" + fromPartner.getOutbox());
-        for(int i = 0; i < files.length; i++) {
+        for (int i = 0; i < files.length; i++) {
             FileUtils.moveFileToDirectory(files[i], fromPartner.getOutbox(), false);
         }
     }

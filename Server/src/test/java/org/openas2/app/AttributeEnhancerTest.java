@@ -10,8 +10,8 @@ import org.openas2.util.Properties;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(MockitoExtension.class)
 

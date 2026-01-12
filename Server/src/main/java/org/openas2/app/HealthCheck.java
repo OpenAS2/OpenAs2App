@@ -1,10 +1,10 @@
 package org.openas2.app;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.ComponentNotFoundException;
 import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.receiver.HealthCheckHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;

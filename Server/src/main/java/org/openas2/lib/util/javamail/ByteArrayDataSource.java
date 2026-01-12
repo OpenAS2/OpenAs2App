@@ -1,11 +1,8 @@
 package org.openas2.lib.util.javamail;
 
 import jakarta.activation.DataSource;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import java.io.*;
 
 
 public class ByteArrayDataSource implements DataSource {

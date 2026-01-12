@@ -3,8 +3,6 @@
  */
 package org.openas2.processor.msgtracking;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.message.Message;
@@ -12,13 +10,10 @@ import org.openas2.params.ComponentParameters;
 import org.openas2.params.CompositeParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.util.DateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -257,34 +252,34 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             return "NULL";
         }
         switch (dataType) {
-        case Types.BIGINT:
-        case Types.DECIMAL:
-        case Types.DOUBLE:
-        case Types.FLOAT:
-        case Types.INTEGER:
-        case Types.NUMERIC:
-        case Types.REAL:
-        case Types.SMALLINT:
-        case Types.BINARY:
-        case Types.TINYINT:
-            // case Types.ROWID:
-            return value;
-        case Types.TIME_WITH_TIMEZONE:
-        case Types.TIMESTAMP_WITH_TIMEZONE:
-        case Types.DATE:
-        case Types.TIME:
-        case Types.TIMESTAMP:
-            if ("oracle".equalsIgnoreCase(dbPlatform)) {
-                if (value.length() > 19) {
-                    return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
+            case Types.BIGINT:
+            case Types.DECIMAL:
+            case Types.DOUBLE:
+            case Types.FLOAT:
+            case Types.INTEGER:
+            case Types.NUMERIC:
+            case Types.REAL:
+            case Types.SMALLINT:
+            case Types.BINARY:
+            case Types.TINYINT:
+                // case Types.ROWID:
+                return value;
+            case Types.TIME_WITH_TIMEZONE:
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+            case Types.DATE:
+            case Types.TIME:
+            case Types.TIMESTAMP:
+                if ("oracle".equalsIgnoreCase(dbPlatform)) {
+                    if (value.length() > 19) {
+                        return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
+                    } else {
+                        return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
+                    }
+                } else if ("mssql".equalsIgnoreCase(dbPlatform)) {
+                    return ("CAST('" + value + "' AS DATETIME)");
                 } else {
-                    return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
+                    return "'" + value + "'";
                 }
-            } else if ("mssql".equalsIgnoreCase(dbPlatform)) {
-                return ("CAST('" + value + "' AS DATETIME)");
-            } else {
-                return "'" + value + "'";
-            }
         }
         // Must be some kind of string value if it gets here
         return "'" + value.replaceAll("'", sqlEscapeChar + "'") + "'";
@@ -298,7 +293,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values,
-            int dataType) {
+                                      int dataType) {
         if (names.length() > 0) {
             names.append(",");
             values.append(",");

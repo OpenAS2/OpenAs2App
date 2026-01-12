@@ -1,13 +1,13 @@
 package org.openas2.lib.util;
 
-import org.openas2.Session;
-import org.openas2.lib.util.javamail.ByteArrayDataSource;
-
 import jakarta.activation.DataHandler;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetHeaders;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
+import org.openas2.Session;
+import org.openas2.lib.util.javamail.ByteArrayDataSource;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;

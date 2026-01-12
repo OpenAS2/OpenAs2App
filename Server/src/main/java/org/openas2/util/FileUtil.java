@@ -2,14 +2,7 @@ package org.openas2.util;
 
 import org.openas2.OpenAS2Exception;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
 
 
@@ -25,15 +18,17 @@ public class FileUtil {
             fileProps.load(fis);
         } finally {
             if (fis != null) {
-                    fis.close();
+                fis.close();
             }
         }
         return fileProps;
     }
 
-    /** Attempts to extract the filename extension by searching for the last occurrence
-     *  of a period and returning all characters following that period.
-     *  If no period is found then it returns null.
+    /**
+     * Attempts to extract the filename extension by searching for the last occurrence
+     * of a period and returning all characters following that period.
+     * If no period is found then it returns null.
+     *
      * @param filename - the full name of the file including extension
      * @return the extension of the filename excluding the period
      */
@@ -72,7 +67,7 @@ public class FileUtil {
             }
             long expectedFileCnt = Math.floorDiv(sourceFile.length(), maxFileSize);
             // Figure out how many digits to pad the filename with - add 1 to cater for header row
-            int fileCntDigits = Long.toString(expectedFileCnt).length() +1;
+            int fileCntDigits = Long.toString(expectedFileCnt).length() + 1;
             int fileCount = 0;
             boolean notEof = true;
             byte[] lineBytes = null;
@@ -107,7 +102,7 @@ public class FileUtil {
                         lineBytes = (line + "\n").getBytes();
                     }
                     fileSize += lineBytes.length;
-                    while (fileSize < maxFileSize) {                      
+                    while (fileSize < maxFileSize) {
                         fos.write(lineBytes);
                         fos.flush(); // Flush on each loop to keep memory usage low
                         line = bufferedReader.readLine();
@@ -140,7 +135,7 @@ public class FileUtil {
             } catch (IOException e) {
                 throw new OpenAS2Exception("Failed to close reader for input file.", e);
             }
-        }        
+        }
     }
 
 }

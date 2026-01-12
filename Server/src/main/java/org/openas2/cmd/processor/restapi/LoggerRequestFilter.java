@@ -5,13 +5,13 @@
  */
 package org.openas2.cmd.processor.restapi;
 
-import org.slf4j.Logger;
-
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.ext.Provider;
+import org.slf4j.Logger;
+
 import java.io.IOException;
 
 /**
@@ -23,7 +23,7 @@ public class LoggerRequestFilter implements ContainerRequestFilter, ContainerRes
     private static Logger logger;
 
     public LoggerRequestFilter() {
-        
+
     }
 
     @Override
@@ -39,7 +39,7 @@ public class LoggerRequestFilter implements ContainerRequestFilter, ContainerRes
     /**
      * @return the logger
      */
-     public static Logger getLogger() {
+    public static Logger getLogger() {
         return logger;
     }
 

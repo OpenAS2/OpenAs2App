@@ -1,8 +1,21 @@
 package org.openas2.app;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.mockito.Mockito;
+import org.openas2.cert.X509CertificateFactory;
+import org.openas2.message.Message;
+import org.openas2.message.NetAttribute;
+import org.openas2.processor.sender.AS2SenderModule;
+import org.openas2.processor.sender.HttpSenderModule;
+import org.openas2.util.AS2Util;
+import org.openas2.util.HTTPUtil;
+import org.openas2.util.Properties;
+import org.openas2.util.ResponseWrapper;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -12,29 +25,8 @@ import java.security.KeyStore;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.net.ssl.SSLHandshakeException;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.mockito.Mockito;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.openas2.util.AS2Util;
-import org.openas2.util.HTTPUtil;
-import org.openas2.util.Properties;
-import org.openas2.util.ResponseWrapper;
-
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
-
-import org.openas2.cert.X509CertificateFactory;
-import org.openas2.message.Message;
-import org.openas2.message.NetAttribute;
-import org.openas2.processor.sender.AS2SenderModule;
-import org.openas2.processor.sender.HttpSenderModule;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -47,12 +39,12 @@ public class CertificatesTest extends BaseServerSetup {
     private File customPropsFile = null;
     private File sslCertsFile = null; // The private key and certificate for the HTTPS
     private String sslTrustCertsFilePath = null; // The public key for the SSL private key
-    private X509CertificateFactory trustFx = null; // The trust certificates 
+    private X509CertificateFactory trustFx = null; // The trust certificates
     protected static Message testMsg; // Created just once for all tests to minimise runtime
     private InternetHeaders ih = null;
     Map<String, Object> httpOptions = null;
     InputStream securedDataInputStream = null;
-    
+
 
     public X509CertificateFactory genSelfSignedCert(
             String alias,
@@ -74,7 +66,7 @@ public class CertificatesTest extends BaseServerSetup {
         certFx.genSelfSignedCertificate(alias, dn, hashAlg, keyAlg, keySize, validDays);
         certFx.save();
         return certFx;
-    }   
+    }
 
     @BeforeAll
     public void setUp() throws Exception {
@@ -141,7 +133,7 @@ public class CertificatesTest extends BaseServerSetup {
         Map<String, Object> httpOptions = new HashMap<String, Object>();
         assertThrows(
                 SSLHandshakeException.class,
-                ()->{
+                () -> {
                     HTTPUtil.execRequest(HTTPUtil.Method.POST, url, null, null, null, httpOptions, -1, false);
                 }
         );

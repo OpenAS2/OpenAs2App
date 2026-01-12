@@ -1,10 +1,10 @@
 package org.openas2.app.logging;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.BaseCommand;
 import org.openas2.cmd.CommandResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AliasedLoggingCommand extends BaseCommand {
 

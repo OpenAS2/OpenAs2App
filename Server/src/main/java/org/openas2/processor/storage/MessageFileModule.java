@@ -1,20 +1,15 @@
 package org.openas2.processor.storage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.message.Message;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.params.*;
 import org.openas2.partner.Partnership;
 import org.openas2.processor.receiver.AS2ReceiverModule;
 import org.openas2.util.DispositionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -34,7 +29,7 @@ public class MessageFileModule extends BaseStorageModule {
         // store message content
         try {
             // Check if the location to store the received message is specified in the partnership
-            String store_message_to = (String)options.get(Partnership.PA_STORE_RECEIVED_FILE_TO);
+            String store_message_to = (String) options.get(Partnership.PA_STORE_RECEIVED_FILE_TO);
             if (store_message_to == null) {
                 // Fetch the global storage string
                 store_message_to = getParameter(PARAM_FILENAME, true);
@@ -61,9 +56,10 @@ public class MessageFileModule extends BaseStorageModule {
         }
     }
 
-    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
-    *
-    */
+    /**
+     * TODO: Remove this when module config enforces setting the action so that the super method does all the work
+     *
+     */
     public String getModuleAction() {
         String action = super.getModuleAction();
         if (action == null) {

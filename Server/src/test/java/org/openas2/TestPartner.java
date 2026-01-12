@@ -35,18 +35,18 @@ public class TestPartner {
 
     public TestPartner(OpenAS2Server server, Partnership partnership, DirectoryPollingModule dirPollMod) throws Exception {
         this.server = server;
-    	this.partnership = partnership;
+        this.partnership = partnership;
         this.name = partnership.getSenderID("name");
         this.as2Id = partnership.getSenderID(Partnership.PID_AS2);
         this.partnerName = partnership.getReceiverID("name");
         this.partnerAS2Id = partnership.getReceiverID(Partnership.PID_AS2);
         if (this.partnership == null) {
-        	throw new Exception("Require a partnership to configure a test partner.");
+            throw new Exception("Require a partnership to configure a test partner.");
         }
-        XMLSession session = (XMLSession)server.getSession();
+        XMLSession session = (XMLSession) server.getSession();
         if (dirPollMod != null) {
-        	// Must be a sender so set up the relevant folders for test
-                setOutbox(new File(dirPollMod.getParameter(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY, true)));
+            // Must be a sender so set up the relevant folders for test
+            setOutbox(new File(dirPollMod.getParameter(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY, true)));
         }
         // Create a fake AS2 message to build the directory structures so we know where the files will be stored
         AS2Message msg = new AS2Message();
@@ -55,11 +55,11 @@ public class TestPartner {
         new AS2MessageMDN(msg, true);
         List<ProcessorModule> msgStorageModules = session.getProcessor().getModulesSupportingAction(StorageModule.DO_STORE);
         // Just use the first one even if there is more than 1
-        MessageFileModule msgFileModule = (MessageFileModule)msgStorageModules.get(0);
+        MessageFileModule msgFileModule = (MessageFileModule) msgStorageModules.get(0);
         setInbox(msgFileModule.getFile(msg, msgFileModule.getParameter(BaseStorageModule.PARAM_FILENAME, true), "").getAbsoluteFile().getParentFile());
         List<ProcessorModule> mdnStorageModules = session.getProcessor().getModulesSupportingAction(StorageModule.DO_STOREMDN);
         // Just use the first one even if there is more than 1
-        MDNFileModule mdnFileModule = (MDNFileModule)mdnStorageModules.get(0);
+        MDNFileModule mdnFileModule = (MDNFileModule) mdnStorageModules.get(0);
         File mdnDir = mdnFileModule.getFile(msg, mdnFileModule.getParameter(BaseStorageModule.PARAM_FILENAME, true), "").getAbsoluteFile().getParentFile();
         setSentMDNs(mdnDir);
         setRxdMDNs(mdnDir);
@@ -80,7 +80,7 @@ public class TestPartner {
 
     public File getHome() {
         if (storageBaseDir == null) {
-                storageBaseDir = new File(Properties.getProperty("storageBaseDir", null));
+            storageBaseDir = new File(Properties.getProperty("storageBaseDir", null));
         }
         return storageBaseDir;
     }

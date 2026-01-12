@@ -17,11 +17,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,9 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.text.MatchesPattern.matchesPattern;
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -116,7 +112,7 @@ public class RestApiTest {
             httpClientBuilder = httpClientBuilder.setDefaultCredentialsProvider(getCredentials());
         }
         try (CloseableHttpClient httpClient = httpClientBuilder.build();
-            CloseableHttpResponse response = httpClient.execute(request)) {
+             CloseableHttpResponse response = httpClient.execute(request)) {
             HttpEntity entity = response.getEntity();
             return entity != null ? EntityUtils.toString(entity) : "";
         }
@@ -130,7 +126,7 @@ public class RestApiTest {
             httpClientBuilder = httpClientBuilder.setDefaultCredentialsProvider(getCredentials());
         }
         try (CloseableHttpClient httpClient = httpClientBuilder.build();
-            CloseableHttpResponse response = httpClient.execute(httpPost)) {
+             CloseableHttpResponse response = httpClient.execute(httpPost)) {
 
             final int statusCode = response.getStatusLine().getStatusCode();
             assertThat(statusCode, equalTo(HttpStatus.SC_OK));
@@ -161,19 +157,19 @@ public class RestApiTest {
     @Test
     public void shouldRespondWith_B_Partners() throws Exception {
         String buffer = this.doGet("partner/list", true);
-        assertThat("Getting Partners API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"PartnerA\", \"MyCompany\", \"PartnerB\"[\\s\\S\\n]*"));
+        assertThat("Getting Partners API ", buffer.replaceAll("[\\n\\r]+", ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"PartnerA\", \"MyCompany\", \"PartnerB\"[\\s\\S\\n]*"));
     }
 
     @Test
     public void shouldRespondWith_C_Partnerships() throws Exception {
         String buffer = this.doGet("partnership/list", true);
-        assertThat("Getting Partnership API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"MyCompany-to-PartnerA\".*"));
+        assertThat("Getting Partnership API ", buffer.replaceAll("[\\n\\r]+", ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"MyCompany-to-PartnerA\".*"));
     }
 
     @Test
     public void shouldRespondWith_D_Certs() throws Exception {
         String buffer = this.doGet("cert/list", true);
-        assertThat("Getting Certs API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"partnera\", \"mycompany\".*"));
+        assertThat("Getting Certs API ", buffer.replaceAll("[\\n\\r]+", ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"partnera\", \"mycompany\".*"));
     }
 
     @Test
@@ -182,7 +178,7 @@ public class RestApiTest {
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         params.add(new BasicNameValuePair("as2_id", "PX_OID"));
         String buffer = this.doPost("partner/add", true, params);
-        assertThat("Add partner via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+        assertThat("Add partner via API ", buffer.replaceAll("[\\n\\r]+", ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
     }
 
     @Test
@@ -191,7 +187,7 @@ public class RestApiTest {
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         params.add(new BasicNameValuePair("as2_id", "PX_OID"));
         String buffer = this.doPost("partner/add", true, params);
-        assertThat("Add partner fails via API ", buffer.replaceAll("[\\n\\r]+",  ":"), containsString("Partner is defined more than once"));
+        assertThat("Add partner fails via API ", buffer.replaceAll("[\\n\\r]+", ":"), containsString("Partner is defined more than once"));
     }
 
     @Test
@@ -203,7 +199,7 @@ public class RestApiTest {
         params.add(new BasicNameValuePair("as2_url", "http://my.as2host.io:10080"));
         params.add(new BasicNameValuePair("pollerConfig.enabled", "false"));
         String buffer = this.doPost("partnership/add", true, params);
-        assertThat("Add partnership via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+        assertThat("Add partnership via API ", buffer.replaceAll("[\\n\\r]+", ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
     }
 
     @Test
@@ -211,7 +207,7 @@ public class RestApiTest {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("0", TEST_PARTNERSHIP_NAME));
         String buffer = this.doPost("partnership/delete", true, params);
-        assertThat("Delete partnership via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+        assertThat("Delete partnership via API ", buffer.replaceAll("[\\n\\r]+", ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
     }
 
     @Test
@@ -219,6 +215,6 @@ public class RestApiTest {
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("0", TEST_PARTNER_NAME));
         String buffer = this.doPost("partner/delete", true, params);
-        assertThat("Delete partnership via API ", buffer.replaceAll("[\\n\\r]+",  ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
+        assertThat("Delete partnership via API ", buffer.replaceAll("[\\n\\r]+", ":"), matchesPattern(".*\"type\"[ ]*:[ ]*\"OK\".*\"Stored partnerships\".*"));
     }
 }

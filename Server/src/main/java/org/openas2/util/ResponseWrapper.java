@@ -1,11 +1,11 @@
 package org.openas2.util;
 
+import jakarta.mail.internet.InternetHeaders;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.openas2.OpenAS2Exception;
 
-import jakarta.mail.internet.InternetHeaders;
 import java.io.IOException;
 
 public class ResponseWrapper {

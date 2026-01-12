@@ -1,7 +1,7 @@
 package org.openas2;
 
-import org.openas2.message.MessageFactory;
 import org.openas2.cert.CertificateFactory;
+import org.openas2.message.MessageFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.processor.Processor;
 import org.w3c.dom.Node;
@@ -102,15 +102,16 @@ public interface Session {
     /**
      * Ability to load a poller module from a partnership loader.
      *
-     * @param moduleNode - XML Element node containing the config for the poller
+     * @param moduleNode      - XML Element node containing the config for the poller
      * @param partnershipName - name attribute value for the partnership node
-     * @param configSource - will be "partnership" or "configModule"
+     * @param configSource    - will be "partnership" or "configModule"
      * @return void
      * @throws OpenAS2Exception If there are issues with the definition of the poller
      */
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception;
-    
+
     public void startPartnershipPollers() throws OpenAS2Exception;
+
     public void destroyPartnershipPollers(String configSourceFilter);
 
     String getBaseDirectory();

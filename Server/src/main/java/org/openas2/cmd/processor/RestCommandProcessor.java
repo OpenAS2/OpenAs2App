@@ -5,16 +5,17 @@
  */
 package org.openas2.cmd.processor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
+import org.glassfish.jersey.message.filtering.SecurityEntityFilteringFeature;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cmd.Command;
@@ -22,15 +23,15 @@ import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.restapi.ApiResource;
 import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
 import org.openas2.cmd.processor.restapi.LoggerRequestFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import org.glassfish.jersey.message.filtering.EntityFilteringFeature;
-import org.glassfish.jersey.message.filtering.SecurityEntityFilteringFeature;
-import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+
 /**
  * @author javier
  */
@@ -43,7 +44,7 @@ public class RestCommandProcessor extends BaseCommandProcessor {
     @Override
     public void schedule(ScheduledExecutorService executor) throws OpenAS2Exception {
         // Do nothing. Everything is set up in the method init.
-    } 
+    }
 
     @Override
     public void processCommand() throws Exception {
@@ -88,11 +89,11 @@ public class RestCommandProcessor extends BaseCommandProcessor {
     @Override
     public void init(Session session, Map<String, String> parameters) throws OpenAS2Exception {
         try {
-            super.init(session, parameters);            
+            super.init(session, parameters);
             logger.info(this.getName() + " initialized...");
             // create a resource config that scans for JAX-RS resources and providers
             final String userId = parameters.getOrDefault("userid", "admin");
-            final String password = parameters.getOrDefault("password", "admin"); 
+            final String password = parameters.getOrDefault("password", "admin");
             ApiResource.setProcessor(this);
             LoggerRequestFilter.setLogger(logger);
             AuthenticationRequestFilter.setCredentials(userId, password);

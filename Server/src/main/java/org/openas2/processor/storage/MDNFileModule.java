@@ -4,12 +4,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
 import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
-import org.openas2.params.CompositeParameters;
-import org.openas2.params.DateParameters;
-import org.openas2.params.InvalidParameterException;
-import org.openas2.params.MessageMDNParameters;
-import org.openas2.params.ParameterParser;
-import org.openas2.params.RandomParameters;
+import org.openas2.params.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -36,9 +31,10 @@ public class MDNFileModule extends BaseStorageModule {
         }
     }
 
-    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
-    *
-    */
+    /**
+     * TODO: Remove this when module config enforces setting the action so that the super method does all the work
+     *
+     */
     public String getModuleAction() {
         String action = super.getModuleAction();
         if (action == null) {

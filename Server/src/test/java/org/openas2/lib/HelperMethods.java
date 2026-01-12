@@ -8,13 +8,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
 
-import static org.hamcrest.Matchers.equalTo;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(MockitoExtension.class)
 

@@ -7,45 +7,19 @@ package org.openas2.cmd.processor.restapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
+import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.Consumes;
-
-import jakarta.ws.rs.DefaultValue;
-
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.HEAD;
-
-
-import jakarta.ws.rs.PathParam;
-
-import jakarta.ws.rs.core.Context;
-
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
  * @author javier
@@ -73,9 +47,9 @@ public class ApiResource {
     @Context
     Request request;
     private final ObjectMapper mapper;
-    
+
     public ApiResource() {
-                
+
         mapper = new ObjectMapper();
         // enable pretty printing
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -153,10 +127,10 @@ public class ApiResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId) throws Exception {
         try {
-            CommandResult output=null;
+            CommandResult output = null;
             // TODO: Figure out a better way to return proper JSON objects instead of this hack
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert") && (itemId != null && itemId.length() > 1)) {
-                output=this.getCertificate(itemId.substring(1));
+                output = this.getCertificate(itemId.substring(1));
             } else {
                 output = processRequest(resource, action, itemId, null);
             }
@@ -177,12 +151,12 @@ public class ApiResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response postCommand(@PathParam("resource") String resource, @PathParam("action") @DefaultValue("list") String action, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
         try {
-            CommandResult output=null;
+            CommandResult output = null;
             // TODO: Figure out a better way to return proper JSON objects instead of this hack
             if (action.equalsIgnoreCase("view") && resource.equalsIgnoreCase("cert")) {
-                output= this.getCertificate(itemId);
+                output = this.getCertificate(itemId);
             } else if (action.equalsIgnoreCase("importbystream") && resource.equalsIgnoreCase("cert")) {
-                output= this.importCertificateByStream(itemId.substring(1), formParams);
+                output = this.importCertificateByStream(itemId.substring(1), formParams);
             } else {
                 output = processRequest(resource, action, itemId, formParams);
             }

@@ -1,10 +1,10 @@
 package org.openas2.lib.util;
 
+import org.openas2.OpenAS2Exception;
+
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.openas2.OpenAS2Exception;
 
 
 /**

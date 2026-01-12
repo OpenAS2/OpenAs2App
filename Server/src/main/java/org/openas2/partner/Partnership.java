@@ -37,7 +37,7 @@ public class Partnership implements Serializable {
     public static final String PID_EMAIL = "email"; // Email address
 
     /* partnership definition attributes */
-    public static final String PA_SUBJECT = "subject"; // Subject sent in messages    
+    public static final String PA_SUBJECT = "subject"; // Subject sent in messages
     public static final String PA_CONTENT_TYPE = "content_type"; // optional content type for mime parts
     public static final String PA_USE_DYNAMIC_CONTENT_TYPE_MAPPING = "use_dynamic_content_type_mapping"; // use file extension to Content-Type mapping
     public static final String PA_CONTENT_TYPE_MAPPING_FILE = "content_type_mapping_file"; // file containing file extension to Content-Type mapping
@@ -69,7 +69,7 @@ public class Partnership implements Serializable {
     public static final String PA_SPLIT_FILE_CONTAINS_HEADER_ROW = "split_file_contains_header_row";
     public static final String PA_SPLIT_FILE_NAME_PREFIX = "split_file_name_prefix";
     public static final String PA_RESEND_ON_SSL_EXCEPTION = "resend_on_ssl_exception";
-    public static final String PA_QUOTE_SEND_FILE_NAME = "quote_send_file_name"; // Allow disabling the quoting of the filename in header when sendfilename=true is set 
+    public static final String PA_QUOTE_SEND_FILE_NAME = "quote_send_file_name"; // Allow disabling the quoting of the filename in header when sendfilename=true is set
     // A hopefully temporary key to maintain backwards compatibility
     public static final String USE_NEW_CERTIFICATE_LOOKUP_MODE = "use_new_certificate_lookup_mode";
 
@@ -102,7 +102,9 @@ public class Partnership implements Serializable {
         getAttributes().put(id, value);
     }
 
-    /** Gets the value of the attribute for the provided key
+    /**
+     * Gets the value of the attribute for the provided key
+     *
      * @param id
      * @return Returns the value to which the specified key is mapped, or null if this map contains no mapping for the key.
      */
@@ -182,13 +184,15 @@ public class Partnership implements Serializable {
 
     }
 
-     public boolean isUseDynamicContentTypeLookup() {
+    public boolean isUseDynamicContentTypeLookup() {
         return useDynamicContentTypeLookup;
     }
 
-    /** This method is called if the partnership is configured to use dynamic mappings.
-     *  It will check that there are either system or partnership specific mappings available
-     *  load them into a partnership mapping cache.
+    /**
+     * This method is called if the partnership is configured to use dynamic mappings.
+     * It will check that there are either system or partnership specific mappings available
+     * load them into a partnership mapping cache.
+     *
      * @param useDynamicContentTypeLookup - if true then enable dynamic mapping
      * @throws OpenAS2Exception
      * @throws IOException
@@ -196,7 +200,7 @@ public class Partnership implements Serializable {
     public void setUseDynamicContentTypeLookup(boolean useDynamicContentTypeLookup) throws OpenAS2Exception, IOException {
         if (useDynamicContentTypeLookup) {
             // Make sure there is a lookup available
-            // If there is a partnership specific override then make the partnership use 
+            // If there is a partnership specific override then make the partnership use
             // that otherwise point it at the system mapping if available
             String contentTypeMapFilename = getAttribute(Partnership.PA_CONTENT_TYPE_MAPPING_FILE);
             if (contentTypeMapFilename != null) {
@@ -204,11 +208,11 @@ public class Partnership implements Serializable {
                     // Copy the system level mapping in first then override/add the custom mappings
                     overrideContentTypeFromFileExtensionMap = new java.util.Properties();
                     overrideContentTypeFromFileExtensionMap.putAll(Properties.getContentTypeMap());
-                      overrideContentTypeFromFileExtensionMap.putAll(FileUtil.loadProperties(contentTypeMapFilename));
-                  } else {
+                    overrideContentTypeFromFileExtensionMap.putAll(FileUtil.loadProperties(contentTypeMapFilename));
+                } else {
                     // Get the override map
                     setOverrideContentTypeFromFileExtension(FileUtil.loadProperties(contentTypeMapFilename));
-                  }
+                }
                 // Configure this partnership to use the override lookup
                 contentTypeFromFileExtensionMap = overrideContentTypeFromFileExtensionMap;
             } else {
@@ -228,13 +232,13 @@ public class Partnership implements Serializable {
             return null;
         }
         return (String) contentTypeFromFileExtensionMap.get(key);
-     }
+    }
 
-     public void setOverrideContentTypeFromFileExtension(java.util.Properties contentTypeFromFileExtension) {
-         this.overrideContentTypeFromFileExtensionMap = contentTypeFromFileExtension;
-     }
+    public void setOverrideContentTypeFromFileExtension(java.util.Properties contentTypeFromFileExtension) {
+        this.overrideContentTypeFromFileExtensionMap = contentTypeFromFileExtension;
+    }
 
-   public String getAlias(String partnershipType) throws OpenAS2Exception {
+    public String getAlias(String partnershipType) throws OpenAS2Exception {
         String alias = null;
 
         if (partnershipType == PTYPE_RECEIVER) {
@@ -245,8 +249,8 @@ public class Partnership implements Serializable {
 
         if (alias == null) {
             throw new CertificateNotFoundException(
-                 "Lookup failed for X509 alias for AS2 ID: " + getReceiverID(Partnership.PID_AS2 + " :: Partnership type: " + partnershipType),
-                 null
+                    "Lookup failed for X509 alias for AS2 ID: " + getReceiverID(Partnership.PID_AS2 + " :: Partnership type: " + partnershipType),
+                    null
             );
         }
 
@@ -357,6 +361,6 @@ public class Partnership implements Serializable {
 
     public boolean isPreventChunking(boolean defaultPreference) {
         String preventChunking = getAttribute(Partnership.PA_HTTP_PREVENT_CHUNKING);
-        return preventChunking == null?defaultPreference:"true".equalsIgnoreCase(preventChunking);
+        return preventChunking == null ? defaultPreference : "true".equalsIgnoreCase(preventChunking);
     }
 }

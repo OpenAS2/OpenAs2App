@@ -1,16 +1,14 @@
 package org.openas2.message;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
-
 import org.openas2.params.InvalidParameterException;
 import org.openas2.schedule.HasSchedule;
 import org.openas2.support.FileMonitorAdapter;
-
 import org.openas2.util.XMLUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,12 +16,9 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
-
 import java.util.HashMap;
-
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -60,8 +55,8 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
 
         return messages;
     }
-    
-    private void setMessages(Map<String,Object> map) {
+
+    private void setMessages(Map<String, Object> map) {
         messages = map;
     }
 
@@ -88,7 +83,7 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
         }
     }
 
-    void refreshConfig() throws OpenAS2Exception {     
+    void refreshConfig() throws OpenAS2Exception {
         try {
             Element root = getMessageXml().getDocumentElement();
             NodeList rootNodes = root.getChildNodes();
@@ -117,7 +112,7 @@ public class XMLMessageFactory extends BaseMessageFactory implements HasSchedule
         String[] requiredAttributes = {"msg_id"};
         Map<String, String> newMessage = XMLUtil.mapAttributes(node, requiredAttributes);
         String msg_id = newMessage.get("msg_id");
-        messages.put(msg_id,newMessage);
+        messages.put(msg_id, newMessage);
     }
 
     @Override

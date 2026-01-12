@@ -1,7 +1,5 @@
 package org.openas2.processor.resender;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -12,20 +10,11 @@ import org.openas2.processor.sender.SenderModule;
 import org.openas2.util.AS2Util;
 import org.openas2.util.DateUtil;
 import org.openas2.util.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 
 public class DirectoryResenderModule extends BaseResenderModule {
@@ -41,9 +30,10 @@ public class DirectoryResenderModule extends BaseResenderModule {
     private Logger logger = LoggerFactory.getLogger(DirectoryResenderModule.class);
 
 
-    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
-    *
-    */
+    /**
+     * TODO: Remove this when module config enforces setting the action so that the super method does all the work
+     *
+     */
     public String getModuleAction() {
         String action = super.getModuleAction();
         if (action == null) {
@@ -62,7 +52,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
             if (method == null) {
                 method = SenderModule.DO_SEND;
             }
-            int retries = Integer.parseInt((String)options.get(ResenderModule.OPTION_RETRIES));
+            int retries = Integer.parseInt((String) options.get(ResenderModule.OPTION_RETRIES));
             oos.writeObject(method);
             oos.writeObject("" + retries);
             // Set the resend flag to avoid unwanted processing of the message by the builder module
@@ -73,12 +63,12 @@ public class DirectoryResenderModule extends BaseResenderModule {
             if (logger.isTraceEnabled()) {
                 try {
                     logger.trace("Message object in resender module for storage. Content-Disposition: " +
-                        msg.getContentDisposition() +
-                        "\n      Content-Type : " + msg.getContentType() +
-                        "\n      Retries : " + retries +
-                        "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders()) +
-                        "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType() +
-                        "\n      Attributes: " + msg.getAttributes() + msg.getLogMsgID()
+                            msg.getContentDisposition() +
+                            "\n      Content-Type : " + msg.getContentType() +
+                            "\n      Retries : " + retries +
+                            "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders()) +
+                            "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType() +
+                            "\n      Attributes: " + msg.getAttributes() + msg.getLogMsgID()
                     );
                 } catch (Exception e) {
                 }
@@ -186,16 +176,16 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 if (logger.isTraceEnabled()) {
                     try {
                         logger.trace("Reconstituted Message object in resender. Content-Disposition: " + msg.getContentDisposition()
-                            + "\n      Content-Type : " + msg.getContentType()
-                            + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
-                            + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType()
-                            + "\n      ATTRIBUTES : " + msg.getAttributes() + msg.getLogMsgID());
+                                + "\n      Content-Type : " + msg.getContentType()
+                                + "\n      HEADERS : " + AS2Util.printHeaders(msg.getData().getAllHeaders())
+                                + "\n      Content-Disposition in MSG getData() MIMEPART: " + msg.getData().getContentType()
+                                + "\n      ATTRIBUTES : " + msg.getAttributes() + msg.getLogMsgID());
                     } catch (Exception e) {
                     }
                 }
                 Map<String, Object> options = new HashMap<String, Object>();
                 msg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
-                msg.setStatus(method.equals(MDNSenderModule.DO_SENDMDN)?Message.MSG_STATUS_MDN_RESEND:Message.MSG_STATUS_MSG_RESEND);
+                msg.setStatus(method.equals(MDNSenderModule.DO_SENDMDN) ? Message.MSG_STATUS_MDN_RESEND : Message.MSG_STATUS_MSG_RESEND);
                 try {
                     getSession().getProcessor().handle(method, msg, options);
                 } catch (OpenAS2Exception e) {

@@ -1,7 +1,7 @@
 package org.openas2.processor.sender;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.mail.Header;
+import jakarta.mail.internet.MimeBodyPart;
 import org.apache.http.protocol.HTTP;
 import org.openas2.OpenAS2Exception;
 import org.openas2.WrappedException;
@@ -16,9 +16,9 @@ import org.openas2.util.AS2Util;
 import org.openas2.util.DispositionType;
 import org.openas2.util.HTTPUtil;
 import org.openas2.util.ResponseWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.mail.Header;
-import jakarta.mail.internet.MimeBodyPart;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,16 +36,17 @@ public class MDNSenderModule extends HttpSenderModule {
 
     private Logger logger = LoggerFactory.getLogger(MDNSenderModule.class);
 
-    /** TODO: Remove this when module config enforces setting the action so that the super method does all the work
-    *
-    */
-   public String getModuleAction() {
-       String action = super.getModuleAction();
-       if (action == null) {
-           return SenderModule.DO_SENDMDN;
-       }
-       return action;
-   }
+    /**
+     * TODO: Remove this when module config enforces setting the action so that the super method does all the work
+     *
+     */
+    public String getModuleAction() {
+        String action = super.getModuleAction();
+        if (action == null) {
+            return SenderModule.DO_SENDMDN;
+        }
+        return action;
+    }
 
     public boolean canHandle(String action, Message msg, Map<String, Object> options) {
         if (!super.canHandle(action, msg, options)) {
@@ -57,7 +58,7 @@ public class MDNSenderModule extends HttpSenderModule {
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
         if (logger.isDebugEnabled()) {
-            logger.debug("MDN sending started. Partner requested " + (msg.isRequestingAsynchMDN()?"ASYNC":"SYNC") + " mode for MDN response.");
+            logger.debug("MDN sending started. Partner requested " + (msg.isRequestingAsynchMDN() ? "ASYNC" : "SYNC") + " mode for MDN response.");
         }
         if (options == null) {
             options = new HashMap<String, Object>();
@@ -66,7 +67,7 @@ public class MDNSenderModule extends HttpSenderModule {
         boolean isResend = Message.MSG_STATUS_MDN_RESEND.equals(msg.getStatus());
         options.put(FIELDS.IS_RESEND, isResend ? "Y" : "N");
         Object bos = options.get("buffered_output_stream");
-        BufferedOutputStream httpOutputStream = bos==null?null:(BufferedOutputStream) bos;
+        BufferedOutputStream httpOutputStream = bos == null ? null : (BufferedOutputStream) bos;
         if (!isResend && httpOutputStream == null) {
             throw new OpenAS2Exception("MDN sender module did not receive the HTTP response stream on first invocation.");
         }
@@ -219,7 +220,7 @@ public class MDNSenderModule extends HttpSenderModule {
     protected void resend(Message msg, OpenAS2Exception cause, Map<String, Object> options) throws OpenAS2Exception {
         // Get the resend retry count
         Map<String, Object> msgOptions = msg.getOptions();
-        int tries = Integer.parseInt((String)msgOptions.get(ResenderModule.OPTION_RETRIES));
+        int tries = Integer.parseInt((String) msgOptions.get(ResenderModule.OPTION_RETRIES));
         int maxRetryCount = AS2Util.getMaxResendCount(getSession(), msg);
         if (logger.isTraceEnabled()) {
             logger.trace("Send MDN retry count: " + tries);

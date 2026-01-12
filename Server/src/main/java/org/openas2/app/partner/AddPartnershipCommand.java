@@ -1,7 +1,5 @@
 package org.openas2.app.partner;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.CommandResult;
 import org.openas2.partner.Partnership;
@@ -9,6 +7,8 @@ import org.openas2.partner.PartnershipFactory;
 import org.openas2.partner.XMLPartnershipFactory;
 import org.openas2.processor.sender.AS2SenderModule;
 import org.openas2.util.XMLUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

@@ -1,6 +1,7 @@
 package org.openas2.message;
 
 import jakarta.mail.internet.ContentType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;

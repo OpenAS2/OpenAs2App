@@ -1,9 +1,9 @@
 package org.openas2.params;
 
 
+import org.openas2.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openas2.util.Properties;
 
 import java.util.HashMap;
 import java.util.Map;

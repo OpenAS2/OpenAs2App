@@ -1,10 +1,10 @@
 package org.openas2.app;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openas2.TestResource;
@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @ExtendWith(MockitoExtension.class)
 public class HealthCheckTest {
@@ -38,7 +38,7 @@ public class HealthCheckTest {
     public static void startServer() throws Exception {
         // Set up some override properties so we can use the standard config in tests
         // to make sure the release package is fully tested
-    	scratchpad = Files.createTempDirectory("testResources");
+        scratchpad = Files.createTempDirectory("testResources");
         File customPropsFile = Files.createFile(Paths.get(scratchpad.toString(), "openas2.properties")).toFile();
         System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, customPropsFile.getAbsolutePath());
         FileOutputStream fos = new FileOutputStream(customPropsFile);

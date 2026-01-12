@@ -1,13 +1,13 @@
 package org.openas2.processor.sender;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.openas2.ComponentNotFoundException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cert.X509CertificateFactory;
 import org.openas2.util.HTTPUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class HttpSenderModule extends BaseSenderModule {
 

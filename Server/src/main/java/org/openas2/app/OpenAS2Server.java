@@ -1,13 +1,13 @@
 package org.openas2.app;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.annotation.Nonnull;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.XMLSession;
 import org.openas2.lib.helper.ICryptoHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.Nonnull;
 import javax.crypto.Cipher;
 import java.io.File;
 import java.io.IOException;
@@ -119,7 +119,7 @@ public class OpenAS2Server {
                     } else {
                         LOGGER.warn("MANIFEST input stream not opened for: " + url.toString());
                     }
-                    
+
                 } catch (Exception e) {
                     LOGGER.info("MANIFEST not accessed: " + e.getMessage(), e);
                 }
@@ -143,12 +143,12 @@ public class OpenAS2Server {
     }
 
     public static String getAppVersion(Attributes manifestAttributes) {
-        String version =  getManifestAttribValue(OpenAS2Server.MANIFEST_VERSION_ATTRIB, manifestAttributes);
+        String version = getManifestAttribValue(OpenAS2Server.MANIFEST_VERSION_ATTRIB, manifestAttributes);
         return version;
     }
 
     public static String getAppTitle(Attributes manifestAttributes) {
-            return getManifestAttribValue(OpenAS2Server.MANIFEST_TITLE_ATTRIB, manifestAttributes) + " v" + getAppVersion(manifestAttributes);
+        return getManifestAttribValue(OpenAS2Server.MANIFEST_TITLE_ATTRIB, manifestAttributes) + " v" + getAppVersion(manifestAttributes);
     }
 
     public static class Builder {

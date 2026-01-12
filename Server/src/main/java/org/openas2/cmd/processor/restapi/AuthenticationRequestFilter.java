@@ -5,30 +5,28 @@
  */
 package org.openas2.cmd.processor.restapi;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.http.HttpHeaders;
-import org.bouncycastle.util.encoders.Base64;
-import org.openas2.cmd.CommandResult;
-
 import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
-import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.Provider;
+import org.apache.http.HttpHeaders;
+import org.bouncycastle.util.encoders.Base64;
+import org.openas2.cmd.CommandResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-
 
 
 /**
@@ -51,16 +49,16 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
     private final Logger logger = LoggerFactory.getLogger(AuthenticationRequestFilter.class);
 
 
-    public static void setCredentials(String userId,String password) {
+    public static void setCredentials(String userId, String password) {
         adminUsername = userId;
         adminPassword = password;
     }
-    
+
     // Response including indication to remote server which scheme to authenticate with
     private void setUnauthorizedResponse(ContainerRequestContext requestContext) {
         requestContext.abortWith(Response.status(Status.UNAUTHORIZED)
-                   .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"realm\"")
-                   .entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
+                .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"realm\"")
+                .entity(AuthenticationRequestFilter.ERROR_ACCESS_DENIED).build());
     }
 
     @Override
@@ -74,7 +72,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
                         return "OpenAS2";
                     }
                 };
-                
+
             }
 
             @Override
@@ -84,16 +82,16 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 
             @Override
             public boolean isSecure() {
-               return false;
+                return false;
             }
 
             @Override
             public String getAuthenticationScheme() {
-               return AUTHENTICATION_SCHEME;
+                return AUTHENTICATION_SCHEME;
             }
-            
+
         });
-        
+
         //Get request headers
         final MultivaluedMap<String, String> headers = requestContext.getHeaders();
 
@@ -126,7 +124,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
             logger.info("password: <none>");
         }
         */
-         
+
         //Verify user access
         Set<String> rolesSet = new HashSet<>();
         rolesSet.add("ADMIN");
@@ -134,9 +132,9 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
         //Is user valid?
         if (!isUserAllowed(username, password, rolesSet)) {
             setUnauthorizedResponse(requestContext);
-            return;           
+            return;
         }
-         
+
     }
 
     private boolean isUserAllowed(final String username, final String password, final Set<String> rolesSet) {

@@ -3,14 +3,14 @@
  */
 package org.openas2.processor.receiver;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.util.FileUtil;
 import org.openas2.util.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 public class FileSplitter implements Runnable {
     private File sourceFile;
@@ -23,15 +23,15 @@ public class FileSplitter implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     public FileSplitter(File sourceFile, String outputDir, long maxFileSize, boolean containsHeaderRow, String newFileBaseName, String filenamePrefix) {
-       this.sourceFile = sourceFile;
-       this.outputDir = outputDir;
-       this.maxFileSize = maxFileSize;
-       this.containsHeaderRow = containsHeaderRow;
-       this.newFileBaseName = newFileBaseName;
-       this.filenamePrefix = filenamePrefix;
+        this.sourceFile = sourceFile;
+        this.outputDir = outputDir;
+        this.maxFileSize = maxFileSize;
+        this.containsHeaderRow = containsHeaderRow;
+        this.newFileBaseName = newFileBaseName;
+        this.filenamePrefix = filenamePrefix;
     }
 
-    public void run(){
+    public void run() {
         if (logger.isDebugEnabled()) {
             logger.debug("File splitter thread invoked for file: " + this.sourceFile.getAbsolutePath());
         }

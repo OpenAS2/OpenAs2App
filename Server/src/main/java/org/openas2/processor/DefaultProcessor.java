@@ -1,11 +1,11 @@
 package org.openas2.processor;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;

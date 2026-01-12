@@ -1,8 +1,7 @@
 package org.openas2.processor.receiver;
 
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.WrappedException;
@@ -16,8 +15,9 @@ import org.openas2.util.HTTPUtil;
 import org.openas2.util.IOUtil;
 import org.openas2.util.Properties;
 import org.openas2.util.ResponseWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.Nullable;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -125,8 +125,8 @@ public abstract class NetModule extends BaseReceiverModule {
 
         try {
             CompositeParameters params = new CompositeParameters(false).
-                add("date", new DateParameters()).
-                add("msg", new MessageParameters(msg));
+                    add("date", new DateParameters()).
+                    add("msg", new MessageParameters(msg));
 
             String name = params.format(getParameter(PARAM_ERRORS, DEFAULT_ERRORS));
             String directory = getParameter(PARAM_ERROR_DIRECTORY, true);
@@ -212,7 +212,7 @@ public abstract class NetModule extends BaseReceiverModule {
                     throw new IOException("Failed to retrieve required SSL parameters. Check config XML");
                 }
                 // Support either JKS or PKCS12 keystores with default being JKS (for now)
-                String keyStoreType = (ksName.endsWith(".p12")?"PKCS12":"JKS");
+                String keyStoreType = (ksName.endsWith(".p12") ? "PKCS12" : "JKS");
                 KeyStore ks;
                 try {
                     ks = KeyStore.getInstance(keyStoreType);
@@ -220,7 +220,7 @@ public abstract class NetModule extends BaseReceiverModule {
                     logger.error("Failed to initialise SSL keystore.", e);
                     throw new IOException("Error initialising SSL keystore");
                 }
-                try (FileInputStream fis =  new FileInputStream(ksName)) {
+                try (FileInputStream fis = new FileInputStream(ksName)) {
                     ks.load(fis, ksPass);
                 } catch (NoSuchAlgorithmException | IOException e) {
                     logger.error("Failed to load keystore: " + ksName, e);
