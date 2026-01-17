@@ -81,6 +81,13 @@
             </xsl:attribute>
 				</xsl:when>
 			</xsl:choose>
+            <xsl:choose>
+                <xsl:when test="not(@module.DynamoDBTrackingModule.enabled)">
+                    <xsl:attribute name="module.DynamoDBTrackingModule.enabled">
+                        <xsl:value-of select="'false'" />
+                    </xsl:attribute>
+                </xsl:when>
+            </xsl:choose>
 			<xsl:choose>
 				<xsl:when test="not(@module.MDNFileModule.enabled)">
 					<xsl:attribute name="module.MDNFileModule.enabled">

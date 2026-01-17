@@ -27,6 +27,7 @@
                module.AS2SenderModule.readtimeout="60000"
                module.MDNSenderModule.enabled="true"
                module.DbTrackingModule.enabled="true"
+               module.DynamoDbTrackingModule.enabled="false"
                module.MDNFileModule.enabled="true"
                module.MDNFileModule.filename="$properties.storageBaseDir$/$mdn.msg.sender.as2_id$-$mdn.msg.receiver.as2_id$/mdn/$date.yyyy-MM-dd$/$mdn.msg.headers.message-id$"
                module.MDNFileModule.tempdir="$properties.storageBaseDir$/temp"
@@ -74,6 +75,9 @@
                msg_tracking.tcp_server_start="true"
                msg_tracking.tcp_server_port="9092"
                msg_tracking.tcp_server_password="openas2"
+               msg_tracking.aws_region="us-east-1"
+               msg_tracking.dynamodb_table_name="as2db-dev"
+               msg_tracking.consistent_read="true"
                reject_unsigned_messages="false"
                pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
                pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
@@ -110,7 +114,7 @@
                         ssl_protocol="TLS"
                         ssl_keystore="$properties.ssl_keystore$"
                         ssl_keystore_password="$properties.ssl_keystore_password$"
-                        userid="$properties.restapi.command.processor.userid$" 
+                        userid="$properties.restapi.command.processor.userid$"
                         password="$properties.restapi.command.processor.password$" />
    </commandProcessors>
    <processor classname="org.openas2.processor.DefaultProcessor"
@@ -151,6 +155,11 @@
               tcp_server_start="$properties.msg_tracking.tcp_server_start$"
               tcp_server_port="$properties.msg_tracking.tcp_server_port$"
               tcp_server_password="$properties.msg_tracking.tcp_server_password$"/>
+      <module enabled="$properties.module.DynamoDBTrackingModule.enabled$"
+              classname="org.openas2.processor.msgtracking.DynamoDBTrackingModule"
+              aws_region="$properties.msg_tracking.aws_region$"
+              table_name="$properties.msg_tracking.dynamodb_table_name$"
+              consistent_read="$properties.msg_tracking.consistent_read$"/>
       <module enabled="$properties.module.MDNFileModule.enabled$"
               classname="org.openas2.processor.storage.MDNFileModule"
               filename="$properties.module.MDNFileModule.filename$"

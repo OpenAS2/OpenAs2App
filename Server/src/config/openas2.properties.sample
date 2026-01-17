@@ -40,6 +40,8 @@ module.AS2SenderModule.readtimeout=3000000
 module.MDNSenderModule.enabled=true
 # Module for tracking inbound and outbound messages in a database in addition to normal logging.
 module.DbTrackingModule.enabled=true
+# Module for tracking inbound and outbound messages in a DynamoDb in addition to normal logging.
+module.DynamoDbTrackingModule.enabled=false
 # Module to store received and sent MDN's. Can be switched off if you do not need to keep a record of MDN's
 module.MDNFileModule.enabled=true
 # Module to store received AS2 messages. Unless you plug in another handler for received files, this module is required to be enabled.

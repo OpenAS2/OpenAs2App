@@ -47,12 +47,12 @@ public class CertificatesTest extends BaseServerSetup {
     private File customPropsFile = null;
     private File sslCertsFile = null; // The private key and certificate for the HTTPS
     private String sslTrustCertsFilePath = null; // The public key for the SSL private key
-    private X509CertificateFactory trustFx = null; // The trust certificates 
+    private X509CertificateFactory trustFx = null; // The trust certificates
     protected static Message testMsg; // Created just once for all tests to minimise runtime
     private InternetHeaders ih = null;
     Map<String, Object> httpOptions = null;
     InputStream securedDataInputStream = null;
-    
+
 
     public X509CertificateFactory genSelfSignedCert(
             String alias,
@@ -74,7 +74,7 @@ public class CertificatesTest extends BaseServerSetup {
         certFx.genSelfSignedCertificate(alias, dn, hashAlg, keyAlg, keySize, validDays);
         certFx.save();
         return certFx;
-    }   
+    }
 
     @BeforeAll
     public void setUp() throws Exception {
@@ -112,6 +112,7 @@ public class CertificatesTest extends BaseServerSetup {
         fos.write(("module.HealthCheckModule.enabled=false\n").getBytes());
         fos.write(("module.HealthCheckModule.protocol=https\n").getBytes());
         fos.write(("module.DbTrackingModule.enabled=false\n").getBytes());
+        fos.write(("module.DynamoDBTrackingModule.enabled=false\n").getBytes());
         fos.close();
         super.setStartActiveModules(true);
         super.setup();
