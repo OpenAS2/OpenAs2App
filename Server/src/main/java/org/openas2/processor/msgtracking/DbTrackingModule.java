@@ -96,7 +96,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     protected void persist(Message msg, Map<String, String> map) {
-        synchronized (msg) {
+        synchronized (this) {
             try (Connection conn = dbHandler.getConnection()) {
                 Statement s = conn.createStatement();
                 String msgIdField = FIELDS.MSG_ID;
