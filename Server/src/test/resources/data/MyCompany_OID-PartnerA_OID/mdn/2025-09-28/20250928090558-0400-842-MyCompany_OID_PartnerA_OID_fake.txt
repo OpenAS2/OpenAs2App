@@ -1,0 +1,24 @@
+Headers:
+Date: Sun., 28 Sep. 2025 09:06:03 -0400
+From: as2msgs@partnera.com
+Message-ID: <20250928090603-0400-617-MyCompany_OID_PartnerA_OID_null>
+Subject: File null sent from MyCompany to PartnerA
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; 	boundary="----=_Part_2_1428372348.1759064763337"
+AS2-To: MyCompany_OID
+AS2-From: PartnerA_OID
+AS2-Version: 1.1
+Connection: close, TE
+User-Agent: NO MANIFEST vNO MANIFEST
+Server: NO MANIFEST vNO MANIFEST
+Content-Length: 2396
+
+Attributes:
+FINAL_RECIPIENT: rfc822; PartnerA_OID
+MIC: yL/AwvCpGS1yS9d/uvfZG0PajXvPkRG+gaLt/NuaO0Y=, SHA-256
+REPORTING_UA: NO MANIFEST vNO MANIFEST@/127.0.0.1:10443
+ORIGINAL_MESSAGE_ID: <20250928090558-0400-842-MyCompany_OID_PartnerA_OID_fake.txt>
+ORIGINAL_RECIPIENT: rfc822; PartnerA_OID
+DISPOSITION: automatic-action/MDN-sent-automatically; processed
+Text:
+The message sent to Recipient PartnerA_OID on Sun, 28 Sep 2025 09:05:58 -0400 with Subject File null sent from MyCompany to PartnerA has been received, the EDI Interchange was successfully decrypted and it's integrity was verified. In addition, the sender of the message, Sender MyCompany_OID at Location /127.0.0.1 was authenticated as the originator of the message. There is no guarantee however that the EDI Interchange was syntactically correct, or was received by the EDI application/translator.
