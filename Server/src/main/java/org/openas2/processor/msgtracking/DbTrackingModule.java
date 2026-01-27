@@ -96,89 +96,90 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     protected void persist(Message msg, Map<String, String> map) {
-        try (Connection conn = dbHandler.getConnection()) {
-            Statement s = conn.createStatement();
-            String msgIdField = FIELDS.MSG_ID;
-            ResultSet rs = s.executeQuery(
-                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
-            ResultSetMetaData meta = rs.getMetaData();
-            boolean isUpdate = rs.next(); // Record already exists so update
-            if (logger.isTraceEnabled()) {
-                logger.trace(
-                        "\t\t *** Tracking record found: " + isUpdate + "\n\t\t *** Tracking record metadata: " + meta);
-            }
-            StringBuffer fieldStmt = new StringBuffer();
-            StringBuffer valuesStmt = new StringBuffer();
-            for (int i = 0; i < meta.getColumnCount(); i++) {
-                String colName = meta.getColumnLabel(i + 1);
-                if (colName.equalsIgnoreCase("id")) {
-                    continue;
-                } else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT)) {
-                    // Ignore if not update mode
-                    if (isUpdate) {
-                        appendFieldForUpdate(colName, DateUtil.getSqlTimestamp(), fieldStmt, meta.getColumnType(i + 1));
-                    }
-                } else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT)) {
-                    if (isUpdate) {
-                        map.remove(FIELDS.CREATE_DT);
+        synchronized (msg) {
+            try (Connection conn = dbHandler.getConnection()) {
+                Statement s = conn.createStatement();
+                String msgIdField = FIELDS.MSG_ID;
+                ResultSet rs = s.executeQuery(
+                        "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
+                ResultSetMetaData meta = rs.getMetaData();
+                boolean isUpdate = rs.next(); // Record already exists so update
+                if (logger.isTraceEnabled()) {
+                    logger.trace(
+                            "\t\t *** Tracking record found: " + isUpdate + "\n\t\t *** Tracking record metadata: " + meta);
+                }
+                StringBuffer fieldStmt = new StringBuffer();
+                StringBuffer valuesStmt = new StringBuffer();
+                for (int i = 0; i < meta.getColumnCount(); i++) {
+                    String colName = meta.getColumnLabel(i + 1);
+                    if (colName.equalsIgnoreCase("id")) {
+                        continue;
+                    } else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT)) {
+                        // Ignore if not update mode
+                        if (isUpdate) {
+                            appendFieldForUpdate(colName, DateUtil.getSqlTimestamp(), fieldStmt, meta.getColumnType(i + 1));
+                        }
+                    } else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT)) {
+                        if (isUpdate) {
+                            map.remove(FIELDS.CREATE_DT);
+                        } else {
+                            appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt,
+                                    meta.getColumnType(i + 1));
+                        }
+                    } else if (isUpdate) {
+                        /*
+                         * Only write unchanged field values. Map is field names in LOWER case so
+                         * convert in case DB server returns column names in uppercase
+                         */
+                        String mapVal = map.get(colName.toLowerCase());
+                        if (mapVal == null) {
+                            continue;
+                        }
+                        String dbVal = rs.getString(colName);
+                        if (dbVal != null && mapVal.equals(dbVal)) {
+                            // Unchanged value so remove from map
+                            continue;
+                        }
+                        appendFieldForUpdate(colName, mapVal, fieldStmt, meta.getColumnType(i + 1));
                     } else {
-                        appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt,
-                                meta.getColumnType(i + 1));
+                        // For new record add every field that is not NULL
+                        String mapVal = map.get(colName.toLowerCase());
+                        if (mapVal == null) {
+                            continue;
+                        }
+                        appendFieldForInsert(colName, mapVal, fieldStmt, valuesStmt, meta.getColumnType(i + 1));
                     }
-                } else if (isUpdate) {
-                    /*
-                     * Only write unchanged field values. Map is field names in LOWER case so
-                     * convert in case DB server returns column names in uppercase
-                     */
-                    String mapVal = map.get(colName.toLowerCase());
-                    if (mapVal == null) {
-                        continue;
-                    }
-                    String dbVal = rs.getString(colName);
-                    if (dbVal != null && mapVal.equals(dbVal)) {
-                        // Unchanged value so remove from map
-                        continue;
-                    }
-                    appendFieldForUpdate(colName, mapVal, fieldStmt, meta.getColumnType(i + 1));
-                } else {
-                    // For new record add every field that is not NULL
-                    String mapVal = map.get(colName.toLowerCase());
-                    if (mapVal == null) {
-                        continue;
-                    }
-                    appendFieldForInsert(colName, mapVal, fieldStmt, valuesStmt, meta.getColumnType(i + 1));
                 }
+                if (fieldStmt.length() > 0) {
+                    String stmt = "";
+                    if (isUpdate) {
+                        stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
+                                + map.get(msgIdField) + "'";
+                    } else {
+                        stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES ("
+                                + valuesStmt.toString() + ")";
+                    }
+                    if (s.executeUpdate(stmt) > 0) {
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("Tracking record SQL statement: " + stmt);
+                        }
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Tracking record successfully persisted to database: " + map);
+                        }
+                    } else {
+                        throw new OpenAS2Exception("Failed to persist tracking record to DB: " + map);
+                    }
+                } else {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("No change from existing record in DB. Tracking record not updated: " + map);
+                    }
+                }
+            } catch (Exception e) {
+                msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.util.Logging.getExceptionMsg(e)
+                        + " ::: Data map: " + map);
+                logger.error(msg.getLogMsg(), e);
             }
-            if (fieldStmt.length() > 0) {
-                String stmt = "";
-                if (isUpdate) {
-                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
-                            + map.get(msgIdField) + "'";
-                } else {
-                    stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES ("
-                            + valuesStmt.toString() + ")";
-                }
-                if (s.executeUpdate(stmt) > 0) {
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("Tracking record SQL statement: " + stmt);
-                    }
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Tracking record successfully persisted to database: " + map);
-                    }
-                } else {
-                    throw new OpenAS2Exception("Failed to persist tracking record to DB: " + map);
-                }
-            } else {
-                if (logger.isInfoEnabled()) {
-                    logger.info("No change from existing record in DB. Tracking record not updated: " + map);
-                }
-            }
-        } catch (Exception e) {
-            msg.setLogMsg("Failed to persist a tracking event: " + org.openas2.util.Logging.getExceptionMsg(e)
-                    + " ::: Data map: " + map);
-            logger.error(msg.getLogMsg(), e);
         }
-
     }
 
     public ArrayList<HashMap<String, String>> listMessages() {
