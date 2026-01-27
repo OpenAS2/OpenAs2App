@@ -95,12 +95,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         return params;
     }
 
-    protected void persist(Message msg, Map<String, String> map) {
+    protected synchronized void persist(Message msg, Map<String, String> map) {
+        String msgIdField = FIELDS.MSG_ID;
+        String msgIdValue = map.get(msgIdField);
         try (Connection conn = dbHandler.getConnection()) {
             Statement s = conn.createStatement();
-            String msgIdField = FIELDS.MSG_ID;
             ResultSet rs = s.executeQuery(
-                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
+                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + msgIdValue + "'");
             ResultSetMetaData meta = rs.getMetaData();
             boolean isUpdate = rs.next(); // Record already exists so update
             if (logger.isTraceEnabled()) {
@@ -178,7 +179,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                     + " ::: Data map: " + map);
             logger.error(msg.getLogMsg(), e);
         }
-
     }
 
     public ArrayList<HashMap<String, String>> listMessages() {
