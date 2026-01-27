@@ -52,7 +52,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     private String dbPlatform = "h2";
     private String tableName = null;
     IDBHandler dbHandler = null;
-    private static final Map<String, Object> msgIdLocksMap = ConcurrentHashMap();
+    private static final Map<String, Object> msgIdLocksMap = new ConcurrentHashMap<>();
 
     private Logger logger = LoggerFactory.getLogger(DbTrackingModule.class);
 
