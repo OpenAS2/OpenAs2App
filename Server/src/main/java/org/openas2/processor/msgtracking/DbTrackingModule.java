@@ -19,10 +19,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DbTrackingModule extends BaseMsgTrackingModule {
     public static final String PARAM_TCP_SERVER_START = "tcp_server_start";
@@ -54,6 +52,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     private String dbPlatform = "h2";
     private String tableName = null;
     IDBHandler dbHandler = null;
+    private static final Map<String, Object> msgIdLocksMap = ConcurrentHashMap();
 
     private Logger logger = LoggerFactory.getLogger(DbTrackingModule.class);
 
@@ -96,12 +95,13 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     protected void persist(Message msg, Map<String, String> map) {
-        synchronized (this) {
+        String msgIdField = FIELDS.MSG_ID;
+        String msgIdValue = map.get(msgIdField);
+        synchronized (msgIdLocksMap.computeIfAbsent(msgIdValue, k -> new Object())) {
             try (Connection conn = dbHandler.getConnection()) {
                 Statement s = conn.createStatement();
-                String msgIdField = FIELDS.MSG_ID;
                 ResultSet rs = s.executeQuery(
-                        "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + map.get(msgIdField) + "'");
+                        "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + msgIdValue + "'");
                 ResultSetMetaData meta = rs.getMetaData();
                 boolean isUpdate = rs.next(); // Record already exists so update
                 if (logger.isTraceEnabled()) {
@@ -180,6 +180,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 logger.error(msg.getLogMsg(), e);
             }
         }
+        msgIdLocksMap.remove(msgIdValue);
     }
 
     public ArrayList<HashMap<String, String>> listMessages() {
