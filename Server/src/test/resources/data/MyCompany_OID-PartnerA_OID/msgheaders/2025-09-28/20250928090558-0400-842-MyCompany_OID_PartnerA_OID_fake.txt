@@ -1,0 +1,28 @@
+Headers:
+Content-Type: application/octet-stream
+Content-Length: 2015
+Date: Sun, 28 Sep 2025 09:05:58 -0400
+From: as2msgs@openas2.com
+Message-ID: <20250928090558-0400-842-MyCompany_OID_PartnerA_OID_fake.txt>
+Subject: File null sent from MyCompany to PartnerA
+Mime-Version: 1.0
+Connection: close, TE
+User-Agent: NO MANIFEST vNO MANIFEST (class org.openas2.processor.sender.AS2SenderModule)
+AS2-Version: 1.1
+Recipient-Address: http://localhost:10080
+AS2-To: PartnerA_OID
+AS2-From: MyCompany_OID
+Disposition-Notification-To: edi@myCompany.com
+Disposition-Notification-Options: signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, SHA-256
+Content-Disposition: null
+Transfer-Encoding: chunked
+Host: localhost:10443
+Accept-Encoding: gzip,deflate
+
+Attributes:
+HTTP_REQUEST_TYPE: POST
+destination_ip: /127.0.0.1
+destination_port: 10443
+HTTP_REQUEST_URL: /
+source_port: 51055
+source_ip: /127.0.0.1
