@@ -1,5 +1,13 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+<<<<<<< HEAD
+Version 4.8.1 - 2026-03-27
+
+This is a minor bugfix release.
+1.  Correct payload filename when using generic directory poller.
+
+=======
+>>>>>>> c180d9bd1ca4d43f23a850541de20e86c3fda27f
 Version 4.8.0 - 2025-10-31
 
 This is a minor enhancement release.

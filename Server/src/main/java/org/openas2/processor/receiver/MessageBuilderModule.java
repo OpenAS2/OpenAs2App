@@ -268,6 +268,7 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         Message msg = createMessage();
         MessageParameters params = new MessageParameters(msg);
 
+        msg.setAttribute(FileAttribute.MA_FILENAME, filename);
         // Capture the original file name in case config changes it
         msg.setAttribute("original_filename", filename);
         // Get the parameter that should provide the link between the polled directory
@@ -289,12 +290,11 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         // Should have sender/receiver now so update the message's partnership with any
         // stored information based on the identified partner IDs
         getSession().getPartnershipFactory().updatePartnership(msg, true);
+        msg.setPayloadFilename(msg.getAttribute(FileAttribute.MA_FILENAME));
         return msg;
     }
 
     public void addMessageMetadata(Message msg, String filename) throws OpenAS2Exception {
-        msg.setAttribute(FileAttribute.MA_FILENAME, filename);
-        msg.setPayloadFilename(filename);
         // Set the filename extension if it has one
         msg.setAttribute(FileAttribute.MA_FILENAME_EXTENSION, FileUtil.getFilenameExtension(filename));
         // Set a new message ID
