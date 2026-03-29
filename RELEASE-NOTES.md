@@ -1,29 +1,17 @@
 #              OpenAS2 Server
-<<<<<<< HEAD
 #              Version 4.8.1
 #              RELEASE NOTES
 -----
 The OpenAS2 project is pleased to announce the release of OpenAS2 4.8.1
 
 The release download file is: OpenAS2Server-4.8.1.zip
-=======
-#              Version 4.8.0
-#              RELEASE NOTES
------
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.8.0
-
-The release download file is: OpenAS2Server-4.8.0.zip
->>>>>>> c180d9bd1ca4d43f23a850541de20e86c3fda27f
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-<<<<<<< HEAD
 Version 4.8.1 - 2026-03-27
 =======
-Version 4.8.0 - 2025-10-31
->>>>>>> c180d9bd1ca4d43f23a850541de20e86c3fda27f
 
 This is a minor bugfix release.
 1.  Correct payload filename when using generic directory poller.
