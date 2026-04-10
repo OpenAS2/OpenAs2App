@@ -146,6 +146,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             msg.trackMsgState(getSession());
             if ("true".equalsIgnoreCase(msg.getPartnership().getAttributeOrProperty(Partnership.PA_RESEND_ON_SSL_EXCEPTION, "false"))) {
                 resend(msg, new OpenAS2Exception(org.openas2.util.Logging.getExceptionMsg(e)), false);
+            } else {
+               AS2Util.cleanupFiles(msg, true); 
             }
             return;
         } catch (Exception e) {
