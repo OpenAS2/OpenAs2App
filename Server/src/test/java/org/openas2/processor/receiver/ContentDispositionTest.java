@@ -34,7 +34,7 @@ public class ContentDispositionTest extends BaseServerSetup {
         Logger logger = LoggerFactory.getLogger(ContentDispositionTest.class);
         logger.info("ContentDispositionTest:: POLLER COUNT: " + session.getPolledDirectories().size());
         logger.info("ContentDispositionTest:: PARTNERSHIP NAME: " + simpleTestMsg.getPartnership().getName());
-        for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
+        for (Map.Entry<String, Map<String, Object>> entry : session.getPolledDirectories().entrySet()) {
             Map<String, Object> meta = entry.getValue();
             logger.info("ContentDispositionTest:: ACTIVE POLLER PARTNERSHIP NAME: " + meta.get("partnershipName"));
         }
