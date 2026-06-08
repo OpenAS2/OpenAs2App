@@ -45,7 +45,7 @@ public class DynamicContentTypeTest extends BaseServerSetup {
 
     @BeforeAll
     public void setUp() throws Exception {
-        super.createFileSystemResources();
+        super.createFileSystemResources(this.getClass().getName());
         // Set up the system level mappings
         systemContentTypesMappingFile = new File(tmpDir, "content_type_map.properties");
         systemMappedContentTypes.put(xmlFileExtension,  "application/xml");

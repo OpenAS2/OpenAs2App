@@ -78,7 +78,7 @@ public class CertificatesTest extends BaseServerSetup {
 
     @BeforeAll
     public void setUp() throws Exception {
-        super.createFileSystemResources();
+        super.createFileSystemResources(this.getClass().getName());
         String tmpDirAbsolutePath = tmpDir.getAbsolutePath();
         sslCertsFile = Files.createFile(Paths.get(tmpDirAbsolutePath, "ssl_certs.p12")).toFile();
         String tgtHostName = "test.openas2.org";
@@ -99,7 +99,7 @@ public class CertificatesTest extends BaseServerSetup {
         this.trustFx.setKeyStore(AS2Util.getCryptoHelper().getKeyStore());
         this.trustFx.load();
 
-        customPropsFile = Files.createFile(Paths.get(tmpDirAbsolutePath, "openas2.properties")).toFile();
+        customPropsFile = Files.createFile(Paths.get(tmpDirAbsolutePath, this.getClass().getName() + ".properties")).toFile();
         System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, customPropsFile.getAbsolutePath());
         FileOutputStream fos = new FileOutputStream(customPropsFile);
         // Switch to forward slash to avoid backslash being dropped when creating property string when on Windows

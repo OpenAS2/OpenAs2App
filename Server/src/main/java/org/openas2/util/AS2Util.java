@@ -369,7 +369,7 @@ public class AS2Util {
             // Going to try again so increment the try count
             retries++;
         }
-        // Keep a popinter to the passed in msg object in case it is overwritten in this method so that the setting
+        // Keep a popinter to the passed in msg object in case it is overwritten in this method so that setting
         // the resend flag to avoid file cleanup is not lost when this method exits and the original initiating
         // method of this cycle queries the msg object to check if it is ok to call file cleanup
         Message passed_in_msg = msg;
@@ -726,7 +726,7 @@ public class AS2Util {
 
     }
 
-    public static void cleanupFiles(Message msg, boolean isError) {
+    public synchronized static void cleanupFiles(Message msg, boolean isError) {
         Logger logger = LoggerFactory.getLogger(AS2Util.class);
         if (msg.isFileCleanupCompleted()) {
             if (logger.isTraceEnabled()) {
@@ -760,14 +760,17 @@ public class AS2Util {
         String pendingFileName = msg.getAttribute(FileAttribute.MA_PENDINGFILE);
         if (pendingFileName != null) {
             File fPendingFile = new File(pendingFileName);
-            try {
-                IOUtil.deleteFile(new File(pendingFileName + ".object"));
-                if (logger.isTraceEnabled()) {
-                    logger.trace("The RETRY message object file deleted: " + pendingFileName + ".object" + msg.getLogMsgID());
+            File msgObjFile = new File(pendingFileName + ".object");
+            if (msgObjFile.exists()) {
+                try {
+                    IOUtil.deleteFile(msgObjFile);
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("The RETRY message object file deleted: " + pendingFileName + ".object" + msg.getLogMsgID());
+                    }
+                } catch (Exception e) {
+                    msg.setLogMsg("The RETRY message object file NOT deleted: " + org.openas2.util.Logging.getExceptionMsg(e));
+                    logger.warn(msg.getLogMsg(), e);
                 }
-            } catch (Exception e) {
-                msg.setLogMsg("The RETRY message object file NOT deleted: " + org.openas2.util.Logging.getExceptionMsg(e));
-                logger.warn(msg.getLogMsg(), e);
             }
             if (logger.isTraceEnabled()) {
                 logger.trace("Cleaning up pending file : " + fPendingFile.getName() + " ::: From pending folder : " + fPendingFile.getParent() + msg.getLogMsgID());
@@ -775,40 +778,42 @@ public class AS2Util {
             try {
                 // Move file to error or sent directory if the error or sent saving functionality is enabled
                 boolean isMoved = false;
-                String tgtDir = null;
-                String targetFilenameUnparsed = "";
-                if (isError) {
-                    tgtDir = msg.getAttribute(FileAttribute.MA_ERROR_DIR);
-                    targetFilenameUnparsed = msg.getAttribute(FileAttribute.MA_ERROR_FILENAME);
-                } else {
-                    // If the Sent Directory option is set, move the transmitted file to the sent
-                    // directory
-                    tgtDir = msg.getAttribute(FileAttribute.MA_SENT_DIR);
-                    targetFilenameUnparsed = msg.getAttribute(FileAttribute.MA_SENT_FILENAME);
-                }
-                if (tgtDir != null && tgtDir.length() > 0) {
-                    File tgtFile = null;
-                    try {
-                        String tgtFileName = fPendingFile.getName();
-                        if (targetFilenameUnparsed != null && targetFilenameUnparsed.length() > 0) {
-                            CompositeParameters parser = new CompositeParameters(false).add("date", new DateParameters()).add("msg", new MessageParameters(msg)).add("rand", new RandomParameters());
-                            tgtFileName = ParameterParser.parse(targetFilenameUnparsed, parser);
+                if (fPendingFile.exists()) {
+                    String tgtDir = null;
+                    String targetFilenameUnparsed = "";
+                    if (isError) {
+                        tgtDir = msg.getAttribute(FileAttribute.MA_ERROR_DIR);
+                        targetFilenameUnparsed = msg.getAttribute(FileAttribute.MA_ERROR_FILENAME);
+                    } else {
+                        // If the Sent Directory option is set, move the transmitted file to the sent
+                        // directory
+                        tgtDir = msg.getAttribute(FileAttribute.MA_SENT_DIR);
+                        targetFilenameUnparsed = msg.getAttribute(FileAttribute.MA_SENT_FILENAME);
+                    }
+                    if (tgtDir != null && tgtDir.length() > 0) {
+                        File tgtFile = null;
+                        try {
+                            String tgtFileName = fPendingFile.getName();
+                            if (targetFilenameUnparsed != null && targetFilenameUnparsed.length() > 0) {
+                                CompositeParameters parser = new CompositeParameters(false).add("date", new DateParameters()).add("msg", new MessageParameters(msg)).add("rand", new RandomParameters());
+                                tgtFileName = ParameterParser.parse(targetFilenameUnparsed, parser);
+                            }
+                            tgtFileName = IOUtil.cleanFilename(tgtFileName);
+                            tgtFile = new File(tgtDir + "/" + tgtFileName);
+                            tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false);
+                            logger.info("PENDING FILE " + pendingFileName + " AFTER MOVE STILL EXISTS? " + fPendingFile.exists());
+                            isMoved = true;
+    
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Pending MDN MSG FILE file " + fPendingFile.getAbsolutePath() + " moved to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
+                            }
+    
+                        } catch (IOException iose) {
+                            msg.setLogMsg("Error moving file to " + tgtDir + " : " + org.openas2.util.Logging.getExceptionMsg(iose));
+                            logger.error(msg.getLogMsg(), iose);
                         }
-                        tgtFileName = IOUtil.cleanFilename(tgtFileName);
-                        tgtFile = new File(tgtDir + "/" + tgtFileName);
-                        tgtFile = IOUtil.moveFile(fPendingFile, tgtFile, false);
-                        isMoved = true;
-
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Pending MDN MSG FILE file " + fPendingFile.getAbsolutePath() + " moved to " + tgtFile.getAbsolutePath() + msg.getLogMsgID());
-                        }
-
-                    } catch (IOException iose) {
-                        msg.setLogMsg("Error moving file to " + tgtDir + " : " + org.openas2.util.Logging.getExceptionMsg(iose));
-                        logger.error(msg.getLogMsg(), iose);
                     }
                 }
-
                 if (!isMoved) {
                     // Could not find somewhere to move it to so delete it if it still exists
                     if (fPendingFile.exists()) {

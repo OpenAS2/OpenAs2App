@@ -31,7 +31,7 @@ public class FilenameParsingTest extends BaseServerSetup {
 
     @BeforeAll
     public void setup() throws Exception {
-    	super.createFileSystemResources();
+    	super.createFileSystemResources(this.getClass().getName());
     	super.setup();
         try {
             simpleTestMsg = new AS2Message();

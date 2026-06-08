@@ -24,7 +24,7 @@ public class ContentDispositionTest extends BaseServerSetup {
     
     @BeforeAll
     public void setUp() throws Exception {
-        super.createFileSystemResources();
+        super.createFileSystemResources(this.getClass().getName());
         super.setup();
         this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
     }

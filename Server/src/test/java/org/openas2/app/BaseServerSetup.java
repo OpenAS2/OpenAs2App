@@ -60,9 +60,11 @@ public class BaseServerSetup {
         this.startActiveModules = startActiveModules;
     }
 
-    public void createFileSystemResources() throws Exception {
-        tmpDir = Files.createTempDirectory("testResources").toFile();
+    public void createFileSystemResources(String srcClassName) throws Exception {
+        tmpDir = Files.createTempDirectory(srcClassName).toFile();
         openAS2PropertiesFile = new File(tmpDir, "test.openas2.properties");
+        // Just in case there is an existing file...
+        if (openAS2PropertiesFile.exists()) openAS2PropertiesFile.delete();
     }
 
     public void setup() throws Exception {
