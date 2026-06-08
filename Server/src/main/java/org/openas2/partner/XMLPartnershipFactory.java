@@ -105,8 +105,10 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             Document document = parser.parse(inputStream);
             setPartnershipsXml(document);
         } catch (Exception e) {
-            throw new WrappedException(e);
-        }
+        Path filePath = Path.of(getFilename());
+        String content = Files.readString(filePath);
+        Logger logger = LoggerFactory.getLogger("TESTING");
+        logger.info("PARTNERSHIPS FILE: " + content);
     }
 
     void refreshConfig() throws OpenAS2Exception {
