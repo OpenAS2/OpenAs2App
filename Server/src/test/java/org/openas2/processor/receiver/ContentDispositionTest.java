@@ -16,6 +16,9 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.app.BaseServerSetup;
 import org.openas2.message.FileAttribute;
 import org.openas2.partner.Partnership;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -26,6 +29,10 @@ public class ContentDispositionTest extends BaseServerSetup {
     public void setUp() throws Exception {
         super.createFileSystemResources(this.getClass().getName());
         super.setup();
+
+        Logger logger = LoggerFactory.getLogger(ContentDispositionTest.class);
+        logger.info("ContentDispositionTest:: POLLER COUNT: " + session.getDirectoryPollers().size());
+        logger.info("ContentDispositionTest:: PARTNERSHIP NAME: " + simpleTestMsg.getPartnership().getName());
         this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
     }
 
