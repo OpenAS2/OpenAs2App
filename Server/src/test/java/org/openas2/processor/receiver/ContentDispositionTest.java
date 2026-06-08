@@ -31,9 +31,10 @@ public class ContentDispositionTest extends BaseServerSetup {
         super.setup();
 
         Logger logger = LoggerFactory.getLogger(ContentDispositionTest.class);
-        logger.info("ContentDispositionTest:: POLLER COUNT: " + session.getDirectoryPollers().size());
+        logger.info("ContentDispositionTest:: POLLER COUNT: " + session.getPolledDirectories().size());
         logger.info("ContentDispositionTest:: PARTNERSHIP NAME: " + simpleTestMsg.getPartnership().getName());
         this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
+        logger.info("ContentDispositionTest:: POLLER BY NAME: " + this.poller);
     }
 
     @AfterAll
