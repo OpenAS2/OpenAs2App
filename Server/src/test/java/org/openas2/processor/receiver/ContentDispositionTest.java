@@ -16,6 +16,7 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.app.BaseServerSetup;
 import org.openas2.message.FileAttribute;
 import org.openas2.partner.Partnership;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
