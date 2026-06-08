@@ -35,7 +35,7 @@ public class ContentDispositionTest extends BaseServerSetup {
         logger.info("ContentDispositionTest:: PARTNERSHIP NAME: " + simpleTestMsg.getPartnership().getName());
         for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
             Map<String, Object> meta = entry.getValue();
-            logger.info("ContentDispositionTest:: ACTIVE POLLER PARTNERSHIP NAME: " + meta.get("partnershipName");
+            logger.info("ContentDispositionTest:: ACTIVE POLLER PARTNERSHIP NAME: " + meta.get("partnershipName"));
         }
         this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
         logger.info("ContentDispositionTest:: POLLER BY NAME: " + this.poller);
