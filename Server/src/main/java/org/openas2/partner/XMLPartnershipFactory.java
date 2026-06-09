@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,9 +109,12 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         } catch (Exception e) {
             throw new WrappedException(e);
         }
-        Path filePath = Path.of(getFilename());
-        String content = Files.readString(filePath);
-        logger.info("PARTNERSHIPS FILE: " + content);
+        try {
+            Path filePath = Path.of(getFilename());
+            String content = Files.readString(filePath);
+            logger.info("PARTNERSHIPS FILE: " + content);
+        } catch (IOException e) {
+        }
     }
 
     void refreshConfig() throws OpenAS2Exception {
