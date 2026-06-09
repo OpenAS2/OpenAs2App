@@ -83,6 +83,8 @@ public class BaseServerSetup {
             //System.setProperty("OPENAS2_LOG_LEVEL", "trace");
             if (openAS2PropertiesFile.exists()) {
                 System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, openAS2PropertiesFile.getAbsolutePath());
+            } else {
+                System.clearProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP);
             }
             session = new XMLSession(configDir.getAbsolutePath() + "/config.xml");
             simpleTestMsg = getSimpleTestMsg();
