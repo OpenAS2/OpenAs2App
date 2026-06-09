@@ -44,7 +44,6 @@ public class CertificatesTest extends BaseServerSetup {
     private String alias = null;
     private static final String receiverPort = "10443";
     private static final String url = "https://localhost:" + receiverPort + "/";
-    private File customPropsFile = null;
     private File sslCertsFile = null; // The private key and certificate for the HTTPS
     private String sslTrustCertsFilePath = null; // The public key for the SSL private key
     private X509CertificateFactory trustFx = null; // The trust certificates 
@@ -79,8 +78,8 @@ public class CertificatesTest extends BaseServerSetup {
     @BeforeAll
     public void setUp() throws Exception {
         super.createFileSystemResources(this.getClass().getName());
-        String tmpDirAbsolutePath = tmpDir.getAbsolutePath();
-        sslCertsFile = Files.createFile(Paths.get(tmpDirAbsolutePath, "ssl_certs.p12")).toFile();
+        String configDirAbsolutePath = configDir.getAbsolutePath();
+        sslCertsFile = Files.createFile(Paths.get(configDirAbsolutePath, "ssl_certs.p12")).toFile();
         String tgtHostName = "test.openas2.org";
         this.alias = tgtHostName;
         // Create the SSL file for the server to use
@@ -88,7 +87,7 @@ public class CertificatesTest extends BaseServerSetup {
         String sslCertsFilePath = sslCertsFile.getAbsolutePath().replace("\\", "/");
         this.certFx = genSelfSignedCert(alias, sslCertsFilePath, "RSA", "SHA256", 2048, tgtHostName);
         // Create the trust store with the public key so the certificate returned from the server is trusted
-        File sslTrustCertsFile = Files.createFile(Paths.get(tmpDirAbsolutePath, "ssl_trust_certs.p12")).toFile();
+        File sslTrustCertsFile = Files.createFile(Paths.get(configDirAbsolutePath, "ssl_trust_certs.p12")).toFile();
         // Switch to forward slash to avoid backslash being dropped when creating property string when on Windows
         sslTrustCertsFilePath = sslTrustCertsFile.getAbsolutePath().replace("\\", "/");
         String trustAlias = "trust-" + tgtHostName;
@@ -99,9 +98,7 @@ public class CertificatesTest extends BaseServerSetup {
         this.trustFx.setKeyStore(AS2Util.getCryptoHelper().getKeyStore());
         this.trustFx.load();
 
-        customPropsFile = Files.createFile(Paths.get(tmpDirAbsolutePath, this.getClass().getName() + ".properties")).toFile();
-        System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, customPropsFile.getAbsolutePath());
-        FileOutputStream fos = new FileOutputStream(customPropsFile);
+        FileOutputStream fos = new FileOutputStream(openAS2PropertiesFile);
         // Switch to forward slash to avoid backslash being dropped when creating property string when on Windows
         fos.write(("ssl_keystore=" + sslCertsFilePath + "\n").getBytes());
         fos.write(("ssl_keystore_password=" + new String(password) + "\n").getBytes());
@@ -149,7 +146,7 @@ public class CertificatesTest extends BaseServerSetup {
 
     @Test
     public void a2_shouldConnect() throws Exception {
-        FileOutputStream fos = new FileOutputStream(customPropsFile, true);
+        FileOutputStream fos = new FileOutputStream(openAS2PropertiesFile, true);
         fos.write(("ssl_trust_keystore.enabled=true\n").getBytes());
         fos.write(("ssl_trust_keystore=" + sslTrustCertsFilePath + "\n").getBytes());
         fos.write(("ssl_trust_keystore_password=" + new String(password) + "\n").getBytes());

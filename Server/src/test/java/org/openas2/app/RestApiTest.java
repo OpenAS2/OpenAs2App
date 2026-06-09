@@ -23,8 +23,11 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+
+import org.openas2.app.BaseServerSetup;
 import org.openas2.TestResource;
 import org.openas2.TestUtils;
 import org.openas2.cmd.processor.restapi.AuthenticationRequestFilter;
@@ -44,15 +47,14 @@ import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+@TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.MethodName.class)
-public class RestApiTest {
+public class RestApiTest extends BaseServerSetup {
     // private static File openAS2AHome;
     private static OpenAS2Server serverInstance;
     private static String TEST_PARTNER_NAME = "partnerX";
     private static String TEST_PARTNERSHIP_NAME = TEST_PARTNER_NAME + "-partnerA";
-    @TempDir
-    private static Path scratchpad;
     private static CloseableHttpClient httpclient;
     private static String restHostAddr = "http://127.0.0.1:8080";
     private static String baseUrl = restHostAddr + "/api/";
@@ -60,24 +62,23 @@ public class RestApiTest {
     private static String authPwd = "admin";
 
     @BeforeAll
-    public static void start_A_Server() throws Exception {
+    public void start_A_Server() throws Exception {
         // Set up some override properties so we can use the standard config in tests
-        // to make sure the release package is fully tested
-        scratchpad = Files.createTempDirectory("tempResources");
-        File customPropsFile = Files.createFile(Paths.get(scratchpad.toString(), "openas2.properties")).toFile();
-        System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, customPropsFile.getAbsolutePath());
-        FileOutputStream fos = new FileOutputStream(customPropsFile);
+        super.createFileSystemResources(this.getClass().getName());
+        String configDirAbsolutePath = configDir.getAbsolutePath();
+
+        FileOutputStream fos = new FileOutputStream(openAS2PropertiesFile);
         fos.write("restapi.command.processor.enabled=true\n".getBytes());
         fos.write(("restapi.command.processor.baseuri=" + restHostAddr + "\n").getBytes());
         fos.write(("restapi.command.processor.userid=" + authUser + "\n").getBytes());
         fos.write(("restapi.command.processor.password=" + authPwd + "\n").getBytes());
         fos.close();
-
+        System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, openAS2PropertiesFile.getAbsolutePath());
         try {
             //System.setProperty(OPENAS2_LOG_LEVEL", "TRACE");
             //executorService = Executors.newFixedThreadPool(20);
 
-            RestApiTest.serverInstance = new OpenAS2Server.Builder().run(TestResource.getResource("config"));
+            RestApiTest.serverInstance = new OpenAS2Server.Builder().run(configDirAbsolutePath + "/config.xml");
         } catch (Throwable e) {
             // aid for debugging JUnit tests
             System.err.println("ERROR occurred: " + ExceptionUtils.getStackTrace(e));
@@ -92,11 +93,10 @@ public class RestApiTest {
     }
 
     @AfterAll
-    public static void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         serverInstance.shutdown();
         //    executorService.shutdown();
         System.clearProperty("openas2.properties.file");
-        TestUtils.deleteDirectory(scratchpad.toFile());
         httpclient.close();
     }
 

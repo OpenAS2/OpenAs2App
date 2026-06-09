@@ -17,8 +17,6 @@ import org.openas2.app.BaseServerSetup;
 import org.openas2.message.FileAttribute;
 import org.openas2.partner.Partnership;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -30,16 +28,7 @@ public class ContentDispositionTest extends BaseServerSetup {
     public void setUp() throws Exception {
         super.createFileSystemResources(this.getClass().getName());
         super.setup();
-
-        Logger logger = LoggerFactory.getLogger(ContentDispositionTest.class);
-        logger.info("ContentDispositionTest:: POLLER COUNT: " + session.getPolledDirectories().size());
-        logger.info("ContentDispositionTest:: PARTNERSHIP NAME: " + simpleTestMsg.getPartnership().getName());
-        for (Map.Entry<String, Map<String, Object>> entry : session.getPolledDirectories().entrySet()) {
-            Map<String, Object> meta = entry.getValue();
-            logger.info("ContentDispositionTest:: ACTIVE POLLER PARTNERSHIP NAME: " + meta.get("partnershipName"));
-        }
         this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
-        logger.info("ContentDispositionTest:: POLLER BY NAME: " + this.poller);
     }
 
     @AfterAll

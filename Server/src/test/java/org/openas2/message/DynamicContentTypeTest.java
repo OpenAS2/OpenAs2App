@@ -47,7 +47,7 @@ public class DynamicContentTypeTest extends BaseServerSetup {
     public void setUp() throws Exception {
         super.createFileSystemResources(this.getClass().getName());
         // Set up the system level mappings
-        systemContentTypesMappingFile = new File(tmpDir, "content_type_map.properties");
+        systemContentTypesMappingFile = new File(configDir, "content_type_map.properties");
         systemMappedContentTypes.put(xmlFileExtension,  "application/xml");
         systemMappedContentTypes.put(ediFileExtension,  "application/edifact");
         systemMappedContentTypes.put("txt",  "text/plain");
@@ -57,7 +57,7 @@ public class DynamicContentTypeTest extends BaseServerSetup {
         }  
         writer.close();
         // Set up the partnership override mappings
-        partnershipContentTypesMappingFile = new File(tmpDir, "override_content_type_map.properties");
+        partnershipContentTypesMappingFile = new File(configDir, "override_content_type_map.properties");
         partnershipMappedContentTypes.put(xmlFileExtension,  "application/xml-custom");
         BufferedWriter writer2 = new BufferedWriter(new FileWriter(partnershipContentTypesMappingFile));
         for (Map.Entry<String, String> entry : partnershipMappedContentTypes.entrySet()) {

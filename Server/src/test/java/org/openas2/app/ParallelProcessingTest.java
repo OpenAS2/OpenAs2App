@@ -116,10 +116,10 @@ public class ParallelProcessingTest {
         // NOTE: For debugging "missing" files it is best to comment this out
         for (int i = 0; i < dataFolders.length; i++) {
             try {
-                FileUtils.deleteDirectory(new File(dataFolders[i]));
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                File dir = new File(dataFolders[i]);
+                for (File f: dir.listFiles()) f.delete();
+                dir.delete();
+            } catch (Exception e) {
             }
         }
     }
