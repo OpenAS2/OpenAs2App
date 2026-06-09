@@ -1,8 +1,13 @@
 package org.openas2.app;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -19,6 +24,9 @@ import org.openas2.util.Properties;
 
 
 public class BaseServerSetup {
+    static String resourcePathPrefix = Paths.get("src","test","resources").toAbsolutePath().toString();
+    static Path srcConfigDirPath = Paths.get(resourcePathPrefix + File.separator + "config");
+
     static String myCompanyOid = "MyCompany_OID";
     static String myPartnerOid = "PartnerA_OID";
     private boolean startActiveModules = false;
@@ -27,7 +35,7 @@ public class BaseServerSetup {
     protected static Message simpleTestMsg;
 
     @TempDir
-    public static File tmpDir;
+    public static File configDir;
     public File openAS2PropertiesFile;
 
     public void refresh() throws Exception {
@@ -51,7 +59,7 @@ public class BaseServerSetup {
         msg.setHeader("AS2-To", msg.getPartnership().getReceiverID(Partnership.PID_AS2));
         msg.setHeader("AS2-From", msg.getPartnership().getSenderID(Partnership.PID_AS2));
         msg.updateMessageID();
-        File testFile = new File(tmpDir, fileName);
+        File testFile = new File(configDir, fileName);
         FileUtils.writeStringToFile(testFile, "Show me the money!", Charset.forName("UTF-8"));
         frm.buildMessageData(msg, testFile, null);
     }
@@ -60,9 +68,14 @@ public class BaseServerSetup {
         this.startActiveModules = startActiveModules;
     }
 
-    public void createFileSystemResources() throws Exception {
-        tmpDir = Files.createTempDirectory("testResources").toFile();
-        openAS2PropertiesFile = new File(tmpDir, "test.openas2.properties");
+    public void createFileSystemResources(String configDirName) throws Exception {
+        Path destConfigDirPath = Files.createTempDirectory(configDirName);
+        configDir = destConfigDirPath.toFile();
+        openAS2PropertiesFile = new File(configDir, "test.openas2.properties");
+        // Just in case there is an existing file...
+        if (openAS2PropertiesFile.exists()) openAS2PropertiesFile.delete();
+        // Copy standard config resources to this folder
+        this.copyConfig(destConfigDirPath.toString());
     }
 
     public void setup() throws Exception {
@@ -70,8 +83,10 @@ public class BaseServerSetup {
             //System.setProperty("OPENAS2_LOG_LEVEL", "trace");
             if (openAS2PropertiesFile.exists()) {
                 System.setProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP, openAS2PropertiesFile.getAbsolutePath());
+            } else {
+                System.clearProperty(Properties.OPENAS2_PROPERTIES_FILE_PROP);
             }
-            session = new XMLSession(TestResource.getResource("config"));
+            session = new XMLSession(configDir.getAbsolutePath() + "/config.xml");
             simpleTestMsg = getSimpleTestMsg();
             if (startActiveModules) {
                 session.start();
@@ -82,6 +97,21 @@ public class BaseServerSetup {
             throw new Exception(e);
         }
     }
+
+    /**
+     * Copy standard config files from {@link #resourcePathPrefix} to the target config folder
+     * @throws IOException 
+     *
+     */
+    public void copyConfig(String destDir) throws IOException {
+        if (!srcConfigDirPath.toFile().exists()) {
+            throw new FileNotFoundException("The source config was not found here: " + srcConfigDirPath.getFileName());
+        }
+        for (String f : srcConfigDirPath.toFile().list()) {
+            Files.copy(Paths.get(srcConfigDirPath.toString(), f), Paths.get(destDir, f), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
 
     @AfterAll
     public void tearDown() throws Exception {

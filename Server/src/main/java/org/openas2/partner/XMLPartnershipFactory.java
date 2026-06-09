@@ -44,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * original author unknown
  * <p>
@@ -107,6 +106,7 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         } catch (Exception e) {
             throw new WrappedException(e);
         }
+
     }
 
     void refreshConfig() throws OpenAS2Exception {

@@ -16,6 +16,8 @@ import org.openas2.OpenAS2Exception;
 import org.openas2.app.BaseServerSetup;
 import org.openas2.message.FileAttribute;
 import org.openas2.partner.Partnership;
+import java.util.Map;
+
 
 @TestInstance(Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -24,7 +26,7 @@ public class ContentDispositionTest extends BaseServerSetup {
     
     @BeforeAll
     public void setUp() throws Exception {
-        super.createFileSystemResources();
+        super.createFileSystemResources(this.getClass().getName());
         super.setup();
         this.poller = session.getPartnershipPoller(simpleTestMsg.getPartnership().getName());
     }
