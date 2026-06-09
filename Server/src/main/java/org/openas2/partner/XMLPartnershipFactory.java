@@ -43,7 +43,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * original author unknown
@@ -107,6 +108,13 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
         } catch (Exception e) {
             throw new WrappedException(e);
         }
+        try {
+            Path filePath = Path.of(getFilename());
+            String content = Files.readString(filePath);
+            logger.info("PARTNERSHIPS FILE: " + content);
+        } catch (IOException e) {
+        }
+
     }
 
     void refreshConfig() throws OpenAS2Exception {
