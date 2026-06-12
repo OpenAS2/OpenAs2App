@@ -49,5 +49,5 @@ if [ ! -e $OPENAS2_PROPERTIES_FILE ]
     done
 
 fi
-# Start OpenAS2 in foreground
-$(dirname $0)/start-openas2.sh
+# Start OpenAS2 in foreground, replacing this shell so signals reach the JVM
+exec $(dirname $0)/start-openas2.sh
