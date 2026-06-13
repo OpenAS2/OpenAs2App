@@ -28,4 +28,4 @@ COPY --from=builder /usr/src/openas2/Runtime/resources ${OPENAS2_BASE}/resources
 COPY --from=builder /usr/src/openas2/Runtime/config_template ${OPENAS2_HOME}/config_template
 RUN mkdir ${OPENAS2_BASE}/config
 WORKDIR $OPENAS2_HOME
-ENTRYPOINT ${OPENAS2_BASE}/bin/start-container.sh
+ENTRYPOINT ["/opt/openas2/bin/start-container.sh"]
