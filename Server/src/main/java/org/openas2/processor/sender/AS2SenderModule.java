@@ -201,7 +201,7 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         // Check the HTTP Response code
         int rc = resp.getStatusCode();
         if ((rc != HttpURLConnection.HTTP_OK) && (rc != HttpURLConnection.HTTP_CREATED) && (rc != HttpURLConnection.HTTP_ACCEPTED) && (rc != HttpURLConnection.HTTP_PARTIAL) && (rc != HttpURLConnection.HTTP_NO_CONTENT)) {
-            msg.setLogMsg("Error sending message. URL: " + url + " ::: Response Code: " + rc + " " + resp.getStatusPhrase() + " ::: Response Message: " + resp.getBody().toString());
+            msg.setLogMsg("Error sending message. URL: " + url + " ::: Response Code: " + rc + " " + resp.getStatusPhrase() + " ::: Response Message: " + new String(resp.getBody(), java.nio.charset.StandardCharsets.UTF_8));
             logger.error(msg.getLogMsg());
             throw new HttpResponseException(url, rc, resp.getStatusPhrase());
         }
