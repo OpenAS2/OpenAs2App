@@ -1,20 +1,27 @@
 #              OpenAS2 Server
-#              Version 4.8.2
+#              Version 4.8.3
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.8.2
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.8.3
 
-The release download file is: OpenAS2Server-4.8.2.zip
+The release download file is: OpenAS2Server-4.8.3.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.8.2 - 2026-04-10
+Version 4.8.3 - 2026-06-26
 =======
 
-This is a bugfix release.
-1.  When an SSL exception occurs connecting to a partner, the file is soptred in the sent directory instead of error directory.
+This is a minor enhancement and bugfix release.
+1. Optimise resend process.
+2. Fix db_ddl.sql: align with authoritative openas2-schema.xml.
+3. Fix container signal handling so the JVM receives SIGTERM for clean shutdown.
+4. Fix flaky tests icausing CI/CD pipeline to fail.
+5. Fix logging of error response body in AS2SenderModule
+6. Fix start-openas2.bat for logging directory setting.
+7. Add poller configuration to API command for partnership.
+8. Change the IOUtil moveFile method to a more intelligent algorithm for non-homogeneous moves.
 
 ## Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

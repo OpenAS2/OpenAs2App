@@ -1,5 +1,19 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.8.3 - 2026-06-26
+
+This is a minor enhancement and bugfix release.
+1. Optimise resend process.
+2. Fix db_ddl.sql: align with authoritative openas2-schema.xml.
+3. Fix container signal handling so the JVM receives SIGTERM for clean shutdown.
+4. Fix flaky tests icausing CI/CD pipeline to fail.
+5. Fix logging of error response body in AS2SenderModule
+6. Fix start-openas2.bat for logging directory setting.
+7. Add poller configuration to API command for partnership.
+8. Change the IOUtil moveFile method to a more intelligent algorithm for non-homogeneous moves.
+
+
+
 Version 4.8.2 - 2026-04-10
 
 This is a bugfix release.
