@@ -94,7 +94,8 @@ if [ "true" = "$OPENAS2_AS_DAEMON" ]; then
     echo $PID > $OPENAS2_PID
   fi
 else
-  ${CMD}
-  RETVAL="$?"
+  # Replace the shell with the java process so it receives signals directly
+  # (required for clean shutdown when running as PID 1 in a container)
+  exec ${CMD}
 fi
 exit $RETVAL
