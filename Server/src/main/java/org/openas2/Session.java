@@ -112,6 +112,7 @@ public interface Session {
     
     public void startPartnershipPollers() throws OpenAS2Exception;
     public void destroyPartnershipPollers(String configSourceFilter);
+    public void destroyPartnershipPoller(String partnershipName);
 
     String getBaseDirectory();
 
