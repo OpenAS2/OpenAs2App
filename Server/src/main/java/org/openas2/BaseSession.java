@@ -185,6 +185,38 @@ public abstract class BaseSession implements Session {
         }
     }
 
+    /**
+     * Synchronously stop and untrack the poller for a single named partnership, if one is
+     * currently registered. Used when a partnership is deleted outside of a full config
+     * reload (e.g. via the REST API) so that its outbox directory is freed up immediately
+     * rather than waiting for the next scheduled partnerships file refresh.
+     *
+     * @param partnershipName - name attribute value for the partnership whose poller should be destroyed
+     */
+    public void destroyPartnershipPoller(String partnershipName) {
+        String pollerKeyToRemove = null;
+        for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
+            Map<String, Object> meta = entry.getValue();
+            if (partnershipName.equals(meta.get("partnershipName"))) {
+                DirectoryPollingModule poller = (DirectoryPollingModule) meta.get("pollerInstance");
+                try {
+                    LOGGER.trace("Destroying poller for deleted partnership " + partnershipName + ":" + meta);
+                    if (poller.isRunning()) {
+                        poller.stop();
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Failed to stop the partnership poller for partnership " + partnershipName + ": " + meta, e);
+                }
+                pollerKeyToRemove = entry.getKey();
+                break;
+            }
+        }
+        if (pollerKeyToRemove != null) {
+            polledDirectories.remove(pollerKeyToRemove);
+            LOGGER.trace("Removed poller from cache map:" + pollerKeyToRemove);
+        }
+    }
+
     public DirectoryPollingModule getPartnershipPoller(String partnershipName) {
         for (Map.Entry<String, Map<String, Object>> entry : polledDirectories.entrySet()) {
             Map<String, Object> meta = entry.getValue();
