@@ -65,6 +65,12 @@ public class HTTPUtil {
     public static final String PARAM_SOCKET_TIMEOUT = "sockettimeout";
     public static final String PARAM_HTTP_USER = "http_user";
     public static final String PARAM_HTTP_PWD = "http_password";
+    // Client certificate (mutual TLS) authentication for outbound HTTPS connections.
+    // Set as partnership attributes for per-partnership identities or as properties
+    // in the properties file for a global client identity.
+    public static final String PARAM_HTTPS_CLIENT_KEYSTORE = "https_client_keystore";
+    public static final String PARAM_HTTPS_CLIENT_KEYSTORE_PASSWORD = "https_client_keystore_password";
+    public static final String PARAM_HTTPS_CLIENT_CERT_ALIAS = "https_client_cert_alias";
 
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_USER_AGENT = "User-Agent";
@@ -445,16 +451,25 @@ public class HTTPUtil {
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         SSLContext sslcontext;
 
+        // Client certificate for mutual TLS if configured for this connection
+        ClientKeyMaterial clientKeyMaterial = getClientKeyMaterial(options);
+
         if (selfsignedCertsKeystore != null) {
             try {
                 // Trust own CA and all self-signed certs
-                sslcontext = SSLContexts.custom().loadTrustMaterial(selfsignedCertsKeystore, new TrustSelfSignedStrategy()).build();
+                org.apache.http.ssl.SSLContextBuilder sslContextBuilder = SSLContexts.custom().loadTrustMaterial(selfsignedCertsKeystore, new TrustSelfSignedStrategy());
+                if (clientKeyMaterial != null) {
+                    sslContextBuilder.loadKeyMaterial(clientKeyMaterial.keyStore, clientKeyMaterial.password);
+                }
+                sslcontext = sslContextBuilder.build();
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("SSL context built using self signed trust store...");
                 }
             } catch (Exception e) {
                 throw new OpenAS2Exception("Attempted connection using self-signed manager failed connecting to : " + urlObj.toString(), e);
             }
+        } else if (clientKeyMaterial != null) {
+            sslcontext = SSLContexts.custom().loadKeyMaterial(clientKeyMaterial.keyStore, clientKeyMaterial.password).build();
         } else {
             sslcontext = SSLContexts.createSystemDefault();
         }
@@ -500,12 +515,65 @@ public class HTTPUtil {
             }
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory
                     .getDefaultAlgorithm());
-            kmf.init(selfsignedCertsKeystore, null);
+            if (clientKeyMaterial != null) {
+                kmf.init(clientKeyMaterial.keyStore, clientKeyMaterial.password);
+            } else {
+                kmf.init(selfsignedCertsKeystore, null);
+            }
             // Now add the custom trust manager to the SSL context
             sslcontext.init(kmf.getKeyManagers(), new TrustManager[]{tm}, null);
         }
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, null, null, hnv);
         return sslsf;
+    }
+
+    private static class ClientKeyMaterial {
+        private final KeyStore keyStore;
+        private final char[] password;
+
+        private ClientKeyMaterial(KeyStore keyStore, char[] password) {
+            this.keyStore = keyStore;
+            this.password = password;
+        }
+    }
+
+    /**
+     * Loads the keystore holding the client certificate to present for mutual TLS if one
+     * is configured in the options. Keystore type is PKCS12 unless the file name ends in
+     * ".jks". If an alias is configured the returned keystore is reduced to just that key
+     * entry so the TLS layer cannot pick a different one; the key must use the same
+     * password as the keystore.
+     *
+     * @return the keystore and its password, or null when no client keystore is configured
+     */
+    private static ClientKeyMaterial getClientKeyMaterial(Map<String, Object> options) throws Exception {
+        String ksPath = (String) options.get(PARAM_HTTPS_CLIENT_KEYSTORE);
+        if (ksPath == null || ksPath.length() < 1) {
+            return null;
+        }
+        String pwdStr = (String) options.get(PARAM_HTTPS_CLIENT_KEYSTORE_PASSWORD);
+        char[] password = (pwdStr == null) ? new char[0] : pwdStr.toCharArray();
+        KeyStore ks = KeyStore.getInstance(ksPath.toLowerCase().endsWith(".jks") ? "JKS" : "PKCS12");
+        try (FileInputStream fis = new FileInputStream(ksPath)) {
+            ks.load(fis, password);
+        } catch (IOException e) {
+            throw new OpenAS2Exception("Failed to load the client keystore for mutual TLS: " + ksPath, e);
+        }
+        String alias = (String) options.get(PARAM_HTTPS_CLIENT_CERT_ALIAS);
+        if (alias != null && alias.length() > 0) {
+            java.security.Key key = ks.getKey(alias, password);
+            if (key == null) {
+                throw new OpenAS2Exception("No private key found in the mutual TLS client keystore for alias \"" + alias + "\": " + ksPath);
+            }
+            KeyStore singleEntry = KeyStore.getInstance("PKCS12");
+            singleEntry.load(null, null);
+            singleEntry.setKeyEntry(alias, key, password, ks.getCertificateChain(alias));
+            ks = singleEntry;
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Mutual TLS client keystore loaded for outbound connection: " + ksPath + (alias == null ? "" : " :: alias: " + alias));
+        }
+        return new ClientKeyMaterial(ks, password);
     }
 
     private static RequestBuilder getRequestBuilder(String method, URL urlObj, NameValuePair[] params, InternetHeaders headers) throws URISyntaxException {

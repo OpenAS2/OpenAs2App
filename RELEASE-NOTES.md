@@ -22,6 +22,7 @@ This is a minor enhancement and bugfix release.
 6. Fix start-openas2.bat for logging directory setting.
 7. Add poller configuration to API command for partnership.
 8. Change the IOUtil moveFile method to a more intelligent algorithm for non-homogeneous moves.
+9. Add mutual TLS (client certificate) authentication for outbound HTTPS connections using the https_client_keystore, https_client_keystore_password and https_client_cert_alias partnership attributes (or properties for a global client identity). See the commented example in partnerships.xml.
 
 ## Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
