@@ -2,6 +2,7 @@ package org.openas2.app.partner;
 
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.CommandResult;
+import org.openas2.partner.DbPartnershipFactory;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.partner.XMLPartnershipFactory;
@@ -34,6 +35,16 @@ public class DeletePartnershipCommand extends AliasedPartnershipsCommand {
         synchronized (partFx) {
 
             String name = params[0].toString();
+
+            if (partFx instanceof DbPartnershipFactory) {
+                try {
+                    ((DbPartnershipFactory) partFx).deletePartnership(name);
+                } catch (OpenAS2Exception e) {
+                    return new CommandResult(CommandResult.TYPE_ERROR, e.getMessage());
+                }
+                return new CommandResult(CommandResult.TYPE_OK);
+            }
+
             Iterator<Partnership> parts = partFx.getPartnerships().iterator();
 
             while (parts.hasNext()) {

@@ -30,4 +30,73 @@
 			<unique-column name="msg_id" />
 		</unique>
 	</table>
+
+	<!-- Tables used by org.openas2.partner.DbPartnershipFactory to load partnerships
+		from a database instead of the partnerships XML file. The category column on
+		partnership_attribute is 'attribute' for regular partnership attributes,
+		'sender'/'receiver' for per-partnership overrides applied on top of the
+		linked partner's attributes or 'pollerConfig' for the attributes of a
+		partnership specific directory poller. -->
+	<table name="partner">
+		<column name="id" primaryKey="true" required="true" type="INTEGER"
+			autoIncrement="true" />
+		<column name="name" type="VARCHAR" size="255" required="true" />
+
+		<unique name="partner_name_unique">
+			<unique-column name="name" />
+		</unique>
+	</table>
+
+	<table name="partner_attribute">
+		<column name="id" primaryKey="true" required="true" type="INTEGER"
+			autoIncrement="true" />
+		<column name="partner_id" type="INTEGER" required="true" />
+		<column name="attribute_name" type="VARCHAR" size="255" required="true" />
+		<column name="attribute_value" type="VARCHAR" size="4000" />
+
+		<foreign-key foreignTable="partner" name="fk_partner_attribute_partner">
+			<reference local="partner_id" foreign="id" />
+		</foreign-key>
+		<unique name="partner_attribute_unique">
+			<unique-column name="partner_id" />
+			<unique-column name="attribute_name" />
+		</unique>
+	</table>
+
+	<table name="partnership">
+		<column name="id" primaryKey="true" required="true" type="INTEGER"
+			autoIncrement="true" />
+		<column name="name" type="VARCHAR" size="255" required="true" />
+		<column name="sender_partner_id" type="INTEGER" required="true" />
+		<column name="receiver_partner_id" type="INTEGER" required="true" />
+
+		<foreign-key foreignTable="partner" name="fk_partnership_sender">
+			<reference local="sender_partner_id" foreign="id" />
+		</foreign-key>
+		<foreign-key foreignTable="partner" name="fk_partnership_receiver">
+			<reference local="receiver_partner_id" foreign="id" />
+		</foreign-key>
+		<unique name="partnership_name_unique">
+			<unique-column name="name" />
+		</unique>
+	</table>
+
+	<table name="partnership_attribute">
+		<column name="id" primaryKey="true" required="true" type="INTEGER"
+			autoIncrement="true" />
+		<column name="partnership_id" type="INTEGER" required="true" />
+		<column name="category" type="VARCHAR" size="20" required="true"
+			DEFAULT="attribute" />
+		<column name="attribute_name" type="VARCHAR" size="255" required="true" />
+		<column name="attribute_value" type="VARCHAR" size="4000" />
+
+		<foreign-key foreignTable="partnership" name="fk_partnership_attribute_partnership">
+			<reference local="partnership_id" foreign="id" />
+		</foreign-key>
+		<unique name="partnership_attribute_unique">
+			<unique-column name="partnership_id" />
+			<unique-column name="category" />
+			<unique-column name="attribute_name" />
+		</unique>
+	</table>
 </database>

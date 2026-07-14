@@ -3,6 +3,7 @@ package org.openas2.app.partner;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.BaseCommand;
 import org.openas2.cmd.CommandResult;
+import org.openas2.partner.DbPartnershipFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.partner.XMLPartnershipFactory;
 
@@ -34,6 +35,9 @@ public class StorePartnershipsCommand extends BaseCommand {
                     ((XMLPartnershipFactory) partnerFx).storePartnership();
 
                     return new CommandResult(CommandResult.TYPE_OK, "Stored partnerships");
+                }
+                if (partnerFx instanceof DbPartnershipFactory) {
+                    return new CommandResult(CommandResult.TYPE_OK, "The database partnership store persists changes immediately so there is nothing to do");
                 }
                 return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current partnership store, must be XML");
             }

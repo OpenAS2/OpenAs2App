@@ -19,7 +19,7 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
+public class EmbeddedDBHandler extends DbTrackingModule implements IDBHandler {
 
     @Nullable
     private JdbcConnectionPool cp = null;

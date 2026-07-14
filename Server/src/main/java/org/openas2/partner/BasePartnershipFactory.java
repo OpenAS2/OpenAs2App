@@ -1,5 +1,7 @@
 package org.openas2.partner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.openas2.BaseComponent;
 import org.openas2.OpenAS2Exception;
 import org.openas2.message.FileAttribute;
@@ -7,6 +9,15 @@ import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,6 +28,8 @@ import java.util.regex.Pattern;
 
 public abstract class BasePartnershipFactory extends BaseComponent implements PartnershipFactory {
     private List<Partnership> partnerships;
+
+    private Logger baseLogger = LoggerFactory.getLogger(BasePartnershipFactory.class);
 
     public Partnership getPartnership(Partnership p, boolean reverseLookup) throws OpenAS2Exception {
         Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());
@@ -142,6 +155,77 @@ public abstract class BasePartnershipFactory extends BaseComponent implements Pa
 
     protected Partnership getPartnership(String name) throws OpenAS2Exception {
         return getPartnership(getPartnerships(), name);
+    }
+
+    public void replacePartnershipPlaceHolders(Document doc, Partnership partnership) throws OpenAS2Exception {
+        String xpathExpression = "//*[@*[contains(.,'$partnership.')]]/@*";
+        // Create XPathFactory object
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        // Create XPath object
+        XPath xpath = xpathFactory.newXPath();
+        try {
+            // Create XPathExpression object
+            XPathExpression expr = xpath.compile(xpathExpression);
+            // Evaluate expression result on XML document
+            NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+            Pattern PATTERN = Pattern.compile("\\$partnership\\.([^\\$]++)\\$");
+
+            for (int i = 0; i < nodes.getLength(); i++) {
+                Node node = nodes.item(i);
+                String val = node.getNodeValue();
+                //logger.debug("Partnership place holder NODE processing: " + val);
+                StringBuffer strBuf = new StringBuffer();
+                Matcher matcher = PATTERN.matcher(val);
+                boolean hasChanged = false;
+                while (matcher.find()) {
+                    String value = null;
+                    String[] keys = matcher.group(1).split("\\.");
+                    if (keys.length == 1) {
+                        switch (keys[0]) {
+                        case "name":
+                            value = partnership.getName();
+                            break;
+                        default:
+                            throw new OpenAS2Exception(
+                                    "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
+                        }
+                    } else if (keys.length == 2) {
+                        switch (keys[0]) {
+                        case "receiver":
+                            value = partnership.getReceiverID(keys[1]);
+                            break;
+                        case "sender":
+                            value = partnership.getSenderID(keys[1]);
+                            break;
+                        default:
+                            throw new OpenAS2Exception(
+                                    "The partnership placeholder cannot be resolved: " + keys[0] + " in " + val);
+                        }
+                    } else {
+                        // don't know how to handle this
+                        throw new OpenAS2Exception(
+                                "The partnership placeholder is invalid and cannot be parsed: " + val);
+                    }
+                    if (value == null) {
+                        throw new OpenAS2Exception(
+                                "Missing attribute value for replacement: " + matcher.group() + " in " + val);
+                    } else {
+                        hasChanged = true;
+                        matcher.appendReplacement(strBuf, Matcher.quoteReplacement(value));
+                        if (baseLogger.isTraceEnabled()) {
+                            baseLogger.trace("Partnership place holder replaced: " + keys + " :: Replaced with: " + value);
+                        }
+                    }
+                }
+                if (hasChanged) {
+                    matcher.appendTail(strBuf);
+                    node.setNodeValue(strBuf.toString());
+                }
+            }
+
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+        }
     }
 
     // returns true if all values in searchIds match values in partnerIds

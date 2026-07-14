@@ -40,3 +40,64 @@ CREATE TABLE msg_metadata
 );
 
 CREATE UNIQUE INDEX MSG_ID_UNIQUE ON msg_metadata (MSG_ID);
+
+-- -----------------------------------------------------------------------
+-- partner / partnership tables used by org.openas2.partner.DbPartnershipFactory
+-- to load partnerships from a database instead of the partnerships XML file.
+-- partnership_attribute.CATEGORY is 'attribute' for regular partnership
+-- attributes, 'sender'/'receiver' for per-partnership overrides applied on
+-- top of the linked partner's attributes or 'pollerConfig' for the attributes
+-- of a partnership specific directory poller.
+-- -----------------------------------------------------------------------
+
+DROP TABLE partnership_attribute IF EXISTS;
+DROP TABLE partnership IF EXISTS;
+DROP TABLE partner_attribute IF EXISTS;
+DROP TABLE partner IF EXISTS;
+
+CREATE TABLE partner
+(
+    ID INTEGER NOT NULL AUTO_INCREMENT,
+    NAME VARCHAR(255) NOT NULL,
+    PRIMARY KEY (ID)
+);
+
+CREATE UNIQUE INDEX PARTNER_NAME_UNIQUE ON partner (NAME);
+
+CREATE TABLE partner_attribute
+(
+    ID INTEGER NOT NULL AUTO_INCREMENT,
+    PARTNER_ID INTEGER NOT NULL,
+    ATTRIBUTE_NAME VARCHAR(255) NOT NULL,
+    ATTRIBUTE_VALUE VARCHAR(4000),
+    PRIMARY KEY (ID),
+    FOREIGN KEY (PARTNER_ID) REFERENCES partner (ID)
+);
+
+CREATE UNIQUE INDEX PARTNER_ATTRIBUTE_UNIQUE ON partner_attribute (PARTNER_ID, ATTRIBUTE_NAME);
+
+CREATE TABLE partnership
+(
+    ID INTEGER NOT NULL AUTO_INCREMENT,
+    NAME VARCHAR(255) NOT NULL,
+    SENDER_PARTNER_ID INTEGER NOT NULL,
+    RECEIVER_PARTNER_ID INTEGER NOT NULL,
+    PRIMARY KEY (ID),
+    FOREIGN KEY (SENDER_PARTNER_ID) REFERENCES partner (ID),
+    FOREIGN KEY (RECEIVER_PARTNER_ID) REFERENCES partner (ID)
+);
+
+CREATE UNIQUE INDEX PARTNERSHIP_NAME_UNIQUE ON partnership (NAME);
+
+CREATE TABLE partnership_attribute
+(
+    ID INTEGER NOT NULL AUTO_INCREMENT,
+    PARTNERSHIP_ID INTEGER NOT NULL,
+    CATEGORY VARCHAR(20) DEFAULT 'attribute' NOT NULL,
+    ATTRIBUTE_NAME VARCHAR(255) NOT NULL,
+    ATTRIBUTE_VALUE VARCHAR(4000),
+    PRIMARY KEY (ID),
+    FOREIGN KEY (PARTNERSHIP_ID) REFERENCES partnership (ID)
+);
+
+CREATE UNIQUE INDEX PARTNERSHIP_ATTRIBUTE_UNIQUE ON partnership_attribute (PARTNERSHIP_ID, CATEGORY, ATTRIBUTE_NAME);
