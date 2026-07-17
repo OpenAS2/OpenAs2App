@@ -22,7 +22,8 @@ This is a minor enhancement and bugfix release.
 6. Fix start-openas2.bat for logging directory setting.
 7. Add poller configuration to API command for partnership.
 8. Change the IOUtil moveFile method to a more intelligent algorithm for non-homogeneous moves.
-9. Add mutual TLS (client certificate) authentication for outbound HTTPS connections using the https_client_keystore, https_client_keystore_password and https_client_cert_alias partnership attributes (or properties for a global client identity). See the commented example in partnerships.xml.
+9. Add DbPartnershipFactory: partnerships can optionally be stored in a database (Azure SQL, PostgreSQL, MySQL, Oracle or the embedded H2) instead of the partnerships XML file. See the commented example in config.xml. The required tables are included in db_ddl.sql and openas2-schema.xml and are only needed when using the database partnership store.
+10. Add mutual TLS (client certificate) authentication for outbound HTTPS connections using the https_client_keystore, https_client_keystore_password and https_client_cert_alias partnership attributes (or properties for a global client identity). See the commented example in partnerships.xml.
 
 ## Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.

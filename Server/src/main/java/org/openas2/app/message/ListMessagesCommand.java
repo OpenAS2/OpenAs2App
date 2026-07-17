@@ -26,7 +26,7 @@ public class ListMessagesCommand extends AliasedMessagesCommand  {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public String getDefaultDescription() {
-        return "List messages, optionally bounded by from=/to= (yyyy-MM-dd)";
+        return "List messages, optionally bounded by from=/to= (yyyy-MM-dd) and fromTime=/toTime= (HH:mm:ss)";
     }
 
 
@@ -35,7 +35,7 @@ public class ListMessagesCommand extends AliasedMessagesCommand  {
     }
 
     public String getDefaultUsage() {
-        return "list [from=yyyy-MM-dd] [to=yyyy-MM-dd]";
+        return "list [from=yyyy-MM-dd] [to=yyyy-MM-dd] [fromTime=HH:mm:ss] [toTime=HH:mm:ss]";
     }
 
     public CommandResult execute(MessageFactory messageFactory, Object[] params) throws OpenAS2Exception {
@@ -53,17 +53,14 @@ public class ListMessagesCommand extends AliasedMessagesCommand  {
 
             HashMap<String, String> filters = parseParams(params);
 
-            Timestamp from;
-            Timestamp to;
+            DateRange range;
             try {
-                from = parseBound(filters.get("from"), " 00:00:00");
-                to = parseBound(filters.get("to"), " 23:59:59");
-            } catch (ParseException e) {
-                return new CommandResult(CommandResult.TYPE_ERROR,
-                        "Invalid date - 'from'/'to' must be in yyyy-MM-dd format: " + e.getMessage());
+                range = resolveDateRange(filters);
+            } catch (InvalidRangeException | ParseException e) {
+                return new CommandResult(CommandResult.TYPE_ERROR, e.getMessage());
             }
 
-            ArrayList<HashMap<String,String>> messages = db.listMessages(from, to);
+            ArrayList<HashMap<String,String>> messages = db.listMessages(range.from, range.to);
 
             CommandResult cmdRes = new CommandResult(CommandResult.TYPE_OK);
 
@@ -90,14 +87,68 @@ public class ListMessagesCommand extends AliasedMessagesCommand  {
     }
 
     /**
-     * @param value     - the raw "yyyy-MM-dd" parameter value, or null if the caller didn't supply one
-     * @param timeOfDay - " 00:00:00" or " 23:59:59" to make the bound inclusive of the whole day
-     * @return the parsed bound, or null if value was null (i.e. unbounded on that side)
+     * Resolves the from=/to=/fromTime=/toTime= filters into a concrete date range, applying:
+     * - fromTime requires from, toTime requires to (a time with no matching date is invalid)
+     * - to/toTime together require from as well
+     * - from+fromTime with no to at all defaults the upper bound to right now
+     * - a resolved from after a resolved to is rejected
      */
-    private Timestamp parseBound(String value, String timeOfDay) throws ParseException {
-        if (value == null) {
+    DateRange resolveDateRange(HashMap<String, String> filters) throws InvalidRangeException, ParseException {
+        String fromStr = filters.get("from");
+        String toStr = filters.get("to");
+        String fromTimeStr = filters.get("fromTime");
+        String toTimeStr = filters.get("toTime");
+
+        if (fromTimeStr != null && fromStr == null) {
+            throw new InvalidRangeException("'fromTime' parameter requires 'from' to also be specified");
+        }
+        if (toTimeStr != null && toStr == null) {
+            throw new InvalidRangeException("'toTime' parameter requires 'to' to also be specified");
+        }
+
+        Timestamp from = parseBound(fromStr, fromTimeStr, "00:00:00");
+        Timestamp to;
+        if (toStr == null && fromStr != null && fromTimeStr != null) {
+            // from+fromTime given with no 'to' at all: treat as "from that moment until now"
+            to = new Timestamp(System.currentTimeMillis());
+        } else {
+            to = parseBound(toStr, toTimeStr, "23:59:59");
+        }
+
+        if (from != null && to != null && from.after(to)) {
+            throw new InvalidRangeException("start time cannot be after the end time");
+        }
+
+        return new DateRange(from, to);
+    }
+
+    /**
+     * @param dateValue        - the raw "yyyy-MM-dd" parameter value, or null if the caller didn't supply one
+     * @param timeValue        - the raw "HH:mm:ss" parameter value, or null if the caller didn't supply one
+     * @param defaultTimeOfDay - "00:00:00" or "23:59:59", used when timeValue is null
+     * @return the parsed bound, or null if dateValue was null (i.e. unbounded on that side)
+     */
+    private Timestamp parseBound(String dateValue, String timeValue, String defaultTimeOfDay) throws ParseException {
+        if (dateValue == null) {
             return null;
         }
-        return new Timestamp(DateUtil.parseDate(DATE_FORMAT, value + timeOfDay).getTime());
+        String timeOfDay = timeValue != null ? timeValue : defaultTimeOfDay;
+        return new Timestamp(DateUtil.parseDate(DATE_FORMAT, dateValue + " " + timeOfDay).getTime());
+    }
+
+    static final class DateRange {
+        final Timestamp from;
+        final Timestamp to;
+
+        DateRange(Timestamp from, Timestamp to) {
+            this.from = from;
+            this.to = to;
+        }
+    }
+
+    static final class InvalidRangeException extends Exception {
+        InvalidRangeException(String message) {
+            super(message);
+        }
     }
 }

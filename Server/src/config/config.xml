@@ -213,6 +213,20 @@
    <partnerships classname="org.openas2.partner.XMLPartnershipFactory"
                  filename="$properties.partnership_file$"
                  interval="$properties.partnerships.polling.interval$"/>
+   <!-- Alternatively partnerships can be loaded (read-only) from a database using the
+        partner/partner_attribute/partnership/partnership_attribute tables
+        (see the db_ddl.sql and resources/db/openas2-schema.xml files for the table definitions).
+        Any database with a JDBC driver is supported using the same connection parameters as the
+        DbTrackingModule. Partnerships are reloaded by the "refresh" console command and, if
+        "interval" is set to a value in seconds, on a fixed schedule. Example for Azure SQL:
+   <partnerships classname="org.openas2.partner.DbPartnershipFactory"
+                 db_user="openas2"
+                 db_pwd="OpenAS2"
+                 jdbc_connect_string="jdbc:sqlserver://myserver.database.windows.net:1433;database=openas2;encrypt=true"
+                 jdbc_driver="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                 force_load_jdbc_driver="true"
+                 interval="600"/>
+   -->
 
    <messages enabled="$properties.messages.enabled$"
              classname="org.openas2.message.XMLMessageFactory"
