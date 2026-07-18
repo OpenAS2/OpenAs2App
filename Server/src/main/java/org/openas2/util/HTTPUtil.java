@@ -3,11 +3,15 @@ package org.openas2.util;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -404,8 +408,13 @@ public class HTTPUtil {
         final HttpUriRequest request = rb.build();
 
         BasicHttpContext localcontext = new BasicHttpContext();
-        BasicScheme basicAuth = new BasicScheme();
-        localcontext.setAttribute("preemptive-auth", basicAuth);
+        if (httpUser != null) {
+            // Send Basic auth pre-emptively (on the first request) rather than only in response to
+            // a 401 challenge, so partners that expect credentials up front are authenticated.
+            AuthCache authCache = new BasicAuthCache();
+            authCache.put(new HttpHost(urlObj.getHost(), urlObj.getPort(), urlObj.getProtocol()), new BasicScheme());
+            localcontext.setAttribute(HttpClientContext.AUTH_CACHE, authCache);
+        }
         try (CloseableHttpClient httpClient = httpBuilder.build()) {
             ProfilerStub transferStub = Profiler.startProfile();
             try (CloseableHttpResponse response = httpClient.execute(request, localcontext)) {
