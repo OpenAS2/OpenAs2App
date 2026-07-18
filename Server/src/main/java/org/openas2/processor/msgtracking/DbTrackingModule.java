@@ -99,10 +99,10 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     protected synchronized void persist(Message msg, Map<String, String> map) {
         String msgIdField = FIELDS.MSG_ID;
         String msgIdValue = map.get(msgIdField);
-        try (Connection conn = dbHandler.getConnection()) {
-            Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery(
-                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + msgIdValue + "'");
+        try (Connection conn = dbHandler.getConnection();
+                Statement s = conn.createStatement();
+                ResultSet rs = s.executeQuery(
+                        "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + msgIdValue + "'")) {
             ResultSetMetaData meta = rs.getMetaData();
             boolean isUpdate = rs.next(); // Record already exists so update
             if (logger.isTraceEnabled()) {
@@ -234,17 +234,18 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     public HashMap<String, String> showMessage(String msg_id) {
 
         HashMap<String, String> row = new HashMap<String, String>();
-        try (Connection conn = dbHandler.getConnection()) {
-            PreparedStatement s = conn
-                    .prepareStatement("SELECT * FROM " + tableName + " WHERE " + FIELDS.MSG_ID + " = ?");
+        try (Connection conn = dbHandler.getConnection();
+                PreparedStatement s = conn
+                        .prepareStatement("SELECT * FROM " + tableName + " WHERE " + FIELDS.MSG_ID + " = ?")) {
             s.setString(1, msg_id);
-            ResultSet rs = s.executeQuery();
-            ResultSetMetaData meta = rs.getMetaData();
-            while (rs.next()) {
-                for (int i = 1; i <= meta.getColumnCount(); i++) {
-                    String key = meta.getColumnName(i);
-                    String value = rs.getString(key);
-                    row.put(key, value);
+            try (ResultSet rs = s.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                while (rs.next()) {
+                    for (int i = 1; i <= meta.getColumnCount(); i++) {
+                        String key = meta.getColumnName(i);
+                        String value = rs.getString(key);
+                        row.put(key, value);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -255,12 +256,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
 
     public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
-        try (Connection conn = dbHandler.getConnection()) {
-            Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
-                    + " WHERE CREATE_DT BETWEEN CAST('" + map.get("startDate").toString()
-                    + " 00:00:00' as TIMESTAMP) AND CAST('" + map.get("endDate").toString()
-                    + " 23:59:59' as TIMESTAMP)");
+        try (Connection conn = dbHandler.getConnection();
+                Statement s = conn.createStatement();
+                ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID + ",STATE,STATUS,CREATE_DT FROM " + tableName
+                        + " WHERE CREATE_DT BETWEEN CAST('" + map.get("startDate").toString()
+                        + " 00:00:00' as TIMESTAMP) AND CAST('" + map.get("endDate").toString()
+                        + " 23:59:59' as TIMESTAMP)")) {
             ResultSetMetaData meta = rs.getMetaData();
             while (rs.next()) {
                 HashMap<String, String> row = new HashMap<String, String>();
