@@ -65,7 +65,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         dbPwd = getParameter(PARAM_DB_PWD, true);
         configBaseDir = session.getBaseDirectory();
         jdbcConnectString = getParameter(PARAM_JDBC_CONNECT_STRING, true);
-        jdbcConnectString.replace("%home%", configBaseDir);
+        // String is immutable - assign the result or the substitution is lost
+        jdbcConnectString = jdbcConnectString.replace("%home%", configBaseDir);
         // Support component attributes in connect string
         jdbcConnectString = ParameterParser.parse(jdbcConnectString, paramParser);
         dbPlatform = jdbcConnectString.replaceAll(".*jdbc:([^:]*):.*", "$1");
