@@ -37,6 +37,16 @@
             <attribute name="as2_receipt_option" value="$properties.as2_async_mdn_url$"/> 
          -->
          
+        <!-- If the partner's HTTPS endpoint requires a client certificate (mutual TLS), configure
+             the keystore holding the private key and certificate to present. The keystore type is
+             PKCS12 unless the file name ends in ".jks". The alias is optional and selects a specific
+             key entry when the keystore holds more than one; the key must use the keystore password.
+             These can also be set as properties in the properties file for a global client identity
+             with partnership attributes taking precedence.
+            <attribute name="https_client_keystore" value="/path/to/client_certs.p12"/>
+            <attribute name="https_client_keystore_password" value="mypassword"/>
+            <attribute name="https_client_cert_alias" value="mycompany_client"/>
+        -->
         <attribute name="encrypt" value="3DES"/>
         <attribute name="sign" value="SHA-256"/>
         <attribute name="resend_max_retries" value="3"/>
