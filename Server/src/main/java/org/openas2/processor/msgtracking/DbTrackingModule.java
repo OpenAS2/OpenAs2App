@@ -101,8 +101,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         String msgIdValue = map.get(msgIdField);
         try (Connection conn = dbHandler.getConnection()) {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery(
-                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + msgIdValue + "'");
+            // Parameterised existence check: msgIdValue is partner-controlled (the inbound
+            // Message-ID header) so it must not be concatenated into the SQL.
+            PreparedStatement selectStmt = conn.prepareStatement(
+                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = ?");
+            selectStmt.setString(1, msgIdValue);
+            ResultSet rs = selectStmt.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
             boolean isUpdate = rs.next(); // Record already exists so update
             if (logger.isTraceEnabled()) {
@@ -154,8 +158,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             if (fieldStmt.length() > 0) {
                 String stmt = "";
                 if (isUpdate) {
-                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
-                            + map.get(msgIdField) + "'";
+                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = "
+                            + formatField(map.get(msgIdField), Types.VARCHAR);
                 } else {
                     stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES ("
                             + valuesStmt.toString() + ")";
