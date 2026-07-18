@@ -136,6 +136,35 @@
               format="sender.as2_id, receiver.as2_id, attributes.filename"
               mimetype="application/EDI-X12"/>
       -->
+      <!-- Alternative outbound intake that consumes work from a message queue instead of polling a
+           directory. It is a generic AMQP 1.0 JMS consumer (Apache Qpid JMS), so the same module
+           works against Azure Service Bus and any other AMQP 1.0 broker via the broker_url alone.
+           An external producer drops the file on shared storage and publishes a queue message that
+           sets string properties for the sender/receiver AS2 IDs (identify the partnership), the file
+           path and an optional filename. The property names default to sender_as2_id, receiver_as2_id,
+           filepath and filename, and can be overridden with the *_property attributes below.
+           The consumed file is sent through the same pipeline as the directory poller (identical signing,
+           encryption, MDN and tracking) and moved to the sent/error dir the same way. The broker is
+           the retry authority: on failure the message is redelivered and dead-lettered after the
+           broker's max delivery count.
+           consumer_count is the number of consumer threads per running instance (throughput), NOT
+           the high-availability mechanism: run multiple instances/pods against the same queue for
+           HA and failover (the broker shares the queue across them). Total outbound concurrency is
+           instances x consumer_count, so keep it within the connection limits your partners allow.
+      <module classname="org.openas2.processor.receiver.JmsPollingModule"
+              broker_url="amqps://your-namespace.servicebus.windows.net"
+              broker_user="$properties.servicebus.sas_key_name$"
+              broker_password="$properties.servicebus.sas_key$"
+              queue_name="outbound-as2"
+              consumer_count="1"
+              sender_id_property="sender_as2_id"
+              receiver_id_property="receiver_as2_id"
+              filepath_property="filepath"
+              filename_property="filename"
+              errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$"
+              sentdir="$properties.storageBaseDir$/sent"
+              mimetype="application/EDI-X12"/>
+      -->
       <module enabled="$properties.module.DbTrackingModule.enabled$"
               classname="org.openas2.processor.msgtracking.DbTrackingModule"
               use_embedded_db="$properties.msg_tracking.use_embedded_db$"
