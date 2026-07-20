@@ -23,7 +23,7 @@ import java.sql.DriverManager;
 import java.util.Enumeration;
 import java.util.Map;
 
-class ExternalDBHandler extends DbTrackingModule implements IDBHandler {
+public class ExternalDBHandler extends DbTrackingModule implements IDBHandler {
 
     @Nullable
     private HikariDataSource ds = null;

@@ -2,6 +2,7 @@ package org.openas2.app.partner;
 
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.CommandResult;
+import org.openas2.partner.DbPartnershipFactory;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.partner.XMLPartnershipFactory;
 import org.w3c.dom.Document;
@@ -11,6 +12,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * adds a new partner entry in partnership store
@@ -36,6 +40,28 @@ public class AddPartnerCommand extends AliasedPartnershipsCommand {
         }
 
         synchronized (partFx) {
+            Map<String, String> attributes = new LinkedHashMap<String, String>();
+            for (int i = 0; i < params.length; i++) {
+                String param = (String) params[i];
+                int pos = param.indexOf('=');
+                if (i == 0) {
+                    attributes.put("name", param);
+                } else if (pos == 0) {
+                    return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing name");
+                } else if (pos > 0) {
+                    attributes.put(param.substring(0, pos), param.substring(pos + 1));
+                } else {
+                    return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing value");
+                }
+            }
+
+            if (partFx instanceof DbPartnershipFactory) {
+                ((DbPartnershipFactory) partFx).addPartner(attributes);
+                return new CommandResult(CommandResult.TYPE_OK);
+            }
+            if (!(partFx instanceof XMLPartnershipFactory)) {
+                return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current partnership store");
+            }
 
             DocumentBuilder db = null;
             try {
@@ -50,21 +76,8 @@ public class AddPartnerCommand extends AliasedPartnershipsCommand {
 
             Element partnerRoot = doc.createElement("partner");
             doc.appendChild(partnerRoot);
-
-            for (int i = 0; i < params.length; i++) {
-                String param = (String) params[i];
-                int pos = param.indexOf('=');
-                if (i == 0) {
-                    partnerRoot.setAttribute("name", param);
-                } else if (pos == 0) {
-                    return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing name");
-                } else if (pos > 0) {
-                    partnerRoot.setAttribute(param.substring(0, pos), param.substring(pos + 1));
-
-                } else {
-                    return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing value");
-                }
-
+            for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+                partnerRoot.setAttribute(attribute.getKey(), attribute.getValue());
             }
 
             ((XMLPartnershipFactory) partFx).loadPartner(partFx.getPartners(), partnerRoot);

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openas2.OpenAS2Exception;
 import org.openas2.cmd.CommandResult;
+import org.openas2.partner.DbPartnershipFactory;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.PartnershipFactory;
 import org.openas2.partner.XMLPartnershipFactory;
@@ -12,6 +13,8 @@ import org.openas2.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +46,29 @@ public class AddPartnershipCommand extends AliasedPartnershipsCommand {
         }
 
         synchronized (partFx) {
+            if (partFx instanceof DbPartnershipFactory) {
+                Map<String, String> attributes = new LinkedHashMap<String, String>();
+                Map<String, String> pollerConfig = new LinkedHashMap<String, String>();
+                for (int i = 3; i < params.length; i++) {
+                    String param = (String) params[i];
+                    int equalsPos = param.indexOf('=');
+                    if (equalsPos == 0) {
+                        return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing name");
+                    } else if (equalsPos < 0) {
+                        return new CommandResult(CommandResult.TYPE_ERROR, "incoming parameter missing value");
+                    }
+                    if (param.startsWith("pollerConfig.")) {
+                        pollerConfig.put(param.substring("pollerConfig.".length(), equalsPos), param.substring(equalsPos + 1));
+                    } else {
+                        attributes.put(param.substring(0, equalsPos), param.substring(equalsPos + 1));
+                    }
+                }
+                ((DbPartnershipFactory) partFx).addPartnership((String) params[0], (String) params[1], (String) params[2], attributes, pollerConfig.isEmpty() ? null : pollerConfig);
+                return new CommandResult(CommandResult.TYPE_OK);
+            }
+            if (!(partFx instanceof XMLPartnershipFactory)) {
+                return new CommandResult(CommandResult.TYPE_COMMAND_NOT_SUPPORTED, "Not supported by current partnership store");
+            }
             Document doc;
             try {
                 doc = XMLUtil.createDoc(null);

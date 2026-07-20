@@ -191,6 +191,10 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         Map<String, Object> httpOptions = getHttpOptions();
         httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
         httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
+        // Mutual TLS client certificate - partnership attributes override global properties
+        httpOptions.put(HTTPUtil.PARAM_HTTPS_CLIENT_KEYSTORE, msg.getPartnership().getAttributeOrProperty(HTTPUtil.PARAM_HTTPS_CLIENT_KEYSTORE, null));
+        httpOptions.put(HTTPUtil.PARAM_HTTPS_CLIENT_KEYSTORE_PASSWORD, msg.getPartnership().getAttributeOrProperty(HTTPUtil.PARAM_HTTPS_CLIENT_KEYSTORE_PASSWORD, null));
+        httpOptions.put(HTTPUtil.PARAM_HTTPS_CLIENT_CERT_ALIAS, msg.getPartnership().getAttributeOrProperty(HTTPUtil.PARAM_HTTPS_CLIENT_CERT_ALIAS, null));
         long maxSize = msg.getPartnership().getNoChunkedMaxSize();
         boolean preventChunking = msg.getPartnership().isPreventChunking(false);
         ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih, null, securedData.getInputStream(), httpOptions, maxSize, preventChunking);

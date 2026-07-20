@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-interface IDBHandler {
+public interface IDBHandler {
 
     void createConnectionPool(String connectString, String userName, String pwd) throws OpenAS2Exception;
 

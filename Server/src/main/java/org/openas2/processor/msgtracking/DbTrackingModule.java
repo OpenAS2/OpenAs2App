@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,27 +182,51 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         }
     }
 
-    public ArrayList<HashMap<String, String>> listMessages() {
+    /**
+     * List messages, optionally bounded by CREATE_DT. Either bound may be null, in which case
+     * that side is left open (a null "from" and null "to" together mean no date filter at all).
+     *
+     * @param from - lower bound (inclusive) on CREATE_DT, or null for no lower bound
+     * @param to   - upper bound (inclusive) on CREATE_DT, or null for no upper bound
+     */
+    public ArrayList<HashMap<String, String>> listMessages(Timestamp from, Timestamp to) {
 
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
 
-        try (Connection conn = dbHandler.getConnection()) {
-            Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery("SELECT " + FIELDS.MSG_ID
-                    + ",CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM "
-                    + tableName);
-            ResultSetMetaData meta = rs.getMetaData();
-            while (rs.next()) {
-                HashMap<String, String> row = new HashMap<String, String>();
-                for (int i = 1; i <= meta.getColumnCount(); i++) {
-                    String key = meta.getColumnName(i);
-                    String value = rs.getString(key);
-                    row.put(key, value);
+        StringBuilder sql = new StringBuilder("SELECT " + FIELDS.MSG_ID
+                + ",CREATE_DT,SENDER_ID,RECEIVER_ID,MSG_ID,FILE_NAME,ENCRYPTION_ALGORITHM,SIGNATURE_ALGORITHM,MDN_MODE,STATE FROM "
+                + tableName);
+        if (from != null) {
+            sql.append(sql.indexOf(" WHERE ") < 0 ? " WHERE " : " AND ").append("CREATE_DT >= ?");
+        }
+        if (to != null) {
+            sql.append(sql.indexOf(" WHERE ") < 0 ? " WHERE " : " AND ").append("CREATE_DT <= ?");
+        }
+        sql.append(" ORDER BY CREATE_DT DESC");
+
+        try (Connection conn = dbHandler.getConnection();
+                PreparedStatement s = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            if (from != null) {
+                s.setTimestamp(paramIndex++, from);
+            }
+            if (to != null) {
+                s.setTimestamp(paramIndex++, to);
+            }
+            try (ResultSet rs = s.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                while (rs.next()) {
+                    HashMap<String, String> row = new HashMap<String, String>();
+                    for (int i = 1; i <= meta.getColumnCount(); i++) {
+                        String key = meta.getColumnName(i);
+                        String value = rs.getString(key);
+                        row.put(key, value);
+                    }
+                    rows.add(row);
                 }
-                rows.add(row);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to list messages between " + from + " and " + to, e);
         }
         return rows;
     }
