@@ -271,9 +271,9 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         msg.setAttribute(FileAttribute.MA_FILENAME, filename);
         // Capture the original file name in case config changes it
         msg.setAttribute("original_filename", filename);
-        // Get the parameter that should provide the link between the polled directory
+        // Get the parameter that should provide the link between the source of the file
         // and an AS2 sender and recipient
-        String defaults = getParameter(PARAM_DEFAULTS, false);
+        String defaults = getSenderReceiverDefaults(msg);
         // Link the file to an AS2 sender and recipient via the Message object
         // associated with the file
         if (defaults != null) {
@@ -292,6 +292,20 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
         getSession().getPartnershipFactory().updatePartnership(msg, true);
         msg.setPayloadFilename(msg.getAttribute(FileAttribute.MA_FILENAME));
         return msg;
+    }
+
+    /**
+     * Resolves the "defaults" string (e.g. "sender.as2_id=X, receiver.as2_id=Y") that links a
+     * source file to an AS2 sender and receiver. The default implementation returns the static
+     * {@value #PARAM_DEFAULTS} module parameter used by directory pollers. Intake modules that
+     * carry per-message routing (e.g. a queue consumer reading message properties) override this
+     * to supply routing for the specific message being built.
+     *
+     * @param msg - the message being built (available for subclasses that derive routing from it)
+     * @return the defaults string, or null if none applies
+     */
+    protected String getSenderReceiverDefaults(Message msg) throws OpenAS2Exception {
+        return getParameter(PARAM_DEFAULTS, false);
     }
 
     public void addMessageMetadata(Message msg, String filename) throws OpenAS2Exception {

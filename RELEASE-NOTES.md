@@ -24,6 +24,7 @@ This is a minor enhancement and bugfix release.
 8. Change the IOUtil moveFile method to a more intelligent algorithm for non-homogeneous moves.
 9. Add DbPartnershipFactory: partnerships can optionally be stored in a database (Azure SQL, PostgreSQL, MySQL, Oracle or the embedded H2) instead of the partnerships XML file. See the commented example in config.xml. The required tables are included in db_ddl.sql and openas2-schema.xml and are only needed when using the database partnership store.
 10. Add mutual TLS (client certificate) authentication for outbound HTTPS connections using the https_client_keystore, https_client_keystore_password and https_client_cert_alias partnership attributes (or properties for a global client identity). See the commented example in partnerships.xml.
+11. Add JmsPollingModule: an alternative outbound intake that consumes work from an AMQP 1.0 message queue (Azure Service Bus or any AMQP broker via Apache Qpid JMS) instead of polling a directory. An external producer publishes a queue message identifying the sender/receiver AS2 IDs and the file path; the file is sent through the existing pipeline and the broker owns retry/dead-lettering. See the commented example in config.xml.
 
 ## Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
