@@ -89,6 +89,12 @@
         <sender name="PartnerA"/>
         <receiver name="MyCompany"/>
         <attribute name="store_received_file_to" value="$properties.storageBaseDir$/inbox/$msg.receiver.as2_id$/inbox/$msg.sender.as2_id$-$rand.12345$-$msg.content-disposition.filename$"/>
+        <!-- To dedup received files by name AND content, include a hash of the payload in the file
+             name instead of $rand$. A re-delivery of the same file (same name and bytes) then resolves
+             to the same path and overwrites, while a changed file gets a new name. $msg.hash.<algo>$
+             supports md5, sha1, sha256 and sha512, optionally truncated with _<length>, for example:
+        <attribute name="store_received_file_to" value="$properties.storageBaseDir$/inbox/$msg.receiver.as2_id$/inbox/$msg.content-disposition.filename$-$msg.hash.sha256_16$"/>
+        -->
         <attribute name="reject_unsigned_messages" value="true"/>
     </partnership>
 
