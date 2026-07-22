@@ -253,6 +253,32 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         return row;
     }
 
+    /**
+     * Looks up the stored MDN file path for a message identified by its payload filename (matched
+     * against either the received file name or the sent file name). If more than one message shares
+     * the filename the most recently created one is returned.
+     *
+     * @param filename - the payload file name to search for
+     * @return the stored MDN file path, or null if there is no match with a recorded MDN path
+     */
+    public String getMdnFilePath(String filename) {
+        String sql = "SELECT " + FIELDS.MDN_FILE_PATH + " FROM " + tableName
+                + " WHERE (" + FIELDS.FILE_NAME + " = ? OR " + FIELDS.SENT_FILE_NAME + " = ?)"
+                + " AND " + FIELDS.MDN_FILE_PATH + " IS NOT NULL"
+                + " ORDER BY " + FIELDS.CREATE_DT + " DESC";
+        try (Connection conn = dbHandler.getConnection();
+                PreparedStatement s = conn.prepareStatement(sql)) {
+            s.setString(1, filename);
+            s.setString(2, filename);
+            try (ResultSet rs = s.executeQuery()) {
+                return rs.next() ? rs.getString(1) : null;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to look up MDN file path for filename: " + filename, e);
+            return null;
+        }
+    }
+
     public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
         try (Connection conn = dbHandler.getConnection()) {
