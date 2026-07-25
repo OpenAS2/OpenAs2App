@@ -55,6 +55,7 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class AS2ReceiverHandler implements NetModuleHandler {
     private AS2ReceiverModule module;
@@ -216,7 +217,15 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                         if (filename == null || filename.length() == 0) {
                             filename = Properties.getProperty(Properties.AS2_RX_MESSAGE_FILENAME_FALLBACK, null);
                             if (filename == null) {
-                                filename = msg.getMessageID();
+                                // The Message-ID is partner-controlled, so sanitise it before using
+                                // it as a filename to avoid path traversal. Fall back to a safe
+                                // generated name if it cannot be made safe.
+                                try {
+                                    filename = IOUtil.getSafeFilename(msg.getMessageID());
+                                } catch (OpenAS2Exception e) {
+                                    filename = "received-" + UUID.randomUUID();
+                                    LOG.warn("Message-ID is not usable as a safe filename (" + e.getMessage() + "); using generated name: " + filename);
+                                }
                             } else {
                                 CompositeParameters parser = new CompositeParameters(false).add("date", new DateParameters()).add("msg", new MessageParameters(msg)).add("rand", new RandomParameters());
                                 filename = ParameterParser.parse(filename, parser);
