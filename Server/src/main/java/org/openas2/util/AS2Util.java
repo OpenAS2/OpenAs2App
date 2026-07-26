@@ -605,13 +605,14 @@ public class AS2Util {
         }
 
         msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_OK);
-        msg.trackMsgState(session);
         if (logger.isTraceEnabled()) {
             logger.trace("MDN processed. \n    Payload file name: " + msg.getPayloadFilename() + "\n    Persisting MDN report..." + msg.getLogMsgID());
         }
 
-        // This next state log should perhaps come before the final state of the message but is a valid state so...
+        // Store the MDN before tracking the state so the stored MDN file path is captured in the
+        // tracking record.
         session.getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
+        msg.trackMsgState(session);
         msg.setStatus(Message.MSG_STATUS_MSG_CLEANUP);
         // To support extended reporting via logging log info passing Message object
         msg.setLogMsg("Message sent and MDN received successfully.");
