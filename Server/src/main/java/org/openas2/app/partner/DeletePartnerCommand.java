@@ -72,7 +72,7 @@ public class DeletePartnerCommand extends AliasedPartnershipsCommand {
             }
             partFx.getPartners().remove(name);
             if (!((XMLPartnershipFactory) partFx).deleteElement("/partnerships/partner[@name='" + name + "']")) {
-                new CommandResult(CommandResult.TYPE_ERROR, "Partner delete failed in XML document for partner name: " + name);
+                return new CommandResult(CommandResult.TYPE_ERROR, "Partner delete failed in XML document for partner name: " + name);
             }
             return new CommandResult(CommandResult.TYPE_OK);
         }

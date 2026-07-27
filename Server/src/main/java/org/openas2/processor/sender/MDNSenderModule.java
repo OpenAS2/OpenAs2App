@@ -124,6 +124,8 @@ public class MDNSenderModule extends HttpSenderModule {
         }
         // Save sent MDN for later examination
         getSession().getProcessor().handle(StorageModule.DO_STOREMDN, msg, null);
+        // Re-track now that the MDN has been stored so the stored MDN file path is recorded
+        msg.trackMsgState(getSession());
         if (logger.isInfoEnabled()) {
             logger.info("sent MDN [" + disposition.toString() + "]" + msg.getLogMsgID());
         }

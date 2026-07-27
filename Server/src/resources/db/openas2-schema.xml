@@ -22,6 +22,7 @@
 		<column name="content_transfer_encoding" type="VARCHAR" size="255" />
 		<column name="mdn_mode" type="VARCHAR" size="255" />
 		<column name="mdn_response" type="LONGVARCHAR" />
+		<column name="mdn_file_path" type="LONGVARCHAR" />
 		<column name="state_msg" type="LONGVARCHAR" />
 		<column name="create_dt" type="TIMESTAMP" DEFAULT="CURRENT_TIMESTAMP" />
 		<column name="update_dt" type="TIMESTAMP" />
