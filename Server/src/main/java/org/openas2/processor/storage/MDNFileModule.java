@@ -10,6 +10,7 @@ import org.openas2.params.InvalidParameterException;
 import org.openas2.params.MessageMDNParameters;
 import org.openas2.params.ParameterParser;
 import org.openas2.params.RandomParameters;
+import org.openas2.processor.msgtracking.BaseMsgTrackingModule;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -31,6 +32,8 @@ public class MDNFileModule extends BaseStorageModule {
             File mdnFile = getFile(msg, getParameter(PARAM_FILENAME, true), "");
             InputStream in = getMDNStream(msg.getMDN());
             store(mdnFile, in);
+            // Record where the MDN was stored so it can be looked up later (e.g. via the API)
+            msg.setAttribute(BaseMsgTrackingModule.FIELDS.MDN_FILE_PATH, mdnFile.getAbsolutePath());
         } catch (IOException ioe) {
             throw new WrappedException(ioe);
         }

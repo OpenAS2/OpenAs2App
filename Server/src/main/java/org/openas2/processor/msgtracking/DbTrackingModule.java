@@ -65,7 +65,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         dbPwd = getParameter(PARAM_DB_PWD, true);
         configBaseDir = session.getBaseDirectory();
         jdbcConnectString = getParameter(PARAM_JDBC_CONNECT_STRING, true);
-        jdbcConnectString.replace("%home%", configBaseDir);
+        // String is immutable - assign the result or the substitution is lost
+        jdbcConnectString = jdbcConnectString.replace("%home%", configBaseDir);
         // Support component attributes in connect string
         jdbcConnectString = ParameterParser.parse(jdbcConnectString, paramParser);
         dbPlatform = jdbcConnectString.replaceAll(".*jdbc:([^:]*):.*", "$1");
@@ -101,8 +102,12 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         String msgIdValue = map.get(msgIdField);
         try (Connection conn = dbHandler.getConnection()) {
             Statement s = conn.createStatement();
-            ResultSet rs = s.executeQuery(
-                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = '" + msgIdValue + "'");
+            // Parameterised existence check: msgIdValue is partner-controlled (the inbound
+            // Message-ID header) so it must not be concatenated into the SQL.
+            PreparedStatement selectStmt = conn.prepareStatement(
+                    "SELECT * FROM " + tableName + " WHERE " + msgIdField + " = ?");
+            selectStmt.setString(1, msgIdValue);
+            ResultSet rs = selectStmt.executeQuery();
             ResultSetMetaData meta = rs.getMetaData();
             boolean isUpdate = rs.next(); // Record already exists so update
             if (logger.isTraceEnabled()) {
@@ -154,8 +159,8 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             if (fieldStmt.length() > 0) {
                 String stmt = "";
                 if (isUpdate) {
-                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = '"
-                            + map.get(msgIdField) + "'";
+                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = "
+                            + formatField(map.get(msgIdField), Types.VARCHAR);
                 } else {
                     stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES ("
                             + valuesStmt.toString() + ")";
@@ -251,6 +256,32 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
             e.printStackTrace();
         }
         return row;
+    }
+
+    /**
+     * Looks up the stored MDN file path for a message identified by its payload filename (matched
+     * against either the received file name or the sent file name). If more than one message shares
+     * the filename the most recently created one is returned.
+     *
+     * @param filename - the payload file name to search for
+     * @return the stored MDN file path, or null if there is no match with a recorded MDN path
+     */
+    public String getMdnFilePath(String filename) {
+        String sql = "SELECT " + FIELDS.MDN_FILE_PATH + " FROM " + tableName
+                + " WHERE (" + FIELDS.FILE_NAME + " = ? OR " + FIELDS.SENT_FILE_NAME + " = ?)"
+                + " AND " + FIELDS.MDN_FILE_PATH + " IS NOT NULL"
+                + " ORDER BY " + FIELDS.CREATE_DT + " DESC";
+        try (Connection conn = dbHandler.getConnection();
+                PreparedStatement s = conn.prepareStatement(sql)) {
+            s.setString(1, filename);
+            s.setString(2, filename);
+            try (ResultSet rs = s.executeQuery()) {
+                return rs.next() ? rs.getString(1) : null;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to look up MDN file path for filename: " + filename, e);
+            return null;
+        }
     }
 
     public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
