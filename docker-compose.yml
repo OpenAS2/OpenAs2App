@@ -23,8 +23,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_WebUI
-      args:
-        - VUE_APP_RESTAPI_URL=http://localhost:${HOST_RESTAPI_PORT:-8443}/api
+    environment:
+      - OPENAS2_RESTAPI_URL=http://localhost:${HOST_RESTAPI_PORT:-8443}/api
     ports:
       - ${HOST_WEBUI_PORT:-8080}:80
     tty: true

@@ -37,7 +37,11 @@ export default {
     data: function() {return {
         username: '',
         password: '',
-        server: process.env.VUE_APP_RESTAPI_URL || 'http://127.0.0.1:8443/api',
+        // Runtime config (config.js) wins so one image can serve any deployment,
+        // then the build-time value, then a local dev default.
+        server: (window.__OPENAS2_CONFIG__ && window.__OPENAS2_CONFIG__.restApiUrl)
+            || process.env.VUE_APP_RESTAPI_URL
+            || 'http://127.0.0.1:8443/api',
         rememberme: false,
         loading: false,
         errormsg: '',
