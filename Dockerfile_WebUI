@@ -10,3 +10,7 @@ RUN yarn run build
 
 FROM nginx:stable-alpine
 COPY --from=web-builder /usr/src/webui/dist /usr/share/nginx/html
+# Set at container start, not build time, so one image serves any deployment.
+ENV OPENAS2_RESTAPI_URL=http://localhost:8443/api
+COPY ./WebUI/docker/40-openas2-config.sh /docker-entrypoint.d/40-openas2-config.sh
+RUN chmod +x /docker-entrypoint.d/40-openas2-config.sh
