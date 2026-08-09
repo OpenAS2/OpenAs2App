@@ -62,7 +62,7 @@ public class MigratePollingModuleConfig {
     static void addPollerConfigToConfigXml() throws Exception {
         final String xmlStr = "<pollerConfigBase classname=\"org.openas2.processor.receiver.AS2DirectoryPollingModule\"\n"
                 + "           outboxdir=\"$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$\"\n"
-                + "           errordir=\"$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd/$partnership.receiver.as2_id$\"\n"
+                + "           errordir=\"$properties.storageBaseDir$/outbox/error/$date.yyyy$-$date.MM$-$date.dd/$partnership.receiver.as2_id$\"\n"
                 + "           interval=\"5\"\n"
                 + "           defaults=\"sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$\"\n"
                 + "           sendfilename=\"true\"\n"

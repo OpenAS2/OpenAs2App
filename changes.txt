@@ -1,5 +1,13 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.9.1 - 2026-08-09
+===========================
+
+This is a minor bugfix release.
+1. Ensure MimeBodyPArt InputStream is closed when sending an AS2 message.
+2. fix use of YYYY in dynamic variables.
+
+
 Version 4.9.0 - 2026-07-27
 ===========================
 

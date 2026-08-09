@@ -102,7 +102,7 @@ msg_tracking.tcp_server_password=openas2
 reject_unsigned_messages=true
 # The following are all related to the partnership based directory poller.
 pollerConfigBase.outboxdir=$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$
-pollerConfigBase.errordir=$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
+pollerConfigBase.errordir=$properties.storageBaseDir$/outbox/error/$date.yyyy$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$
 pollerConfigBase.interval=5
 pollerConfigBase.defaults=sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$
 pollerConfigBase.sendfilename=true

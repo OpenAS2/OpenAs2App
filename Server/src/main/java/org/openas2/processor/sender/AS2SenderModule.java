@@ -41,6 +41,7 @@ import javax.net.ssl.SSLHandshakeException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -197,7 +198,10 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
         httpOptions.put(HTTPUtil.PARAM_HTTPS_CLIENT_CERT_ALIAS, msg.getPartnership().getAttributeOrProperty(HTTPUtil.PARAM_HTTPS_CLIENT_CERT_ALIAS, null));
         long maxSize = msg.getPartnership().getNoChunkedMaxSize();
         boolean preventChunking = msg.getPartnership().isPreventChunking(false);
-        ResponseWrapper resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih, null, securedData.getInputStream(), httpOptions, maxSize, preventChunking);
+        ResponseWrapper resp = null;
+        try (InputStream is = securedData.getInputStream()) {
+            resp = HTTPUtil.execRequest(HTTPUtil.Method.POST, url, ih, null, is, httpOptions, maxSize, preventChunking);
+        }
         if (logger.isInfoEnabled()) {
             logger.info("Message sent and response received in " + resp.getTransferTimeMs() + msg.getLogMsgID());
         }

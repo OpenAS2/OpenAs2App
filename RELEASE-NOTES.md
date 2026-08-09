@@ -1,5 +1,5 @@
 #              OpenAS2 Server
-#              Version 4.9.0
+#              Version 4.9.1
 #              RELEASE NOTES
 -----
 The OpenAS2 project is pleased to announce the release of OpenAS2 4.9.0
@@ -10,17 +10,13 @@ The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.9.0 - 2026-07-27
-=======
+Version 4.9.1 - 2026-08-09
+===========================
 
-This is a minor enhancement and bugfix release.
-1. Add poller configuration to API command for partnership.
-2. Change the IOUtil moveFile method to a more intelligent algorithm for non-homogeneous moves.
-3. Add DbPartnershipFactory: partnerships can optionally be stored in a database (Azure SQL, PostgreSQL, MySQL, Oracle or the embedded H2) instead of the partnerships XML file. See the commented example in config.xml. The required tables are included in db_ddl.sql and openas2-schema.xml and are only needed when using the database partnership store.
-4. Add mutual TLS (client certificate) authentication for outbound HTTPS connections using the https_client_keystore, https_client_keystore_password and https_client_cert_alias partnership attributes (or properties for a global client identity). See the commented example in partnerships.xml.
-5. Add JmsPollingModule: an alternative outbound intake that consumes work from an AMQP 1.0 message queue (Azure Service Bus or any AMQP broker via Apache Qpid JMS) instead of polling a directory. An external producer publishes a queue message identifying the sender/receiver AS2 IDs and the file path; the file is sent through the existing pipeline and the broker owns retry/dead-lettering. See the commented example in config.xml.
-6. Add a $msg.hash.<algorithm>$ filename parameter (md5, sha1, sha256, sha512, optionally truncated with _<length>, e.g. $msg.hash.sha256_16$) that hashes the message payload. Include it in a received-file filename template to dedup by name and content: a re-delivery of the same file overwrites, while changed content gets a new name. See the commented example in partnerships.xml.
-7. Record the stored MDN file path in the message tracking database (new mdn_file_path column) and add a messages/mdnpath API command that returns the MDN file path for a message given its payload filename (GET /api/messages/mdnpath/<filename>). If you use the DB tracking module with an existing external database, add the new column: ALTER TABLE msg_metadata ADD COLUMN mdn_file_path LONGVARCHAR (or the equivalent for your database).
+This is a minor bugfix release.
+1. Ensure MimeBodyPArt InputStream is closed when sending an AS2 message.
+2. fix use of YYYY in dynamic variables.
+
 
 ## Upgrade Notes
  See the openAS2HowTo appendix for the general process on upgrading OpenAS2.
