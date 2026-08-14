@@ -12,7 +12,8 @@ public class AS2ReceiverModule extends NetModule {
     public static final String MSG_DATE = "$" + MessageParameters.KEY_HEADERS + ".date" + "$";
     public static final String MSG_SUBJECT = "$" + MessageParameters.KEY_HEADERS + ".subject" + "$";
     public static final String MSG_SOURCE_ADDRESS = "$" + MessageParameters.KEY_ATTRIBUTES + "." + NetAttribute.MA_SOURCE_IP + "$";
-    public static final String DP_HEADER = "The message sent to Recipient " + MSG_RECEIVER + " on " + MSG_DATE + " with Subject " + MSG_SUBJECT + " has been received, ";
+    public static final String MSG_FILENAME = "$" + MessageParameters.KEY_CONTENT_FILENAME + ".filename" + "$";
+    public static final String DP_HEADER = "The message sent to Recipient " + MSG_RECEIVER + " on " + MSG_DATE + " with Subject " + MSG_SUBJECT + " containing file " +  MSG_FILENAME + " has been received, ";
     public static final String DP_DECRYPTED = DP_HEADER + "the EDI Interchange was successfully decrypted and it's integrity was verified. ";
     public static final String DP_VERIFIED = DP_DECRYPTED + "In addition, the sender of the message, Sender " + MSG_SENDER + " at Location " + MSG_SOURCE_ADDRESS + " was authenticated as the originator of the message. ";
 
