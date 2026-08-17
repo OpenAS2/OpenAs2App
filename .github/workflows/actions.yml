@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java_version: [11, 17, 21, 24]
+        java_version: [17, 21, 25, 26]
         os: [windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
