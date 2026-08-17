@@ -10,12 +10,12 @@ The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
-Version 4.9.1 - 2026-08-09
+Version 4.10.0 - 2026-08-17
 ===========================
 
-This is a minor bugfix release.
-1. Ensure MimeBodyPArt InputStream is closed when sending an AS2 message.
-2. fix use of YYYY in dynamic variables.
+This is a minor enhancement  release
+1. Remove support for anything below Java 17 necessitated by dependent Java packages,
+2. Do not cause server to stop when duplicate partnership is detected. Instead log error and ignore the duplicate.
 
 
 ## Upgrade Notes

@@ -1,5 +1,13 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version 4.10.0 - 2026-08-17
+===========================
+
+This is a minor enhancement  release
+1. Remove support for anything below Java 17 necessitated by dependent Java packages,
+2. Do not cause server to stop when duplicate partnership is detected. Instead log error and ignore the duplicate.
+
+
 Version 4.9.1 - 2026-08-09
 ===========================
 
