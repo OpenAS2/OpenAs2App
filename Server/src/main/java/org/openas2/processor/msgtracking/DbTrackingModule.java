@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -101,7 +102,6 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         String msgIdField = FIELDS.MSG_ID;
         String msgIdValue = map.get(msgIdField);
         try (Connection conn = dbHandler.getConnection()) {
-            Statement s = conn.createStatement();
             // Parameterised existence check: msgIdValue is partner-controlled (the inbound
             // Message-ID header) so it must not be concatenated into the SQL.
             PreparedStatement selectStmt = conn.prepareStatement(
@@ -114,23 +114,30 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                 logger.trace(
                         "\t\t *** Tracking record found: " + isUpdate + "\n\t\t *** Tracking record metadata: " + meta);
             }
+            /*
+             * The values written here are partner controlled (MDN text, file names, algorithm
+             * names...) so they are always bound as statement parameters. Inlining them as SQL
+             * literals breaks on any value containing a quote and is an injection vector.
+             */
             StringBuffer fieldStmt = new StringBuffer();
             StringBuffer valuesStmt = new StringBuffer();
+            List<Object[]> params = new ArrayList<Object[]>();
             for (int i = 0; i < meta.getColumnCount(); i++) {
                 String colName = meta.getColumnLabel(i + 1);
+                int colType = meta.getColumnType(i + 1);
                 if (colName.equalsIgnoreCase("id")) {
                     continue;
                 } else if (colName.equalsIgnoreCase(FIELDS.UPDATE_DT)) {
                     // Ignore if not update mode
                     if (isUpdate) {
-                        appendFieldForUpdate(colName, DateUtil.getSqlTimestamp(), fieldStmt, meta.getColumnType(i + 1));
+                        appendFieldForUpdate(colName, DateUtil.getSqlTimestamp(), fieldStmt, colType, params);
                     }
                 } else if (colName.equalsIgnoreCase(FIELDS.CREATE_DT)) {
                     if (isUpdate) {
                         map.remove(FIELDS.CREATE_DT);
                     } else {
-                        appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt,
-                                meta.getColumnType(i + 1));
+                        appendFieldForInsert(colName, DateUtil.getSqlTimestamp(), fieldStmt, valuesStmt, colType,
+                                params);
                     }
                 } else if (isUpdate) {
                     /*
@@ -146,26 +153,34 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
                         // Unchanged value so remove from map
                         continue;
                     }
-                    appendFieldForUpdate(colName, mapVal, fieldStmt, meta.getColumnType(i + 1));
+                    appendFieldForUpdate(colName, mapVal, fieldStmt, colType, params);
                 } else {
                     // For new record add every field that is not NULL
                     String mapVal = map.get(colName.toLowerCase());
                     if (mapVal == null) {
                         continue;
                     }
-                    appendFieldForInsert(colName, mapVal, fieldStmt, valuesStmt, meta.getColumnType(i + 1));
+                    appendFieldForInsert(colName, mapVal, fieldStmt, valuesStmt, colType, params);
                 }
             }
             if (fieldStmt.length() > 0) {
                 String stmt = "";
                 if (isUpdate) {
-                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = "
-                            + formatField(map.get(msgIdField), Types.VARCHAR);
+                    stmt = "UPDATE " + tableName + " SET " + fieldStmt.toString() + " WHERE " + FIELDS.MSG_ID + " = ?";
+                    params.add(new Object[] { msgIdValue, Integer.valueOf(Types.VARCHAR) });
                 } else {
                     stmt = "INSERT INTO " + tableName + " (" + fieldStmt.toString() + ") VALUES ("
                             + valuesStmt.toString() + ")";
                 }
-                if (s.executeUpdate(stmt) > 0) {
+                int updateCount;
+                try (PreparedStatement ps = conn.prepareStatement(stmt)) {
+                    for (int i = 0; i < params.size(); i++) {
+                        Object[] param = params.get(i);
+                        bindField(ps, i + 1, (String) param[0], ((Integer) param[1]).intValue());
+                    }
+                    updateCount = ps.executeUpdate();
+                }
+                if (updateCount > 0) {
                     if (logger.isTraceEnabled()) {
                         logger.trace("Tracking record SQL statement: " + stmt);
                     }
@@ -308,59 +323,71 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         return rows;
     }
 
-    private String formatField(String value, int dataType) {
+    /**
+     * Binds a tracked field value to a statement placeholder. Values arrive as strings from the
+     * tracking map so they are converted to the type the column expects, which keeps the DB from
+     * having to infer a type for a string literal.
+     */
+    private void bindField(PreparedStatement ps, int index, String value, int dataType) throws SQLException {
         if (value == null) {
-            return "NULL";
+            ps.setNull(index, dataType);
+            return;
         }
-        switch (dataType) {
-        case Types.BIGINT:
-        case Types.DECIMAL:
-        case Types.DOUBLE:
-        case Types.FLOAT:
-        case Types.INTEGER:
-        case Types.NUMERIC:
-        case Types.REAL:
-        case Types.SMALLINT:
-        case Types.BINARY:
-        case Types.TINYINT:
-            // case Types.ROWID:
-            return value;
-        case Types.TIME_WITH_TIMEZONE:
-        case Types.TIMESTAMP_WITH_TIMEZONE:
-        case Types.DATE:
-        case Types.TIME:
-        case Types.TIMESTAMP:
-            if ("oracle".equalsIgnoreCase(dbPlatform)) {
-                if (value.length() > 19) {
-                    return ("TO_TIMESTAMP('" + value + "','YYYY-MM-DD HH24:MI:SS.FF')");
-                } else {
-                    return ("TO_DATE('" + value + "','YYYY-MM-DD HH24:MI:SS')");
-                }
-            } else if ("mssql".equalsIgnoreCase(dbPlatform)) {
-                return ("CAST('" + value + "' AS DATETIME)");
-            } else {
-                return "'" + value + "'";
+        try {
+            switch (dataType) {
+            case Types.BIGINT:
+            case Types.INTEGER:
+            case Types.SMALLINT:
+            case Types.TINYINT:
+                ps.setLong(index, Long.parseLong(value.trim()));
+                return;
+            case Types.DECIMAL:
+            case Types.NUMERIC:
+                ps.setBigDecimal(index, new java.math.BigDecimal(value.trim()));
+                return;
+            case Types.DOUBLE:
+            case Types.FLOAT:
+            case Types.REAL:
+                ps.setDouble(index, Double.parseDouble(value.trim()));
+                return;
+            case Types.TIME_WITH_TIMEZONE:
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+            case Types.DATE:
+            case Types.TIME:
+            case Types.TIMESTAMP:
+                ps.setTimestamp(index, Timestamp.valueOf(value.trim()));
+                return;
+            default:
+                break;
+            }
+        } catch (IllegalArgumentException e) {
+            // Value does not match the column type: fall through and let the driver deal with it
+            if (logger.isDebugEnabled()) {
+                logger.debug("Tracking field value does not parse as SQL type " + dataType + ": " + value);
             }
         }
         // Must be some kind of string value if it gets here
-        return "'" + value.replaceAll("'", sqlEscapeChar + "'") + "'";
+        ps.setString(index, value);
     }
 
-    private void appendFieldForUpdate(String name, String value, StringBuffer sb, int dataType) {
+    private void appendFieldForUpdate(String name, String value, StringBuffer sb, int dataType,
+            List<Object[]> params) {
         if (sb.length() > 0) {
             sb.append(",");
         }
-        sb.append(name).append("=").append(formatField(value, dataType));
+        sb.append(name).append("=?");
+        params.add(new Object[] { value, Integer.valueOf(dataType) });
     }
 
     private void appendFieldForInsert(String name, String value, StringBuffer names, StringBuffer values,
-            int dataType) {
+            int dataType, List<Object[]> params) {
         if (names.length() > 0) {
             names.append(",");
             values.append(",");
         }
         names.append(name);
-        values.append(formatField(value, dataType));
+        values.append("?");
+        params.add(new Object[] { value, Integer.valueOf(dataType) });
     }
 
     public boolean isRunning() {

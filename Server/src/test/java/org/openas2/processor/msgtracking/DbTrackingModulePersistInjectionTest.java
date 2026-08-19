@@ -109,6 +109,34 @@ public class DbTrackingModulePersistInjectionTest extends BaseServerSetup {
     }
 
     @Test
+    public void mdnTextWithApostropheRoundTrips() throws Exception {
+        // Real MDN text from a partner: "...it's integrity was verified..."
+        String mdnText = "The message sent to Recipient OpenAs2_Prod has been received, the EDI Interchange was "
+                + "successfully decrypted and it's integrity was verified.\n";
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(DbTrackingModule.FIELDS.MSG_ID, "<mdn-quote-id>");
+        map.put(DbTrackingModule.FIELDS.MDN_RESPONSE, mdnText);
+        map.put(DbTrackingModule.FIELDS.RESEND_COUNT, "0");
+        map.put(DbTrackingModule.FIELDS.STATE, "msg_sent_mdn_received_ok");
+        db.persist(new AS2Message(), map);
+
+        try (Connection conn = db.dbHandler.getConnection();
+                java.sql.PreparedStatement ps = conn
+                        .prepareStatement("SELECT mdn_response FROM msg_metadata WHERE msg_id = ?")) {
+            ps.setString(1, "<mdn-quote-id>");
+            try (ResultSet rs = ps.executeQuery()) {
+                assertTrue(rs.next(), "record with quoted MDN text must have been persisted");
+                assertEquals(mdnText, rs.getString(1), "MDN text must round trip unchanged");
+            }
+        }
+
+        // And the same text on the update path
+        map.put(DbTrackingModule.FIELDS.STATE, "msg_sent_mdn_received_ok_2");
+        db.persist(new AS2Message(), map);
+        assertEquals("msg_sent_mdn_received_ok_2", stateOf("<mdn-quote-id>"));
+    }
+
+    @Test
     public void normalInsertAndUpdateStillWork() throws Exception {
         persist("<plain-id>", "S1");
         assertEquals("S1", stateOf("<plain-id>"));
