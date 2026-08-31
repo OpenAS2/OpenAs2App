@@ -75,6 +75,7 @@
                msg_tracking.tcp_server_port="9092"
                msg_tracking.tcp_server_password="openas2"
                reject_unsigned_messages="false"
+               partnershipPollersDisabled="false"
                pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
                pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
                pollerConfigBase.interval="5"

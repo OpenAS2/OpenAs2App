@@ -9,6 +9,13 @@ This is a minor enhancement release.
    404 both when the message ID is unknown and when the MDN it recorded is no longer on disk, with different messages for
    the two cases. Requires the DB tracking module and a storage module that records the MDN file path (see the
    mdn_file_path column added in 4.9.0).
+2. Add a "partnershipPollersDisabled" property that globally suppresses every directory poller declared in a partnership.
+   It defaults to "false" so existing configurations are unaffected. Setting it to "true" stops the instance sending from
+   any outbox directory while it continues to receive normally, which allows a single partnerships file (or database) to be
+   shared between a sending instance and a receiving only instance instead of maintaining a second copy with every outbound
+   pollerConfig turned off. It can be set in the config.xml properties element or in the OpenAS2 properties file, so a
+   containerised deployment can share one config.xml and decide per instance. Poller modules declared directly as a
+   "module" element in config.xml are not affected by it.
 
 
 Version 4.10.0 - 2026-08-17
