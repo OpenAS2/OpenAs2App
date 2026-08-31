@@ -10,6 +10,17 @@ The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on
 ## NOTE: Testing covers Java 11 to 21.
 ##       Java 8 is NO LONGER SUPPORTED.
 
+Version UNRELEASED
+===========================
+
+This is a minor enhancement release.
+1. Add an API endpoint to download the stored MDN for a message: GET /api/messages/mdn/<msgId>, where <msgId> is the AS2
+   message ID of the message the MDN was returned for, URL encoded. The MDN is returned as a file attachment. Responds with
+   404 both when the message ID is unknown and when the MDN it recorded is no longer on disk, with different messages for
+   the two cases. Requires the DB tracking module and a storage module that records the MDN file path (see the
+   mdn_file_path column added in 4.9.0).
+
+
 Version 4.10.0 - 2026-08-17
 ===========================
 

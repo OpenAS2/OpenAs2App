@@ -21,9 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * Verifies that the MDN file path is written to the tracking record and can be looked up by the
- * message's payload filename via DbTrackingModule.getMdnFilePath (which backs the messages/mdnpath
- * command and its REST endpoint).
+ * Verifies that the MDN file path is written to the tracking record and can be looked up again by
+ * the message's payload filename (DbTrackingModule.getMdnFilePath, which backs the messages/mdnpath
+ * command) or by the AS2 message ID (getMdnFilePathByMessageId, which backs the MDN download
+ * endpoint).
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class DbTrackingModuleMdnPathTest extends BaseServerSetup {
@@ -51,8 +52,15 @@ public class DbTrackingModuleMdnPathTest extends BaseServerSetup {
     }
 
     private void persist(String msgId, String fileName, String sentFileName, String mdnPath) {
+        persist(msgId, null, fileName, sentFileName, mdnPath);
+    }
+
+    private void persist(String msgId, String mdnId, String fileName, String sentFileName, String mdnPath) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(DbTrackingModule.FIELDS.MSG_ID, msgId);
+        if (mdnId != null) {
+            map.put(DbTrackingModule.FIELDS.MDN_ID, mdnId);
+        }
         map.put(DbTrackingModule.FIELDS.SENDER_ID, "SENDER");
         map.put(DbTrackingModule.FIELDS.RECEIVER_ID, "RECEIVER");
         if (fileName != null) {
@@ -90,5 +98,34 @@ public class DbTrackingModuleMdnPathTest extends BaseServerSetup {
         persist("<m3>", "no-mdn-yet.edi", null, null);
         assertNull(db.getMdnFilePath("no-mdn-yet.edi"),
                 "a tracked message with no recorded MDN path should not be returned");
+    }
+
+    @Test
+    public void mdnPathIsLookedUpByMessageId() {
+        persist("<msg-id-lookup@openas2>", "<mdn-id-lookup@openas2>", "byid.edi", null, "/data/mdn/byid.mdn");
+
+        assertEquals("/data/mdn/byid.mdn", db.getMdnFilePathByMessageId("<msg-id-lookup@openas2>"));
+    }
+
+    @Test
+    public void theMdnIdIsNotMatchedByTheMessageIdLookup() {
+        persist("<msg-not-mdn@openas2>", "<mdn-not-msg@openas2>", "notmdn.edi", null, "/data/mdn/notmdn.mdn");
+
+        assertNull(db.getMdnFilePathByMessageId("<mdn-not-msg@openas2>"),
+                "the lookup is keyed on the message ID only, so an MDN ID must not resolve");
+    }
+
+    @Test
+    public void messageIdLookupIgnoresRecordsWithNoMdnPath() {
+        persist("<msg-id-no-mdn@openas2>", "<mdn-id-no-mdn@openas2>", "idnomdn.edi", null, null);
+
+        assertNull(db.getMdnFilePathByMessageId("<msg-id-no-mdn@openas2>"));
+    }
+
+    @Test
+    public void blankOrUnknownMessageIdReturnsNull() {
+        assertNull(db.getMdnFilePathByMessageId("<not-a-known-id@openas2>"));
+        assertNull(db.getMdnFilePathByMessageId(""));
+        assertNull(db.getMdnFilePathByMessageId(null));
     }
 }

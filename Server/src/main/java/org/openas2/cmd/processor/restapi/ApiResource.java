@@ -11,6 +11,9 @@ import org.openas2.cert.AliasedCertificateFactory;
 import org.openas2.cert.CertificateFactory;
 import org.openas2.cmd.CommandResult;
 import org.openas2.cmd.processor.RestCommandProcessor;
+import org.openas2.processor.ProcessorModule;
+import org.openas2.processor.msgtracking.DbTrackingModule;
+import org.openas2.processor.msgtracking.TrackingModule;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
@@ -37,6 +40,7 @@ import jakarta.ws.rs.core.Request;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -218,6 +222,98 @@ public class ApiResource {
     public Response headCommand(@PathParam("param") String command) {
         // Just an Empty response
         return Response.status(200).build();
+    }
+
+    /**
+     * Downloads the stored MDN for a message identified by its AS2 message ID.
+     * <p>
+     * The file that gets streamed is only ever the path recorded in the tracking database by the
+     * MDN storage module: the caller supplies a message ID, never a path, so this cannot be used to
+     * read arbitrary files. The content originates from a trading partner, so it is served as an
+     * attachment with no-sniff set rather than as anything a browser will render inline.
+     *
+     * @param msgId - the AS2 message ID of the message the MDN was returned for, URL encoded
+     * @return the MDN file as an attachment, or a JSON error result
+     */
+    @RolesAllowed({"ADMIN"})
+    @GET
+    @Path("/messages/mdn/{msgId}")
+    @Produces({MediaType.APPLICATION_OCTET_STREAM, MediaType.APPLICATION_JSON})
+    public Response downloadMdn(@PathParam("msgId") String msgId) throws Exception {
+        try {
+            if (msgId == null || msgId.trim().length() == 0) {
+                return errorResponse(400, "An AS2 message ID must be supplied.");
+            }
+            DbTrackingModule db = getDbTrackingModule();
+            if (db == null) {
+                return errorResponse(503, "No DB tracking module available so no MDN can be located.");
+            }
+
+            String trimmedId = msgId.trim();
+            String mdnFilePath = db.getMdnFilePathByMessageId(trimmedId);
+            if (mdnFilePath == null) {
+                return errorResponse(404, "No stored MDN found for message ID: " + trimmedId);
+            }
+
+            File mdnFile = new File(mdnFilePath);
+            if (!mdnFile.isFile() || !mdnFile.canRead()) {
+                // The tracking record outlives the file, so a missing file is a normal operational
+                // state (archived or cleaned up) rather than a server fault
+                LoggerFactory.getLogger(ApiResource.class.getName())
+                        .warn("MDN file recorded for message ID " + trimmedId + " is not readable: " + mdnFilePath);
+                return errorResponse(404, "The MDN recorded for message ID " + trimmedId
+                        + " is no longer available on disk.");
+            }
+
+            return Response.status(200)
+                    .entity(mdnFile)
+                    .type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + toSafeDownloadName(mdnFile) + "\"")
+                    .header("X-Content-Type-Options", "nosniff")
+                    .build();
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * @return the first configured DB tracking module, or null if message tracking is not using one
+     */
+    private DbTrackingModule getDbTrackingModule() throws Exception {
+        List<ProcessorModule> modules = getProcessor().getSession().getProcessor()
+                .getModulesSupportingAction(TrackingModule.DO_TRACK_MSG);
+        if (modules == null) {
+            return null;
+        }
+        for (ProcessorModule module : modules) {
+            if (module instanceof DbTrackingModule) {
+                return (DbTrackingModule) module;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Reduces the stored file name to characters that are safe to place in a quoted
+     * Content-Disposition value. The name comes from the database so it is treated as untrusted:
+     * stripping everything else rules out header injection and quote breaking.
+     */
+    private String toSafeDownloadName(File mdnFile) {
+        String name = mdnFile.getName().replaceAll("[^A-Za-z0-9._-]", "_");
+        return name.length() == 0 ? "mdn" : name;
+    }
+
+    /**
+     * Builds an error response in the same JSON shape as the command backed endpoints so API clients
+     * get one consistent error format.
+     */
+    private Response errorResponse(int status, String message) throws Exception {
+        CommandResult result = new CommandResult(CommandResult.TYPE_ERROR, message);
+        return Response.status(status)
+                .entity(this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result))
+                .type(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     private CommandResult importCertificateByStream(String itemId, MultivaluedMap<String, String> formParams) throws Exception {
