@@ -284,6 +284,33 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
         }
     }
 
+    /**
+     * Looks up the stored MDN file path for a message identified by its AS2 message ID. Rows with no
+     * recorded MDN path are ignored. The message ID is unique in the schema (msg_id_unique), so at
+     * most one row can match and no ordering is needed to make the result deterministic.
+     *
+     * @param msgId - the AS2 message ID of the message the MDN was returned for
+     * @return the stored MDN file path, or null if there is no match with a recorded MDN path
+     */
+    public String getMdnFilePathByMessageId(String msgId) {
+        if (msgId == null || msgId.length() == 0) {
+            return null;
+        }
+        String sql = "SELECT " + FIELDS.MDN_FILE_PATH + " FROM " + tableName
+                + " WHERE " + FIELDS.MSG_ID + " = ?"
+                + " AND " + FIELDS.MDN_FILE_PATH + " IS NOT NULL";
+        try (Connection conn = dbHandler.getConnection();
+                PreparedStatement s = conn.prepareStatement(sql)) {
+            s.setString(1, msgId);
+            try (ResultSet rs = s.executeQuery()) {
+                return rs.next() ? rs.getString(1) : null;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to look up MDN file path for message ID: " + msgId, e);
+            return null;
+        }
+    }
+
     public ArrayList<HashMap<String, String>> getDataCharts(HashMap<String, String> map) {
         ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
         try (Connection conn = dbHandler.getConnection()) {
