@@ -9,6 +9,7 @@ import org.openas2.message.Message;
 import org.openas2.message.MessageMDN;
 import org.openas2.params.MessageParameters;
 import org.openas2.params.ParameterParser;
+import org.openas2.util.Properties;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -27,9 +28,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class BasePartnershipFactory extends BaseComponent implements PartnershipFactory {
+    /**
+     * Property that globally suppresses every directory poller declared in a partnership so an
+     * instance receives AS2 messages without sending any.
+     */
+    public static final String PROP_PARTNERSHIP_POLLERS_DISABLED = "partnershipPollersDisabled";
+
     private List<Partnership> partnerships;
 
     private Logger baseLogger = LoggerFactory.getLogger(BasePartnershipFactory.class);
+
+    /**
+     * Global flag that suppresses the directory pollers declared in partnerships.
+     * <p>
+     * Set the "partnershipPollersDisabled" property to "true" to stop an instance sending from any
+     * outbox directory while it continues to receive normally. That allows one partnerships file or
+     * database to be shared between a sending instance and a receiving only instance rather than
+     * maintaining a second copy with every outbound pollerConfig turned off. The flag defaults to
+     * false so existing configurations are unaffected, and it does not apply to poller modules
+     * declared directly as a "module" element in config.xml.
+     *
+     * @return true if partnership declared directory pollers must not be started
+     */
+    public boolean isPartnershipPollingDisabled() {
+        return "true".equalsIgnoreCase(Properties.getProperty(PROP_PARTNERSHIP_POLLERS_DISABLED, "false"));
+    }
 
     public Partnership getPartnership(Partnership p, boolean reverseLookup) throws OpenAS2Exception {
         Partnership ps = (p.getName() == null) ? null : getPartnership(p.getName());

@@ -272,6 +272,16 @@ public class DbPartnershipFactory extends BasePartnershipFactory implements Refr
         if (!"true".equalsIgnoreCase(pollerConfig.get("enabled"))) {
             return;
         }
+        if (isPartnershipPollingDisabled()) {
+            /*
+             * Partnership polling is globally disabled so no poller is created for this partnership.
+             * The partnership itself remains fully usable for receiving messages.
+             */
+            if (logger.isDebugEnabled()) {
+                logger.debug("Partnership polling is globally disabled so no poller was started for partnership: " + partnership.getName());
+            }
+            return;
+        }
         Session session = getSession();
         if (!(session instanceof XMLSession)) {
             logger.warn("Cannot launch a partnership poller without a session for partnership: " + partnership.getName());

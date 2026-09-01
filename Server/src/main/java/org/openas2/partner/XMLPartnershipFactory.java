@@ -313,6 +313,16 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
             String[] requiredPollerAttributes = {"enabled"};
             Map<String, String> partnershipPollerCfgAttributes = XMLUtil.mapAttributes(pollerCfgNode, requiredPollerAttributes);
             if ("true".equalsIgnoreCase(partnershipPollerCfgAttributes.get("enabled"))) {
+                if (isPartnershipPollingDisabled()) {
+                    /*
+                     * Partnership polling is globally disabled so no poller is created for this
+                     * partnership. The partnership itself remains fully usable for receiving messages.
+                     */
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Partnership polling is globally disabled so no poller was started for partnership: " + name);
+                    }
+                    return;
+                }
                 if (logger.isTraceEnabled()) {
                         logger.trace("Found partnership poller for partnership: " + name);
                 }
