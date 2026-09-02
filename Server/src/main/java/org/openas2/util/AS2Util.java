@@ -366,8 +366,6 @@ public class AS2Util {
                 // Signal sending retry has been abandoned
                 return false;
             }
-            // Going to try again so increment the try count
-            retries++;
         }
         // Keep a popinter to the passed in msg object in case it is overwritten in this method so that setting
         // the resend flag to avoid file cleanup is not lost when this method exits and the original initiating
