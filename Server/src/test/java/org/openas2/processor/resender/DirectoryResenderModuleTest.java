@@ -123,6 +123,24 @@ public class DirectoryResenderModuleTest {
     }
 
     @Test
+    public void processFilePreservesPayloadFilenameAndResendFlagAcrossSerialization() throws Exception {
+        Message original = message("<resend-filename>");
+        original.setPayloadFilename("invoice123.edi");
+
+        module.handle(ResenderModule.DO_RESEND, original, resendOptions(SenderModule.DO_SEND, 0));
+        File queued = resendFiles()[0];
+
+        module.processFile(queued);
+
+        ArgumentCaptor<Message> msgCaptor = ArgumentCaptor.forClass(Message.class);
+        verify(processor).handle(eq(SenderModule.DO_SEND), msgCaptor.capture(), any());
+        Message resent = msgCaptor.getValue();
+        assertEquals("invoice123.edi", resent.getPayloadFilename(),
+                "payload filename should survive the serialize/deserialize round trip through the resend queue");
+        assertTrue(resent.isResend(), "resend flag should survive the serialize/deserialize round trip");
+    }
+
+    @Test
     public void processFileArchivesToErrorDirWhenResendFails() throws Exception {
         doThrow(new OpenAS2Exception("send failed")).when(processor).handle(any(), any(), any());
 
