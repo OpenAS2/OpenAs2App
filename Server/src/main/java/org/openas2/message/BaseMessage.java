@@ -367,6 +367,12 @@ public abstract class BaseMessage implements Message {
         // read in attributes
         attributes = (Map<String, String>) in.readObject();
 
+        // read in payload filename
+        payloadFilename = (String) in.readObject();
+
+        // read in resend flag
+        isResending = in.readBoolean();
+
         // read in data history
         history = (DataHistory) in.readObject();
 
@@ -398,6 +404,12 @@ public abstract class BaseMessage implements Message {
 
         // write attributes
         out.writeObject(attributes);
+
+        // write payload filename
+        out.writeObject(payloadFilename);
+
+        // write resend flag
+        out.writeBoolean(isResending);
 
         // write data history
         out.writeObject(history);
