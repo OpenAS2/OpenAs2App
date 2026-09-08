@@ -1,5 +1,17 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version UNRELEASED
+===========================
+
+This is a minor enhancement release.
+1. Add a migration tool that loads a partnerships XML file into the partner and partnership database tables read by
+   DbPartnershipFactory, so an existing XML configuration can be moved to the database store without being retyped:
+   bin/upgrade/migrate_partnerships_to_db.sh <partnerships.xml> <jdbc_url> <db_user> <db_password>. Sender and receiver
+   overrides and pollerConfig entries are carried across as their respective attribute categories, and values are stored
+   unresolved so placeholders such as $properties.storageBaseDir$ keep working. Pass --dry-run to validate the file and
+   see what would be written without touching the database, or --replace to overwrite partnerships already stored there.
+   The whole migration runs in one transaction, so a file that cannot be represented in the schema leaves it untouched.
+
 Version 4.11.0 - 2026-09-02
 ===========================
 
