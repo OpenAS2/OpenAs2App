@@ -228,13 +228,90 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
             String certAlias = aliases.nextElement();
             Certificate cert = ks.getCertificate(certAlias);
             if (cert instanceof X509Certificate) {
-                addCertificate(alias, (X509Certificate) cert, true);
                 Key certKey = ks.getKey(certAlias, password.toCharArray());
-                addPrivateKey(alias, certKey, password);
+                if (certKey == null) {
+                    // A certificate with no key in the source: not what this method is importing
+                    continue;
+                }
+                Certificate[] chain = ks.getCertificateChain(certAlias);
+                if (chain == null || chain.length == 0) {
+                    chain = selfSignedChain((X509Certificate) cert, alias);
+                }
+                setPrivateKeyEntry(alias, certKey, chain);
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Replaces the certificate and private key held under an alias in one operation.
+     * <p>
+     * This is what makes it possible to rotate an identity: the alias for a key pair of our own
+     * already holds a private key, and {@link java.security.KeyStore#setCertificateEntry} refuses to
+     * touch such an alias because replacing only the certificate would orphan the key. Setting the
+     * key entry replaces whatever the alias held, so the previous entry stays in place until the new
+     * one is written and there is no window where the alias has a certificate but no key.
+     * <p>
+     * The entry is protected with the keystore password rather than the password of the file the key
+     * came from, because that is what {@link #getPrivateKey(String)} reads it back with.
+     *
+     * @param alias - the alias to write the entry to, whether or not it already exists
+     * @param key - the private key to store
+     * @param chain - the certificate chain for the key, leaf first
+     * @throws OpenAS2Exception if the entry could not be written
+     */
+    private void setPrivateKeyEntry(String alias, Key key, Certificate[] chain) throws OpenAS2Exception {
+        KeyStore ks = getKeyStore();
+        Key previousKey = null;
+        Certificate[] previousChain = null;
+        try {
+            if (ks.containsAlias(alias)) {
+                previousChain = ks.getCertificateChain(alias);
+                try {
+                    previousKey = ks.getKey(alias, getPassword());
+                } catch (GeneralSecurityException e) {
+                    // Nothing recoverable to keep, so there is nothing to put back on failure
+                    previousKey = null;
+                }
+            }
+            ks.setKeyEntry(alias, key, getPassword(), chain);
+            save(getFilename(), getPassword());
+        } catch (Exception e) {
+            /*
+             * Put the previous key pair back so a failed rotation leaves the running server able to
+             * keep signing with the identity it already had.
+             */
+            if (previousKey != null && previousChain != null) {
+                try {
+                    ks.setKeyEntry(alias, previousKey, getPassword(), previousChain);
+                } catch (Exception restoreFailure) {
+                    logger.error("Failed to restore the previous key entry for alias " + alias
+                            + " after the replacement failed. The keystore may need to be restored from a backup.", restoreFailure);
+                }
+            }
+            if (e instanceof OpenAS2Exception) {
+                throw (OpenAS2Exception) e;
+            }
+            throw new WrappedException(e);
+        }
+    }
+
+    /**
+     * A key entry needs a chain, so a self-signed certificate that arrives without one stands as its
+     * own chain. The certificate is repeated to keep the stored chain the same shape as the one the
+     * two step import produced before this method existed.
+     */
+    private Certificate[] selfSignedChain(X509Certificate cert, String alias) throws OpenAS2Exception {
+        if (!cert.getSubjectX500Principal().equals(cert.getIssuerX500Principal())) {
+            throw new OpenAS2Exception("No certificate chain was supplied for alias " + alias
+                    + " and the certificate is not self-signed, so the chain cannot be established."
+                    + " Import a keystore that contains the full chain for the key.");
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("Detected self-signed certificate and allowed import. Alias: " + alias);
+        }
+        return new X509Certificate[]{cert, cert};
     }
 
     public void clearCertificates() throws OpenAS2Exception {
