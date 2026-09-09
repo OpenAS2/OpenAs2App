@@ -14,6 +14,7 @@ import org.openas2.cmd.processor.RestCommandProcessor;
 import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.msgtracking.DbTrackingModule;
 import org.openas2.processor.msgtracking.TrackingModule;
+import org.openas2.util.AS2Util;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
@@ -25,6 +26,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.DELETE;
@@ -41,6 +43,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -199,13 +202,77 @@ public class ApiResource {
         }
     }
 
+    /**
+     * Partially updates one object: only what is supplied changes and anything omitted is left alone.
+     * <p>
+     * For a partner or a partnership this runs the "update" command, which exists so a caller does
+     * not have to delete and recreate an entry to change it. For a certificate it runs the same
+     * import the POST endpoint uses, because importing already replaces the certificate held under
+     * an alias in place.
+     *
+     * @param resource - "partner", "partnership" or "cert"
+     * @param itemId - the name of the partner or partnership, or the certificate alias
+     * @param formParams - the attributes to set, or for a certificate the "data" field
+     * @return the command result as JSON
+     */
+    @RolesAllowed({"ADMIN"})
+    @PATCH
+    @Path("/{resource}/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response patchCommand(@PathParam("resource") String resource, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
+        try {
+            if (itemId == null || itemId.trim().length() == 0) {
+                CommandResult error = new CommandResult(CommandResult.TYPE_ERROR, "The name of the item to update must be supplied.");
+                return Response.status(400).entity(this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(error))
+                        .type(MediaType.APPLICATION_JSON).build();
+            }
+            CommandResult output;
+            if ("cert".equalsIgnoreCase(resource)) {
+                // Importing a certificate already overwrites the alias, so there is no separate
+                // update command for one
+                try {
+                    String keyStorePassword = formParams == null ? null : formParams.getFirst("password");
+                    if (keyStorePassword != null && keyStorePassword.length() > 0) {
+                        // A password means the payload is a keystore holding a key pair, so the
+                        // certificate and its private key are replaced together
+                        output = this.importKeyPairByStream(itemId, formParams, keyStorePassword);
+                    } else {
+                        output = this.importCertificateByStream(itemId, formParams);
+                    }
+                } catch (Exception e) {
+                    /*
+                     * The keystore refuses to replace the certificate of an alias that holds a
+                     * private key, since that would orphan the key. Report it to the caller instead
+                     * of failing the request.
+                     */
+                    LoggerFactory.getLogger(ApiResource.class.getName()).error("Failed to replace the certificate for alias " + itemId, e);
+                    output = new CommandResult(CommandResult.TYPE_ERROR,
+                            "Could not replace the certificate for alias \"" + itemId + "\": " + e.getMessage());
+                }
+            } else {
+                /*
+                 * processRequest expects the item ID with the leading path separator still on it
+                 * because the generic endpoints capture it that way, so put one back before handing
+                 * the bare ID from this endpoint's path over.
+                 */
+                output = processRequest(resource, "update", "/" + itemId, formParams);
+            }
+            String jsonResult = this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
+            return Response.status(200).entity(jsonResult).type(MediaType.APPLICATION_JSON).build();
+        } catch (Exception ex) {
+            LoggerFactory.getLogger(ApiResource.class.getName()).error(ex.getMessage(), ex);
+            throw ex;
+        }
+    }
+
     @RolesAllowed({"ADMIN"})
     @PUT
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response putCommand(@PathParam("param") String resource, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
-        return postCommand(resource, "add", itemId, formParams);
+    public Response putCommand(@PathParam("resource") String resource, @PathParam("id") String itemId, MultivaluedMap<String, String> formParams) throws Exception {
+        return postCommand(resource, "add", "/" + itemId, formParams);
     }
 
     @RolesAllowed({"ADMIN"})
@@ -213,13 +280,13 @@ public class ApiResource {
     @Path("/{resource}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteCommand(@PathParam("resource") String resource, @PathParam("id") String itemId) throws Exception {
-        return getCommand(resource, "delete", itemId);
+        return getCommand(resource, "delete", "/" + itemId);
     }
 
     @RolesAllowed({"ADMIN"})
     @HEAD
     @Path("/{resource}{action:(/[^/]+?)?}{id:(/[^/]+?)?}")
-    public Response headCommand(@PathParam("param") String command) {
+    public Response headCommand(@PathParam("resource") String resource) {
         // Just an Empty response
         return Response.status(200).build();
     }
@@ -314,6 +381,37 @@ public class ApiResource {
                 .entity(this.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result))
                 .type(MediaType.APPLICATION_JSON)
                 .build();
+    }
+
+    /**
+     * Replaces the certificate and private key held under an alias from a PKCS12 keystore supplied as
+     * base64 in the "data" field, with the password that opens it in the "password" field.
+     * <p>
+     * This is the path for rotating an identity of our own: the alias already holds a private key, and
+     * replacing only the certificate is refused because it would orphan the key. The previous key pair
+     * stays in place unless the new one is written successfully.
+     *
+     * @param alias - the keystore alias to write the key pair to
+     * @param formParams - carries "data", the base64 encoded PKCS12
+     * @param keyStorePassword - the password that opens the supplied PKCS12
+     * @return the command result to return to the caller
+     */
+    private CommandResult importKeyPairByStream(String alias, MultivaluedMap<String, String> formParams, String keyStorePassword) throws Exception {
+        String payload = formParams.getFirst("data");
+        if (payload == null || payload.length() == 0) {
+            return new CommandResult(CommandResult.TYPE_ERROR, "No \"data\" field holding a base64 encoded PKCS12 keystore was supplied.");
+        }
+        AliasedCertificateFactory certFx = (AliasedCertificateFactory) getProcessor().getSession()
+                .getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
+        KeyStore sourceKeyStore;
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(Base64.getDecoder().decode(payload))) {
+            sourceKeyStore = AS2Util.getCryptoHelper().loadKeyStore(bais, keyStorePassword.toCharArray());
+        }
+        if (!certFx.importPrivateKey(alias, sourceKeyStore, keyStorePassword)) {
+            return new CommandResult(CommandResult.TYPE_ERROR,
+                    "The supplied keystore holds no certificate with a private key, so there is nothing to replace the key pair with.");
+        }
+        return new CommandResult(CommandResult.TYPE_OK, "Replaced the certificate and private key for alias: " + alias);
     }
 
     private CommandResult importCertificateByStream(String itemId, MultivaluedMap<String, String> formParams) throws Exception {

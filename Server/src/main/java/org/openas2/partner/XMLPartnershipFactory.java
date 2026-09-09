@@ -356,6 +356,136 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
     }
 
     /**
+     * Merges attributes into an existing partner element and reloads the in-memory partnerships so
+     * they match. Attributes that are not supplied are left as they are, so this is a partial update
+     * rather than a replacement. The caller is responsible for persisting the document afterwards.
+     *
+     * @param name - the name of the partner to update. Partners are not renamed by this method
+     * @param attributes - the attributes to set, replacing the value of any that already exist
+     * @throws OpenAS2Exception if the partner does not exist
+     */
+    public void updatePartner(String name, Map<String, String> attributes) throws OpenAS2Exception {
+        Element partner = findNamedElement("partner", name);
+        if (partner == null) {
+            throw new OpenAS2Exception("Unknown partner name: " + name);
+        }
+        for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+            partner.setAttribute(attribute.getKey(), attribute.getValue());
+        }
+        // Rebuild the in-memory partners and partnerships from the changed document so a partnership
+        // that inherits from this partner picks the change up too
+        refreshConfig();
+    }
+
+    /**
+     * Merges attributes, poller configuration and partner references into an existing partnership
+     * element and reloads the in-memory partnerships so they match. Anything not supplied is left as
+     * it is. The caller is responsible for persisting the document afterwards.
+     *
+     * @param name - the name of the partnership to update. Partnerships are not renamed by this method
+     * @param attributes - partnership attributes to set, or null to leave them alone
+     * @param pollerConfig - poller configuration attributes to set, or null to leave them alone
+     * @param senderName - the partner to point the sender at, or null to leave it alone
+     * @param receiverName - the partner to point the receiver at, or null to leave it alone
+     * @throws OpenAS2Exception if the partnership, or a partner it is being pointed at, does not exist
+     */
+    public void updatePartnership(String name, Map<String, String> attributes, Map<String, String> pollerConfig, String senderName, String receiverName) throws OpenAS2Exception {
+        Element partnership = findNamedElement("partnership", name);
+        if (partnership == null) {
+            throw new OpenAS2Exception("Partnership not found: " + name);
+        }
+        if (senderName != null) {
+            repointPartnership(partnership, name, Partnership.PTYPE_SENDER, senderName);
+        }
+        if (receiverName != null) {
+            repointPartnership(partnership, name, Partnership.PTYPE_RECEIVER, receiverName);
+        }
+        if (attributes != null) {
+            for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+                setPartnershipAttribute(partnership, attribute.getKey(), attribute.getValue());
+            }
+        }
+        if (pollerConfig != null && !pollerConfig.isEmpty()) {
+            Node pollerNode = XMLUtil.findChildNode(partnership, Partnership.PCFG_POLLER);
+            Element pollerElem;
+            if (pollerNode == null) {
+                pollerElem = getPartnershipsXml().createElement(Partnership.PCFG_POLLER);
+                partnership.appendChild(pollerElem);
+            } else {
+                pollerElem = (Element) pollerNode;
+            }
+            for (Map.Entry<String, String> attribute : pollerConfig.entrySet()) {
+                pollerElem.setAttribute(attribute.getKey(), attribute.getValue());
+            }
+        }
+        refreshConfig();
+    }
+
+    private void repointPartnership(Element partnership, String partnershipName, String partnerType, String partnerName) throws OpenAS2Exception {
+        if (getPartners().get(partnerName) == null) {
+            throw new OpenAS2Exception("Partnership " + partnershipName + " has an undefined " + partnerType + ": " + partnerName);
+        }
+        Node partnerRef = XMLUtil.findChildNode(partnership, partnerType);
+        Element partnerElem;
+        if (partnerRef == null) {
+            partnerElem = getPartnershipsXml().createElement(partnerType);
+            partnership.appendChild(partnerElem);
+        } else {
+            partnerElem = (Element) partnerRef;
+        }
+        partnerElem.setAttribute(Partnership.PID_NAME, partnerName);
+    }
+
+    /**
+     * Sets an "attribute" child of a partnership, replacing the value if one with that name is
+     * already present rather than appending a second one.
+     */
+    private void setPartnershipAttribute(Element partnership, String attrName, String attrValue) {
+        NodeList children = partnership.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (!"attribute".equals(child.getNodeName())) {
+                continue;
+            }
+            Node nameAttrib = child.getAttributes().getNamedItem("name");
+            if (nameAttrib != null && attrName.equals(nameAttrib.getNodeValue())) {
+                ((Element) child).setAttribute("value", attrValue);
+                return;
+            }
+        }
+        Element elem = getPartnershipsXml().createElement("attribute");
+        elem.setAttribute("name", attrName);
+        elem.setAttribute("value", attrValue);
+        partnership.appendChild(elem);
+    }
+
+    /**
+     * Finds a top level element of the given type by its name attribute. Walking the children rather
+     * than using XPath keeps names containing quotes from breaking the lookup.
+     *
+     * @return the matching element, or null if there is not exactly one
+     */
+    private Element findNamedElement(String elementName, String name) {
+        Element found = null;
+        NodeList children = getPartnershipsXml().getDocumentElement().getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (!elementName.equals(child.getNodeName())) {
+                continue;
+            }
+            Node nameAttrib = child.getAttributes().getNamedItem(Partnership.PID_NAME);
+            if (nameAttrib != null && name.equals(nameAttrib.getNodeValue())) {
+                if (found != null) {
+                    logger.error("More than one " + elementName + " element is named \"" + name + "\" so it cannot be updated.");
+                    return null;
+                }
+                found = (Element) child;
+            }
+        }
+        return found;
+    }
+
+    /**
      * Appends the passed element as a child of the root in the partnership document.
      * It does NOT check if the passed element is a valid element.
      * @param newElement - the element to be added.

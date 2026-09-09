@@ -366,6 +366,138 @@ public class DbPartnershipFactory extends BasePartnershipFactory implements Refr
      * @param name - the name of the partner to delete
      * @throws OpenAS2Exception if the partner does not exist or is referenced by a partnership
      */
+    /**
+     * Merges attributes into an existing partner. Attributes that are not supplied are left as they
+     * are, so this is a partial update rather than a replacement.
+     *
+     * @param name - the name of the partner to update. Partners are not renamed by this method
+     * @param attributes - the attributes to set, replacing the value of any that already exist
+     * @throws OpenAS2Exception if the partner does not exist
+     */
+    public synchronized void updatePartner(String name, Map<String, String> attributes) throws OpenAS2Exception {
+        try (Connection conn = dbHandler.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                Long id = findId(conn, "SELECT ID FROM partner WHERE NAME = ?", name);
+                if (id == null) {
+                    throw new OpenAS2Exception("Unknown partner name: " + name);
+                }
+                for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+                    upsertPartnerAttribute(conn, id, attribute.getKey(), attribute.getValue());
+                }
+                conn.commit();
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (OpenAS2Exception e) {
+            throw e;
+        } catch (Exception e) {
+            throw new WrappedException(e);
+        }
+        refresh();
+    }
+
+    /**
+     * Merges attributes, poller configuration and partner references into an existing partnership.
+     * Anything not supplied is left as it is, so this is a partial update rather than a replacement.
+     *
+     * @param name - the name of the partnership to update. Partnerships are not renamed by this method
+     * @param attributes - partnership attributes to set, or null to leave them alone
+     * @param pollerConfig - poller configuration attributes to set, or null to leave them alone
+     * @param senderName - the partner to point the sender at, or null to leave it alone
+     * @param receiverName - the partner to point the receiver at, or null to leave it alone
+     * @throws OpenAS2Exception if the partnership, or a partner it is being pointed at, does not exist
+     */
+    public synchronized void updatePartnership(String name, Map<String, String> attributes, Map<String, String> pollerConfig, String senderName, String receiverName) throws OpenAS2Exception {
+        try (Connection conn = dbHandler.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                Long id = findId(conn, "SELECT ID FROM partnership WHERE NAME = ?", name);
+                if (id == null) {
+                    throw new OpenAS2Exception("Partnership not found: " + name);
+                }
+                if (senderName != null) {
+                    repointPartnership(conn, id, name, "SENDER_PARTNER_ID", Partnership.PTYPE_SENDER, senderName);
+                }
+                if (receiverName != null) {
+                    repointPartnership(conn, id, name, "RECEIVER_PARTNER_ID", Partnership.PTYPE_RECEIVER, receiverName);
+                }
+                if (attributes != null) {
+                    for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+                        upsertPartnershipAttribute(conn, id, CATEGORY_ATTRIBUTE, attribute.getKey(), attribute.getValue());
+                    }
+                }
+                if (pollerConfig != null) {
+                    for (Map.Entry<String, String> attribute : pollerConfig.entrySet()) {
+                        upsertPartnershipAttribute(conn, id, CATEGORY_POLLER_CONFIG, attribute.getKey(), attribute.getValue());
+                    }
+                }
+                conn.commit();
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (OpenAS2Exception e) {
+            throw e;
+        } catch (Exception e) {
+            throw new WrappedException(e);
+        }
+        refresh();
+    }
+
+    private void repointPartnership(Connection conn, long partnershipId, String partnershipName, String column, String partnerType, String partnerName) throws Exception {
+        Long partnerId = findId(conn, "SELECT ID FROM partner WHERE NAME = ?", partnerName);
+        if (partnerId == null) {
+            throw new OpenAS2Exception("Partnership " + partnershipName + " has an undefined " + partnerType + ": " + partnerName);
+        }
+        try (PreparedStatement s = conn.prepareStatement("UPDATE partnership SET " + column + " = ? WHERE ID = ?")) {
+            s.setLong(1, partnerId);
+            s.setLong(2, partnershipId);
+            s.executeUpdate();
+        }
+    }
+
+    private void upsertPartnerAttribute(Connection conn, long partnerId, String attrName, String attrValue) throws Exception {
+        try (PreparedStatement s = conn.prepareStatement(
+                "UPDATE partner_attribute SET ATTRIBUTE_VALUE = ? WHERE PARTNER_ID = ? AND ATTRIBUTE_NAME = ?")) {
+            s.setString(1, attrValue);
+            s.setLong(2, partnerId);
+            s.setString(3, attrName);
+            if (s.executeUpdate() > 0) {
+                return;
+            }
+        }
+        try (PreparedStatement s = conn.prepareStatement(
+                "INSERT INTO partner_attribute (PARTNER_ID, ATTRIBUTE_NAME, ATTRIBUTE_VALUE) VALUES (?, ?, ?)")) {
+            s.setLong(1, partnerId);
+            s.setString(2, attrName);
+            s.setString(3, attrValue);
+            s.executeUpdate();
+        }
+    }
+
+    private void upsertPartnershipAttribute(Connection conn, long partnershipId, String category, String attrName, String attrValue) throws Exception {
+        try (PreparedStatement s = conn.prepareStatement(
+                "UPDATE partnership_attribute SET ATTRIBUTE_VALUE = ? WHERE PARTNERSHIP_ID = ? AND CATEGORY = ? AND ATTRIBUTE_NAME = ?")) {
+            s.setString(1, attrValue);
+            s.setLong(2, partnershipId);
+            s.setString(3, category);
+            s.setString(4, attrName);
+            if (s.executeUpdate() > 0) {
+                return;
+            }
+        }
+        try (PreparedStatement s = conn.prepareStatement(
+                "INSERT INTO partnership_attribute (PARTNERSHIP_ID, CATEGORY, ATTRIBUTE_NAME, ATTRIBUTE_VALUE) VALUES (?, ?, ?, ?)")) {
+            s.setLong(1, partnershipId);
+            s.setString(2, category);
+            s.setString(3, attrName);
+            s.setString(4, attrValue);
+            s.executeUpdate();
+        }
+    }
+
     public synchronized void deletePartner(String name) throws OpenAS2Exception {
         try (Connection conn = dbHandler.getConnection()) {
             conn.setAutoCommit(false);

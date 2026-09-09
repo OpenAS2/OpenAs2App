@@ -12,6 +12,7 @@
 		description="Partner commands">
 		<command classname="org.openas2.app.partner.ListPartnersCommand"/>
 		<command classname="org.openas2.app.partner.AddPartnerCommand"/>
+		<command classname="org.openas2.app.partner.UpdatePartnerCommand"/>
 		<command classname="org.openas2.app.partner.DeletePartnerCommand"/>
 		<command classname="org.openas2.app.partner.ViewPartnerCommand"/>
 		<command classname="org.openas2.app.partner.FilterCertPartnerCommand"/>
@@ -21,6 +22,7 @@
 		<command classname="org.openas2.app.partner.RefreshPartnershipsCommand"/>
 		<command classname="org.openas2.app.partner.ListPartnershipsCommand"/>
 		<command classname="org.openas2.app.partner.AddPartnershipCommand"/>
+		<command classname="org.openas2.app.partner.UpdatePartnershipCommand"/>
 		<command classname="org.openas2.app.partner.DeletePartnershipCommand"/>
 		<command classname="org.openas2.app.partner.StorePartnershipsCommand"/>
 		<command classname="org.openas2.app.partner.ViewPartnershipCommand"/>

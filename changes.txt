@@ -11,6 +11,23 @@ This is a minor enhancement release.
    unresolved so placeholders such as $properties.storageBaseDir$ keep working. Pass --dry-run to validate the file and
    see what would be written without touching the database, or --replace to overwrite partnerships already stored there.
    The whole migration runs in one transaction, so a file that cannot be represented in the schema leaves it untouched.
+2. Add partial update support so a partner, partnership or certificate no longer has to be deleted and recreated to change
+   it. Previously "add" refused to overwrite an existing entry, so the only route was delete followed by recreate, which
+   loses the definition outright if the recreate fails. New "update" commands for partner and partnership merge only what
+   is supplied and leave everything else alone, working against both the XML and the database partnership store, and a new
+   PATCH API endpoint exposes them: PATCH /api/partner/<name>, PATCH /api/partnership/<name> and PATCH /api/cert/<alias>
+   with the attributes to change as form fields. Use pollerConfig.<attr> to change a partnership poller attribute and
+   sender.name or receiver.name to point a partnership at a different partner. For a certificate, send the base64 encoded
+   certificate in the "data" field to replace a partner certificate, or a base64 encoded PKCS12 in "data" plus the password
+   that opens it in "password" to replace a certificate and its private key together, which is what rotating an identity of
+   your own needs.
+3. Fix the PUT and DELETE API endpoints, which dropped the first character of the item name, and PUT and HEAD, which bound
+   a path parameter that was not in their path template and so never received the resource name.
+4. Fix replacing the key pair held under a keystore alias. Importing a PKCS12 over an alias that already held a private key
+   failed because the certificate was staged with setCertificateEntry first, which a keystore refuses on such an alias. The
+   key entry is now written in one operation, so "cert import <alias> <file.p12> <password>" and the certificate PATCH can
+   both rotate an existing identity. The previous key pair is left in place unless the new one is written successfully, and
+   the entry is stored under the keystore password so it can be read back.
 
 Version 4.11.0 - 2026-09-02
 ===========================
