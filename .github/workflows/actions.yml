@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.java_version }}
-          distribution: 'adopt'
+          distribution: 'temurin'
       - name: Remove Rest API for Java 8 because of library incompatibility
         if: contains(matrix.java_version, '8') == true && contains(matrix.os, 'win') == true
         run: |
