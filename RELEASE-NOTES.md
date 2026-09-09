@@ -1,15 +1,15 @@
 #              OpenAS2 Server
-#              Version 4.11.0
+#              Version 4.12.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.11.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.12.0
 
-The release download file is: OpenAS2Server-4.11.0.zip
+The release download file is: OpenAS2Server-4.12.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 17 to 21.
 
-Version UNRELEASED
+Version 4.12.0 2026-09-09
 ===========================
 
 This is a minor enhancement release.
@@ -38,7 +38,7 @@ This is a minor enhancement release.
    both rotate an existing identity. The previous key pair is left in place unless the new one is written successfully, and
    the entry is stored under the keystore password so it can be read back.
 
-Version 4.11.0 - 2026-09-02
+Version 4.12.0 - 2026-09-02
 ===========================
 
 This is a minor enhancement release.

@@ -1,9 +1,9 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-Version UNRELEASED
+Version 4.12.0 2026-09-09
 ===========================
 
-This is a minor enhancement release.
+This is a minor enhancement and bugfix release
 1. Add a migration tool that loads a partnerships XML file into the partner and partnership database tables read by
    DbPartnershipFactory, so an existing XML configuration can be moved to the database store without being retyped:
    bin/upgrade/migrate_partnerships_to_db.sh <partnerships.xml> <jdbc_url> <db_user> <db_password>. Sender and receiver
