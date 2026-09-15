@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -258,6 +260,40 @@ public class PatchApiTest extends BaseServerSetup {
         Matcher m = Pattern.compile("\"data\"\\s*:\\s*\"([^\"]+)\"").matcher(view);
         assertTrue(m.find(), "could not find the certificate data in: " + view);
         return m.group(1);
+    }
+
+    @Test
+    public void patchIsPersistedToThePartnershipsFileNotJustMemory() throws Exception {
+        // The XML store holds an update in the in memory document only, so without the store step the
+        // change is lost on restart and silently reverted by the next refresh
+        String body = patch("partner/PartnerA", true, param("email", "persisted@example.com"));
+        assertTrue(body.contains("\"OK\""), body);
+
+        String onDisk = new String(Files.readAllBytes(new File(configDir, "partnerships.xml").toPath()),
+                StandardCharsets.UTF_8);
+        assertTrue(onDisk.contains("persisted@example.com"),
+                "the patched value must be written to partnerships.xml: " + body);
+    }
+
+    @Test
+    public void patchReportsThatItStoredThePartnerships() throws Exception {
+        String body = patch("partner/PartnerB", true, param("email", "stored@example.com"));
+
+        assertTrue(body.contains("Stored partnerships"),
+                "the caller should be told the change was persisted, as it is for add and delete: " + body);
+    }
+
+    @Test
+    public void aFailedPatchDoesNotRewriteThePartnershipsFile() throws Exception {
+        File partnerships = new File(configDir, "partnerships.xml");
+        String before = new String(Files.readAllBytes(partnerships.toPath()), StandardCharsets.UTF_8);
+
+        String body = patch("partner/NoSuchPartner", true, param("email", "ghost@example.com"));
+        assertTrue(body.contains("ERROR"), body);
+
+        String after = new String(Files.readAllBytes(partnerships.toPath()), StandardCharsets.UTF_8);
+        assertEquals(before, after, "a rejected update must leave the stored partnerships untouched");
+        assertFalse(after.contains("ghost@example.com"));
     }
 
     private NameValuePair param(String name, String value) {

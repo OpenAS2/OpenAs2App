@@ -146,8 +146,15 @@ public class ApiResource {
             }
         }
         CommandResult output = getProcessor().feedCommand(resource, params);
-        if (CommandResult.TYPE_OK.equals(output.getType()) && resource.startsWith("partner") && ("add".equals(action) || "delete".equals(action))) {
-            // Store the partnership XML since a successful change was made to the partnerships
+        if (CommandResult.TYPE_OK.equals(output.getType()) && resource.startsWith("partner")
+                && ("add".equals(action) || "update".equals(action) || "delete".equals(action))) {
+            /*
+             * Store the partnership XML since a successful change was made to the partnerships. An
+             * update has to be stored for the same reason an add does: the XML store holds the change
+             * in the in memory document only, so without this it would be lost on restart and silently
+             * reverted by the next refresh. The store command is a no-op for the database store, which
+             * has already persisted the change in its own transaction.
+             */
             CommandResult store_cmd_output = getProcessor().feedCommand("partnership", Arrays.asList("store"));
             output.getResults().addAll(store_cmd_output.getResults());
         }
