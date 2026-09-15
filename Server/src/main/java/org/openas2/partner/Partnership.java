@@ -253,6 +253,29 @@ public class Partnership implements Serializable {
         return alias;
     }
 
+    /**
+     * Resolves the X509 alias for one side of the partnership, optionally preferring the configured
+     * fallback over the primary.
+     * <p>
+     * Used when a partner has told us that the certificate we used is not one it holds, which happens
+     * while either side is rotating a certificate. If no fallback is configured the primary is
+     * returned, so a caller can always ask for the fallback without checking first.
+     *
+     * @param partnershipType - PTYPE_SENDER or PTYPE_RECEIVER
+     * @param preferFallback - true to return the fallback alias when one is configured
+     * @return the alias to use
+     * @throws OpenAS2Exception if no alias is configured for this side at all
+     */
+    public String getAliasOrFallback(String partnershipType, boolean preferFallback) throws OpenAS2Exception {
+        if (preferFallback) {
+            String fallback = getAliasFallback(partnershipType);
+            if (fallback != null) {
+                return fallback;
+            }
+        }
+        return getAlias(partnershipType);
+    }
+
     public String getAliasFallback(String partnershipType) throws OpenAS2Exception {
         String alias = null;
 

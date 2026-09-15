@@ -353,7 +353,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
                 addCustomOuterMimeHeaders(msg, dataBP);
             }
             calcAndStoreMic(msg, dataBP, (sign || encrypt));
-            String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_SENDER);
+            // Takes the fallback signing certificate if the partner has rejected the primary as unauthenticated
+            String x509_alias = AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_SENDER);
             X509Certificate senderCert = certFx.getCertificate(x509_alias);
 
             PrivateKey senderKey = certFx.getPrivateKey(x509_alias);
@@ -391,7 +392,8 @@ public class AS2SenderModule extends HttpSenderModule implements HasSchedule {
             // configured
             addCustomOuterMimeHeaders(msg, dataBP);
             String algorithm = partnership.getAttribute(Partnership.PA_ENCRYPTION_ALGORITHM);
-            String x509_alias = msg.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+            // Takes the partner's fallback certificate if they have rejected the primary as undecryptable
+            String x509_alias = AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_RECEIVER);
             X509Certificate receiverCert = certFx.getCertificate(x509_alias);
             dataBP = AS2Util.getCryptoHelper().encrypt(dataBP, receiverCert, algorithm, contentTxfrEncoding);
 

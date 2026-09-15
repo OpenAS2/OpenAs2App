@@ -36,11 +36,21 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AS2Util {
+
+    /*
+     * Emitted whenever a fallback certificate turns out to be the one that worked, from either
+     * direction, so a single log search finds every certificate overlap that is still in progress.
+     * The text is unchanged from when only the inbound paths reported this.
+     */
+    public static final String LOG_MSG_OUR_CERT_SWITCHED = "Partner has updated our certificate. Switch the fallback alias and remove the X509 fallback for the partner: ";
+    public static final String LOG_MSG_PARTNER_CERT_SWITCHED = "Partner has updated their certificate. Switch the fallback alias and remove the X509 fallback for the partner: ";
+
     private static ICryptoHelper ch;
 
     public static ICryptoHelper getCryptoHelper() throws Exception {
@@ -328,6 +338,164 @@ public class AS2Util {
     }
 
     /**
+     * Flags a message to use the configured fallback certificate on its resend when the partner has
+     * rejected it for a reason that a certificate rotation would explain.
+     * <p>
+     * Signing and encrypting both succeed locally whichever certificate is used, so unlike the inbound
+     * side there is nothing to catch and retry in place: the only signal that the wrong certificate was
+     * used is the partner saying so in the MDN disposition. A rejection is therefore mapped back to the
+     * side whose certificate is implicated:
+     * <ul>
+     * <li>"decryption-failed" means the partner could not decrypt, so we encrypted to a certificate of
+     * theirs that they no longer hold, and the receiver fallback should be used</li>
+     * <li>"authentication-failed" or "integrity-check-failed" means the partner could not verify our
+     * signature, so we signed with a certificate they do not have yet, and the sender fallback should
+     * be used</li>
+     * </ul>
+     * Note that "integrity-check-failed" is reported by some implementations for a MIC mismatch rather
+     * than a signature problem. Switching is therefore only done when a fallback is actually configured
+     * for that side and only once per message, so a message that is failing for some other reason
+     * behaves exactly as it did before.
+     *
+     * @param msg - the message that was rejected
+     * @param de - the disposition exception carrying the partner's reported reason
+     * @return true if the message was flagged to use a fallback certificate
+     */
+    /**
+     * The message attribute that flags the fallback certificate for one side of a partnership. Keeping
+     * the pairing in one place stops the side and the flag drifting apart between the code that decides
+     * to switch and the code that acts on it.
+     *
+     * @param partnershipType - PTYPE_SENDER or PTYPE_RECEIVER
+     * @return the attribute name for that side
+     */
+    private static String fallbackStateAttributeFor(String partnershipType) {
+        return Partnership.PTYPE_SENDER.equals(partnershipType)
+                ? Message.MA_SENDER_ALIAS_FALLBACK_STATE
+                : Message.MA_RECEIVER_ALIAS_FALLBACK_STATE;
+    }
+
+    /**
+     * Carries the fallback certificate state onto the message object a resend restored from disk.
+     * <p>
+     * A resend after the first one replaces the in-memory message with the one serialised when the
+     * message was first sent, which predates any fallback decision. Without this the state would be
+     * dropped and the resend would silently go back to the primary certificate while the logging said
+     * otherwise.
+     *
+     * @param from - the message carrying the current state
+     * @param to - the message restored from the stored object
+     */
+    static void carryFallbackState(Message from, Message to) {
+        for (String partnershipType : new String[]{Partnership.PTYPE_SENDER, Partnership.PTYPE_RECEIVER}) {
+            String attribute = fallbackStateAttributeFor(partnershipType);
+            String state = from.getAttribute(attribute);
+            if (state != null) {
+                to.setAttribute(attribute, state);
+            }
+        }
+    }
+
+    /**
+     * Resolves the certificate alias to use for one side of an outbound message, taking the fallback
+     * when an earlier rejection by the partner has flagged this message for it.
+     * <p>
+     * Reported at info because it is not yet known to be the right certificate: that is only confirmed
+     * when the partner accepts the message, which is reported separately.
+     *
+     * @param msg - the message being sent
+     * @param partnershipType - PTYPE_SENDER for our own signing certificate, PTYPE_RECEIVER for the
+     *                          partner's encryption certificate
+     * @return the alias to use
+     * @throws OpenAS2Exception if no alias is configured for that side
+     */
+    public static String resolveOutboundAlias(Message msg, String partnershipType) throws OpenAS2Exception {
+        boolean useFallback = Message.FALLBACK_STATE_IN_USE.equals(msg.getAttribute(fallbackStateAttributeFor(partnershipType)));
+        String alias = msg.getPartnership().getAliasOrFallback(partnershipType, useFallback);
+        if (useFallback) {
+            LoggerFactory.getLogger(AS2Util.class).info("Retrying with the fallback " + partnershipType
+                    + " certificate alias \"" + alias + "\" after the partner rejected the primary" + msg.getLogMsgID());
+        }
+        return alias;
+    }
+
+    /**
+     * Builds the advisory to log when a message only succeeded because a fallback certificate was used,
+     * which is the signal that a certificate overlap is still in progress and can now be completed.
+     * <p>
+     * Sending cannot tell at the time it signs or encrypts whether the certificate is the right one, so
+     * unlike the inbound side this cannot be reported until the partner has accepted the message. It is
+     * reported with the same wording the inbound paths use so one log search finds every overlap.
+     *
+     * @param msg - the message that has just been accepted by the partner
+     * @param partnerName - the partner to coordinate the switchover with
+     * @return the advisory to log, or null if the message did not need a fallback certificate
+     */
+    static String fallbackCertificateInUseMessage(Message msg, String partnerName) {
+        if (Message.FALLBACK_STATE_IN_USE.equals(msg.getAttribute(fallbackStateAttributeFor(Partnership.PTYPE_RECEIVER)))) {
+            return LOG_MSG_PARTNER_CERT_SWITCHED + partnerName;
+        }
+        if (Message.FALLBACK_STATE_IN_USE.equals(msg.getAttribute(fallbackStateAttributeFor(Partnership.PTYPE_SENDER)))) {
+            return LOG_MSG_OUR_CERT_SWITCHED + partnerName;
+        }
+        return null;
+    }
+
+    // Package private so the reason-to-side mapping can be tested directly
+    static boolean switchToFallbackCertificate(Message msg, DispositionException de) {
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
+        if (de.getDisposition() == null || de.getDisposition().getStatusDescription() == null) {
+            return false;
+        }
+        String reason = de.getDisposition().getStatusDescription().toLowerCase(Locale.ROOT);
+        String partnershipType;
+        String describeCert;
+        if (reason.contains("decryption-failed")) {
+            partnershipType = Partnership.PTYPE_RECEIVER;
+            describeCert = "the partner's encryption certificate";
+        } else if (reason.contains("authentication-failed") || reason.contains("integrity-check-failed")) {
+            partnershipType = Partnership.PTYPE_SENDER;
+            describeCert = "our signing certificate";
+        } else {
+            return false;
+        }
+        String attribute = fallbackStateAttributeFor(partnershipType);
+        String state = msg.getAttribute(attribute);
+        if (Message.FALLBACK_STATE_EXHAUSTED.equals(state)) {
+            // Already tried and rejected, so leave the remaining retries on the primary certificate
+            return false;
+        }
+        if (Message.FALLBACK_STATE_IN_USE.equals(state)) {
+            /*
+             * The fallback was rejected as well, so the certificate was not the problem. Go back to
+             * the primary for whatever retries remain rather than spending them all on a certificate
+             * that has now also been refused.
+             */
+            msg.setAttribute(attribute, Message.FALLBACK_STATE_EXHAUSTED);
+            msg.setLogMsg("The fallback certificate for " + partnershipType + " was rejected as well, so the certificate"
+                    + " is not the problem. Reverting to the primary alias for any remaining retries.");
+            logger.warn(msg.getLogMsg() + msg.getLogMsgID());
+            return false;
+        }
+        String fallbackAlias;
+        try {
+            fallbackAlias = msg.getPartnership().getAliasFallback(partnershipType);
+        } catch (OpenAS2Exception e) {
+            return false;
+        }
+        if (fallbackAlias == null) {
+            return false;
+        }
+        msg.setAttribute(attribute, Message.FALLBACK_STATE_IN_USE);
+        msg.setLogMsg("Partner rejected the message citing " + reason.trim() + " so the resend will use the fallback for "
+                + describeCert + " (alias " + fallbackAlias + "). If this succeeds, promote the fallback to the primary alias"
+                + " and remove the fallback once the partner has completed their switchover.");
+        logger.warn(msg.getLogMsg() + msg.getLogMsgID());
+        return true;
+    }
+
+
+    /**
      * @description Attempts to check if a resend should go ahead and if so
      * decrements the resend count and stores the decremented retry count in the
      * options map. If the passed in retry count is null or invalid it will fall
@@ -405,6 +573,8 @@ public class AS2Util {
             // Update original with latest message-id and pendinginfo file so it
             // is kept up to date
             originalMsg.setAttribute(FileAttribute.MA_PENDINGINFO, msg.getAttribute(FileAttribute.MA_PENDINGINFO));
+            // The stored object predates any certificate fallback decision, so bring that state forward
+            carryFallbackState(msg, originalMsg);
             if (!keepOriginalData) {
                 originalMsg.setMessageID(msg.getMessageID());
                 originalMsg.setOption(ResenderModule.OPTION_RETRIES, "" + retries);
@@ -544,7 +714,39 @@ public class AS2Util {
         if (logger.isTraceEnabled()) {
             logger.trace("Parsing MDN: " + mdn.toString() + msg.getLogMsgID());
         }
-        if (!AS2Util.parseMDN(msg, senderCert)) {
+        boolean mdnParsed;
+        try {
+            mdnParsed = AS2Util.parseMDN(msg, senderCert);
+        } catch (OpenAS2Exception e) {
+            /*
+             * Verifying the MDN signature fails locally when the partner has rotated the certificate
+             * it signs with, so retry with the fallback before treating this as an error. Parsing
+             * throws before it reads anything out of the report, so retrying is safe.
+             */
+            String fallbackAlias = mdn.getPartnership().getAliasFallback(Partnership.PTYPE_RECEIVER);
+            if (fallbackAlias == null) {
+                throw e;
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("Verifying the MDN with the primary certificate failed so trying the fallback alias: " + fallbackAlias + msg.getLogMsgID());
+            }
+            try {
+                mdnParsed = AS2Util.parseMDN(msg, cFx.getCertificate(fallbackAlias));
+            } catch (Exception fallbackFailure) {
+                /*
+                 * The fallback did not work either, or is not in the keystore at all. Report the
+                 * original failure rather than this one: the primary is the configured certificate and
+                 * its error is the meaningful diagnostic, while a fallback that cannot be used is a
+                 * configuration problem worth logging separately.
+                 */
+                logger.error("The MDN was not verified by the fallback alias \"" + fallbackAlias + "\" either: "
+                        + org.openas2.util.Logging.getExceptionMsg(fallbackFailure) + msg.getLogMsgID());
+                throw e;
+            }
+            // Succeeded on the fallback, so the partner has switched to their new certificate
+            logger.warn(LOG_MSG_PARTNER_CERT_SWITCHED + mdn.getPartnership().getReceiverID(Partnership.PID_NAME) + msg.getLogMsgID());
+        }
+        if (!mdnParsed) {
             msg.setStatus(Message.MSG_STATUS_MSG_TERMINATED_IN_ERROR);
             msg.setOption("STATE", Message.MSG_STATE_MSG_SENT_MDN_RECEIVED_ERROR);
             msg.trackMsgState(session);
@@ -582,6 +784,9 @@ public class AS2Util {
             if (logger.isErrorEnabled()) {
                 logger.error("Disposition exception processing MDN: " + de.getText() + msg.getLogMsgID());
             }
+            // A rejection naming a certificate problem may just mean a rotation is in progress, so
+            // flag the fallback certificate for the resend before queueing it
+            switchToFallbackCertificate(msg, de);
             // Hmmmm... Error may require manual intervention but keep
             // trying.... possibly change retry count to 1 or just fail????
             AS2Util.resend(session, sourceClass, SenderModule.DO_SEND, msg, de, true, false);
@@ -615,6 +820,15 @@ public class AS2Util {
         // To support extended reporting via logging log info passing Message object
         msg.setLogMsg("Message sent and MDN received successfully.");
         logger.info(msg.getLogMsg());
+        /*
+         * The partner accepted the message, so if a fallback certificate was what made that work the
+         * overlap can now be completed. Reported here rather than when signing or encrypting because
+         * that is the first point at which it is known to have been the right certificate.
+         */
+        String overlapAdvisory = fallbackCertificateInUseMessage(msg, msg.getPartnership().getReceiverID(Partnership.PID_NAME));
+        if (overlapAdvisory != null) {
+            logger.warn(overlapAdvisory + msg.getLogMsgID());
+        }
 
         cleanupFiles(msg, false);
         return false;
