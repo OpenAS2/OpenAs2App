@@ -1,5 +1,16 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
+Version UNRELEASED
+===========================
+
+This is a bugfix release.
+1. Fix the partnerships file gaining blank lines every time it is stored. The parser kept the newlines and indentation
+   between elements as text nodes and the serializer added indentation of its own without removing them, so each save
+   wrote the original whitespace plus another layer. A file grew without bound through the life of a deployment because
+   every change through the console or the API stores it. The layout whitespace is now discarded when the file is read, so
+   saving is idempotent and a file that has already accumulated blank lines is tidied the next time it is stored. Values
+   are untouched: only text nodes that are entirely whitespace are removed.
+
 Version 4.12.0 2026-09-09
 ===========================
 
