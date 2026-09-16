@@ -10,6 +10,11 @@ This is a bugfix release.
    every change through the console or the API stores it. The layout whitespace is now discarded when the file is read, so
    saving is idempotent and a file that has already accumulated blank lines is tidied the next time it is stored. Values
    are untouched: only text nodes that are entirely whitespace are removed.
+2. Fix the PATCH API endpoint not persisting when partnerships are stored in the XML file. The update was applied to the
+   in-memory partnerships but the partnerships file was never written, so the change was lost on restart and silently
+   reverted by the next refresh. The endpoint now stores the partnerships after a successful update, as it already did
+   after an add or a delete. The database partnership store was unaffected because it persists each change in its own
+   transaction.
 
 Version 4.12.0 2026-09-09
 ===========================
