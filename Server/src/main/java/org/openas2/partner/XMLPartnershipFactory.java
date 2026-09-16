@@ -102,11 +102,37 @@ public class XMLPartnershipFactory extends BasePartnershipFactory implements Has
 
             DocumentBuilder parser = factory.newDocumentBuilder();
             Document document = parser.parse(inputStream);
+            removeWhitespaceOnlyTextNodes(document);
             setPartnershipsXml(document);
         } catch (Exception e) {
             throw new WrappedException(e);
         }
 
+    }
+
+    /**
+     * Removes the text nodes that hold nothing but the layout whitespace of the file as it was read.
+     * <p>
+     * The parser keeps the newlines and indentation between elements as text nodes, and the serializer
+     * used to store the partnerships adds indentation of its own without being able to remove those.
+     * Storing a document that still carried them therefore wrote the original whitespace plus a fresh
+     * layer of it, so every save grew the file by another set of blank lines. Discarding them when the
+     * file is read leaves the serializer as the only thing deciding the layout, and also tidies a file
+     * that has already accumulated them the next time it is stored.
+     * <p>
+     * Only text nodes that are entirely whitespace are removed, so element content is never affected.
+     * Nothing in a partnerships file carries text content in any case: every value is an attribute.
+     *
+     * @param doc - the freshly parsed partnerships document
+     * @throws XPathExpressionException if the fixed expression below fails to compile
+     */
+    private static void removeWhitespaceOnlyTextNodes(Document doc) throws XPathExpressionException {
+        XPathExpression expr = XPathFactory.newInstance().newXPath().compile("//text()[normalize-space(.) = '']");
+        NodeList whitespaceOnly = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+        for (int i = 0; i < whitespaceOnly.getLength(); i++) {
+            Node node = whitespaceOnly.item(i);
+            node.getParentNode().removeChild(node);
+        }
     }
 
     void refreshConfig() throws OpenAS2Exception {
