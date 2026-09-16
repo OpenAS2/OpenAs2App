@@ -1,4 +1,17 @@
 <partnerships>
+    <!-- Overlapping an old and a new certificate while either side rotates one.
+         Add "x509_alias_fallback" to a partner element pointing at a second alias in the keystore and
+         OpenAS2 will use it whenever the primary is rejected, so the two sides do not have to switch at
+         the same moment:
+           - on your own partner element, the fallback covers a rotation of YOUR certificate
+           - on a trading partner's element, it covers a rotation of THEIR certificate
+         Receiving falls back locally with no cost. Sending cannot tell locally which certificate is
+         right, so the first attempt is rejected by the partner and the resend uses the fallback; that
+         costs one round trip per message until the primary is switched over.
+         A warning naming the partner is logged whenever the fallback is the one that worked, which is
+         the signal that the partner has completed their switchover. Promote the fallback to
+         "x509_alias" and remove the fallback attribute once you see it.
+    -->
     <partner name="MyCompany"
              as2_id="MyCompany_OID"
              x509_alias="mycompany"
