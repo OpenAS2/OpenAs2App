@@ -133,10 +133,10 @@ public abstract class NetModule extends BaseReceiverModule {
 
             File msgFile = IOUtil.getUnique(IOUtil.getDirectoryFile(directory), IOUtil.cleanFilename(name));
             String msgText = msg.toString();
-            FileOutputStream fOut = new FileOutputStream(msgFile);
-
-            fOut.write(msgText.getBytes());
-            fOut.close();
+            // Closed by hand before, so a failed write leaked the descriptor
+            try (FileOutputStream fOut = new FileOutputStream(msgFile)) {
+                fOut.write(msgText.getBytes());
+            }
 
             // make sure an error of this event is logged
             InvalidMessageException im = new InvalidMessageException("Stored invalid message to " + msgFile.getAbsolutePath());
