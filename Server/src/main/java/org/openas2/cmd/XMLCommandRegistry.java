@@ -54,8 +54,9 @@ public class XMLCommandRegistry extends BaseCommandRegistry {
     }
 
     public void refresh() throws OpenAS2Exception {
-        try {
-            load(new FileInputStream(getParameter(PARAM_FILENAME, true)));
+        // The stream was never closed on any path
+        try (FileInputStream fIn = new FileInputStream(getParameter(PARAM_FILENAME, true))) {
+            load(fIn);
         } catch (Exception e) {
             throw new WrappedException(e);
         }
