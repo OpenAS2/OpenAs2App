@@ -24,6 +24,12 @@ This is a bugfix release.
    reverted by the next refresh. The endpoint now stores the partnerships after a successful update, as it already did
    after an add or a delete. The database partnership store was unaffected because it persists each change in its own
    transaction.
+3. Fix a directory poller running in parallel mode leaving its thread pool behind when it is stopped. Partnership pollers
+   are destroyed and rebuilt whenever the partnerships are reloaded, and a pool whose threads are still alive keeps itself
+   and everything it references from being collected, so a reload leaked one pool per poller for the life of the process.
+   Stopping a poller now shuts its pool down, letting a file that is part way through being sent finish first, and starting
+   a poller again gives it a usable pool. Only "process_files_in_parallel" deployments were affected as no pool is created
+   otherwise.
 
 Version 4.12.0 2026-09-09
 ===========================
