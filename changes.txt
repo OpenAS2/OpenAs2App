@@ -15,6 +15,12 @@ This is a bugfix release.
    reverted by the next refresh. The endpoint now stores the partnerships after a successful update, as it already did
    after an add or a delete. The database partnership store was unaffected because it persists each change in its own
    transaction.
+3. Fix two error paths that failed on their own. Archiving a file into the error directory built its failure message out
+   of a destination it had not worked out yet when it was creating that directory that failed, so an error directory that
+   could not be created, as happens on a read only or unavailable mount, produced a NullPointerException that replaced the
+   real cause and travelled past the handlers expecting an OpenAS2Exception. The "messages view" and chart commands built
+   an error result for having no message tracking module and then discarded it, falling through to use the empty list
+   anyway, so they failed with an IndexOutOfBoundsException instead of reporting the problem.
 
 Version 4.12.0 2026-09-09
 ===========================
