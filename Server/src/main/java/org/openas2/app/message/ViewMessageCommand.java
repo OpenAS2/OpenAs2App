@@ -38,8 +38,8 @@ public class ViewMessageCommand extends AliasedMessagesCommand {
 
             List<ProcessorModule> mpl = getSession().getProcessor().getModulesSupportingAction(TrackingModule.DO_TRACK_MSG);
             if (mpl == null || mpl.isEmpty()) {
-                CommandResult cmdRes = new CommandResult(CommandResult.TYPE_ERROR);
-                cmdRes.getResults().add("No DB tracking module available.");
+                // Was built and then dropped, so the next line ran anyway and failed on an empty list
+                return new CommandResult(CommandResult.TYPE_ERROR, "No DB tracking module available.");
             }
             // Assume we only load one DB tracking module - not sure it makes sense if more than 1 was loaded
             DbTrackingModule db = (DbTrackingModule) mpl.get(0);
