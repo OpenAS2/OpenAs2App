@@ -40,7 +40,7 @@ public class OutboundCertFallbackTest {
         assertNull(msg.getAttribute(Message.MA_SENDER_ALIAS_FALLBACK_STATE),
                 "a decryption failure says nothing about our own signing certificate");
         assertEquals(FALLBACK_THEIRS,
-                msg.getPartnership().getAliasOrFallback(Partnership.PTYPE_RECEIVER, true),
+                AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_RECEIVER),
                 "the resend must encrypt to the partner's fallback certificate");
     }
 
@@ -51,7 +51,7 @@ public class OutboundCertFallbackTest {
         assertFalse(AS2Util.switchToFallbackCertificate(msg, rejection("decryption-failed")));
 
         assertNull(msg.getAttribute(Message.MA_RECEIVER_ALIAS_FALLBACK_STATE));
-        assertEquals(PRIMARY_THEIRS, msg.getPartnership().getAliasOrFallback(Partnership.PTYPE_RECEIVER, true),
+        assertEquals(PRIMARY_THEIRS, AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_RECEIVER),
                 "with nothing to fall back to the primary must still be used");
     }
 
@@ -66,7 +66,7 @@ public class OutboundCertFallbackTest {
         assertEquals(Message.FALLBACK_STATE_IN_USE, msg.getAttribute(Message.MA_SENDER_ALIAS_FALLBACK_STATE));
         assertNull(msg.getAttribute(Message.MA_RECEIVER_ALIAS_FALLBACK_STATE),
                 "an authentication failure says nothing about the partner's encryption certificate");
-        assertEquals(FALLBACK_OURS, msg.getPartnership().getAliasOrFallback(Partnership.PTYPE_SENDER, true),
+        assertEquals(FALLBACK_OURS, AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_SENDER),
                 "the resend must sign with our fallback certificate");
     }
 
@@ -219,27 +219,6 @@ public class OutboundCertFallbackTest {
         assertTrue(AS2Util.LOG_MSG_PARTNER_CERT_SWITCHED.endsWith("for the partner: "));
     }
 
-    /* ------------------------------------------------------------------ the resolver the sender uses */
-
-    @Test
-    public void theResolverOnlyUsesTheFallbackWhenItIsAskedFor() throws Exception {
-        Partnership p = partnership(true, true);
-
-        assertEquals(PRIMARY_OURS, p.getAliasOrFallback(Partnership.PTYPE_SENDER, false));
-        assertEquals(FALLBACK_OURS, p.getAliasOrFallback(Partnership.PTYPE_SENDER, true));
-        assertEquals(PRIMARY_THEIRS, p.getAliasOrFallback(Partnership.PTYPE_RECEIVER, false));
-        assertEquals(FALLBACK_THEIRS, p.getAliasOrFallback(Partnership.PTYPE_RECEIVER, true));
-    }
-
-    @Test
-    public void theResolverFallsBackToThePrimaryWhenNoFallbackIsConfigured() throws Exception {
-        Partnership p = partnership(false, false);
-
-        assertEquals(PRIMARY_OURS, p.getAliasOrFallback(Partnership.PTYPE_SENDER, true),
-                "asking for a fallback that is not configured must not fail");
-        assertEquals(PRIMARY_THEIRS, p.getAliasOrFallback(Partnership.PTYPE_RECEIVER, true));
-    }
-
     /* --------------------------------------- the resolver the sender actually calls for each side */
 
     @Test
@@ -280,6 +259,33 @@ public class OutboundCertFallbackTest {
         msg.getPartnership().getReceiverIDs().remove(Partnership.PID_X509_ALIAS_FALLBACK);
 
         assertEquals(PRIMARY_THEIRS, AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_RECEIVER));
+        assertNull(msg.getAttribute(Message.MA_RECEIVER_ALIAS_FALLBACK_STATE),
+                "the message is back on the primary so it must no longer be flagged as using the fallback");
+        assertNull(AS2Util.fallbackCertificateInUseMessage(msg, "PartnerA"),
+                "an acceptance on the primary must not be reported as the partner having switched certificates");
+    }
+
+    @Test
+    public void aFallbackRemovedBeforeAResendDoesNotStopALaterSwitch() throws Exception {
+        // Clearing the flag rather than exhausting it means a fallback configured again later is still used
+        Message msg = message(true, true);
+        AS2Util.switchToFallbackCertificate(msg, rejection("decryption-failed"));
+        msg.getPartnership().getReceiverIDs().remove(Partnership.PID_X509_ALIAS_FALLBACK);
+        AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_RECEIVER);
+
+        msg.getPartnership().getReceiverIDs().put(Partnership.PID_X509_ALIAS_FALLBACK, FALLBACK_THEIRS);
+        assertTrue(AS2Util.switchToFallbackCertificate(msg, rejection("decryption-failed")));
+        assertEquals(FALLBACK_THEIRS, AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_RECEIVER));
+    }
+
+    @Test
+    public void aFallbackChangedBeforeAResendResolvesToTheNewAlias() throws Exception {
+        Message msg = message(true, true);
+        AS2Util.switchToFallbackCertificate(msg, rejection("decryption-failed"));
+        msg.getPartnership().getReceiverIDs().put(Partnership.PID_X509_ALIAS_FALLBACK, "partnera_newer");
+
+        assertEquals("partnera_newer", AS2Util.resolveOutboundAlias(msg, Partnership.PTYPE_RECEIVER),
+                "the alias used, and logged, must be the one configured at the time of the resend");
     }
 
     /* ------------------------------------------------------------------------------------- fixtures */

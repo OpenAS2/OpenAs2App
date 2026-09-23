@@ -8,6 +8,7 @@ import org.openas2.DispositionException;
 import org.openas2.OpenAS2Exception;
 import org.openas2.Session;
 import org.openas2.cert.CertificateFactory;
+import org.openas2.cert.CertificateNotFoundException;
 import org.openas2.lib.helper.BCCryptoHelper;
 import org.openas2.lib.helper.ICryptoHelper;
 import org.openas2.lib.message.AS2Standards;
@@ -33,6 +34,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -96,12 +98,27 @@ public class AS2Util {
     }
 
     /**
+     * Reports an MDN whose signature did not verify, keeping the verification failure as the cause.
+     *
+     * @param msg - the message the MDN is for
+     * @param alias - the alias of the certificate the signature was checked against
+     * @param e - the verification failure
+     * @return the exception to throw
+     */
+    private static OpenAS2Exception mdnSignatureFailure(Message msg, String alias, SignatureException e) {
+        LoggerFactory.getLogger(AS2Util.class).error("The MDN signature was not verified by the certificate alias \"" + alias + "\": "
+                + org.openas2.util.Logging.getExceptionMsg(e) + msg.getLogMsgID(), e);
+        return new OpenAS2Exception("Failed to verify signature of received MDN.", e);
+    }
+
+    /**
      * @param msg- the AS2 message that is being processed
      * @param receiver - the receivers X509 certificate
      * @return - a boolean indicating if the extracted response indicated an issue processing the AS2 message that was sent. Message state is NOT updated in this method.
+     * @throws SignatureException - thrown if the MDN is signed but the signature does not verify against the given certificate
      * @throws OpenAS2Exception - thrown if there are issues trying to extract the response from the partner
      */
-    public static boolean parseMDN(Message msg, X509Certificate receiver) throws OpenAS2Exception {
+    public static boolean parseMDN(Message msg, X509Certificate receiver) throws OpenAS2Exception, SignatureException {
         Logger logger = LoggerFactory.getLogger(AS2Util.class);
         MessageMDN mdn = msg.getMDN();
         MimeBodyPart mainPart = mdn.getData();
@@ -119,6 +136,9 @@ public class AS2Util {
                 // the signature verifier will return the signed content as a MimeBodyPart
                 mainPart = getCryptoHelper().verifySignature(mainPart, receiver);
             }
+        } catch (SignatureException e) {
+            // Left to the caller, which can retry with a fallback certificate
+            throw e;
         } catch (Exception e1) {
             logger.error("Error parsing MDN: " + org.openas2.util.Logging.getExceptionMsg(e1), e1);
             throw new OpenAS2Exception("Failed to verify signature of received MDN.");
@@ -410,13 +430,29 @@ public class AS2Util {
      * @throws OpenAS2Exception if no alias is configured for that side
      */
     public static String resolveOutboundAlias(Message msg, String partnershipType) throws OpenAS2Exception {
-        boolean useFallback = Message.FALLBACK_STATE_IN_USE.equals(msg.getAttribute(fallbackStateAttributeFor(partnershipType)));
-        String alias = msg.getPartnership().getAliasOrFallback(partnershipType, useFallback);
-        if (useFallback) {
-            LoggerFactory.getLogger(AS2Util.class).info("Retrying with the fallback " + partnershipType
-                    + " certificate alias \"" + alias + "\" after the partner rejected the primary" + msg.getLogMsgID());
+        String stateAttribute = fallbackStateAttributeFor(partnershipType);
+        if (!Message.FALLBACK_STATE_IN_USE.equals(msg.getAttribute(stateAttribute))) {
+            return msg.getPartnership().getAlias(partnershipType);
         }
-        return alias;
+        Logger logger = LoggerFactory.getLogger(AS2Util.class);
+        String fallbackAlias = msg.getPartnership().getAliasFallback(partnershipType);
+        if (fallbackAlias != null) {
+            logger.info("Retrying with the fallback " + partnershipType + " certificate alias \"" + fallbackAlias
+                    + "\" after the partner rejected the primary" + msg.getLogMsgID());
+            return fallbackAlias;
+        }
+        /*
+         * The message was flagged for the fallback but the partnership no longer configures one, which
+         * happens when the partnership is updated between resends, typically because the overlap has
+         * been completed. Clear the flag so this send is reported as what it is, a send on the primary,
+         * and so a later acceptance is not reported as a certificate switch that never took place.
+         */
+        msg.getAttributes().remove(stateAttribute);
+        String primaryAlias = msg.getPartnership().getAlias(partnershipType);
+        logger.warn("The message was flagged to retry with the fallback " + partnershipType
+                + " certificate but the partnership no longer has a fallback alias configured, so the primary alias \""
+                + primaryAlias + "\" is used" + msg.getLogMsgID());
+        return primaryAlias;
     }
 
     /**
@@ -717,31 +753,39 @@ public class AS2Util {
         boolean mdnParsed;
         try {
             mdnParsed = AS2Util.parseMDN(msg, senderCert);
-        } catch (OpenAS2Exception e) {
+        } catch (SignatureException primaryFailure) {
             /*
-             * Verifying the MDN signature fails locally when the partner has rotated the certificate
-             * it signs with, so retry with the fallback before treating this as an error. Parsing
-             * throws before it reads anything out of the report, so retrying is safe.
+             * Only a signature that does not verify is retried: that is what happens when the partner
+             * has rotated the certificate it signs MDNs with. Any other failure is not a certificate
+             * problem, so it is left to propagate from parseMDN unchanged. The signature is checked
+             * before anything is read out of the report, so retrying is safe.
              */
             String fallbackAlias = mdn.getPartnership().getAliasFallback(Partnership.PTYPE_RECEIVER);
             if (fallbackAlias == null) {
-                throw e;
+                throw mdnSignatureFailure(msg, x509_alias, primaryFailure);
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("Verifying the MDN with the primary certificate failed so trying the fallback alias: " + fallbackAlias + msg.getLogMsgID());
             }
+            X509Certificate fallbackCert;
             try {
-                mdnParsed = AS2Util.parseMDN(msg, cFx.getCertificate(fallbackAlias));
-            } catch (Exception fallbackFailure) {
+                fallbackCert = cFx.getCertificate(fallbackAlias);
+            } catch (CertificateNotFoundException missing) {
+                // A configuration problem worth reporting in its own right, but the primary's failure is the diagnostic
+                logger.error("The fallback alias \"" + fallbackAlias + "\" configured for the partner is not in the keystore"
+                        + " so it cannot be used to verify the MDN" + msg.getLogMsgID());
+                throw mdnSignatureFailure(msg, x509_alias, primaryFailure);
+            }
+            try {
+                mdnParsed = AS2Util.parseMDN(msg, fallbackCert);
+            } catch (SignatureException fallbackFailure) {
                 /*
-                 * The fallback did not work either, or is not in the keystore at all. Report the
-                 * original failure rather than this one: the primary is the configured certificate and
-                 * its error is the meaningful diagnostic, while a fallback that cannot be used is a
-                 * configuration problem worth logging separately.
+                 * The fallback did not verify it either. Report the primary's failure since the primary is
+                 * the configured certificate, but record that the fallback was tried as well.
                  */
-                logger.error("The MDN was not verified by the fallback alias \"" + fallbackAlias + "\" either: "
+                logger.error("The MDN signature was not verified by the fallback alias \"" + fallbackAlias + "\" either: "
                         + org.openas2.util.Logging.getExceptionMsg(fallbackFailure) + msg.getLogMsgID());
-                throw e;
+                throw mdnSignatureFailure(msg, x509_alias, primaryFailure);
             }
             // Succeeded on the fallback, so the partner has switched to their new certificate
             logger.warn(LOG_MSG_PARTNER_CERT_SWITCHED + mdn.getPartnership().getReceiverID(Partnership.PID_NAME) + msg.getLogMsgID());
