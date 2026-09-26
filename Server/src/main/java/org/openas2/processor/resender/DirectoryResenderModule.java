@@ -172,12 +172,15 @@ public class DirectoryResenderModule extends BaseResenderModule {
 
         try {
             try {
-                ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-                String method = (String) ois.readObject();
-                int retries = Integer.parseInt((String) ois.readObject());
-                retries++;
-                msg = (Message) ois.readObject();
-                ois.close();
+                String method;
+                int retries;
+                // Closed by hand before, so a file that failed to deserialise leaked the descriptor
+                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                    method = (String) ois.readObject();
+                    retries = Integer.parseInt((String) ois.readObject());
+                    retries++;
+                    msg = (Message) ois.readObject();
+                }
 
                 // Transmit the message
                 if (logger.isInfoEnabled()) {

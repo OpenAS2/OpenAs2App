@@ -432,12 +432,13 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
     }
 
     public void load(String filename, char[] password) throws OpenAS2Exception {
-        try {
-            FileInputStream fIn = new FileInputStream(filename);
-
+        /*
+         * load(InputStream, char[]) throws OpenAS2Exception, which the catch below does not cover, so
+         * closing it by hand leaked the descriptor on every failed load. The keystore is reloaded on a
+         * schedule, so a keystore that consistently fails to load leaked one descriptor per refresh.
+         */
+        try (FileInputStream fIn = new FileInputStream(filename)) {
             load(fIn, password);
-
-            fIn.close();
         } catch (IOException ioe) {
             throw new WrappedException(ioe);
         }
@@ -497,12 +498,10 @@ public class X509CertificateFactory extends BaseCertificateFactory implements Al
     }
 
     public void save(String filename, char[] password) throws OpenAS2Exception {
-        try {
-            FileOutputStream fOut = new FileOutputStream(filename, false);
-
+        // Same as load above: save(OutputStream, char[]) throws OpenAS2Exception, so a failed save
+        // leaked a descriptor, and an output one held open on the keystore at that
+        try (FileOutputStream fOut = new FileOutputStream(filename, false)) {
             save(fOut, password);
-
-            fOut.close();
         } catch (IOException ioe) {
             throw new WrappedException(ioe);
         }
