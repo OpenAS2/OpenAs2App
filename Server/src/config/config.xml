@@ -77,7 +77,7 @@
                reject_unsigned_messages="false"
                partnershipPollersDisabled="false"
                pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
-               pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
+               pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.yyyy$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
                pollerConfigBase.interval="5"
                pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
                pollerConfigBase.sendfilename="true"
@@ -162,7 +162,7 @@
               receiver_id_property="receiver_as2_id"
               filepath_property="filepath"
               filename_property="filename"
-              errordir="$properties.storageBaseDir$/outbox/error/$date.YYYY$-$date.MM$-$date.dd$"
+              errordir="$properties.storageBaseDir$/outbox/error/$date.yyyy$-$date.MM$-$date.dd$"
               sentdir="$properties.storageBaseDir$/sent"
               mimetype="application/EDI-X12"/>
       -->
