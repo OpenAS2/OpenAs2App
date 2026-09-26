@@ -12,7 +12,7 @@ The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on
 Version UNRELEASED
 ===========================
 
-This is a bugfix release.
+This is a minor enhancement and bugfix release.
 1. Fix the partnerships file gaining blank lines every time it is stored. The parser kept the newlines and indentation
    between elements as text nodes and the serializer added indentation of its own without removing them, so each save
    wrote the original whitespace plus another layer. A file grew without bound through the life of a deployment because
@@ -24,12 +24,24 @@ This is a bugfix release.
    reverted by the next refresh. The endpoint now stores the partnerships after a successful update, as it already did
    after an add or a delete. The database partnership store was unaffected because it persists each change in its own
    transaction.
-3. Fix file descriptors being leaked when an operation that opens a stream fails. The keystore load and save opened the
-   stream, called through to the overload that does the work and closed the stream afterwards, but that overload throws
-   OpenAS2Exception which the catch around it did not cover, so a failure skipped the close. The keystore is reloaded on a
-   schedule, so a keystore that consistently failed to load leaked a descriptor every refresh until the process ran out of
-   them. The same pattern was fixed in the resender, which leaked on a resend file that failed to deserialise, in the
-   network module error handler, and in the command registry refresh, which never closed its stream on any path.
+3. Fix a directory poller running in parallel mode leaving its thread pool behind when it is stopped. Partnership pollers
+   are destroyed and rebuilt whenever the partnerships are reloaded, and a pool whose threads are still alive keeps itself
+   and everything it references from being collected, so a reload leaked one pool per poller for the life of the process.
+   Stopping a poller now shuts its pool down, letting a file that is part way through being sent finish first, and starting
+   a poller again gives it a usable pool. Only "process_files_in_parallel" deployments were affected as no pool is created
+   otherwise.
+4. Make the "x509_alias_fallback" certificate overlap work in both directions instead of only when receiving. Previously a
+   fallback certificate was only tried when decrypting an inbound message or verifying an inbound signature, so a partner
+   rotating their certificate still broke sending, and rotating your own certificate broke the MDN you return. Now:
+   - sending retries with the fallback when the partner rejects a message as undecryptable or unauthenticated, identified
+     from the disposition it returns, so outbound traffic survives a rotation without both sides switching simultaneously,
+   - verifying the MDN a partner returns falls back the same way inbound verification already did,
+   - the MDN returned for an inbound message is signed with whichever of your certificates actually decrypted it, so a
+     partner still holding your previous certificate can verify it.
+   The fallback is only used when one is configured for that side and is tried once: if it is rejected as well the message
+   goes back to the primary alias for any remaining retries. A message failing for any other reason behaves exactly as
+   before. A partnership that requests no MDN gets no fallback when sending because there is no response to act on. See
+   the comment in partnerships.xml and the certificate section of the HowTo for the rollover procedure.
 
 Version 4.12.0 2026-09-09
 ===========================

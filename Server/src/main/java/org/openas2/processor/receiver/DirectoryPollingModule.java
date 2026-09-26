@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public abstract class DirectoryPollingModule extends PollingModule {
@@ -33,6 +34,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
     public static final String PARAM_MAX_FILE_PROCESSING_TIME_MINUTES = "max_file_processing_time_minutes";
 
     private final int MAX_FILE_PROCESSING_TIME_DEFAULT_MINUTES = 30;
+    /** How long stopping waits for files already being sent before leaving them to finish on their own. */
+    private static final int SHUTDOWN_WAIT_SECONDS = 10;
 
     // Files that have been registered by the poller - key is the absolute file path and value is the file size
     private Map<String, Long> trackedFiles = new HashMap<String, Long>(); 
@@ -99,6 +102,50 @@ public abstract class DirectoryPollingModule extends PollingModule {
         } catch (IOException e) {
             throw new OpenAS2Exception("Failed to initialise directory poller.", e);
         }
+    }
+
+    @Override
+    public void doStart() throws OpenAS2Exception {
+        /*
+         * A poller that was stopped and started again needs a usable pool: the one it had was shut down
+         * by doStop and a shut down pool rejects everything handed to it.
+         */
+        if (processFilesAsThreads && (executorService == null || executorService.isShutdown())) {
+            executorService = Executors.newFixedThreadPool(maxProcessingThreads);
+        }
+        super.doStart();
+    }
+
+    @Override
+    public void doStop() throws OpenAS2Exception {
+        super.doStop();
+        /*
+         * The pool has to be shut down with the poller that owns it. Partnership pollers are destroyed
+         * and rebuilt whenever the partnerships are reloaded, and a pool whose threads are still alive
+         * is reachable from those threads, so leaving it behind leaked the pool and everything it holds
+         * on every reload.
+         */
+        if (executorService != null) {
+            /*
+             * Refuse new work but let a file that is part way through being sent finish: interrupting a
+             * transmission would leave the partner with an incomplete message and this side unsure
+             * whether it arrived. The threads end once that work drains.
+             */
+            executorService.shutdown();
+            try {
+                if (!executorService.awaitTermination(SHUTDOWN_WAIT_SECONDS, TimeUnit.SECONDS)) {
+                    logger.warn("Directory poller for " + getOutboxDir() + " still had files in progress after "
+                            + SHUTDOWN_WAIT_SECONDS + " seconds. Its threads will end when that work completes.");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /** Exposed so a test can check the pool is not left running when the poller stops. */
+    ExecutorService getExecutorService() {
+        return executorService;
     }
 
     @Override

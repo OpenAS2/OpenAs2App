@@ -361,7 +361,11 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     msg.setReceiverX509Alias(x509_alias_fallback);
                     // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback
                     // Send a message so that the certificate can be updated.
-                    LOG.warn("Partner has updated our certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getReceiverID(Partnership.PID_NAME));
+                    /*
+                     * Name the sender: on an inbound partnership the receiver is us, so reporting the
+                     * receiver named this server rather than the partner to coordinate with.
+                     */
+                    LOG.warn(AS2Util.LOG_MSG_OUR_CERT_SWITCHED + msg.getPartnership().getSenderID(Partnership.PID_NAME) + msg.getLogMsgID());
                 }
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after decryption: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
@@ -413,7 +417,7 @@ public class AS2ReceiverHandler implements NetModuleHandler {
                     msg.setSenderX509Alias(x509_alias_fallback);
                     // TODO: Automatically switch the alias in the partnerships.xml file and remove the fallback
                     // Send a message so that the certificate can be updated.
-                    LOG.warn("Partner has updated their certificate. Switch the fallback alias and remove the X509 fallback for the partner: " + msg.getPartnership().getSenderID(Partnership.PID_NAME));
+                    LOG.warn(AS2Util.LOG_MSG_PARTNER_CERT_SWITCHED + msg.getPartnership().getSenderID(Partnership.PID_NAME) + msg.getLogMsgID());
                 }
                 if (LOG.isTraceEnabled() && "true".equalsIgnoreCase(System.getProperty("logRxdMsgMimeBodyParts", "false"))) {
                     LOG.trace("Received MimeBodyPart for inbound message after signature verification: " + msg.getLogMsgID() + "\n" + MimeUtil.toString(msg.getData(), true));
@@ -646,8 +650,20 @@ public class AS2ReceiverHandler implements NetModuleHandler {
             CertificateFactory certFx = session.getCertificateFactory(CertificateFactory.COMPID_AS2_CERTIFICATE_FACTORY);
 
             try {
-                // The receiver of the original message is the sender of the MDN - sign with the receivers private key
-                String x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                /*
+                 * The receiver of the original message is the sender of the MDN so sign with the
+                 * receiver's private key. Prefer the alias that actually decrypted the message: while
+                 * our own certificate is being rotated the partner may still hold the previous one, and
+                 * signing the MDN with an identity they cannot verify would fail a transfer we have
+                 * otherwise accepted. Falls back to the configured primary when the inbound message was
+                 * not encrypted, since then there is nothing to indicate which one they hold.
+                 */
+                String x509_alias = mdn.getMessage() == null ? null : mdn.getMessage().getReceiverX509Alias();
+                if (x509_alias == null) {
+                    x509_alias = mdn.getPartnership().getAlias(Partnership.PTYPE_RECEIVER);
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug("Signing the MDN with the alias that decrypted the message: " + x509_alias);
+                }
                 X509Certificate senderCert = certFx.getCertificate(x509_alias);
                 PrivateKey senderKey = certFx.getPrivateKey(x509_alias);
                 Partnership p = mdn.getPartnership();
