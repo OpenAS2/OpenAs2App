@@ -1,15 +1,15 @@
 #              OpenAS2 Server
-#              Version 4.12.0
+#              Version 4.13.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.12.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.13.0
 
-The release download file is: OpenAS2Server-4.12.0.zip
+The release download file is: OpenAS2Server-4.13.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 17 to 21.
 
-Version UNRELEASED
+Version 4.13.0 2026-09-26
 ===========================
 
 This is a minor enhancement and bugfix release.
@@ -48,60 +48,6 @@ This is a minor enhancement and bugfix release.
    real cause and travelled past the handlers expecting an OpenAS2Exception. The "messages view" and chart commands built
    an error result for having no message tracking module and then discarded it, falling through to use the empty list
    anyway, so they failed with an IndexOutOfBoundsException instead of reporting the problem.
-
-Version 4.12.0 2026-09-09
-===========================
-
-This is a minor enhancement release.
-1. Add a migration tool that loads a partnerships XML file into the partner and partnership database tables read by
-   DbPartnershipFactory, so an existing XML configuration can be moved to the database store without being retyped:
-   bin/upgrade/migrate_partnerships_to_db.sh <partnerships.xml> <jdbc_url> <db_user> <db_password>. Sender and receiver
-   overrides and pollerConfig entries are carried across as their respective attribute categories, and values are stored
-   unresolved so placeholders such as $properties.storageBaseDir$ keep working. Pass --dry-run to validate the file and
-   see what would be written without touching the database, or --replace to overwrite partnerships already stored there.
-   The whole migration runs in one transaction, so a file that cannot be represented in the schema leaves it untouched.
-2. Add partial update support so a partner, partnership or certificate no longer has to be deleted and recreated to change
-   it. Previously "add" refused to overwrite an existing entry, so the only route was delete followed by recreate, which
-   loses the definition outright if the recreate fails. New "update" commands for partner and partnership merge only what
-   is supplied and leave everything else alone, working against both the XML and the database partnership store, and a new
-   PATCH API endpoint exposes them: PATCH /api/partner/<name>, PATCH /api/partnership/<name> and PATCH /api/cert/<alias>
-   with the attributes to change as form fields. Use pollerConfig.<attr> to change a partnership poller attribute and
-   sender.name or receiver.name to point a partnership at a different partner. For a certificate, send the base64 encoded
-   certificate in the "data" field to replace a partner certificate, or a base64 encoded PKCS12 in "data" plus the password
-   that opens it in "password" to replace a certificate and its private key together, which is what rotating an identity of
-   your own needs.
-3. Fix the PUT and DELETE API endpoints, which dropped the first character of the item name, and PUT and HEAD, which bound
-   a path parameter that was not in their path template and so never received the resource name.
-4. Fix replacing the key pair held under a keystore alias. Importing a PKCS12 over an alias that already held a private key
-   failed because the certificate was staged with setCertificateEntry first, which a keystore refuses on such an alias. The
-   key entry is now written in one operation, so "cert import <alias> <file.p12> <password>" and the certificate PATCH can
-   both rotate an existing identity. The previous key pair is left in place unless the new one is written successfully, and
-   the entry is stored under the keystore password so it can be read back.
-
-Version 4.12.0 - 2026-09-02
-===========================
-
-This is a minor enhancement release.
-1. Add an API endpoint to download the stored MDN for a message: GET /api/messages/mdn/<msgId>, where <msgId> is the AS2
-   message ID of the message the MDN was returned for, URL encoded. The MDN is returned as a file attachment. Responds with
-   404 both when the message ID is unknown and when the MDN it recorded is no longer on disk, with different messages for
-   the two cases. Requires the DB tracking module and a storage module that records the MDN file path (see the
-   mdn_file_path column added in 4.9.0).
-2. Add a "partnershipPollersDisabled" property that globally suppresses every directory poller declared in a partnership.
-   It defaults to "false" so existing configurations are unaffected. Setting it to "true" stops the instance sending from
-   any outbox directory while it continues to receive normally, which allows a single partnerships file (or database) to be
-   shared between a sending instance and a receiving only instance instead of maintaining a second copy with every outbound
-   pollerConfig turned off. It can be set in the config.xml properties element or in the OpenAS2 properties file, so a
-   containerised deployment can share one config.xml and decide per instance. Poller modules declared directly as a
-   "module" element in config.xml are not affected by it.
-
-
-Version 4.10.0 - 2026-08-17
-===========================
-
-This is a minor enhancement  release
-1. Remove support for anything below Java 17 necessitated by dependent Java packages,
-2. Do not cause server to stop when duplicate partnership is detected. Instead log error and ignore the duplicate.
 
 
 ## Upgrade Notes
