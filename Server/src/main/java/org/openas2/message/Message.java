@@ -26,6 +26,21 @@ public interface Message extends Serializable {
     String MSG_STATUS_MSG_CLEANUP = "cleanup";
     String MSG_STATUS_MSG_TERMINATED_IN_ERROR = "terminated_in_error";
 
+    /*
+     * Tracks whether the fallback certificate is being used for one side of a partnership after a
+     * partner rejected the message for a reason a certificate rotation would explain. Held as a
+     * message attribute so that it can be carried across a resend.
+     *
+     * Unset means the primary certificate is in use. FALLBACK_STATE_IN_USE means the next send uses
+     * the fallback. FALLBACK_STATE_EXHAUSTED means the fallback was tried and rejected as well, so
+     * the certificate was not the problem and the primary is used for whatever retries remain.
+     */
+    String MA_SENDER_ALIAS_FALLBACK_STATE = "sender_x509_alias_fallback_state";
+    String MA_RECEIVER_ALIAS_FALLBACK_STATE = "receiver_x509_alias_fallback_state";
+
+    String FALLBACK_STATE_IN_USE = "in_use";
+    String FALLBACK_STATE_EXHAUSTED = "exhausted";
+
     String MSG_STATE_SEND_START = "msg_send_start";
     String MSG_STATE_SEND_EXCEPTION = "msg_send_exception";
     String MSG_STATE_SEND_FAIL = "msg_send_fail";
