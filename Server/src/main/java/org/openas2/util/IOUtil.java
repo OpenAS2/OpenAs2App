@@ -166,8 +166,15 @@ public class IOUtil {
 
             // move the file
             destFile = IOUtil.moveFile(file, destFile, false);
-        } catch (IOException ioe) {            
-            InvalidMessageException im = new InvalidMessageException("Failed to move " + file.getAbsolutePath() + " to directory " + destFile.getAbsolutePath());
+        } catch (IOException ioe) {
+            /*
+             * destFile is still null when it was creating the archive directory that failed, which is
+             * what happens when that directory cannot be created: on a read only or unavailable mount
+             * for instance. Reporting it through destFile threw a NullPointerException that replaced
+             * the real cause, in the handler that runs after a message has already failed.
+             */
+            InvalidMessageException im = new InvalidMessageException("Failed to move " + file.getAbsolutePath()
+                    + " to directory " + (destFile == null ? archiveDirectory : destFile.getAbsolutePath()));
             im.initCause(ioe);
             throw im;
         }

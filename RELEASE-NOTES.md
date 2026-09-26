@@ -42,6 +42,12 @@ This is a minor enhancement and bugfix release.
    goes back to the primary alias for any remaining retries. A message failing for any other reason behaves exactly as
    before. A partnership that requests no MDN gets no fallback when sending because there is no response to act on. See
    the comment in partnerships.xml and the certificate section of the HowTo for the rollover procedure.
+5. Fix two error paths that failed on their own. Archiving a file into the error directory built its failure message out
+   of a destination it had not worked out yet when it was creating that directory that failed, so an error directory that
+   could not be created, as happens on a read only or unavailable mount, produced a NullPointerException that replaced the
+   real cause and travelled past the handlers expecting an OpenAS2Exception. The "messages view" and chart commands built
+   an error result for having no message tracking module and then discarded it, falling through to use the empty list
+   anyway, so they failed with an IndexOutOfBoundsException instead of reporting the problem.
 
 Version 4.12.0 2026-09-09
 ===========================
