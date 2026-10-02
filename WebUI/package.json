@@ -17,7 +17,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^3.8.4",
     "lodash": "^4.18.1",
-    "moment": "^2.29.3",
+    "moment": "^2.31.0",
     "moment-timezone": "^0.5.35",
     "sweetalert2": "^11.22.4",
     "vee-validate": "^2.2.0",
