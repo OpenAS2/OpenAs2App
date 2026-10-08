@@ -84,6 +84,8 @@ public class HTTPUtil {
     public static final String SSL_KEYSTORE_PASSWORD_ENV = "SSL_KEYSTORE_PASSWORD";
     private static Set<String> cachedFingerprints = ConcurrentHashMap.newKeySet();
     private static KeyStore cachedJavaKeyStore = null;
+    // The trust store a null KeyStore resolves to, which is the JVM's own. Only replaced by tests.
+    static KeyStore jvmTrustStore = null;
 
     private static final Logger LOG = LoggerFactory.getLogger(HTTPUtil.class);
 
@@ -494,7 +496,12 @@ public class HTTPUtil {
                 }
             };
         } else if(selfsignedCertsKeystore != null) {
-            SelfSignedTrustManager tm = new SelfSignedTrustManager((X509TrustManager) tmf.getTrustManagers()[0]);
+            X509TrustManager trustManager = (X509TrustManager) tmf.getTrustManagers()[0];
+            if (isExtendedSelfsignedTrustCheck) {
+                // The SSL trust keystore adds to the certificates the JVM trusts rather than replacing them
+                trustManager = MultiKeyStoreTrustManager.forKeyStores(selfsignedCertsKeystore, jvmTrustStore);
+            }
+            SelfSignedTrustManager tm = new SelfSignedTrustManager(trustManager);
             if (isTrustSelfSignedCNHandling) {
                 tm.setTrustCN(selfSignedCN);
             }
