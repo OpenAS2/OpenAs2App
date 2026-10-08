@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Verifies how files left in the pending folder at startup are told apart.
@@ -115,6 +116,30 @@ public class InterruptedSendReportTest {
 
         assertEquals(1, findings.size());
         assertEquals(Status.MAY_HAVE_BEEN_SENT, findings.get(0).getStatus());
+    }
+
+    @Test
+    public void unreadableFilesAreNotLeftOpen() throws Exception {
+        // Counted through /proc, so only where that exists; Windows shows the leak by refusing to delete
+        File descriptors = new File("/proc/self/fd");
+        assumeTrue(descriptors.isDirectory(), "needs /proc to count open files");
+        payload("invoice-7.edi");
+        byte[] notSerialized = "not a serialized object".getBytes(StandardCharsets.UTF_8);
+        Files.write(new File(pendingInfoDir, "MSG-7@openas2test").toPath(), notSerialized);
+        Files.write(new File(resendDir, "resend-7").toPath(), notSerialized);
+        // The stored message is only read for a send whose pending information could be read
+        File started = payload("invoice-8.edi");
+        pendingInfo("MSG-8@openas2test", started);
+        Files.write(new File(started.getPath() + ".object").toPath(), notSerialized);
+        find();
+        int before = descriptors.list().length;
+
+        for (int i = 0; i < 20; i++) {
+            find();
+        }
+
+        assertEquals(before, descriptors.list().length,
+                "a file whose contents cannot be read must still be closed, or Windows cannot delete it");
     }
 
     @Test

@@ -180,8 +180,12 @@ public class InterruptedSendReport {
             if (!infoFile.isFile()) {
                 continue;
             }
-            // Written by AS2SenderModule.storePendingInfo: the pending file is the fifth entry
-            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(infoFile))) {
+            /*
+             * Written by AS2SenderModule.storePendingInfo: the pending file is the fifth entry. The file
+             * stream is a resource of its own because the object stream's constructor reads a header and
+             * throws on a file that is not one, which would otherwise leave the file open.
+             */
+            try (FileInputStream file = new FileInputStream(infoFile); ObjectInputStream in = new ObjectInputStream(file)) {
                 for (int i = 0; i < 4; i++) {
                     in.readObject();
                 }
@@ -209,7 +213,7 @@ public class InterruptedSendReport {
                     continue;
                 }
                 // Written by DirectoryResenderModule.handle: the method, the retry count, then the message
-                try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(entry))) {
+                try (FileInputStream file = new FileInputStream(entry); ObjectInputStream in = new ObjectInputStream(file)) {
                     in.readObject();
                     in.readObject();
                     Message msg = (Message) in.readObject();
@@ -234,7 +238,7 @@ public class InterruptedSendReport {
         if (!storedMessage.isFile()) {
             return false;
         }
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(storedMessage))) {
+        try (FileInputStream file = new FileInputStream(storedMessage); ObjectInputStream in = new ObjectInputStream(file)) {
             Object msg = in.readObject();
             return msg instanceof AS2Message && ((AS2Message) msg).isConfiguredForAsynchMDN();
         } catch (IOException | ClassNotFoundException e) {
