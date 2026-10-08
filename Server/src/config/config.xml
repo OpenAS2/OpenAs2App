@@ -11,6 +11,7 @@
                as2_keystore="%home%/as2_certs.p12"
                as2_keystore_password="testas2"
                as2_keystore.refresh_interval="300"
+               shutdown_wait_seconds="25"
                ssl_trust_keystore.enabled="false"
                ssl_trust_keystore="%home%/ssl_trust_certs.p12"
                ssl_trust_keystore_password="testas2"

@@ -114,6 +114,25 @@ public interface Session {
     public void destroyPartnershipPollers(String configSourceFilter);
     public void destroyPartnershipPoller(String partnershipName);
 
+    /**
+     * The first step of shutting down: stops the pollers and the resender taking on new work, then
+     * waits for work they already have in progress, such as a file part way through being sent, so it
+     * is not cut off when the process exits. Work not started is left where it is to be picked up
+     * after the restart.
+     *
+     * @param timeoutMillis - the longest to wait in total, however many modules are busy
+     * @return true if everything in progress finished, false if the wait timed out first
+     */
+    public boolean drainWorkInProgress(long timeoutMillis);
+
+    /**
+     * Waits as {@link #drainWorkInProgress(long)} does, for the time set by the "shutdown_wait_seconds"
+     * property.
+     *
+     * @return true if everything in progress finished, false if the wait timed out first
+     */
+    public boolean drainWorkInProgress();
+
     String getBaseDirectory();
 
     String getAppVersion();
