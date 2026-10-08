@@ -19,6 +19,10 @@ ssl_trust_keystore=%home%/ssl_trust_certs.p12
 ssl_trust_keystore_password=testas2
 # The trusted Self Signed SSL certificates keystore interval in seconds checking for changed file
 ssl_trust_keystore.refresh_interval=300
+# Trust an HTTPS server that either the trusted SSL certificates keystore or the JVM trust store trusts.
+# Without this, enabling the keystore makes it the only source of trust, so partners with publicly
+# issued certificates are no longer trusted unless their root is added to it as well.
+ssl_trust_keystore.include_jvm_trust_store=false
 # The format of the logging entry timestamp
 log_date_format=yyyy-MM-dd HH:mm:ss.SSS
 # The SQL servers timestamp format - default is SQL92 so should work for most DB's

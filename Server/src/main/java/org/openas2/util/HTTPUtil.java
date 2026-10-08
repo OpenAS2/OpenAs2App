@@ -63,6 +63,13 @@ public class HTTPUtil {
     public static final String HTTP_PROP_REMOVE_HEADER_FOLDING = "remove_http_header_folding";
     public static final String HTTP_PROP_SSL_PROTOCOLS = "http_ssl_protocols";
     public static final String HTTP_PROP_OVERRIDE_SSL_CHECKS = "http_override_ssl_checks";
+    /*
+     * When the SSL trust keystore is enabled it is the only source of trust for outbound HTTPS, so
+     * enabling it to trust one partner stops every partner with a publicly issued certificate being
+     * trusted. Setting this to true trusts a server chain that either the SSL trust keystore or the
+     * JVM trust store trusts, so the keystore only ever adds to what is trusted.
+     */
+    public static final String HTTP_PROP_SSL_TRUST_INCLUDE_JVM_TRUST_STORE = "ssl_trust_keystore.include_jvm_trust_store";
 
     public static final String PARAM_READ_TIMEOUT = "readtimeout";
     public static final String PARAM_CONNECT_TIMEOUT = "connecttimeout";
@@ -84,6 +91,8 @@ public class HTTPUtil {
     public static final String SSL_KEYSTORE_PASSWORD_ENV = "SSL_KEYSTORE_PASSWORD";
     private static Set<String> cachedFingerprints = ConcurrentHashMap.newKeySet();
     private static KeyStore cachedJavaKeyStore = null;
+    // The trust store a null KeyStore resolves to, which is the JVM's own. Only replaced by tests.
+    static KeyStore jvmTrustStore = null;
 
     private static final Logger LOG = LoggerFactory.getLogger(HTTPUtil.class);
 
@@ -500,6 +509,12 @@ public class HTTPUtil {
             }
             tm.setCustomSelfSignedHandling(isExtendedSelfsignedTrustCheck);
             tm.setCustomTrustKeyStore(selfsignedCertsKeystore);
+            if (isExtendedSelfsignedTrustCheck
+                    && "true".equalsIgnoreCase(Properties.getProperty(HTTP_PROP_SSL_TRUST_INCLUDE_JVM_TRUST_STORE, "false"))) {
+                TrustManagerFactory jvmTmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                jvmTmf.init(jvmTrustStore);
+                tm.setJvmTrustManager((X509TrustManager) jvmTmf.getTrustManagers()[0]);
+            }
             if(isExtendedSelfsignedTrustCheck) {
                 hnv = new HostnameVerifier() {
                     @Override
@@ -814,6 +829,8 @@ public class HTTPUtil {
     private static class SelfSignedTrustManager implements X509TrustManager {
 
         private final X509TrustManager tm;
+        // Consulted only when the custom trust store rejects a chain, if it is set
+        private X509TrustManager jvmTm = null;
         private String[] trustCN = null;
         private KeyStore customTrustKeyStore = null;
         private boolean isExtendedSelfsignedTrustCheck = false;
@@ -826,8 +843,19 @@ public class HTTPUtil {
             this.tm = tm;
         }
 
+        public void setJvmTrustManager(X509TrustManager jvmTm) {
+            this.jvmTm = jvmTm;
+        }
+
         public X509Certificate[] getAcceptedIssuers() {
-            return tm.getAcceptedIssuers();
+            if (jvmTm == null) {
+                return tm.getAcceptedIssuers();
+            }
+            X509Certificate[] custom = tm.getAcceptedIssuers();
+            X509Certificate[] jvm = jvmTm.getAcceptedIssuers();
+            X509Certificate[] all = Arrays.copyOf(custom, custom.length + jvm.length);
+            System.arraycopy(jvm, 0, all, custom.length, jvm.length);
+            return all;
         }
 
         public void checkClientTrusted(X509Certificate[] chain, String authType) {
@@ -863,7 +891,24 @@ public class HTTPUtil {
                     }
                 }
             }
-            tm.checkServerTrusted(chain, authType);
+            try {
+                tm.checkServerTrusted(chain, authType);
+            } catch (CertificateException customStoreFailure) {
+                if (jvmTm == null) {
+                    throw customStoreFailure;
+                }
+                try {
+                    jvmTm.checkServerTrusted(chain, authType);
+                } catch (CertificateException jvmStoreFailure) {
+                    // Neither trusts it: report the SSL trust keystore's reason, keeping the other with it
+                    customStoreFailure.addSuppressed(jvmStoreFailure);
+                    throw customStoreFailure;
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Server certificate not trusted by the SSL trust keystore but trusted by the JVM trust store: "
+                            + chain[0].getSubjectX500Principal().getName());
+                }
+            }
         }
 
         private String getCertificateFingerprint(X509Certificate cert) throws CertificateException {

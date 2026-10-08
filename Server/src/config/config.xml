@@ -12,6 +12,7 @@
                as2_keystore_password="testas2"
                as2_keystore.refresh_interval="300"
                ssl_trust_keystore.enabled="false"
+               ssl_trust_keystore.include_jvm_trust_store="false"
                ssl_trust_keystore="%home%/ssl_trust_certs.p12"
                ssl_trust_keystore_password="testas2"
                ssl_trust_keystore.refresh_interval="300"

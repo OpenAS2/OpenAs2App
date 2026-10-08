@@ -9,6 +9,19 @@ The release download file is: OpenAS2Server-4.13.0.zip
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 17 to 21.
 
+Version UNRELEASED
+===========================
+
+This is a minor enhancement release.
+1. Add the "ssl_trust_keystore.include_jvm_trust_store" property so the SSL trust keystore can add to the certificates the
+   JVM already trusts for outbound HTTPS instead of replacing them. Enabling the SSL trust keystore made it the only source
+   of trust, so adding one partner's certificate to it stopped every partner with a publicly issued certificate being
+   trusted unless their root was added as well. With the property set to "true" a server is trusted if either the SSL trust
+   keystore or the JVM trust store trusts it. This is also how to connect to a partner whose HTTPS server presents only its
+   own certificate without the intermediate that issued it, which fails with "PKIX path building failed": import the
+   intermediate into the SSL trust keystore, which is reloaded without a restart, and set the property so other partners
+   are still trusted. The default is "false", which leaves the existing behaviour unchanged.
+
 Version 4.13.0 2026-09-26
 ===========================
 
