@@ -49,8 +49,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * not the intermediate that issued it, so the chain cannot be built from the JVM's trusted roots
  * alone. Putting the intermediate in the SSL trust keystore completes the chain, but enabling that
  * keystore used to make it the only source of trust, so every other partner with a publicly issued
- * certificate stopped being trusted. With "ssl_trust_keystore.include_jvm_trust_store" set the
- * keystore only adds to the JVM's trust, and without it the behaviour is exactly as before.
+ * certificate stopped being trusted. A chain is now trusted if either the keystore or the JVM trust
+ * store trusts it, whenever the keystore is defined.
  * <p>
  * The JVM trust store is stood in for by a generated store, so the "public" root is as trusted here
  * as a root in cacerts would be, without touching the real one.
@@ -99,7 +99,6 @@ public class HTTPUtilSslTrustStoreTest {
 
     @AfterEach
     public void resetTrust() {
-        Properties.getProperties().remove(HTTPUtil.HTTP_PROP_SSL_TRUST_INCLUDE_JVM_TRUST_STORE);
         HTTPUtil.jvmTrustStore = null;
     }
 
@@ -116,7 +115,6 @@ public class HTTPUtilSslTrustStoreTest {
     public void aLeafOnlyServerIsNotTrustedFromTheRootAlone() throws Exception {
         // The original problem: the root is trusted but the missing intermediate breaks the chain
         HTTPUtil.jvmTrustStore = trustStore(partnerRoot);
-        enableJvmTrust();
 
         assertChainNotTrusted(() -> get(partnerUrl, trustStore(publicRoot)),
                 "with no intermediate available anywhere the chain cannot be built");
@@ -128,38 +126,26 @@ public class HTTPUtilSslTrustStoreTest {
                 "an intermediate in the trust store is enough to trust the leaf it issued");
     }
 
-    /* ----------------------------------------- what enabling the keystore does to other partners */
+    /* ----------------------------------------- what defining the keystore does to other partners */
 
     @Test
-    public void withoutTheFlagTheKeystoreReplacesTheJvmTrustStore() throws Exception {
-        // Unchanged behaviour: the keystore is the only source of trust
+    public void aPartnerTrustedByTheJvmIsStillTrustedWhenTheKeystoreIsDefined() throws Exception {
         HTTPUtil.jvmTrustStore = trustStore(publicRoot);
-
-        assertChainNotTrusted(() -> get(publicPartnerUrl, trustStore(partnerIntermediate)),
-                "without the flag a partner trusted only by the JVM trust store must still be rejected");
-    }
-
-    @Test
-    public void withTheFlagAPartnerTrustedByTheJvmIsStillTrusted() throws Exception {
-        HTTPUtil.jvmTrustStore = trustStore(publicRoot);
-        enableJvmTrust();
 
         assertEquals(200, get(publicPartnerUrl, trustStore(partnerIntermediate)),
                 "adding one partner's intermediate must not stop other partners being trusted");
     }
 
     @Test
-    public void withTheFlagTheKeystoreIsStillHonoured() throws Exception {
+    public void theKeystoreIsStillHonouredAlongsideTheJvmTrustStore() throws Exception {
         HTTPUtil.jvmTrustStore = trustStore(publicRoot);
-        enableJvmTrust();
 
         assertEquals(200, get(partnerUrl, trustStore(partnerIntermediate)));
     }
 
     @Test
-    public void withTheFlagAServerNeitherStoreTrustsIsRejected() throws Exception {
+    public void aServerNeitherStoreTrustsIsRejected() throws Exception {
         HTTPUtil.jvmTrustStore = trustStore(publicRoot);
-        enableJvmTrust();
 
         assertChainNotTrusted(() -> get(untrustedUrl, trustStore(partnerIntermediate)),
                 "combining the stores must not trust anything that neither of them trusts");
@@ -180,10 +166,6 @@ public class HTTPUtilSslTrustStoreTest {
             }
         }
         throw new AssertionError(why + ", but it failed for a different reason: " + thrown, thrown);
-    }
-
-    private void enableJvmTrust() {
-        Properties.setProperty(HTTPUtil.HTTP_PROP_SSL_TRUST_INCLUDE_JVM_TRUST_STORE, "true");
     }
 
     private int get(String url, KeyStore sslTrustKeystore) throws Exception {
