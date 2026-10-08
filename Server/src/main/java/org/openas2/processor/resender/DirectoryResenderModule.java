@@ -95,6 +95,11 @@ public class DirectoryResenderModule extends BaseResenderModule {
         }
     }
 
+    /** @return the directory holding messages waiting to be resent */
+    public String getResendDirectory() {
+        return resendDirPath;
+    }
+
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
         super.init(session, options);
         resendDirPath = getParameter(PARAM_RESEND_DIRECTORY, true);
@@ -111,7 +116,7 @@ public class DirectoryResenderModule extends BaseResenderModule {
                 Iterator<File> fileIt = sendFiles.iterator();
                 File currentFile;
 
-                while (fileIt.hasNext()) {
+                while (fileIt.hasNext() && !isStopping()) {
                     currentFile = fileIt.next();
                     processFile(currentFile);
                 }

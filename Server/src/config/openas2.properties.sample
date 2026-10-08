@@ -19,6 +19,10 @@ ssl_trust_keystore=%home%/ssl_trust_certs.p12
 ssl_trust_keystore_password=testas2
 # The trusted Self Signed SSL certificates keystore interval in seconds checking for changed file
 ssl_trust_keystore.refresh_interval=300
+# The longest, in seconds, shutting down waits for files already being sent before the process exits.
+# Keep it below the time your platform allows before killing the process, such as the 30 seconds
+# Kubernetes allows by default (terminationGracePeriodSeconds).
+shutdown_wait_seconds=25
 # The format of the logging entry timestamp
 log_date_format=yyyy-MM-dd HH:mm:ss.SSS
 # The SQL servers timestamp format - default is SQL92 so should work for most DB's

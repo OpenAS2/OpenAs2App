@@ -80,6 +80,13 @@ public class OpenAS2Server {
     }
 
     public void shutdown() {
+        /*
+         * Without this the pollers were never stopped at all, because the processor does not hold them,
+         * and nothing waited for a file part way through being sent: the process exited underneath it,
+         * leaving the file stranded in the pending folder whether or not the partner had received it.
+         */
+        session.drainWorkInProgress();
+        session.destroyPartnershipPollers(null);
         try {
             session.getProcessor().stopActiveModules();
         } catch (OpenAS2Exception same) {
