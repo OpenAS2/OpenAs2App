@@ -314,6 +314,10 @@ public abstract class BaseSession implements Session {
             return;
         }
         String pollerDir = procmod.getParameters().get(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY);
+        if (pollerDir == null || pollerDir.length() == 0) {
+            throw new OpenAS2Exception("Poller is missing outboxdir parameter for partnership: " + partnershipName);
+        }
+        pollerDir = FileUtil.getNormalisedPath(pollerDir);
         try {
             checkPollerModuleConfig(pollerDir);
         } catch (OpenAS2Exception oae) {
