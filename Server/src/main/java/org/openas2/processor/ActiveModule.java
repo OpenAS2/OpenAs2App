@@ -21,4 +21,22 @@ public interface ActiveModule extends ProcessorModule {
      */
     boolean healthcheck(List<String> failures);
 
+    /**
+     * Stops the module taking on new work without interrupting work it already has in progress, as the
+     * first step of shutting down. Modules that do not start work of their own need do nothing.
+     */
+    default void stopTakingWork() {
+    }
+
+    /**
+     * Waits for work the module already had in progress when {@link #stopTakingWork()} was called.
+     *
+     * @param timeoutMillis - the longest to wait
+     * @return true if nothing is left in progress, false if the wait timed out first
+     * @throws InterruptedException if interrupted while waiting
+     */
+    default boolean awaitIdle(long timeoutMillis) throws InterruptedException {
+        return true;
+    }
+
 }

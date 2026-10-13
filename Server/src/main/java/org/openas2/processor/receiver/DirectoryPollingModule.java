@@ -125,7 +125,8 @@ public abstract class DirectoryPollingModule extends PollingModule {
          * is reachable from those threads, so leaving it behind leaked the pool and everything it holds
          * on every reload.
          */
-        if (executorService != null) {
+        // Already shut down when shutdown has waited for the pool itself, so there is nothing more to wait for
+        if (executorService != null && !executorService.isShutdown()) {
             /*
              * Refuse new work but let a file that is part way through being sent finish: interrupting a
              * transmission would leave the partner with an incomplete message and this side unsure
@@ -141,6 +142,20 @@ public abstract class DirectoryPollingModule extends PollingModule {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    @Override
+    public boolean awaitIdle(long timeoutMillis) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+        if (!super.awaitIdle(timeoutMillis)) {
+            return false;
+        }
+        if (executorService == null) {
+            return true;
+        }
+        // In parallel mode the files are sent by the pool, not by the poll that found them
+        executorService.shutdown();
+        return executorService.awaitTermination(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS);
     }
 
     /** Exposed so a test can check the pool is not left running when the poller stops. */
@@ -277,7 +292,10 @@ public abstract class DirectoryPollingModule extends PollingModule {
             @Override
             public void run() {
                 try {
-                    processSingleFile(file, fileEntryKey);
+                    // A file still queued when the poller stops is left in the outbox rather than started
+                    if (!isStopping()) {
+                        processSingleFile(file, fileEntryKey);
+                    }
                 } finally {
                     // Add to list for removal from tracking maps when updateTracking is called
                     threadProcessedFiles.add(fileEntryKey);
@@ -300,6 +318,10 @@ public abstract class DirectoryPollingModule extends PollingModule {
         // Use an iterator to be able to remove entries whilst iterating over the map.
         Iterator<Map.Entry<String, Long>> iter = trackedFiles.entrySet().iterator();
         while (iter.hasNext()) {
+            if (isStopping()) {
+                // Leave the files not yet started in the outbox to be sent after the restart
+                return;
+            }
             Map.Entry<String, Long> fileEntry = iter.next();
             // get the file and it's stored length
             String fileEntryKey = fileEntry.getKey();

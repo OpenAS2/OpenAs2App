@@ -18,6 +18,13 @@ public class Properties {
     public static final String AS2_MDN_RESP_MAX_WAIT_SECS = "as2_mdn_response_max_wait_seconds";
 
     public static final String LOG_INVALID_HTTP_REQUEST = "log_invalid_http_request";
+    /*
+     * How long shutting down waits for files already being sent before the process exits. Kept below
+     * the 30 seconds Kubernetes allows by default before it kills the process, so the wait is not
+     * itself cut off; raise both together for partners whose transfers take longer.
+     */
+    public static final String SHUTDOWN_WAIT_SECONDS = "shutdown_wait_seconds";
+    public static final String DEFAULT_SHUTDOWN_WAIT_SECONDS = "25";
 
     private static final Map<String, String> _properties = new HashMap<String, String>();
 
