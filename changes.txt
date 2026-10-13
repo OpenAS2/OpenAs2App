@@ -1,6 +1,6 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-Version UNRELEASED
+Version 4.14.0 2026-10-13
 ===========================
 
 This is a minor enhancement and bugfix release.
@@ -22,6 +22,7 @@ This is a minor enhancement and bugfix release.
    process. When the server starts it also logs a warning for each file an earlier, cut off send left in the pending
    folder, saying whether it was never transmitted and can be moved back to its outbox, or may have reached the partner
    and should be checked before being sent again.
+3. Normalise poller directory paths iwhen loading to better ensure there is only one poller per directory.
 
 Version 4.13.0 2026-09-26
 ===========================

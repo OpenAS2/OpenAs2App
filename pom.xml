@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.sf.openas2</groupId>
     <artifactId>OpenAS2</artifactId>
-    <version>4.13.0</version>
+    <version>4.14.0</version>
     <name>OpenAS2</name>
     <packaging>pom</packaging>
 
@@ -76,7 +76,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.20.0</version>
+                <version>3.21.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-cli</groupId>
@@ -164,7 +164,7 @@
 			<dependency>
 			    <groupId>ch.qos.logback</groupId>
 			    <artifactId>logback-classic</artifactId>
-			    <version>1.6.4</version>
+			    <version>1.6.5</version>
 			</dependency>
 			<dependency>
 			    <groupId>jakarta.ws.rs</groupId>
@@ -179,7 +179,7 @@
            <dependency>
                <groupId>org.glassfish.jersey.containers</groupId>
                <artifactId>jersey-container-grizzly2-http</artifactId>
-               <version>4.0.2</version>
+               <version>4.0.3</version>
                <type>jar</type>
            </dependency>
            <dependency>
@@ -196,13 +196,13 @@
            <dependency>
                <groupId>org.glassfish.jersey.media</groupId>
                <artifactId>jersey-media-json-jackson</artifactId>
-               <version>4.0.2</version>
+               <version>4.0.3</version>
                <type>jar</type>
            </dependency>
    		   <dependency>
    		    <groupId>org.glassfish.jersey.inject</groupId>
    		    <artifactId>jersey-hk2</artifactId>
-   		    <version>4.0.2</version>
+   		    <version>4.0.3</version>
            </dependency>
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>

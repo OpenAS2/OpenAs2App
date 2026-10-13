@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Properties;
 
 
@@ -29,6 +30,14 @@ public class FileUtil {
             }
         }
         return fileProps;
+    }
+
+    /**
+     * Get a normalised path for the file system path.
+     * 
+     */
+    public static String getNormalisedPath(String path) {
+        return Path.of(path).normalize().toString();
     }
 
     /** Attempts to extract the filename extension by searching for the last occurrence

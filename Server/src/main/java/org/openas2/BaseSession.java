@@ -11,6 +11,7 @@ import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.processor.sender.InterruptedSendReport;
+import org.openas2.util.FileUtil;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Node;
@@ -314,6 +315,10 @@ public abstract class BaseSession implements Session {
             return;
         }
         String pollerDir = procmod.getParameters().get(DirectoryPollingModule.PARAM_OUTBOX_DIRECTORY);
+        if (pollerDir == null || pollerDir.length() == 0) {
+            throw new OpenAS2Exception("Poller is missing outboxdir parameter for partnership: " + partnershipName);
+        }
+        pollerDir = FileUtil.getNormalisedPath(pollerDir);
         try {
             checkPollerModuleConfig(pollerDir);
         } catch (OpenAS2Exception oae) {
