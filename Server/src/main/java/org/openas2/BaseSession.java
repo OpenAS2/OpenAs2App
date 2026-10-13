@@ -11,6 +11,7 @@ import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.receiver.DirectoryPollingModule;
 import org.openas2.processor.sender.InterruptedSendReport;
+import org.openas2.util.FileUtil;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
 import org.w3c.dom.Node;
