@@ -9,7 +9,7 @@ The release download file is: OpenAS2Server-4.13.0.zip
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 17 to 21.
 
-Version UNRELEASED
+Version 4.14.0 2026-10-13
 ===========================
 
 This is a minor enhancement and bugfix release.
@@ -31,46 +31,7 @@ This is a minor enhancement and bugfix release.
    process. When the server starts it also logs a warning for each file an earlier, cut off send left in the pending
    folder, saying whether it was never transmitted and can be moved back to its outbox, or may have reached the partner
    and should be checked before being sent again.
-
-Version 4.13.0 2026-09-26
-===========================
-
-This is a minor enhancement and bugfix release.
-1. Fix the partnerships file gaining blank lines every time it is stored. The parser kept the newlines and indentation
-   between elements as text nodes and the serializer added indentation of its own without removing them, so each save
-   wrote the original whitespace plus another layer. A file grew without bound through the life of a deployment because
-   every change through the console or the API stores it. The layout whitespace is now discarded when the file is read, so
-   saving is idempotent and a file that has already accumulated blank lines is tidied the next time it is stored. Values
-   are untouched: only text nodes that are entirely whitespace are removed.
-2. Fix the PATCH API endpoint not persisting when partnerships are stored in the XML file. The update was applied to the
-   in-memory partnerships but the partnerships file was never written, so the change was lost on restart and silently
-   reverted by the next refresh. The endpoint now stores the partnerships after a successful update, as it already did
-   after an add or a delete. The database partnership store was unaffected because it persists each change in its own
-   transaction.
-3. Fix a directory poller running in parallel mode leaving its thread pool behind when it is stopped. Partnership pollers
-   are destroyed and rebuilt whenever the partnerships are reloaded, and a pool whose threads are still alive keeps itself
-   and everything it references from being collected, so a reload leaked one pool per poller for the life of the process.
-   Stopping a poller now shuts its pool down, letting a file that is part way through being sent finish first, and starting
-   a poller again gives it a usable pool. Only "process_files_in_parallel" deployments were affected as no pool is created
-   otherwise.
-4. Make the "x509_alias_fallback" certificate overlap work in both directions instead of only when receiving. Previously a
-   fallback certificate was only tried when decrypting an inbound message or verifying an inbound signature, so a partner
-   rotating their certificate still broke sending, and rotating your own certificate broke the MDN you return. Now:
-   - sending retries with the fallback when the partner rejects a message as undecryptable or unauthenticated, identified
-     from the disposition it returns, so outbound traffic survives a rotation without both sides switching simultaneously,
-   - verifying the MDN a partner returns falls back the same way inbound verification already did,
-   - the MDN returned for an inbound message is signed with whichever of your certificates actually decrypted it, so a
-     partner still holding your previous certificate can verify it.
-   The fallback is only used when one is configured for that side and is tried once: if it is rejected as well the message
-   goes back to the primary alias for any remaining retries. A message failing for any other reason behaves exactly as
-   before. A partnership that requests no MDN gets no fallback when sending because there is no response to act on. See
-   the comment in partnerships.xml and the certificate section of the HowTo for the rollover procedure.
-5. Fix two error paths that failed on their own. Archiving a file into the error directory built its failure message out
-   of a destination it had not worked out yet when it was creating that directory that failed, so an error directory that
-   could not be created, as happens on a read only or unavailable mount, produced a NullPointerException that replaced the
-   real cause and travelled past the handlers expecting an OpenAS2Exception. The "messages view" and chart commands built
-   an error result for having no message tracking module and then discarded it, falling through to use the empty list
-   anyway, so they failed with an IndexOutOfBoundsException instead of reporting the problem.
+3. Normalise poller directory paths iwhen loading to better ensure there is only one poller per directory.
 
 
 ## Upgrade Notes
