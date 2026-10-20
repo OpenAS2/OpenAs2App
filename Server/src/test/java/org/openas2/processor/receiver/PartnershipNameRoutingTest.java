@@ -2,7 +2,10 @@ package org.openas2.processor.receiver;
 
 import org.junit.jupiter.api.Test;
 import org.openas2.Session;
+import org.openas2.message.AS2Message;
 import org.openas2.message.Message;
+import org.openas2.params.InvalidParameterException;
+import org.openas2.params.MessageParameters;
 import org.openas2.partner.Partnership;
 import org.openas2.partner.XMLPartnershipFactory;
 
@@ -11,11 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Verifies that a partnership poller resolves the partnership it was declared in by name, so that
- * several partnerships between the same sender and receiver AS2 IDs can each send with their own
- * configuration instead of all using the first partnership that matches the ID pair.
+ * Verifies that a poller whose "defaults" include the partnership name (e.g.
+ * "..., name=$partnership.name$") resolves that partnership by name, so that several partnerships
+ * between the same sender and receiver AS2 IDs can each send with their own configuration instead
+ * of all using the first partnership that matches the ID pair.
  */
 public class PartnershipNameRoutingTest {
 
@@ -46,10 +51,11 @@ public class PartnershipNameRoutingTest {
                 return session;
             }
         };
-        module.setParameter(MessageBuilderModule.PARAM_DEFAULTS, DEFAULTS);
+        String defaults = DEFAULTS;
         if (partnershipName != null) {
-            module.setParameter(MessageBuilderModule.PARAM_PARTNERSHIP_NAME, partnershipName);
+            defaults += ", " + MessageParameters.KEY_NAME + "=" + partnershipName;
         }
+        module.setParameter(MessageBuilderModule.PARAM_DEFAULTS, defaults);
         return module;
     }
 
@@ -74,5 +80,12 @@ public class PartnershipNameRoutingTest {
         Message msg = poller("no-such-partnership").buildBaseMessage("test.edi");
 
         assertEquals("MyCompany-to-PartnerA", msg.getPartnership().getName());
+    }
+
+    @Test
+    public void unsupportedSinglePartKeyIsRejected() {
+        MessageParameters params = new MessageParameters(new AS2Message());
+
+        assertThrows(InvalidParameterException.class, () -> params.setParameters("foo=bar"));
     }
 }

@@ -10,12 +10,10 @@ import org.openas2.processor.ActiveModule;
 import org.openas2.processor.Processor;
 import org.openas2.processor.ProcessorModule;
 import org.openas2.processor.receiver.DirectoryPollingModule;
-import org.openas2.processor.receiver.MessageBuilderModule;
 import org.openas2.processor.sender.InterruptedSendReport;
 import org.openas2.util.FileUtil;
 import org.openas2.util.Properties;
 import org.openas2.util.XMLUtil;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import jakarta.activation.CommandMap;
@@ -311,12 +309,6 @@ public abstract class BaseSession implements Session {
     }
 
     public void loadPartnershipPoller(Node moduleNode, String partnershipName, String configSource) throws OpenAS2Exception {
-        // Tie the poller to its partnership by name so that partnerships sharing the same
-        // sender and receiver AS2 IDs each send using their own configuration. Pollers declared in
-        // config.xml are excluded since their "name" is only the defaults string or "generic"
-        if (PARTNERSHIP_POLLER.equals(configSource) && partnershipName != null && moduleNode instanceof Element) {
-            ((Element) moduleNode).setAttribute(MessageBuilderModule.PARAM_PARTNERSHIP_NAME, partnershipName);
-        }
         DirectoryPollingModule procmod = (DirectoryPollingModule) XMLUtil.getComponent(moduleNode, this);
         if (procmod == null) {
             // Must be disable so do nothing

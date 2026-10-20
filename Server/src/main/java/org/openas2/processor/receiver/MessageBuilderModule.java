@@ -53,8 +53,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
     public static final String PARAM_DELIMITERS = "delimiters";
     public static final String PARAM_MERGE_EXTRA = "mergeextratokens";
     public static final String PARAM_DEFAULTS = "defaults";
-    // Set automatically on pollers declared in a partnership so the message uses that exact partnership
-    public static final String PARAM_PARTNERSHIP_NAME = "partnership_name";
     public static final String PARAM_MIMETYPE = "mimetype";
     public static final String PARAM_RESEND_MAX_RETRIES = "resend_max_retries";
     // Note: When this option is enabled, you can also configure its quoting using "quote_send_file_name" at partnership-level
@@ -288,12 +286,6 @@ public abstract class MessageBuilderModule extends BaseReceiverModule {
             String mergeExtra = getParameter(PARAM_MERGE_EXTRA, "false");
             boolean mergeExtraTokens = "true".equalsIgnoreCase(mergeExtra);
             params.setParameters(format, delimiters, filename, mergeExtraTokens);
-        }
-        // A partnership poller knows its partnership by name, which takes precedence over the
-        // sender/receiver ID lookup so partnerships between the same partners are not confused
-        String partnershipName = getParameter(PARAM_PARTNERSHIP_NAME, false);
-        if (partnershipName != null && partnershipName.length() > 0) {
-            msg.getPartnership().setName(partnershipName);
         }
         // Should have sender/receiver now so update the message's partnership with any
         // stored information based on the identified partner IDs
