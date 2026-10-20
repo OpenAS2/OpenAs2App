@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
 public class MessageParameters extends ParameterParser {
     public static final String KEY_SENDER = "sender";
     public static final String KEY_RECEIVER = "receiver";
+    public static final String KEY_NAME = "name";
     public static final String KEY_ATTRIBUTES = "attributes";
     public static final String KEY_HEADERS = "headers";
     public static final String KEY_CONTENT_FILENAME = "content-disposition";
@@ -28,6 +29,15 @@ public class MessageParameters extends ParameterParser {
 
     public void setParameter(String key, String value) throws InvalidParameterException {
         StringTokenizer keyParts = new StringTokenizer(key, ".", false);
+
+        if (keyParts.countTokens() == 1) {
+            if (key.equals(KEY_NAME)) {
+                getTarget().getPartnership().setName(value);
+            } else {
+                throw new InvalidParameterException("Unsupported key identifier", this, key, null);
+            }
+            return;
+        }
 
         if (keyParts.countTokens() != 2) {
             throw new InvalidParameterException("Invalid key format", this, key, null);

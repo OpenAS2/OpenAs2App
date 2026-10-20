@@ -80,7 +80,7 @@
                pollerConfigBase.outboxdir="$properties.storageBaseDir$/outbox/$partnership.receiver.as2_id$"
                pollerConfigBase.errordir="$properties.storageBaseDir$/outbox/error/$date.yyyy$-$date.MM$-$date.dd$/$partnership.receiver.as2_id$"
                pollerConfigBase.interval="5"
-               pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
+               pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$, name=$partnership.name$"
                pollerConfigBase.sendfilename="true"
                pollerConfigBase.mimetype="application/EDI-X12"
                pollerConfigBase.process_files_in_parallel="false"
