@@ -12,20 +12,18 @@ import org.bouncycastle.asn1.cms.CMSAttributes;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.*;
-import org.bouncycastle.cms.bc.BcRSAKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyAgreeEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyAgreeRecipientInfoGenerator;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
 
 import org.bouncycastle.cms.jcajce.ZlibCompressor;
 import org.bouncycastle.cms.jcajce.ZlibExpanderProvider;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMECompressed;
 import org.bouncycastle.mail.smime.SMIMECompressedGenerator;
@@ -238,9 +236,11 @@ public class BCCryptoHelper implements ICryptoHelper {
                 KeyTransRecipientId certRecId = new KeyTransRecipientId(x500Name, x509Cert.getSerialNumber());
                 if (certRecId.match(recipientInfo) && !foundRecipient) {
                     foundRecipient = true;
+                    // The JCE recipient honours the key-encryption algorithm in the envelope
+                    // (RSA PKCS#1 v1.5 or RSAES-OAEP); the lightweight BcRSAKeyTransEnvelopedRecipient
+                    // always unwraps with PKCS#1 v1.5, so an OAEP-wrapped key fails with "block incorrect".
                     byte[] decryptedData = recipientInfo.getContent(
-                        new BcRSAKeyTransEnvelopedRecipient(PrivateKeyFactory.createKey(
-                            PrivateKeyInfo.getInstance(receiverKey.getEncoded())))
+                        new JceKeyTransEnvelopedRecipient((PrivateKey) receiverKey).setProvider("BC")
                     );
                     return SMIMEUtil.toMimeBodyPart(decryptedData);
                 }
