@@ -9,6 +9,19 @@ The release download file is: OpenAS2Server-4.13.0.zip
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 17 to 21.
 
+Version UNRELEASED
+===========================
+
+This is a minor enhancement and bugfix release.
+1. Fix the AS2 sender's "readtimeout" having no effect, and allow the send timeouts to be set per partnership. When
+   "sockettimeout" replaced "readtimeout" as the setting for how long to wait for a partner's response, the shipped
+   config.xml and the HowTo kept setting "readtimeout", which was then read and never applied, so sends always timed out
+   after 60 seconds whatever it said. "readtimeout" is honoured again as the socket timeout when "sockettimeout" is not
+   set. A partnership can also set its own "connecttimeout" and "sockettimeout" attributes, in milliseconds, so a slow
+   partner can be given longer without raising the timeout for every partner. Note that a "readtimeout" set in
+   openas2.properties now takes effect: the sample file sets module.AS2SenderModule.readtimeout=3000000, 50 minutes, so
+   check the value if your properties file was copied from it.
+
 Version 4.14.0 2026-10-13
 ===========================
 
