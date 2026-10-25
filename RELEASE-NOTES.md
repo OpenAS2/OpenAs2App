@@ -9,6 +9,16 @@ The release download file is: OpenAS2Server-4.13.0.zip
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 17 to 21.
 
+Version UNRELEASED
+===========================
+
+This is a minor enhancement and bugfix release.
+1. Fix the Docker image failing to build, and run OpenAS2 in it as an unprivileged user instead of root (issue #367).
+   The image built on Java 11 but the project compiles for Java 17, so "docker build" failed with "invalid target
+   release: 17". Both stages now use Java 21. The server now runs as the user "openas2" (UID 1000, group 0), since it
+   is usually exposed to the internet. Volumes mounted for the config and data folders must be writable by that user:
+   see the upgrade notes in RELEASE-NOTES.md and the README.
+
 Version 4.14.0 2026-10-13
 ===========================
 
@@ -40,6 +50,13 @@ This is a minor enhancement and bugfix release.
  Below are some specific things to focus on depending on which version you are upgrading from.
 
  **You must review all notes for the relevant intermediate versions from your version to this release version.**
+
+### Upgrading to a version after 4.14.0 if you run the OpenAS2 Docker image:
+      1. The image now runs OpenAS2 as the unprivileged user "openas2" (UID 1000, group 0) instead of root. Volumes
+         mounted for /opt/openas2/config and /opt/openas2/data must be writable by that user or the server will fail to
+         start with "Permission denied". Change their ownership (for example "chown -R 1000:0 ./config ./data"), set
+         fsGroup in a Kubernetes pod securityContext, or keep running as root with "docker run --user 0" while the
+         volumes are migrated. See the README for details.
 
 ### Upgrading to 4.6.1 or newer from any older version if using parallel processing mode:
       1. Ensure you change the property for enabling parallel mode by removing the 3rd consecutive "l" from "process_files_in_paralllel".
