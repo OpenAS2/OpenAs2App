@@ -9,6 +9,17 @@ The release download file is: OpenAS2Server-4.13.0.zip
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
 ## NOTE: Testing covers Java 17 to 21.
 
+Version UNRELEASED
+===========================
+
+This is a bugfix release.
+1. Fix message tracking records being left with an out of date state under load (issue #517). Each tracking event was
+   written to the database on a new thread of its own, and threads do not run in the order they are started, so when
+   several messages were being processed a message's events could be written out of order and an earlier state such as
+   "sending started" overwrite a later one such as "MDN received", leaving a delivered message recorded as still being
+   sent. The events are now written in order on one thread per tracking module, still without processing waiting on
+   the database, and shutting down waits for the events already queued so the record of what was just sent is not lost.
+
 Version 4.14.0 2026-10-13
 ===========================
 
