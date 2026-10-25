@@ -15,16 +15,79 @@ import org.openas2.processor.resender.ResenderModule;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public abstract class BaseMsgTrackingModule extends BaseProcessorModule implements TrackingModule {
+
+    /*
+     * Tracking events are written on one thread of the module's own, in the order they were handled.
+     * Each used to be written on a new thread of its own so that processing a message did not wait on
+     * the database, but threads do not run in the order they are started, so under load a message's
+     * events could be written out of order and an early state overwrite a later one: a message that
+     * had received its MDN could be left recorded as still being sent. One thread keeps the writes off
+     * the processing thread and in order.
+     */
+    private ExecutorService writer = newWriter();
+
+    private static ExecutorService newWriter() {
+        return Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "msg-tracking-writer");
+            // Must not keep the JVM alive once everything else has stopped
+            t.setDaemon(true);
+            return t;
+        });
+    }
 
     public void handle(String action, Message msg, Map<String, Object> options) throws OpenAS2Exception {
 
         Map<String, String> fields = buildMap(msg, options);
-        new Thread(() -> {
-        persist(msg, fields);
-        }).start();
+        try {
+            writer.execute(() -> persist(msg, fields));
+        } catch (RejectedExecutionException e) {
+            // The writer has been stopped, so write it here rather than lose it
+            persist(msg, fields);
+        }
+    }
 
+    /**
+     * Waits for the tracking events already handled to be written, so shutting down does not lose
+     * the record of what was just sent.
+     */
+    @Override
+    public boolean awaitIdle(long timeoutMillis) throws InterruptedException {
+        // The writer is first in first out, so once this runs everything handled before it is written
+        Future<?> marker;
+        try {
+            marker = writer.submit(() -> { });
+        } catch (RejectedExecutionException e) {
+            return true;
+        }
+        try {
+            marker.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        } catch (ExecutionException e) {
+            return true;
+        }
+    }
+
+    /** Gives a module started again after being stopped a writer to use. */
+    protected void startWriter() {
+        if (writer.isShutdown()) {
+            writer = newWriter();
+        }
+    }
+
+    /** Stops the writer once the events queued have been written; any handled afterwards are written directly. */
+    protected void stopWriter() {
+        writer.shutdown();
     }
 
     public void init(Session session, Map<String, String> options) throws OpenAS2Exception {
