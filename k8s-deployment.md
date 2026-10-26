@@ -63,6 +63,14 @@ spec:
       labels:
         app: openas2
     spec:
+      # The image runs as the unprivileged UID 1000. fsGroup makes block storage volumes writable by it;
+      # Azure Files and other SMB or NFS volumes ignore fsGroup, so set their ownership or permissions
+      # in the storage class mount options instead (for example uid=1000,gid=0).
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 0
+        fsGroup: 1000
       containers:
         - name: openas2
           image: myrepo/openas2app:latest

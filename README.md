@@ -76,10 +76,26 @@ You can then go to `http://localhost:4080` or `http://host-ip:4080` in a browser
 
 The default OpenAS2 environment in the image is:
 
-	OPENAS2_BASE:    /usr/local/tomcat
-	OPENAS2_HOME:    /usr/local/tomcat
-	OPENAS2_TMPDIR:  /usr/local/tomcat/temp
-	JAVA_HOME:       /usr/local/openjdk-11
+	OPENAS2_BASE:    /opt/openas2
+	OPENAS2_HOME:    /opt/openas2
+	OPENAS2_TMPDIR:  /opt/openas2/temp
+	JAVA_HOME:       /opt/java/openjdk (Java 21)
+
+### Running as a non-root user
+
+The image runs OpenAS2 as user `openas2` (UID `1000`) in group `0`, not as root. Anything mounted into the
+container that OpenAS2 writes to, normally `/opt/openas2/config` and `/opt/openas2/data`, must be writable by that
+user, or the server fails to start with `Permission denied`. A directory created by Docker for a bind mount is owned
+by root, so give it to the container user:
+
+```console
+$ sudo chown -R 1000:0 ./config ./data
+```
+
+A named Docker volume is initialised from the image the first time it is used, so it already has the right owner.
+
+To keep running as root instead, for example while existing volumes are migrated, override the user with
+`docker run --user 0`, or `user: "0"` in docker-compose.yml.
 
 The configuration files are available in `/opt/openas2/config/`.
 
