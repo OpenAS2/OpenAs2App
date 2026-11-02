@@ -15,13 +15,10 @@ import org.openas2.processor.resender.ResenderModule;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public abstract class BaseMsgTrackingModule extends BaseProcessorModule implements TrackingModule {
 
@@ -57,25 +54,13 @@ public abstract class BaseMsgTrackingModule extends BaseProcessorModule implemen
 
     /**
      * Waits for the tracking events already handled to be written, so shutting down does not lose
-     * the record of what was just sent.
+     * the record of what was just sent. The writer is stopped, so an event handled after this, for
+     * example by a receiver that is still running, is written directly by handle() instead.
      */
     @Override
     public boolean awaitIdle(long timeoutMillis) throws InterruptedException {
-        // The writer is first in first out, so once this runs everything handled before it is written
-        Future<?> marker;
-        try {
-            marker = writer.submit(() -> { });
-        } catch (RejectedExecutionException e) {
-            return true;
-        }
-        try {
-            marker.get(timeoutMillis, TimeUnit.MILLISECONDS);
-            return true;
-        } catch (TimeoutException e) {
-            return false;
-        } catch (ExecutionException e) {
-            return true;
-        }
+        writer.shutdown();
+        return writer.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS);
     }
 
     /** Gives a module started again after being stopped a writer to use. */

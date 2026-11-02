@@ -103,6 +103,19 @@ public class TrackingWriteOrderTest extends BaseServerSetup {
     }
 
     @Test
+    public void anEventHandledAfterWaitingForIdleIsStillWritten() throws Exception {
+        // Shutting down waits for the writer before the receivers stop, and they can still report events
+        RecordingTracker tracker = new RecordingTracker(0, 0);
+        track(tracker, "before");
+        assertTrue(tracker.awaitIdle(5000));
+
+        track(tracker, "after");
+
+        assertEquals(java.util.Arrays.asList("before", "after"), tracker.written,
+                "an event handled once the writer has stopped must be written, not dropped");
+    }
+
+    @Test
     public void aRestartedModuleWritesInTheBackgroundAgain() throws Exception {
         RecordingTracker tracker = new RecordingTracker(0, 300);
         tracker.stopWriter();
