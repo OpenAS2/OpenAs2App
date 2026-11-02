@@ -144,7 +144,7 @@ public class MDNSenderModule extends HttpSenderModule {
                 logger.debug("ASYNC MDN attempting connection to: " + url + mdn.getMessage().getLogMsgID());
             }
             long maxSize = msg.getPartnership().getNoChunkedMaxSize();
-            Map<String, Object> httpOptions = getHttpOptions();
+            Map<String, Object> httpOptions = getHttpOptions(msg.getPartnership());
             httpOptions.put(HTTPUtil.PARAM_HTTP_USER, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_USER));
             httpOptions.put(HTTPUtil.PARAM_HTTP_PWD, msg.getPartnership().getAttribute(HTTPUtil.PARAM_HTTP_PWD));
             // Mutual TLS client certificate - partnership attributes override global properties

@@ -13,6 +13,7 @@ import org.openas2.processor.Processor;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
@@ -29,6 +30,13 @@ public class InterruptedSendReportStartupTest extends BaseServerSetup {
     @BeforeAll
     public void setUp() throws Exception {
         super.createFileSystemResources(this.getClass().getName());
+        /*
+         * A pending folder of this test's own: the test configuration's is shared between test classes,
+         * and any file another test leaves there changes what the report can conclude about this one.
+         */
+        try (FileOutputStream fos = new FileOutputStream(openAS2PropertiesFile)) {
+            fos.write(("storageBaseDir=" + new File(configDir, "data").getAbsolutePath().replace('\\', '/') + "\n").getBytes());
+        }
         super.setup();
     }
 
