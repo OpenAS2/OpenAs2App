@@ -395,6 +395,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     public void start() throws OpenAS2Exception {
+        startWriter();
         if (useEmbeddedDB) {
             dbHandler = new EmbeddedDBHandler();
         } else {
@@ -406,6 +407,7 @@ public class DbTrackingModule extends BaseMsgTrackingModule {
     }
 
     public void stop() {
+        stopWriter();
         dbHandler.stop();
     }
 

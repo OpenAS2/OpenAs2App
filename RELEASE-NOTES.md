@@ -26,6 +26,12 @@ This is a minor enhancement and bugfix release.
    release: 17". Both stages now use Java 21. The server now runs as the user "openas2" (UID 1000, group 0), since it
    is usually exposed to the internet. Volumes mounted for the config and data folders must be writable by that user:
    see the upgrade notes in RELEASE-NOTES.md and the README.
+3. Fix message tracking records being left with an out of date state under load (issue #517). Each tracking event was
+   written to the database on a new thread of its own, and threads do not run in the order they are started, so when
+   several messages were being processed a message's events could be written out of order and an earlier state such as
+   "sending started" overwrite a later one such as "MDN received", leaving a delivered message recorded as still being
+   sent. The events are now written in order on one thread per tracking module, still without processing waiting on
+   the database, and shutting down waits for the events already queued so the record of what was just sent is not lost.
 
 Version 4.14.0 2026-10-13
 ===========================
