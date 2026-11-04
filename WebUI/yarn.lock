@@ -4033,10 +4033,10 @@ he@^1.2.0:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-highcharts@^12.0.2:
-  version "12.0.2"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-12.0.2.tgz#4f53248d3cd5a50b3042a9ebec309c70dc58f4d1"
-  integrity sha512-DKZFNn2Mk3EUmOfJIvIgPqBjUoKDkDW9WY1nT9zrhfB9SSyg5yVbVEFrw267C4+Hzg4U1H/0i0Z6S3VYJwg6qQ==
+highcharts@^12.6.2:
+  version "12.6.2"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-12.6.2.tgz#1d5fbbaa18bf7edc6ee7b16cb257e9476cc08d15"
+  integrity sha512-I089uxv6AN2+qIQGhOSzFMjZJFnW+TAuP3WaEj1qRrH7XN3UR8wYzPsoIYX1sDTdQiHl4KJwGd+4bAwhaF1/3w==
 
 highlight.js@^10.7.1:
   version "10.7.3"
