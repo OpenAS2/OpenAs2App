@@ -1,15 +1,15 @@
 #              OpenAS2 Server
-#              Version 4.13.0
+#              Version 4.15.0
 #              RELEASE NOTES
 -----
-The OpenAS2 project is pleased to announce the release of OpenAS2 4.13.0
+The OpenAS2 project is pleased to announce the release of OpenAS2 4.15.0
 
-The release download file is: OpenAS2Server-4.13.0.zip
+The release download file is: OpenAS2Server-4.15.0.zip
 
 The zip file contains a PDF document (OpenAS2HowTo.pdf) providing information on installing and using the application.
-## NOTE: Testing covers Java 17 to 21.
+## NOTE: Testing covers Java 17 to 25.
 
-Version UNRELEASED
+Version 4.15.0 2026-11-05
 ===========================
 
 This is a minor enhancement and bugfix release.
