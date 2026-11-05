@@ -1,6 +1,6 @@
 **IMPORTANT NOTE**: Please review upgrade notes in the RELEASE-NOTES.md if you are upgrading
 
-Version UNRELEASED
+Version 4.15.0 2026-11-05
 ===========================
 
 This is a minor enhancement and bugfix release.
